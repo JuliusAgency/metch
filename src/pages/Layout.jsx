@@ -48,7 +48,10 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const switchUserType = async () => {
+    console.log('Current user before switch:', user);
     const newUserType = user?.user_type === 'employer' ? 'job_seeker' : 'employer';
+    console.log('Switching to user type:', newUserType);
+    
     const newUser = { 
       ...user, 
       user_type: newUserType, 
@@ -56,25 +59,17 @@ export default function Layout({ children, currentPageName }) {
       isDemo: true
     };
     
+    console.log('New user object:', newUser);
+    
     // Update local state immediately
     setUser(newUser);
     
-    // Try to update in database only if not demo user
-    if (!user?.isDemo) {
-      try {
-        await UserEntity.updateMyUserData({ user_type: newUserType });
-      } catch (error) {
-        console.log("Could not update user type in database");
-      }
-    }
+    // For demo users, we don't need to update the database
+    // Just log the switch for debugging
+    console.log(`Switched to ${newUserType} mode`);
     
     // Navigate to dashboard to show the correct view
     navigate(createPageUrl("Dashboard"));
-    
-    // Force a small delay to ensure state is updated
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
   };
 
   if (loading) {
@@ -86,6 +81,10 @@ export default function Layout({ children, currentPageName }) {
   }
 
   const isJobSeeker = user?.user_type === 'job_seeker';
+  
+  // Debug logging
+  console.log('Current user in render:', user);
+  console.log('isJobSeeker:', isJobSeeker);
 
   return (
     <div className="min-h-screen page-gradient" dir="rtl">
