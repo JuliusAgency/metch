@@ -1,3 +1,4 @@
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function RecommendedJobs({ jobs, loading, user: _user }) {
+export default function RecommendedJobs({ jobs, loading, user }) {
   if (loading) {
     return (
       <Card className="glass-effect shadow-medium border-0">

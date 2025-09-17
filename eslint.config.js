@@ -10,13 +10,7 @@ export default [
     files: ['**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-        __dirname: 'readonly',
-        module: 'readonly',
-        require: 'readonly',
-      },
+      globals: globals.browser,
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
@@ -39,16 +33,6 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
-      // Disable prop-types validation for UI components
-      'react/prop-types': 'off',
-      // Allow unused vars that start with underscore
-      'no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],
-      // Allow unescaped entities in JSX
-      'react/no-unescaped-entities': 'off',
-      // Allow unknown properties (for CSS-in-JS)
-      'react/no-unknown-property': 'off',
-      // Allow duplicate props (sometimes needed for conditional rendering)
-      'react/jsx-no-duplicate-props': 'off',
     },
   },
 ]

@@ -1,7 +1,7 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Minus, ChevronRight } from "lucide-react";
+import { Plus, Minus, ChevronRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function PackageSelectionStep({ formData, setFormData }) {

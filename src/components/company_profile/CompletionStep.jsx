@@ -1,3 +1,4 @@
+import React from "react";
 import { Check, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";

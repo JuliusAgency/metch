@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Job } from "@/api/entities";
 import { JobApplication } from "@/api/entities";

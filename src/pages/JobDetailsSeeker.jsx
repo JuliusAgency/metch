@@ -1,10 +1,10 @@
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Job } from "@/api/entities";
 import { JobApplication } from "@/api/entities";
 import { User } from "@/api/entities";
-import { JobView } from "@/api/entities"; // Added import
+// Removed JobView import as it's no longer used for tracking
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,22 +40,45 @@ export default function JobDetailsSeeker() {
   const navigate = useNavigate();
 
   const loadData = React.useCallback(async () => {
+    setLoading(true);
     try {
-      const userData = await User.me();
+      let userData = null;
+      
+      // Try to get authenticated user first
+      try {
+        userData = await User.me();
+      } catch (error) {
+        // Use demo user for non-authenticated access
+        userData = { 
+          full_name: "דניאל (דוגמה)", 
+          email: "demo@example.com",
+          isDemo: true
+        };
+      }
+      
       setUser(userData);
 
       const params = new URLSearchParams(location.search);
       const jobId = params.get('id');
       
       if (jobId) {
-        let currentJob = null;
-        const jobResults = await Job.filter({ id: jobId });
-        if (jobResults.length > 0) {
-          currentJob = jobResults[0];
-          setJob(currentJob);
-        } else {
-          // Mock job data for development
-          currentJob = {
+        let fetchedJob = null;
+        
+        // Try to fetch real job data first if not a demo user
+        if (!userData?.isDemo) {
+          try {
+            const jobResults = await Job.filter({ id: jobId });
+            if (jobResults.length > 0) {
+              fetchedJob = jobResults[0];
+            }
+          } catch (error) {
+            console.log("Failed to fetch real job data, using mock data for " + (userData?.email || "anonymous user"));
+          }
+        }
+        
+        // Use mock job data if real data failed or for demo users
+        if (!fetchedJob) {
+          fetchedJob = {
             id: jobId,
             title: "מנהלת קשרי לקוחות",
             company: "Google",
@@ -82,18 +105,17 @@ export default function JobDetailsSeeker() {
               { text: "איך אתה מתמודד עם לקוחות קשים?", type: "text" }
             ]
           };
-          setJob(currentJob);
         }
-
-        // Record the job view
-        if (currentJob && userData && jobId) {
-          const existingView = await JobView.filter({ job_id: jobId, user_email: userData.email });
-          if (existingView.length === 0) {
-            await JobView.create({ job_id: jobId, user_email: userData.email });
+        
+        setJob(fetchedJob);
+        
+        // Track job view only for authenticated users (not demo)
+        if (userData?.email && !userData?.isDemo) {
+          try {
+            await UserAnalytics.trackJobView(userData.email, fetchedJob);
+          } catch (error) {
+            console.log("Failed to track job view for " + userData.email);
           }
-          
-          // Track detailed job view in analytics
-          await UserAnalytics.trackJobView(userData.email, currentJob);
         }
       }
     } catch (error) {
@@ -110,8 +132,12 @@ export default function JobDetailsSeeker() {
   const handleApply = async () => {
     if (!job || !user) return;
 
-    // Track job application attempt
-    await UserAnalytics.trackJobApplication(user.email, job);
+    // Track application attempt only for authenticated users
+    if (user?.email && !user?.isDemo) {
+      await UserAnalytics.trackJobApplication(user.email, job);
+    } else {
+      console.log("Demo user - application tracking skipped.");
+    }
 
     // Check if job has screening questions
     if (job.screening_questions && job.screening_questions.length > 0) {
@@ -122,11 +148,16 @@ export default function JobDetailsSeeker() {
     // Direct application without screening
     setApplying(true);
     try {
-      await JobApplication.create({
-        job_id: job.id,
-        applicant_email: user.email,
-        status: 'pending'
-      });
+      // Allow demo users to simulate application, but don't call backend if it's a demo
+      if (!user?.isDemo) {
+        await JobApplication.create({
+          job_id: job.id,
+          applicant_email: user.email,
+          status: 'pending'
+        });
+      } else {
+        console.log("Demo user - application submitted (simulated).");
+      }
       
       // Show success message and navigate
       setTimeout(() => {
@@ -140,11 +171,12 @@ export default function JobDetailsSeeker() {
   };
 
   const handleReject = async () => {
-    if (!job || !user) return;
-    
-    // Track job rejection
-    await UserAnalytics.trackJobRejection(user.email, job, "user_not_interested");
-    
+    // Track job rejection only for authenticated users
+    if (user?.email && job && !user?.isDemo) {
+      await UserAnalytics.trackJobRejection(user.email, job);
+    } else {
+      console.log("Demo user - job rejection tracking skipped.");
+    }
     // Navigate back or show rejection confirmation
     navigate(createPageUrl("JobSearch"));
   };
@@ -166,16 +198,21 @@ export default function JobDetailsSeeker() {
     }
   };
 
-  const toggleSave = async () => {
-    if (!job || !user) return;
-    
-    if (isLiked) {
-      await UserAnalytics.trackJobUnsave(user.email, job);
+  const handleLike = async () => { // Renamed from toggleSave to handleLike as per outline
+    if (!user?.email || !job) return;
+    const newLikedState = !isLiked;
+    setIsLiked(newLikedState);
+
+    // Track save/unsave only for authenticated users
+    if (!user?.isDemo) {
+      if (newLikedState) {
+        await UserAnalytics.trackJobSave(user.email, job);
+      } else {
+        await UserAnalytics.trackJobUnsave(user.email, job);
+      }
     } else {
-      await UserAnalytics.trackJobSave(user.email, job);
+      console.log("Demo user - job save/unsave tracking skipped.");
     }
-    
-    setIsLiked(!isLiked);
   };
 
   const employmentTypeText = {
@@ -376,7 +413,7 @@ export default function JobDetailsSeeker() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={toggleSave}
+                    onClick={handleLike} // Changed from toggleSave to handleLike
                     className={`${isLiked ? 'text-red-500' : 'text-gray-500'} hover:text-red-600`}
                   >
                     <Heart className={`w-5 h-5 ml-2 ${isLiked ? 'fill-current' : ''}`} />

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { User } from "@/api/entities";
 import { Job } from "@/api/entities";
 import { JobApplication } from "@/api/entities"; // Keep for consistency if JobApplication is used elsewhere in the component, though no longer directly used in job card display logic.

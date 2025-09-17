@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,10 +6,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { UploadFile } from "@/api/integrations";
-import { Upload, CheckCircle } from "lucide-react";
+import { Upload, FileText, CheckCircle } from "lucide-react";
 
 export default function JobApplicationModal({ open, onOpenChange, job, onSubmit }) {
   const [formData, setFormData] = useState({

@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Job } from "@/api/entities";
 import { User } from "@/api/entities";
@@ -22,7 +22,7 @@ export default function AnswerQuestionnaire() {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const loadData = useCallback(async () => {
+    const loadData = React.useCallback(async () => {
         try {
             const userData = await User.me();
             setUser(userData);

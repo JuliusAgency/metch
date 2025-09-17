@@ -1,9 +1,11 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Camera } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function PaymentStep({ formData: _formData, setFormData }) {
+export default function PaymentStep({ formData, setFormData }) {
   const [paymentData, setPaymentData] = useState({
     cardNumber: "",
     expiryDate: "",
@@ -78,10 +80,11 @@ export default function PaymentStep({ formData: _formData, setFormData }) {
             maxLength={3}
           />
           <Input
-            placeholder="תוקף (MM/YY)"
+            placeholder="תוקף"
             value={paymentData.expiryDate}
             onChange={(e) => handleInputChange('expiryDate', e.target.value)}
             className="rounded-full text-center"
+            placeholder="MM/YY"
           />
         </div>
 

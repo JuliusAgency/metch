@@ -1,6 +1,6 @@
 
 
-import { useState, useEffect } from "react";
+import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
@@ -22,11 +22,10 @@ import { User as UserEntity } from "@/api/entities";
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [debugMode, setDebugMode] = useState(false);
+  const [user, setUser] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
 
-  useEffect(() => {
+  React.useEffect(() => {
     loadUser();
   }, []);
 
@@ -35,9 +34,14 @@ export default function Layout({ children, currentPageName }) {
       const userData = await UserEntity.me();
       setUser(userData);
     } catch (error) {
-      console.log("User not authenticated");
-      // Set default user for demo
-      setUser({ user_type: 'employer', full_name: 'רפאל (דוגמה)' });
+      console.log("User not authenticated, using demo mode");
+      // Set default demo user for non-authenticated users
+      setUser({ 
+        user_type: 'employer', 
+        full_name: 'רפאל (דוגמה)', 
+        email: 'demo@example.com',
+        isDemo: true 
+      });
     } finally {
       setLoading(false);
     }
@@ -48,17 +52,20 @@ export default function Layout({ children, currentPageName }) {
     const newUser = { 
       ...user, 
       user_type: newUserType, 
-      full_name: newUserType === 'job_seeker' ? 'דניאל (מחפש עבודה)' : 'רפאל (מעסיק)' 
+      full_name: newUserType === 'job_seeker' ? 'דניאל (מחפש עבודה)' : 'רפאל (מעסיק)',
+      isDemo: true
     };
     
     // Update local state immediately
     setUser(newUser);
     
-    // Try to update in database if possible
-    try {
-      await UserEntity.updateMyUserData({ user_type: newUserType });
-    } catch (error) {
-      console.log("Could not update user type in database");
+    // Try to update in database only if not demo user
+    if (!user?.isDemo) {
+      try {
+        await UserEntity.updateMyUserData({ user_type: newUserType });
+      } catch (error) {
+        console.log("Could not update user type in database");
+      }
     }
     
     // Navigate to dashboard to show the correct view
@@ -112,7 +119,7 @@ export default function Layout({ children, currentPageName }) {
           onClick={switchUserType}
           className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-full text-xs font-bold shadow-lg transition-all hover:scale-105"
         >
-          DEBUG: {isJobSeeker ? '👤 מחפש עבודה' : '🏢 מעסיק'}
+          DEMO: {isJobSeeker ? '👤 מחפש עבודה' : '🏢 מעסיק'}
         </Button>
       </div>
 
@@ -183,9 +190,9 @@ export default function Layout({ children, currentPageName }) {
               </Button>
               <div className="h-8 w-px bg-slate-400/50 mx-2"></div>
               
-              {/* Settings icon now acts as the Settings link for job seekers */}
+              {/* Settings icon - always links to the generic Settings page */}
               <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
-                <Link to={createPageUrl(isJobSeeker ? "Settings" : "Profile")}>
+                <Link to={createPageUrl("Settings")}>
                   <Settings className="w-6 h-6 text-gray-700" />
                 </Link>
               </Button>

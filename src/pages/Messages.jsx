@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { User } from "@/api/entities";
 import { Conversation } from "@/api/entities";
 import { Message } from "@/api/entities";

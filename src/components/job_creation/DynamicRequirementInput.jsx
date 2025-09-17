@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
@@ -30,7 +30,7 @@ export default function DynamicRequirementInput({ label, placeholder, items, set
   };
   
   // Clean up empty items
-  useEffect(() => {
+  React.useEffect(() => {
       const cleanedItems = items.filter(item => item.value && item.value.trim() !== "");
       if(cleanedItems.length !== items.length){
           setItems(cleanedItems);

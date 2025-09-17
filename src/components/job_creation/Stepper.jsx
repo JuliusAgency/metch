@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 
 export default function Stepper({ currentStep, steps }) {
@@ -10,7 +10,7 @@ export default function Stepper({ currentStep, steps }) {
         const isCompleted = stepIndex < currentStep;
 
         return (
-          <Fragment key={stepIndex}>
+          <React.Fragment key={stepIndex}>
             <div className="flex flex-col items-center relative">
               <div
                 className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
@@ -30,7 +30,7 @@ export default function Stepper({ currentStep, steps }) {
                 />
               </div>
             )}
-          </Fragment>
+          </React.Fragment>
         );
       })}
     </div>
