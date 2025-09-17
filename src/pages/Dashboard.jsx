@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { UserAnalytics } from "@/components/UserAnalytics";
+import { useUser } from "@/contexts/UserContext";
 
 // --- MOCK DATA FOR JOB SEEKER DASHBOARD (NO LONGER USED FOR JOBS) ---
 const MOCK_NOTIFICATIONS_SEEKER = [
@@ -459,29 +460,7 @@ const EmployerDashboard = ({ user }) => {
 
 // --- MAIN DASHBOARD ROUTER ---
 export default function Dashboard() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userData = await User.me();
-        setUser(userData);
-      } catch (e) {
-        console.log("User not authenticated, using demo mode");
-        // Fallback demo user
-        setUser({
-          user_type: 'job_seeker',
-          full_name: 'דניאל (דוגמה)',
-          email: 'demo@example.com',
-          isDemo: true
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUser();
-  }, []);
+  const { user, loading } = useUser();
 
   if (loading) {
     return (
@@ -492,8 +471,6 @@ export default function Dashboard() {
   }
 
   if (!user) {
-    // This case should ideally not be reached if the catch block always sets a demo user on failure.
-    // However, keeping it as a safeguard.
     return <div className="p-8 text-center" dir="rtl">נראה שאתה לא מחובר. <Button onClick={() => User.login()}>התחבר</Button></div>;
   }
 
@@ -501,10 +478,6 @@ export default function Dashboard() {
   if (user.user_type === 'job_seeker') {
     return <JobSeekerDashboard user={user} />;
   } else {
-    // If user_type is 'employer' or any other type not 'job_seeker'
-    // For demo purposes, if the initial demo user is a job_seeker, this won't be hit immediately.
-    // If you need an employer demo user, you could adjust the catch block or add logic to switch.
-    // For now, assuming if `user.isDemo` it's a job seeker unless explicitly changed elsewhere.
     return <EmployerDashboard user={user} />;
   }
 }

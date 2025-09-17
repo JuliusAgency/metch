@@ -17,57 +17,15 @@ import {
   Search
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { User as UserEntity } from "@/api/entities";
+import { useUser } from "@/contexts/UserContext";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [user, setUser] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
+  const { user, loading, switchUserType } = useUser();
 
-  React.useEffect(() => {
-    loadUser();
-  }, []);
-
-  const loadUser = async () => {
-    try {
-      const userData = await UserEntity.me();
-      setUser(userData);
-    } catch (error) {
-      console.log("User not authenticated, using demo mode");
-      // Set default demo user for non-authenticated users
-      setUser({ 
-        user_type: 'employer', 
-        full_name: 'רפאל (דוגמה)', 
-        email: 'demo@example.com',
-        isDemo: true 
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const switchUserType = async () => {
-    console.log('Current user before switch:', user);
-    const newUserType = user?.user_type === 'employer' ? 'job_seeker' : 'employer';
-    console.log('Switching to user type:', newUserType);
-    
-    const newUser = { 
-      ...user, 
-      user_type: newUserType, 
-      full_name: newUserType === 'job_seeker' ? 'דניאל (מחפש עבודה)' : 'רפאל (מעסיק)',
-      isDemo: true
-    };
-    
-    console.log('New user object:', newUser);
-    
-    // Update local state immediately
-    setUser(newUser);
-    
-    // For demo users, we don't need to update the database
-    // Just log the switch for debugging
-    console.log(`Switched to ${newUserType} mode`);
-    
+  const handleSwitchUserType = async () => {
+    await switchUserType();
     // Navigate to dashboard to show the correct view
     navigate(createPageUrl("Dashboard"));
   };
@@ -81,10 +39,6 @@ export default function Layout({ children, currentPageName }) {
   }
 
   const isJobSeeker = user?.user_type === 'job_seeker';
-  
-  // Debug logging
-  console.log('Current user in render:', user);
-  console.log('isJobSeeker:', isJobSeeker);
 
   return (
     <div className="min-h-screen page-gradient" dir="rtl">
@@ -115,7 +69,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Debug Button - Outside Navbar */}
       <div className="fixed top-4 left-4 z-[60]">
         <Button 
-          onClick={switchUserType}
+          onClick={handleSwitchUserType}
           className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-full text-xs font-bold shadow-lg transition-all hover:scale-105"
         >
           DEMO: {isJobSeeker ? '👤 מחפש עבודה' : '🏢 מעסיק'}
