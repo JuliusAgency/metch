@@ -78,11 +78,10 @@ export default function PaymentStep({ formData: _formData, setFormData }) {
             maxLength={3}
           />
           <Input
-            placeholder="תוקף"
+            placeholder="תוקף (MM/YY)"
             value={paymentData.expiryDate}
             onChange={(e) => handleInputChange('expiryDate', e.target.value)}
             className="rounded-full text-center"
-            placeholder="MM/YY"
           />
         </div>
 

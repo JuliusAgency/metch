@@ -1,5 +1,6 @@
 
 
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
@@ -21,11 +22,11 @@ import { User as UserEntity } from "@/api/entities";
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [user, setUser] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
-  const [debugMode, setDebugMode] = React.useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [debugMode, setDebugMode] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     loadUser();
   }, []);
 
