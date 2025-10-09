@@ -1,14 +1,15 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { User, MapPin, Clock, Briefcase, Upload, ChevronRight, X, FileText, Image, File } from "lucide-react";
+import { User, MapPin, Clock, Briefcase, Upload, ChevronRight, X, FileText, Image, File, Video } from "lucide-react";
 import { UploadFile } from "@/api/integrations";
 
 export default function Step5Preview({ jobData, setJobData }) {
   const [uploadedFiles, setUploadedFiles] = useState(jobData.attachments || []);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef(null);
 
   const employmentTypeText = {
     full_time: 'משרה מלאה',
@@ -35,7 +36,6 @@ export default function Step5Preview({ jobData, setJobData }) {
       const newFiles = [...uploadedFiles, ...uploadedFileResults];
       setUploadedFiles(newFiles);
 
-      // Update job data
       setJobData((prev) => ({
         ...prev,
         attachments: newFiles
@@ -73,6 +73,12 @@ export default function Step5Preview({ jobData, setJobData }) {
     }
   };
 
+  const handleButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   const removeFile = (indexToRemove) => {
     const newFiles = uploadedFiles.filter((_, index) => index !== indexToRemove);
     setUploadedFiles(newFiles);
@@ -85,6 +91,8 @@ export default function Step5Preview({ jobData, setJobData }) {
   const getFileIcon = (fileType) => {
     if (fileType.startsWith('image/')) {
       return <Image className="w-5 h-5 text-blue-500" />;
+    } else if (fileType.startsWith('video/')) {
+      return <Video className="w-5 h-5 text-green-500" />;
     } else if (fileType === 'application/pdf') {
       return <FileText className="w-5 h-5 text-red-500" />;
     } else {
@@ -101,7 +109,7 @@ export default function Step5Preview({ jobData, setJobData }) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto" dir="rtl">
+    <div className="max-w-4xl mx-auto" dir="rtl" onDragEnter={handleDrag}>
       {/* Job Preview Card */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
         {/* Header with curved background - matching other pages */}
@@ -235,48 +243,60 @@ export default function Step5Preview({ jobData, setJobData }) {
 
           {/* Enhanced File Upload Section */}
           <div className="mb-8">
-            <div
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-              dragActive ? 'border-blue-400 bg-blue-50' : 'border-gray-300'} ${
-              uploading ? 'opacity-50 pointer-events-none' : ''}`}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}>
+            {dragActive ? (
+              <div
+                className="border-2 border-dashed rounded-lg p-8 text-center transition-colors border-blue-400 bg-blue-50 h-52 flex flex-col justify-center items-center"
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+              >
+                <Upload className="w-10 h-10 text-blue-500 mx-auto mb-4" />
+                <p className="text-lg font-semibold text-blue-600">שחרר קבצים כאן</p>
+              </div>
+            ) : (
+              <div
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors border-gray-300`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  id="file-upload"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileInput}
+                  accept="image/*,video/*,application/pdf,.doc,.docx"
+                />
 
-              <input
-                type="file"
-                id="file-upload"
-                multiple
-                className="hidden"
-                onChange={handleFileInput}
-                accept="image/*,application/pdf,.doc,.docx" />
-
-              <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-600 mb-2">גרור קבצים להעלאה על המשרה</p>
-              <p className="text-sm text-gray-500 mb-4">או</p>
-              <label htmlFor="file-upload">
+                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-600 mb-2">גרור קבצים להעלאה על המשרה</p>
+                <p className="text-sm text-gray-500 mb-4">או</p>
                 <Button
                   type="button"
                   variant="outline"
                   className="cursor-pointer"
-                  disabled={uploading}>
-
+                  onClick={handleButtonClick}
+                  disabled={uploading}
+                >
                   {uploading ? 'מעלה...' : 'בחר קבצים'}
                 </Button>
-              </label>
-            </div>
-
+              </div>
+            )}
+            
             {/* Uploaded Files Display */}
             {uploadedFiles.length > 0 &&
-            <div className="mt-4 space-y-2">
+              <div className="mt-4 space-y-2">
                 <h4 className="font-semibold text-gray-900 mb-3">קבצים מצורפים:</h4>
                 {uploadedFiles.map((file, index) =>
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <button
-                  onClick={() => removeFile(index)}
-                  className="text-gray-400 hover:text-red-500 transition-colors">
-
+                      onClick={() => removeFile(index)}
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                    >
                       <X className="w-4 h-4" />
                     </button>
                     <div className="flex items-center gap-3 text-right">
@@ -287,7 +307,7 @@ export default function Step5Preview({ jobData, setJobData }) {
                       {getFileIcon(file.type)}
                     </div>
                   </div>
-              )}
+                )}
               </div>
             }
           </div>
@@ -303,6 +323,6 @@ export default function Step5Preview({ jobData, setJobData }) {
           </div>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

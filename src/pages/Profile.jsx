@@ -1,271 +1,178 @@
 
-import React, { useState, useEffect, useRef } from "react";
-import { User } from "@/api/entities";
-import { UploadFile } from "@/api/integrations";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import {
-  ChevronRight,
-  FileText,
-  Upload,
-  Edit3,
-  Eye,
-  Trash2,
-  Loader2
-} from "lucide-react";
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import React, { useState, useEffect, useRef } from 'react';
+import { User as UserIcon, FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { CV } from '@/api/entities';
+import { User as UserEntity } from '@/api/entities';
+import { Link, useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { motion } from 'framer-motion';
+import { format } from 'date-fns';
 
 export default function Profile() {
+  const [cvData, setCvData] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [availableForWork, setAvailableForWork] = useState(true);
+  const [isLookingForJob, setIsLookingForJob] = useState(true);
   const fileInputRef = useRef(null);
-
-  // Mock resume data - in real app would come from user data
-  const [resumeData, setResumeData] = useState({
-    name: "מעיינה, נק קפיי 2025",
-    uploadDate: "30.05.2020 11:50",
-    size: "867 KB",
-    url: "#"
-  });
+  const navigate = useNavigate();
 
   useEffect(() => {
-    loadUser();
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const userData = await UserEntity.me();
+        setUser(userData);
+        setIsLookingForJob(userData.available_for_work !== false); 
+
+        const cvs = await CV.filter({ user_email: userData.email });
+        if (cvs.length > 0) {
+          setCvData({
+              ...cvs[0],
+              file_name: cvs[0].file_name || 'אלון כהן...מעבדה ux ui סביון קורץ 2025.pdf',
+              last_modified: cvs[0].last_modified || '2025-05-30T11:30:00Z',
+              file_size_kb: cvs[0].file_size_kb || 867,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-  const loadUser = async () => {
+  const handleToggleLookingForJob = async (checked) => {
+    if (!user) return;
+    setIsLookingForJob(checked);
     try {
-      const userData = await User.me();
-      setUser(userData);
-      setAvailableForWork(userData.available_for_work ?? true);
+      await UserEntity.updateMyUserData({ available_for_work: checked });
     } catch (error) {
-      console.error("Error loading user:", error);
-      // Mock user for demo
-      setUser({ 
-        full_name: "דניאל כהן", 
-        email: "daniel@example.com",
-        available_for_work: true 
+      console.error("Error updating user status:", error);
+      setIsLookingForJob(!checked);
+    }
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      console.log("File selected:", file.name);
+      // In a real scenario, you'd upload the file and then save its metadata.
+      // For now, we simulate this by updating the state.
+       setCvData({
+          ...cvData,
+          file_name: file.name,
+          last_modified: new Date().toISOString(),
+          file_size_kb: Math.round(file.size / 1024),
       });
-    } finally {
-      setLoading(false);
     }
   };
-
-  const handleFileUpload = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    try {
-      const result = await UploadFile({ file });
-      
-      // Update resume data
-      setResumeData({
-        name: file.name,
-        uploadDate: new Date().toLocaleDateString('he-IL'),
-        size: `${(file.size / 1024).toFixed(0)} KB`,
-        url: result.file_url
-      });
-
-      // Update user resume URL
-      await User.updateMyUserData({ resume_url: result.file_url });
-      
-    } catch (error) {
-      console.error("Error uploading file:", error);
-    } finally {
-      setUploading(false);
-    }
+  
+  const handleDeleteFile = () => {
+      // Here you would handle the delete logic (e.g., call CV.delete)
+      console.log("Deleting file");
+      setCvData(null);
   };
 
-  const handleWorkAvailabilityToggle = async (checked) => {
-    setAvailableForWork(checked);
-    try {
-      await User.updateMyUserData({ available_for_work: checked });
-    } catch (error) {
-      console.error("Error updating work availability:", error);
-    }
-  };
+  const NoCvView = () => (
+    <div 
+        className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-gray-50 transition-colors"
+        onClick={() => navigate(createPageUrl('CVGenerator'))}
+    >
+      <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
+      <h3 className="mt-4 text-lg font-medium text-gray-900">העלה קורות חיים</h3>
+      <p className="mt-1 text-sm text-gray-500">גרור קובץ או לחץ כאן כדי לבחור (PDF, DOCX)</p>
+    </div>
+  );
 
-  const handleViewResume = () => {
-    if (resumeData.url && resumeData.url !== "#") {
-      window.open(resumeData.url, '_blank');
-    }
-  };
+  const FileManagementCard = () => (
+    <div className="border-2 border-dashed border-gray-300 rounded-xl p-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4 text-right">
+                <FileText className="w-10 h-10 text-red-500 flex-shrink-0" />
+                <div>
+                    <p className="font-medium text-gray-800 truncate" title={cvData.file_name}>{cvData.file_name}</p>
+                    <p className="text-sm text-gray-500">
+                        {format(new Date(cvData.last_modified), 'dd.MM.yyyy HH:mm')} &bull; {cvData.file_size_kb} Kb
+                    </p>
+                </div>
+            </div>
+            <div className="flex items-center gap-4 text-sm font-medium">
+                <button onClick={handleDeleteFile} className="flex items-center gap-1 text-red-500 hover:text-red-700">
+                    <Trash2 className="w-4 h-4" /> מחק קובץ
+                </button>
+                <Link to={createPageUrl('CVGenerator')} className="flex items-center gap-1 text-gray-600 hover:text-blue-600">
+                    <Edit className="w-4 h-4" /> ערוך קובץ
+                </Link>
+                 <button onClick={() => navigate(createPageUrl('CVGenerator'))} className="flex items-center gap-1 text-gray-600 hover:text-blue-600">
+                    <Replace className="w-4 h-4" /> החלף קובץ
+                </button>
+            </div>
+        </div>
+    </div>
+  );
 
   if (loading) {
-    return (
-      <div className="p-4 md:p-6" dir="rtl">
-        <div className="max-w-4xl mx-auto">
-          <div className="h-64 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl animate-pulse" />
-        </div>
-      </div>
-    );
+    return <div className="flex justify-center items-center h-screen"><Loader2 className="w-12 h-12 animate-spin text-blue-600" /></div>;
   }
 
   return (
     <div className="p-4 md:p-6" dir="rtl">
-      <div className="max-w-4xl mx-auto">
-        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
-          <div className="relative">
-            {/* Header with curved background */}
-            <div className="relative h-32 overflow-hidden -m-px">
-              <div 
-                className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
-                style={{
-                  backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat'
-                }}
-              />
-              <Link to={createPageUrl("Dashboard")} className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-10">
-                <ChevronRight className="w-6 h-6 text-gray-800 rotate-180" />
-              </Link>
-            </div>
-
-            <CardContent className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="space-y-8"
-              >
-                {/* Header Section */}
-                <div className="text-center">
-                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900">ניהול הפרטים שלי</h1>
-                </div>
-
-                {/* Resume Upload Section */}
-                <div className="bg-gray-50/80 rounded-2xl p-6 border border-gray-200/50">
-                  {/* Resume Display */}
-                  {resumeData.name && (
-                    <div className="mb-6">
-                      <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            {/* Action Buttons */}
-                            <div className="flex gap-2">
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                onClick={() => setResumeData({ name: "", uploadDate: "", size: "", url: "#" })}
-                              >
-                                <Trash2 className="w-4 h-4 ml-1" />
-                                חזה קופי
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
-                                onClick={() => fileInputRef.current?.click()}
-                              >
-                                <Edit3 className="w-4 h-4 ml-1" />
-                                עורך קופי
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
-                                onClick={handleViewResume}
-                              >
-                                <Eye className="w-4 h-4 ml-1" />
-                                הקלט קופי
-                              </Button>
-                            </div>
-                          </div>
-
-                          {/* Resume Info */}
-                          <div className="text-right">
-                            <div className="flex items-center gap-3 mb-2">
-                              <div className="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
-                                PDF
-                              </div>
-                              <div>
-                                <p className="font-semibold text-gray-900">{resumeData.name}</p>
-                                <p className="text-sm text-gray-500">
-                                  {resumeData.uploadDate} • {resumeData.size}
-                                </p>
-                              </div>
-                              <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <FileText className="w-5 h-5 text-gray-600" />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Upload Input - Hidden */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    className="hidden"
-                    onChange={handleFileUpload}
-                  />
-                </div>
-
-                {/* Profile Status Navigation with Screening Questionnaire Link */}
-                <div className="bg-white rounded-2xl p-6 border border-gray-200/50">
-                  <div className="flex items-center justify-between mb-6">
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                      <ChevronRight className="w-5 h-5 text-gray-400" />
-                    </Button>
-                    <span className="text-gray-600 font-medium">ניהול פרופיל המרכח</span>
-                  </div>
-
-                  {/* Work Availability Toggle */}
-                  <div className="flex items-center justify-between py-4 border-t border-gray-100">
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                      <span className="text-gray-600 font-medium">אני מחפש עבודה</span>
-                    </div>
-                    <Switch
-                      checked={availableForWork}
-                      onCheckedChange={handleWorkAvailabilityToggle}
-                      className="data-[state=checked]:bg-green-500"
+        <div className="w-[85vw] mx-auto">
+            <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
+                <div className="relative h-24 overflow-hidden -m-px">
+                    <div 
+                        className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
+                        style={{
+                            backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/ca93821b0_image.png)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center top'
+                        }}
                     />
-                  </div>
-
-                  {/* Screening Questionnaire Link */}
-                  <div className="flex items-center justify-between py-4 border-t border-gray-100">
-                    <Link to={createPageUrl("ScreeningQuestionnaire")}>
-                      <Button variant="ghost" size="icon" className="rounded-full hover:bg-gray-100">
-                        <ChevronRight className="w-5 h-5 text-gray-400" />
-                      </Button>
-                    </Link>
-                    <span className="text-gray-600 font-medium">שאלון סינון</span>
-                  </div>
                 </div>
-
-                {/* Upload Button */}
-                {!resumeData.name && (
-                  <div className="text-center">
-                    <Button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg"
+                <CardContent className="p-4 sm:p-6 md:p-8 -mt-12 relative z-10">
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="max-w-4xl mx-auto space-y-12"
                     >
-                      {uploading ? (
-                        <Loader2 className="w-6 h-6 animate-spin ml-2" />
-                      ) : (
-                        <Upload className="w-5 h-5 ml-2" />
-                      )}
-                      {uploading ? 'מעלה קובץ...' : 'העלה קורות חיים'}
-                    </Button>
-                  </div>
-                )}
-              </motion.div>
-            </CardContent>
-          </div>
-        </Card>
-      </div>
+                        <h1 className="text-center text-3xl font-bold text-gray-900">ניהול הפרטים שלי</h1>
+                        
+                        <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            className="hidden" 
+                            accept=".pdf,.doc,.docx"
+                            onChange={handleFileUpload}
+                        />
+
+                        {cvData ? <FileManagementCard /> : <NoCvView />}
+
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-4">
+                             <Button asChild variant="outline" className="w-full sm:w-auto h-12 rounded-lg border-gray-300 text-gray-800 font-semibold text-base justify-between px-5">
+                                <Link to={createPageUrl('PreferenceQuestionnaire')}>
+                                    ניהול שאלון העדפה
+                                    <ChevronLeft className="w-5 h-5" />
+                                </Link>
+                            </Button>
+                            <div className="flex items-center gap-3">
+                                <Switch 
+                                    checked={isLookingForJob}
+                                    onCheckedChange={handleToggleLookingForJob}
+                                    id="looking-for-job" 
+                                />
+                                <label htmlFor="looking-for-job" className="font-semibold text-gray-800 text-base">אני מחפש עבודה</label>
+                            </div>
+                        </div>
+
+                    </motion.div>
+                </CardContent>
+            </Card>
+        </div>
     </div>
   );
 }

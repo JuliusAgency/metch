@@ -40,6 +40,14 @@ import MessagesSeeker from "./MessagesSeeker";
 
 import UserActivity from "./UserActivity";
 
+import FAQ from "./FAQ";
+
+import NotFound from "./NotFound";
+
+import CVGenerator from "./CVGenerator";
+
+import PreferenceQuestionnaire from "./PreferenceQuestionnaire";
+
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
@@ -83,6 +91,14 @@ const PAGES = {
     MessagesSeeker: MessagesSeeker,
     
     UserActivity: UserActivity,
+    
+    FAQ: FAQ,
+    
+    NotFound: NotFound,
+    
+    CVGenerator: CVGenerator,
+    
+    PreferenceQuestionnaire: PreferenceQuestionnaire,
     
 }
 
@@ -150,6 +166,14 @@ function PagesContent() {
                 <Route path="/MessagesSeeker" element={<MessagesSeeker />} />
                 
                 <Route path="/UserActivity" element={<UserActivity />} />
+                
+                <Route path="/FAQ" element={<FAQ />} />
+                
+                <Route path="/NotFound" element={<NotFound />} />
+                
+                <Route path="/CVGenerator" element={<CVGenerator />} />
+                
+                <Route path="/PreferenceQuestionnaire" element={<PreferenceQuestionnaire />} />
                 
             </Routes>
         </Layout>

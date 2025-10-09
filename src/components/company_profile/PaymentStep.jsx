@@ -32,27 +32,27 @@ export default function PaymentStep({ formData, setFormData }) {
           <div className="relative">
             <div className="w-80 h-48 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl text-white p-6 relative overflow-hidden">
               {/* Card circles design */}
-              <div className="absolute top-4 left-4 w-8 h-8 bg-white/20 rounded-full"></div>
-              <div className="absolute top-4 left-10 w-8 h-8 bg-white/10 rounded-full"></div>
+              <div className="absolute top-4 right-4 w-8 h-8 bg-white/20 rounded-full"></div>
+              <div className="absolute top-4 right-10 w-8 h-8 bg-white/10 rounded-full"></div>
               
               {/* Card number */}
-              <div className="absolute bottom-20 left-6 text-xl font-mono tracking-wider">
+              <div className="absolute bottom-20 right-6 text-xl font-mono tracking-wider">
                 {paymentData.cardNumber || "1313 5555 1313 5555"}
               </div>
               
               {/* Cardholder info */}
-              <div className="absolute bottom-6 left-6 flex justify-between w-64">
-                <div>
-                  <div className="text-xs text-gray-300 mb-1">ISRAEL ISRAELI</div>
-                </div>
+              <div className="absolute bottom-6 right-6 flex justify-between w-64">
                 <div className="text-right">
                   <div className="text-sm">{paymentData.expiryDate || "05/25"}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-300 mb-1">ISRAEL ISRAELI</div>
                 </div>
               </div>
             </div>
             
             {/* Camera icon */}
-            <div className="absolute -bottom-4 right-6 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center border-4 border-gray-100">
+            <div className="absolute -bottom-4 left-6 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center border-4 border-gray-100">
               <Camera className="w-6 h-6 text-gray-400" />
             </div>
           </div>
@@ -65,12 +65,14 @@ export default function PaymentStep({ formData, setFormData }) {
             value={paymentData.holderName}
             onChange={(e) => handleInputChange('holderName', e.target.value)}
             className="rounded-full text-center"
+            dir="rtl"
           />
           <Input
             placeholder="מספר זיהוי"
             value={paymentData.idNumber}
             onChange={(e) => handleInputChange('idNumber', e.target.value)}
             className="rounded-full text-center"
+            dir="rtl"
           />
           <Input
             placeholder="CVV"
@@ -78,13 +80,14 @@ export default function PaymentStep({ formData, setFormData }) {
             onChange={(e) => handleInputChange('cvv', e.target.value)}
             className="rounded-full text-center"
             maxLength={3}
+            dir="rtl"
           />
           <Input
-            placeholder="תוקף"
+            placeholder="תוקף MM/YY"
             value={paymentData.expiryDate}
             onChange={(e) => handleInputChange('expiryDate', e.target.value)}
             className="rounded-full text-center"
-            placeholder="MM/YY"
+            dir="rtl"
           />
         </div>
 
@@ -94,6 +97,7 @@ export default function PaymentStep({ formData, setFormData }) {
           onChange={(e) => handleInputChange('cardNumber', e.target.value)}
           className="rounded-full text-center max-w-lg mx-auto"
           maxLength={19}
+          dir="rtl"
         />
 
         {/* Security Notice */}

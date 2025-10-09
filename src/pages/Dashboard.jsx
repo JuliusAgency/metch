@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { User } from "@/api/entities";
 import { Job } from "@/api/entities";
@@ -10,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
   Plus,
@@ -26,11 +25,17 @@ import {
   Sparkles,
   MapPin,
   Clock,
-  Bell
+  Bell,
+  HelpCircle,
+  CheckCircle // Added CheckCircle import
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { UserAnalytics } from "@/components/UserAnalytics";
-import { useUser } from "@/contexts/UserContext";
+import { EmployerAnalytics } from "@/components/EmployerAnalytics"; // Added EmployerAnalytics import
+import EmployerStatsCard from "@/components/employer/EmployerStatsCard"; // Added EmployerStatsCard import
+import EmployerActivityFeed from "@/components/employer/EmployerActivityFeed"; // Added EmployerActivityFeed import
+import JobSeekerGuide from "@/components/guides/JobSeekerGuide";
+import EmployerGuide from "@/components/guides/EmployerGuide";
 
 // --- MOCK DATA FOR JOB SEEKER DASHBOARD (NO LONGER USED FOR JOBS) ---
 const MOCK_NOTIFICATIONS_SEEKER = [
@@ -53,6 +58,29 @@ const JobSeekerDashboard = ({ user }) => {
   const [allJobs, setAllJobs] = useState([]); // Renamed 'jobs' to 'allJobs'
   const [viewedJobIds, setViewedJobIds] = useState(new Set()); // New state for viewed job IDs
   const [loading, setLoading] = useState(true);
+  const [showGuide, setShowGuide] = useState(false);
+
+  // Check if user needs onboarding guide
+  useEffect(() => {
+    const hasSeenGuide = localStorage.getItem(`jobseeker_guide_${user?.email}`);
+    if (!hasSeenGuide && !user?.isDemo) {
+      setShowGuide(true);
+    }
+  }, [user]);
+
+  const handleGuideComplete = () => {
+    setShowGuide(false);
+    if (user?.email) {
+      localStorage.setItem(`jobseeker_guide_${user.email}`, 'completed');
+    }
+  };
+
+  const handleGuideSkip = () => {
+    setShowGuide(false);
+    if (user?.email) {
+      localStorage.setItem(`jobseeker_guide_${user.email}`, 'skipped');
+    }
+  };
 
   useEffect(() => {
     const loadData = async () => { // Renamed loadJobs to loadData
@@ -152,102 +180,120 @@ const JobSeekerDashboard = ({ user }) => {
   });
 
   return (
-    <div className="p-4 md:p-6" dir="rtl">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex justify-between items-center px-2">
-            <h1 className="text-xl font-bold text-gray-900 mb-2">👋 היי {user.full_name?.split(' ')[0] || 'דניאל'}!</h1>
-            <div className="flex items-center gap-2">
-                <Bell className="w-5 h-5 text-yellow-500"/>
-                <span className="text-sm text-gray-600">התראות חדשות</span>
+    <>
+      <div className="p-4 md:p-6" dir="rtl">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <div className="flex justify-between items-center px-2">
+              <h1 className="text-xl font-bold text-gray-900 mb-2">👋 היי {user.full_name?.split(' ')[0] || 'דניאל'}!</h1>
+              <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowGuide(true)}
+                    className="rounded-full px-3 py-1 text-xs"
+                  >
+                    מדריך
+                    <HelpCircle className="w-3 h-3 mr-1" />
+                  </Button>
+                  <span className="text-sm text-gray-600">התראות חדשות</span>
+                  <Bell className="w-5 h-5 text-yellow-500"/>
+              </div>
+          </div>
+
+          <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stats-grid">
+              <StatCard icon={Briefcase} title="משרות רלוונטיות" value={allJobs.length} /> {/* Changed to allJobs.length */}
+              <StatCard icon={Eye} title="צפו בקורות חיים שלי" value={MOCK_STATS.cv_viewed} />
+              <StatCard icon={FileText} title="מועמדויות שהגשתי" value={MOCK_STATS.applications_submitted} />
+              <StatCard icon={UserIcon} title="צפו בפרופיל שלי" value={MOCK_STATS.profile_viewed} />
             </div>
-        </div>
 
-        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard icon={Briefcase} title="משרות רלוונטיות" value={allJobs.length} /> {/* Changed to allJobs.length */}
-            <StatCard icon={Eye} title="צפו בקורות חיים שלי" value={MOCK_STATS.cv_viewed} />
-            <StatCard icon={FileText} title="מועמדויות שהגשתי" value={MOCK_STATS.applications_submitted} />
-            <StatCard icon={UserIcon} title="צפו בפרופיל שלי" value={MOCK_STATS.profile_viewed} />
-          </div>
-
-          {/* Notification Carousel */}
-          <Card className="bg-[#E7F2F7] shadow-none border-0 rounded-lg">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handleNextNotification}><ChevronRight className="w-6 h-6 text-blue-600" /></Button>
-                  <div className="text-center flex items-center gap-3 overflow-hidden">
-                    <p className="text-blue-800 font-semibold text-sm sm:text-base whitespace-nowrap">{MOCK_NOTIFICATIONS_SEEKER[currentNotificationIndex].message}</p>
-                    <div className="hidden sm:flex gap-1.5">{MOCK_NOTIFICATIONS_SEEKER.map((_, index) => (<div key={index} className={`w-2.5 h-2.5 rounded-full ${index === currentNotificationIndex ? 'bg-blue-600' : 'bg-gray-300'}`}/>))}</div>
+            {/* Notification Carousel */}
+            <Card className="bg-[#E7F2F7] shadow-none border-0 rounded-lg notification-carousel">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handleNextNotification}><ChevronRight className="w-6 h-6 text-blue-600" /></Button>
+                    <div className="text-center flex items-center gap-3 overflow-hidden">
+                      <p className="text-blue-800 font-semibold text-sm sm:text-base whitespace-nowrap">{MOCK_NOTIFICATIONS_SEEKER[currentNotificationIndex].message}</p>
+                      <div className="hidden sm:flex gap-1.5">{MOCK_NOTIFICATIONS_SEEKER.map((_, index) => (<div key={index} className={`w-2.5 h-2.5 rounded-full ${index === currentNotificationIndex ? 'bg-blue-600' : 'bg-gray-300'}`}/>))}</div>
+                    </div>
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handlePrevNotification}><ChevronLeft className="w-6 h-6 text-blue-600" /></Button>
                   </div>
-                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handlePrevNotification}><ChevronLeft className="w-6 h-6 text-blue-600" /></Button>
+                </CardContent>
+            </Card>
+
+            {/* Filter Toggle */}
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div className="relative w-full md:w-96 job-search-input">
+                  <Input placeholder="אפשר גם לחפש" className="pl-12 pr-4 py-2 border-gray-300 focus:border-blue-400 rounded-full h-11" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 </div>
-              </CardContent>
+                <div className="flex gap-2 bg-gray-100 p-1 rounded-full w-full md:w-auto job-filter-buttons">
+                  <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${jobFilter === 'viewed' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-transparent text-gray-700'}`} onClick={() => setJobFilter('viewed')}>משרות שצפיתי</Button>
+                  <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${jobFilter === 'new' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-transparent text-gray-700'}`} onClick={() => setJobFilter('new')}>משרות חדשות</Button>
+                </div>
+            </div>
+
+            {/* Jobs List */}
+            <div className="space-y-4 job-list">
+                {loading ? (
+                   <div className="text-center py-8 text-gray-500">טוען משרות...</div>
+                ) : displayedJobs.length > 0 ? ( // Changed to displayedJobs
+                    displayedJobs.map((job, index) => (
+                    <motion.div key={job.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
+                      <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
+                        <div className="flex items-center justify-between gap-4">
+                             <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">
+                              <img src={job.company_logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=random`} alt={job.company} className="w-full h-full object-cover" />
+                            </div>
+                            <div className="text-right">
+                                <h3 className="font-bold text-lg text-gray-900">{job.title}</h3>
+                                <p className="text-gray-600 text-sm">{job.company}</p>
+                                <div className="flex gap-4 text-xs text-gray-500 mt-1">
+                                    <span className="flex items-center gap-1"><MapPin className="w-3 h-3 ml-1"/>{job.location}</span>
+                                    <span className="flex items-center gap-1"><Briefcase className="w-3 h-3 ml-1"/>משרה מלאה</span>
+                                    <span className="flex items-center gap-1"><Clock className="w-3 h-3 ml-1"/>{job.start_date || 'מיידי'}</span>
+                                </div>
+                            </div>
+                            <div className="flex-1 text-right">
+                                <div className="text-sm text-gray-600 mb-1.5">{job.match_score || (Math.floor(Math.random() * 15) + 80)}% התאמה</div>
+                                <div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                                  <div className={`h-full transition-all duration-500 ${job.match_score >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${job.match_score || (Math.floor(Math.random() * 15) + 80)}%` }}></div>
+                                </div>
+                            </div>
+                            <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-28 view-job-button">
+                                <Link
+                                  to={createPageUrl(`JobDetailsSeeker?id=${job.id}`)}
+                                  onClick={() => {
+                                    // Track job view when user clicks to view details
+                                    if (user?.email && !user.isDemo) { // Only track if not a demo user
+                                      UserAnalytics.trackJobView(user.email, job);
+                                    }
+                                  }}
+                                >
+                                  לצפייה
+                                </Link>
+                            </Button>
+                        </div>
+                      </Card>
+                    </motion.div>
+                ))
+                ) : (
+                  // Updated empty state messages
+                  <div className="text-center py-8 text-gray-500">{jobFilter === 'new' ? 'אין משרות חדשות עבורך כרגע.' : 'עדיין לא צפית באף משרה.'}</div>
+                )}
+            </div>
           </Card>
-
-          {/* Filter Toggle */}
-          <div className="flex flex-col-reverse md:flex-row-reverse gap-4 items-center justify-between">
-              <div className="flex gap-2 bg-gray-100 p-1 rounded-full w-full md:w-auto">
-                <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${jobFilter === 'new' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-transparent text-gray-700'}`} onClick={() => setJobFilter('new')}>משרות חדשות</Button>
-                <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${jobFilter === 'viewed' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-transparent text-gray-700'}`} onClick={() => setJobFilter('viewed')}>משרות שצפיתי</Button>
-              </div>
-              <div className="relative w-full md:w-96">
-                <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" /><Input placeholder="אפשר גם לחפש" className="pr-12 pl-4 py-2 border-gray-300 focus:border-blue-400 rounded-full h-11" />
-              </div>
-          </div>
-
-          {/* Jobs List */}
-          <div className="space-y-4">
-              {loading ? (
-                 <div className="text-center py-8 text-gray-500">טוען משרות...</div>
-              ) : displayedJobs.length > 0 ? ( // Changed to displayedJobs
-                  displayedJobs.map((job, index) => (
-                  <motion.div key={job.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
-                    <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
-                      <div className="flex items-center justify-between gap-4">
-                          <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-28">
-                              <Link
-                                to={createPageUrl(`JobDetailsSeeker?id=${job.id}`)}
-                                onClick={() => {
-                                  // Track job view when user clicks to view details
-                                  if (user?.email && !user.isDemo) { // Only track if not a demo user
-                                    UserAnalytics.trackJobView(user.email, job);
-                                  }
-                                }}
-                              >
-                                לצפייה
-                              </Link>
-                          </Button>
-                          <div className="flex-1 text-right">
-                              <div className="text-sm text-gray-600 mb-1.5">{job.match_score || (Math.floor(Math.random() * 15) + 80)}% התאמה</div>
-                              <div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                                <div className={`h-full transition-all duration-500 ${job.match_score >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${job.match_score || (Math.floor(Math.random() * 15) + 80)}%` }}></div>
-                              </div>
-                          </div>
-                          <div className="text-right">
-                              <h3 className="font-bold text-lg text-gray-900">{job.title}</h3>
-                              <p className="text-gray-600 text-sm">{job.company}</p>
-                              <div className="flex gap-4 text-xs text-gray-500 mt-1">
-                                  <span className="flex items-center gap-1"><MapPin className="w-3 h-3"/>{job.location}</span>
-                                  <span className="flex items-center gap-1"><Briefcase className="w-3 h-3"/>משרה מלאה</span>
-                                  <span className="flex items-center gap-1"><Clock className="w-3 h-3"/>{job.start_date || 'מיידי'}</span>
-                              </div>
-                          </div>
-                          <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">
-                            <img src={job.company_logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=random`} alt={job.company} className="w-full h-full object-cover" />
-                          </div>
-                      </div>
-                    </Card>
-                  </motion.div>
-              ))
-              ) : (
-                // Updated empty state messages
-                <div className="text-center py-8 text-gray-500">{jobFilter === 'new' ? 'אין משרות חדשות עבורך כרגע.' : 'עדיין לא צפית באף משרה.'}</div>
-              )}
-          </div>
-        </Card>
+        </div>
       </div>
-    </div>
+
+      <JobSeekerGuide 
+        isActive={showGuide}
+        onComplete={handleGuideComplete}
+        onSkip={handleGuideSkip}
+      />
+    </>
   );
 };
 
@@ -260,6 +306,45 @@ const EmployerDashboard = ({ user }) => {
   const [notifications, setNotifications] = useState([]);
   const [candidateFilter, setCandidateFilter] = useState('new');
   const [loading, setLoading] = useState(true);
+  const [showOnboardingHint, setShowOnboardingHint] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const location = useLocation();
+
+  // New state for employer analytics
+  const [employerStats, setEmployerStats] = useState(null);
+  const [employerActivity, setEmployerActivity] = useState([]);
+  
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('onboarding') === 'complete') {
+      setShowOnboardingHint(true);
+      // Hide hint after a few seconds
+      const timer = setTimeout(() => setShowOnboardingHint(false), 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [location]);
+
+  // Check if user needs onboarding guide
+  useEffect(() => {
+    const hasSeenGuide = localStorage.getItem(`employer_guide_${user?.email}`);
+    if (!hasSeenGuide && !user?.isDemo) {
+      setShowGuide(true);
+    }
+  }, [user]);
+
+  const handleGuideComplete = () => {
+    setShowGuide(false);
+    if (user?.email) {
+      localStorage.setItem(`employer_guide_${user.email}`, 'completed');
+    }
+  };
+
+  const handleGuideSkip = () => {
+    setShowGuide(false);
+    if (user?.email) {
+      localStorage.setItem(`employer_guide_${user.email}`, 'skipped');
+    }
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -268,16 +353,21 @@ const EmployerDashboard = ({ user }) => {
         let notificationsData = [];
         let candidatesData = [];
         let viewedCandidatesData = [];
+        let dashboardData = {};
 
         // Try to fetch real data first
         if (!user?.isDemo) {
           try {
-            [jobsData, notificationsData, viewedCandidatesData, candidatesData] = await Promise.all([
+            [jobsData, notificationsData, viewedCandidatesData, candidatesData, dashboardData] = await Promise.all([
               Job.list("-created_date", 20),
               Notification.filter({ is_read: false }, "-created_date", 5),
               CandidateView.filter({ viewer_email: user.email }, "-created_date", 50),
-              User.filter({ user_type: 'job_seeker' }, "-created_date", 10)
+              User.filter({ user_type: 'job_seeker' }, "-created_date", 10),
+              EmployerAnalytics.getDashboardData(user.email) // Get comprehensive analytics data
             ]);
+            
+            setEmployerStats(dashboardData.stats);
+            setEmployerActivity(dashboardData.recentActivity);
           } catch (error) {
             console.log("Failed to fetch real data for employer, using demo data");
           }
@@ -294,6 +384,46 @@ const EmployerDashboard = ({ user }) => {
               created_date: new Date().toISOString()
             }
           ];
+          
+          // Demo stats for demo users
+          setEmployerStats({
+            total_jobs_created: 3,
+            total_jobs_published: 2,
+            total_job_views: 45,
+            total_applications_received: 8,
+            total_candidates_viewed: 12,
+            conversion_rate: 17.8,
+            jobs_filled: 1,
+            jobs_filled_via_metch: 0
+          });
+          
+          setEmployerActivity([
+            {
+              id: "demo-1",
+              action_type: "job_create",
+              job_title: "מנהל מכירות",
+              created_date: new Date(Date.now() - 86400000).toISOString() // 1 day ago
+            },
+            {
+              id: "demo-2", 
+              action_type: "candidate_view",
+              candidate_name: "שרה לוי",
+              created_date: new Date(Date.now() - 3600000).toISOString() // 1 hour ago
+            },
+            {
+              id: "demo-3",
+              action_type: "job_publish",
+              job_title: "מפתח Fullstack",
+              created_date: new Date(Date.now() - 2 * 86400000).toISOString() // 2 days ago
+            },
+            {
+              id: "demo-4",
+              action_type: "application_received",
+              job_title: "מנהל מכירות",
+              candidate_name: "דניאל כהן",
+              created_date: new Date(Date.now() - 3 * 3600000).toISOString() // 3 hours ago
+            }
+          ]);
         }
 
         if (notificationsData.length === 0) {
@@ -377,90 +507,181 @@ const EmployerDashboard = ({ user }) => {
   }
 
   return (
-    <div className="p-4 md:p-6" dir="rtl">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-right px-2">
-          <h1 className="text-xl font-bold text-gray-900 mb-2">👋 היי {user.full_name?.split(' ')[0] || 'רפאל'}!</h1>
-        </motion.div>
-        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              <Card className="col-span-2 sm:col-span-1 bg-[#84CC9E] text-white border-0 shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl">
-                <CardContent className="p-4 sm:p-6 text-center flex flex-col items-center justify-center h-full">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/30 rounded-full flex items-center justify-center mx-auto mb-3"><Plus className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
-                  <h3 className="font-bold text-base sm:text-lg">פרסום משרה חדשה</h3>
-                </CardContent>
-              </Card>
-              <Card className="bg-white border border-gray-200/80 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
-                <CardContent className="p-4 sm:p-6 text-center">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4"><Eye className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" /></div>
-                  <div className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">10</div><p className="text-gray-600 font-medium text-sm sm:text-base">צפיות במשרות</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-white border border-gray-200/80 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
-                <CardContent className="p-4 sm:p-6 text-center">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4"><Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" /></div>
-                  <div className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">3</div><p className="text-gray-600 font-medium text-sm sm:text-base">מועמדויות שהתקבלו</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-white border border-gray-200/80 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
-                <CardContent className="p-4 sm:p-6 text-center">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4"><TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" /></div>
-                  <div className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">6</div><p className="text-gray-600 font-medium text-sm sm:text-base">משרות פעילות</p>
-                </CardContent>
-              </Card>
-            </div>
-            <Card className="bg-[#E7F2F7] shadow-none border-0 rounded-lg">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handleNextNotification} disabled={notifications.length <= 1}><ChevronRight className="w-6 h-6 text-blue-600" /></Button>
-                  <div className="text-center flex items-center gap-3 overflow-hidden">
-                    <p className="text-blue-800 font-semibold text-sm sm:text-base whitespace-nowrap">{notifications[currentNotificationIndex]?.message || "אין התראות חדשות"}</p>
-                    {notifications.length > 1 && (<div className="hidden sm:flex gap-1.5">{notifications.map((_, index) => (<div key={index} className={`w-2.5 h-2.5 rounded-full ${index === currentNotificationIndex ? 'bg-blue-600' : 'bg-gray-300'}`}/>))}</div>)}
+    <>
+      <div className="p-4 md:p-6" dir="rtl">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-right px-2 flex justify-between items-center">
+            <h1 className="text-xl font-bold text-gray-900 mb-2">👋 היי {user.full_name?.split(' ')[0] || 'רפאל'}!</h1>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowGuide(true)}
+              className="rounded-full px-3 py-1 text-xs"
+            >
+              מדריך
+              <HelpCircle className="w-3 h-3 mr-1" />
+            </Button>
+          </motion.div>
+          <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
+              {/* Enhanced Stats Grid with Real Analytics */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 employer-stats">
+                <EmployerStatsCard
+                  icon={Eye}
+                  title="צפיות במשרות"
+                  value={employerStats?.total_job_views || 10}
+                  color="bg-blue-50 text-blue-600"
+                />
+                <EmployerStatsCard
+                  icon={Users}
+                  title="מועמדויות שהתקבלו"
+                  value={employerStats?.total_applications_received || 3}
+                  color="bg-green-50 text-green-600"
+                />
+                <EmployerStatsCard
+                  icon={TrendingUp}
+                  title="משרות פעילות"
+                  value={employerStats?.total_jobs_published || 6}
+                  color="bg-purple-50 text-purple-600"
+                />
+                <Card className="relative col-span-2 sm:col-span-1 bg-[#84CC9E] text-white border-0 shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl create-job-card">
+                  <Link to={createPageUrl("CreateJob")}>
+                    <CardContent className="p-4 sm:p-6 text-center flex flex-col items-center justify-center h-full">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/30 rounded-full flex items-center justify-center mx-auto mb-3"><Plus className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
+                      <h3 className="font-bold text-base sm:text-lg">פרסום משרה חדשה</h3>
+                    </CardContent>
+                  </Link>
+                  {showOnboardingHint && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="absolute -top-14 left-1/2 -translate-x-1/2 w-max bg-gray-800 text-white text-sm font-semibold py-2 px-4 rounded-lg shadow-lg"
+                    >
+                      כאן יוצרים משרה חדשה
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-800"></div>
+                    </motion.div>
+                  )}
+                </Card>
+              </div>
+
+              {/* Additional Analytics Row */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                <EmployerStatsCard
+                  icon={Users}
+                  title="מועמדים שנצפו"
+                  value={employerStats?.total_candidates_viewed || 12}
+                  subtitle="פרופילים ייחודיים"
+                  color="bg-indigo-50 text-indigo-600"
+                />
+                <EmployerStatsCard
+                  icon={TrendingUp}
+                  title="אחוז המרה"
+                  value={`${employerStats?.conversion_rate || 17.8}%`}
+                  subtitle="צפיות למועמדויות"
+                  color="bg-yellow-50 text-yellow-600"
+                />
+                <EmployerStatsCard
+                  icon={CheckCircle}
+                  title="משרות שאוישו"
+                  value={(employerStats?.jobs_filled || 0) + (employerStats?.jobs_filled_via_metch || 0)}
+                  subtitle={`${employerStats?.jobs_filled_via_metch || 0} דרך Metch`}
+                  color="bg-green-50 text-green-600"
+                />
+              </div>
+
+              <Card className="bg-[#E7F2F7] shadow-none border-0 rounded-lg notification-carousel">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handleNextNotification} disabled={notifications.length <= 1}><ChevronRight className="w-6 h-6 text-blue-600" /></Button>
+                    <div className="text-center flex items-center gap-3 overflow-hidden">
+                      <p className="text-blue-800 font-semibold text-sm sm:text-base whitespace-nowrap">{notifications[currentNotificationIndex]?.message || "אין התראות חדשות"}</p>
+                      {notifications.length > 1 && (<div className="hidden sm:flex gap-1.5">{notifications.map((_, index) => (<div key={index} className={`w-2.5 h-2.5 rounded-full ${index === currentNotificationIndex ? 'bg-blue-600' : 'bg-gray-300'}`}/>))}</div>)}
+                    </div>
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handlePrevNotification} disabled={notifications.length <= 1}><ChevronLeft className="w-6 h-6 text-blue-600" /></Button>
                   </div>
-                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handlePrevNotification} disabled={notifications.length <= 1}><ChevronLeft className="w-6 h-6 text-blue-600" /></Button>
+                </CardContent>
+              </Card>
+
+              {/* Activity Feed */}
+              <EmployerActivityFeed activities={employerActivity} />
+
+              <div className="flex flex-col md:flex-row gap-4 items-center justify-between candidate-filter-buttons">
+                <div className="relative w-full md:w-96 candidate-search-input">
+                   <Input placeholder="אפשר גם לחפש" className="pl-12 pr-4 py-2 border-gray-300 focus:border-blue-400 rounded-full h-11" />
+                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 </div>
-              </CardContent>
-            </Card>
-            <div className="flex flex-col-reverse md:flex-row-reverse gap-4 items-center justify-between">
-              <div className="flex gap-2 w-full md:w-auto">
-                <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${candidateFilter === 'new' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`} onClick={() => setCandidateFilter('new')}>מועמדים חדשים</Button>
-                <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${candidateFilter === 'watched' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`} onClick={() => setCandidateFilter('watched')}>מועמדים שצפיתי</Button>
+                <div className="flex gap-2 w-full md:w-auto">
+                  <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${candidateFilter === 'watched' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`} onClick={() => setCandidateFilter('watched')}>מועמדים שצפיתי</Button>
+                  <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${candidateFilter === 'new' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`} onClick={() => setCandidateFilter('new')}>מועמדים חדשים</Button>
+                </div>
               </div>
-              <div className="relative w-full md:w-96">
-                <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" /><Input placeholder="אפשר גם לחפש" className="pr-12 pl-4 py-2 border-gray-300 focus:border-blue-400 rounded-full h-11" />
+              <div className="space-y-4 candidate-list">
+                {filteredCandidates.length > 0 ? (filteredCandidates.map((candidate, index) => { const match = Math.floor(Math.random() * 24) + 75; return (
+                    <motion.div key={candidate.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
+                      <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl">
+                        <CardContent className="p-4">
+                          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                            <div className="flex items-center gap-4 self-start md:self-center">
+                               <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0"><div className="w-full h-full bg-blue-200 flex items-center justify-center"><UserIcon className="w-8 h-8 text-blue-500"/></div></div>
+                               <div className="text-right"><h3 className="font-bold text-lg text-gray-900">{candidate.full_name}</h3><p className="text-gray-600">{candidate.experience_level?.replace('_', ' ')}</p></div>
+                            </div>
+                            <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full md:w-auto">
+                              <div className="flex flex-wrap gap-2 justify-center sm:justify-start">{candidate.skills?.slice(0, 3).map((skill, i) => (<Badge key={i} variant="outline" className="border-blue-200 text-blue-700 bg-blue-50/50 text-xs">{skill}</Badge>))}</div>
+                              <div className="w-full sm:w-48 text-right"><div className="text-sm text-gray-600 mb-1.5">{match}% התאמה</div><div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden"><div className={`h-full transition-all duration-500 ${match >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${match}%` }}></div></div></div>
+                              <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-full sm:w-auto view-candidate-button"><Link to={createPageUrl(`CandidateProfile?id=${candidate.id}`)} onClick={() => handleViewCandidate(candidate)}>לצפייה</Link></Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  );})) : (<div className="text-center py-8"><p className="text-gray-600">{candidateFilter === 'new' ? 'אין מועמדים חדשים זמינים כרגע.' : 'לא צפית במועמדים עדיין.'}</p></div>)
+                }
               </div>
-            </div>
-            <div className="space-y-4">
-              {filteredCandidates.length > 0 ? (filteredCandidates.map((candidate, index) => { const match = Math.floor(Math.random() * 24) + 75; return (
-                  <motion.div key={candidate.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
-                    <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl">
-                      <CardContent className="p-4">
-                        <div className="flex flex-col-reverse gap-4 md:flex-row md:items-center md:justify-between">
-                          <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full md:w-auto">
-                            <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-full sm:w-auto"><Link to={createPageUrl(`CandidateProfile?id=${candidate.id}`)} onClick={() => handleViewCandidate(candidate)}>לצפייה</Link></Button>
-                            <div className="w-full sm:w-48 text-right"><div className="text-sm text-gray-600 mb-1.5">{match}% התאמה</div><div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden"><div className={`h-full transition-all duration-500 ${match >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${match}%` }}></div></div></div>
-                            <div className="flex flex-wrap gap-2 justify-center sm:justify-start">{candidate.skills?.slice(0, 3).map((skill, i) => (<Badge key={i} variant="outline" className="border-blue-200 text-blue-700 bg-blue-50/50 text-xs">{skill}</Badge>))}</div>
-                          </div>
-                          <div className="flex items-center gap-4 self-end md:self-center">
-                            <div className="text-right"><h3 className="font-bold text-lg text-gray-900">{candidate.full_name}</h3><p className="text-gray-600">{candidate.experience_level?.replace('_', ' ')}</p></div>
-                            <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0"><div className="w-full h-full bg-blue-200 flex items-center justify-center"><UserIcon className="w-8 h-8 text-blue-500"/></div></div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                );})) : (<div className="text-center py-8"><p className="text-gray-600">{candidateFilter === 'new' ? 'אין מועמדים חדשים זמינים כרגע.' : 'לא צפית במועמדים עדיין.'}</p></div>)
-              }
-            </div>
-        </Card>
+          </Card>
+        </div>
       </div>
-    </div>
+
+      <EmployerGuide 
+        isActive={showGuide}
+        onComplete={handleGuideComplete}
+        onSkip={handleGuideSkip}
+      />
+    </>
   );
 };
 
 // --- MAIN DASHBOARD ROUTER ---
 export default function Dashboard() {
-  const { user, loading } = useUser();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await User.me();
+        
+        // Onboarding Redirect for new employers
+        if (userData && userData.user_type === 'employer' && !userData.company_name) {
+          navigate(createPageUrl('CompanyProfileCompletion'));
+          return; // Stop further processing
+        }
+        
+        setUser(userData);
+      } catch (e) {
+        console.log("User not authenticated, using demo mode");
+        // Fallback demo user
+        setUser({
+          user_type: 'job_seeker',
+          full_name: 'דניאל (דוגמה)',
+          email: 'demo@example.com',
+          isDemo: true
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, [navigate]);
 
   if (loading) {
     return (
@@ -471,6 +692,8 @@ export default function Dashboard() {
   }
 
   if (!user) {
+    // This case should ideally not be reached if the catch block always sets a demo user on failure.
+    // However, keeping it as a safeguard.
     return <div className="p-8 text-center" dir="rtl">נראה שאתה לא מחובר. <Button onClick={() => User.login()}>התחבר</Button></div>;
   }
 
@@ -478,6 +701,10 @@ export default function Dashboard() {
   if (user.user_type === 'job_seeker') {
     return <JobSeekerDashboard user={user} />;
   } else {
+    // If user_type is 'employer' or any other type not 'job_seeker'
+    // For demo purposes, if the initial demo user is a job_seeker, this won't be hit immediately.
+    // If you need an employer demo user, you could adjust the catch block or add logic to switch.
+    // For now, assuming if `user.isDemo` it's a job seeker unless explicitly changed elsewhere.
     return <EmployerDashboard user={user} />;
   }
 }

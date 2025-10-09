@@ -4,139 +4,159 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   MapPin, 
-  DollarSign, 
   Clock, 
   Building2, 
-  Star, 
-  Users,
-  Bookmark
+  Eye,
+  CheckCircle,
+  XCircle,
+  Pause
 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
-import { format } from "date-fns";
 
-const categoryColors = {
-  technology: "bg-blue-100 text-blue-700",
-  marketing: "bg-purple-100 text-purple-700", 
-  sales: "bg-green-100 text-green-700",
-  design: "bg-pink-100 text-pink-700",
-  finance: "bg-yellow-100 text-yellow-700",
-  operations: "bg-orange-100 text-orange-700",
-  hr: "bg-indigo-100 text-indigo-700",
-  customer_service: "bg-teal-100 text-teal-700",
-  other: "bg-gray-100 text-gray-700"
+const STATUS_ICONS = {
+  filled: CheckCircle,
+  filled_via_metch: CheckCircle,
+  closed: XCircle,
+  paused: Pause,
+  active: null,
+  draft: null
 };
 
-export default function JobCard({ job, index, onApply }) {
-  const categoryColor = categoryColors[job.category] || categoryColors.other;
+const STATUS_COLORS = {
+  filled: "text-green-600 bg-green-100",
+  filled_via_metch: "text-purple-600 bg-purple-100", 
+  closed: "text-red-600 bg-red-100",
+  paused: "text-yellow-600 bg-yellow-100",
+  active: "text-green-600 bg-green-100",
+  draft: "text-gray-600 bg-gray-100"
+};
+
+const STATUS_LABELS = {
+  filled: "אוישה",
+  filled_via_metch: "אוישה דרך Metch",
+  closed: "נסגרה",
+  paused: "מושהית",
+  active: "פעילה",
+  draft: "טיוטה"
+};
+
+export default function JobCard({ job, onView, userType = "job_seeker", className = "" }) {
+  const isUnavailable = ['filled', 'filled_via_metch', 'closed'].includes(job.status);
+  const StatusIcon = STATUS_ICONS[job.status];
   
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
+      className={`${className}`}
     >
-      <Card className="glass-effect shadow-medium border-0 hover:shadow-lg transition-all duration-300 group">
-        <CardContent className="p-6">
-          <div className="flex items-start gap-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-md flex-shrink-0">
-              <Building2 className="w-8 h-8 text-white" />
-            </div>
-            
-            <div className="flex-1 space-y-4">
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                    {job.title}
-                  </h3>
-                  <p className="text-lg font-semibold text-gray-700">{job.company}</p>
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {job.location}
-                      {job.remote_friendly && (
-                        <Badge variant="outline" className="ml-2 text-xs border-green-200 text-green-700">
-                          Remote OK
-                        </Badge>
-                      )}
-                    </div>
-                    {(job.salary_min || job.salary_max) && (
-                      <div className="flex items-center gap-1">
-                        <DollarSign className="w-4 h-4" />
-                        {job.salary_min && job.salary_max 
-                          ? `$${job.salary_min.toLocaleString()} - $${job.salary_max.toLocaleString()}`
-                          : job.salary_min 
-                            ? `From $${job.salary_min.toLocaleString()}`
-                            : `Up to $${job.salary_max?.toLocaleString()}`
-                        }
-                      </div>
+      <Card className={`bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl ${
+        isUnavailable ? 'opacity-75 grayscale-[30%]' : ''
+      }`}>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between gap-4">
+            {/* Action Button */}
+            <div className="flex flex-col gap-2">
+              {userType === "job_seeker" ? (
+                <>
+                  <Button 
+                    asChild 
+                    disabled={isUnavailable}
+                    className={`px-5 py-2 rounded-full font-bold w-28 ${
+                      isUnavailable 
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300' 
+                        : 'bg-[#84CC9E] hover:bg-green-500 text-white'
+                    }`}
+                  >
+                    {isUnavailable ? (
+                      <span>לא זמין</span>
+                    ) : (
+                      <Link to={createPageUrl(`JobDetailsSeeker?id=${job.id}`)} onClick={onView}>
+                        לצפייה
+                      </Link>
                     )}
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      {job.employment_type?.replace('_', ' ')}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" className="hover:bg-blue-50">
-                    <Bookmark className="w-4 h-4" />
                   </Button>
-                </div>
-              </div>
+                  {isUnavailable && (
+                    <span className="text-xs text-gray-500 text-center">
+                      {STATUS_LABELS[job.status]}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold">
+                  <Link to={createPageUrl(`JobDetails?id=${job.id}`)}>
+                    <Eye className="w-4 h-4 ml-2" />
+                    צפייה
+                  </Link>
+                </Button>
+              )}
+            </div>
 
-              <p className="text-gray-600 leading-relaxed">
-                {job.description.length > 200 
-                  ? `${job.description.substring(0, 200)}...` 
-                  : job.description
-                }
-              </p>
-
-              <div className="flex flex-wrap gap-2">
-                <Badge className={categoryColor}>
-                  {job.category?.replace('_', ' ')}
-                </Badge>
-                <Badge variant="outline" className="border-blue-200 text-blue-700">
-                  {job.experience_level?.replace('_', ' ')}
-                </Badge>
-                {job.skills_required?.slice(0, 3).map((skill, i) => (
-                  <Badge key={i} variant="secondary" className="bg-gray-100 text-gray-700">
-                    {skill}
-                  </Badge>
-                ))}
-                {job.skills_required?.length > 3 && (
-                  <Badge variant="secondary" className="bg-gray-100 text-gray-700">
-                    +{job.skills_required.length - 3} more
-                  </Badge>
+            {/* Job Info */}
+            <div className="flex-1 text-right">
+              {userType === "job_seeker" && (
+                <>
+                  <div className="text-sm text-gray-600 mb-1.5">
+                    {job.match_score || (Math.floor(Math.random() * 15) + 80)}% התאמה
+                  </div>
+                  <div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden mb-3">
+                    <div 
+                      className={`h-full transition-all duration-500 ${
+                        (job.match_score || 85) >= 80 ? 'bg-green-400' : 'bg-orange-400'
+                      } ${isUnavailable ? 'opacity-50' : ''}`} 
+                      style={{ width: `${job.match_score || (Math.floor(Math.random() * 15) + 80)}%` }}
+                    ></div>
+                  </div>
+                </>
+              )}
+              
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className={`font-bold text-lg ${isUnavailable ? 'text-gray-500' : 'text-gray-900'}`}>
+                  {job.title}
+                </h3>
+                {StatusIcon && (
+                  <StatusIcon className={`w-4 h-4 ${STATUS_COLORS[job.status].split(' ')[0]}`} />
                 )}
               </div>
-
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <Users className="w-4 h-4" />
-                    {job.applications_count || 0} applicants
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    Posted {format(new Date(job.created_date), "MMM d")}
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <Button 
-                    variant="outline" 
-                    className="border-blue-200 hover:bg-blue-50"
-                  >
-                    View Details
-                  </Button>
-                  <Button 
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all duration-300"
-                    onClick={() => onApply(job)}
-                  >
-                    Apply Now
-                  </Button>
-                </div>
+              
+              <p className={`text-sm mb-2 ${isUnavailable ? 'text-gray-400' : 'text-gray-600'}`}>
+                {job.company}
+              </p>
+              
+              <div className="flex gap-4 text-xs text-gray-500 flex-wrap">
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3"/>
+                  {job.location}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Building2 className="w-3 h-3"/>
+                  משרה מלאה
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3 h-3"/>
+                  {job.start_date || 'מיידי'}
+                </span>
               </div>
+
+              {/* Status Badge */}
+              {job.status !== 'active' && (
+                <div className="mt-2">
+                  <Badge className={`text-xs ${STATUS_COLORS[job.status]}`}>
+                    {STATUS_LABELS[job.status]}
+                  </Badge>
+                </div>
+              )}
+            </div>
+
+            {/* Company Logo */}
+            <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">
+              <img 
+                src={job.company_logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=random`} 
+                alt={job.company} 
+                className={`w-full h-full object-cover ${isUnavailable ? 'grayscale' : ''}`} 
+              />
             </div>
           </div>
         </CardContent>

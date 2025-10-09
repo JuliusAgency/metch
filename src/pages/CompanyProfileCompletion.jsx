@@ -1,239 +1,154 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { User } from "@/api/entities";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react"; // Added Sparkles
-import { motion, AnimatePresence } from "framer-motion";
-import { createPageUrl } from "@/utils";
-
-// Import step components
+import { ArrowLeft, ArrowRight, Loader2, CheckCircle } from "lucide-react";
 import CompanyDetailsStep from "@/components/company_profile/CompanyDetailsStep";
 import PackageSelectionStep from "@/components/company_profile/PackageSelectionStep";
 import PaymentStep from "@/components/company_profile/PaymentStep";
 import CompletionStep from "@/components/company_profile/CompletionStep";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
-const STEPS = ["בואו נתחיל", "בחירת מנוי", "תשלום", "השלמה"];
+const STEPS = ["פרטי חברה", "בחירת חבילה", "תשלום", "סיום"];
 
 export default function CompanyProfileCompletion() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [user, setUser] = useState(null);
-  const [formData, setFormData] = useState({
+  const [step, setStep] = useState(1);
+  const [companyData, setCompanyData] = useState({
     company_name: "",
-    phone: "",
-    cv_reception_email: "",
-    company_phone: "",
-    company_type: "",
+    company_type: "business",
     field_of_activity: "",
     main_address: "",
-    company_logo_url: "",
-    portfolio_url: "",
-    linkedin_url: "",
-    facebook_url: "",
-    instagram_url: "",
-    twitter_url: "",
-    bio: "",
-    selected_package: null,
-    payment_info: {}
+    cv_reception_email: "",
+    company_phone: "",
+    full_name: "",
+    phone: ""
+  });
+  const [packageData, setPackageData] = useState({
+    type: 'per_job',
+    quantity: 1,
+    price: 499
+  });
+  const [paymentData, setPaymentData] = useState({
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
+    holderName: "",
+    idNumber: ""
   });
   const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const user = await User.me();
+        setCompanyData(prev => ({
+          ...prev,
+          company_name: user.company_name || "",
+          company_type: user.company_type || "business",
+          field_of_activity: user.field_of_activity || "",
+          main_address: user.main_address || "",
+          cv_reception_email: user.cv_reception_email || user.email,
+          company_phone: user.company_phone || "",
+          full_name: user.full_name || "",
+          phone: user.phone || ""
+        }));
+      } catch (error) {
+        console.error("Error loading user data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
     loadUser();
   }, []);
 
-  const loadUser = async () => {
+  const handleSave = async () => {
+    setSaving(true);
     try {
-      const userData = await User.me();
-      setUser(userData);
-      setFormData(prev => ({
-        ...prev,
-        // Populate all fields from userData if they exist
-        company_name: userData.company_name || "",
-        phone: userData.phone || "",
-        cv_reception_email: userData.cv_reception_email || "",
-        company_phone: userData.company_phone || "",
-        company_type: userData.company_type || "",
-        field_of_activity: userData.field_of_activity || "",
-        main_address: userData.main_address || "",
-        company_logo_url: userData.company_logo_url || "",
-        portfolio_url: userData.portfolio_url || "",
-        linkedin_url: userData.linkedin_url || "",
-        facebook_url: userData.facebook_url || "",
-        instagram_url: userData.instagram_url || "",
-        twitter_url: userData.twitter_url || "",
-        bio: userData.bio || ""
-      }));
+      await User.updateMyUserData(companyData);
+      return true;
     } catch (error) {
-      console.error("Error loading user:", error);
+      console.error("Failed to save company data", error);
+      return false;
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  const nextStep = () => {
-    if (currentStep < STEPS.length) {
-      setCurrentStep(prev => prev + 1);
+  const nextStep = async () => {
+    if (step === 1) {
+      const saved = await handleSave();
+      if (!saved) return;
+    }
+    if (step < STEPS.length) {
+      setStep(prev => prev + 1);
     } else {
-      handleCompletion();
+      // Final step action
+      navigate(`${createPageUrl('Dashboard')}?onboarding=complete`);
     }
   };
 
   const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
+    if (step > 1) {
+      setStep(prev => prev - 1);
     }
   };
 
-  const handleCompletion = async () => {
-    setProcessing(true);
-    try {
-      await User.updateMyUserData({
-        // Save all form fields
-        company_name: formData.company_name,
-        phone: formData.phone,
-        cv_reception_email: formData.cv_reception_email,
-        company_phone: formData.company_phone,
-        company_type: formData.company_type,
-        field_of_activity: formData.field_of_activity,
-        main_address: formData.main_address,
-        company_logo_url: formData.company_logo_url,
-        portfolio_url: formData.portfolio_url,
-        linkedin_url: formData.linkedin_url,
-        facebook_url: formData.facebook_url,
-        instagram_url: formData.instagram_url,
-        twitter_url: formData.twitter_url,
-        bio: formData.bio
-      });
-      navigate(createPageUrl("Dashboard"));
-    } catch (error) {
-      console.error("Error saving profile:", error);
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const renderStep = () => {
-    switch(currentStep) {
+  const renderStepContent = () => {
+    switch(step) {
       case 1:
-        return <CompanyDetailsStep formData={formData} setFormData={setFormData} />;
+        return <CompanyDetailsStep companyData={companyData} setCompanyData={setCompanyData} />;
       case 2:
-        return <PackageSelectionStep formData={formData} setFormData={setFormData} />;
+        return <PackageSelectionStep packageData={packageData} setPackageData={setPackageData} />;
       case 3:
-        return <PaymentStep formData={formData} setFormData={setFormData} />;
+        return <PaymentStep paymentData={paymentData} setPaymentData={setPaymentData} />;
       case 4:
         return <CompletionStep />;
       default:
-        return <CompanyDetailsStep formData={formData} setFormData={setFormData} />;
+        return null;
     }
   };
 
   if (loading) {
-    return (
-      <div className="p-4 md:p-6 flex justify-center items-center h-[50vh]" dir="rtl">
-        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
-      </div>
-    );
+    return <div className="flex justify-center items-center h-screen"><Loader2 className="w-12 h-12 animate-spin text-blue-600" /></div>;
   }
-
-  const isLastStep = currentStep === STEPS.length;
-  const isPackageStep = currentStep === 2;
 
   return (
     <div className="p-4 md:p-6" dir="rtl">
-      <div className="max-w-4xl mx-auto">
+      <div className="w-[85vw] mx-auto">
         <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden p-8">
-          
-          {/* Progress Indicator */}
-          <div className="flex justify-center items-center mb-8">
-            <div className="flex items-center gap-4">
-              {STEPS.map((step, index) => {
-                const stepNumber = index + 1;
-                const isActive = stepNumber === currentStep;
-                const isCompleted = stepNumber < currentStep;
-                
-                return (
-                  <React.Fragment key={stepNumber}>
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
-                          isActive 
-                            ? 'bg-blue-600 text-white scale-110' 
-                            : isCompleted 
-                            ? 'bg-green-500 text-white' 
-                            : 'bg-gray-200 text-gray-600'
-                        }`}
-                      >
-                        {stepNumber}
-                      </div>
-                      <span className="text-xs text-gray-600 mt-1 text-center">{step}</span>
-                    </div>
-                    {stepNumber < STEPS.length && (
-                      <div className="w-16 h-1 rounded-full relative">
-                        <div className="absolute top-0 left-0 h-full w-full bg-gray-200 rounded-full" />
-                        <motion.div
-                          className="absolute top-0 left-0 h-full bg-blue-600 rounded-full"
-                          initial={{ width: 0 }}
-                          animate={{ width: isCompleted ? '100%' : isActive ? '50%' : '0%' }}
-                          transition={{ duration: 0.5 }}
-                        />
-                      </div>
-                    )}
-                  </React.Fragment>
-                );
-              })}
+          <div className="max-w-4xl mx-auto">
+            
+
+            <div className="my-10 min-h-[300px]">
+              {renderStepContent()}
+            </div>
+
+            <div className={`flex ${step === 1 ? 'justify-center' : 'justify-between'} items-center mt-12`}>
+              {step > 1 && (
+                <Button
+                  variant="outline"
+                  className="px-6 py-3 rounded-full font-bold text-lg disabled:opacity-50"
+                  onClick={prevStep}
+                  disabled={saving}
+                >
+                  חזור
+                  <ArrowRight className="w-5 h-5 mr-2" />
+                </Button>
+              )}
+              <Button
+                className={`bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg disabled:opacity-50 transition-transform duration-300 ${step === 1 ? 'px-14 py-4 text-xl transform hover:scale-105' : 'px-12 py-3 text-lg'}`}
+                onClick={nextStep}
+                disabled={saving}
+              >
+                {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : (step === STEPS.length ? 'מעבר לדאשבורד' : 'המשך')}
+                {!saving && <ArrowLeft className="w-5 h-5 ml-2" />}
+              </Button>
             </div>
           </div>
-
-          {/* Step Content */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.3 }}
-            >
-              {renderStep()}
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Navigation */}
-          {currentStep < STEPS.length && (
-            <div className={`flex ${currentStep === 1 ? 'justify-end' : 'justify-between'} items-center mt-12`}>
-              <Button
-                variant="outline"
-                onClick={prevStep}
-                disabled={currentStep === 1 || processing}
-                className={`px-6 py-3 rounded-full font-bold ${currentStep === 1 ? 'hidden' : ''}`}
-              >
-                <ArrowRight className="w-5 h-5 ml-2" />
-                חזור
-              </Button>
-              <Button
-                onClick={nextStep}
-                disabled={processing}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-3 rounded-full font-bold shadow-lg"
-              >
-                {processing ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : isPackageStep ? (
-                  <>
-                    <Sparkles className="w-5 h-5 ml-2" />
-                    למאצ' המושלם
-                  </>
-                ) : isLastStep ? (
-                  'סיום'
-                ) : (
-                  'המשך'
-                )}
-                {!processing && !isPackageStep && <ArrowLeft className="w-5 h-5 mr-2" />}
-              </Button>
-            </div>
-          )}
         </Card>
       </div>
     </div>

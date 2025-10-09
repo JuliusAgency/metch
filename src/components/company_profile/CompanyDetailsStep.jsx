@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,14 +35,14 @@ const ChipButton = ({ label, isSelected, onClick }) => (
     </Button>
 );
 
-export default function CompanyDetailsStep({ formData, setFormData }) {
+export default function CompanyDetailsStep({ companyData, setCompanyData }) {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setCompanyData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleCompanyTypeSelect = (typeId) => {
-        setFormData(prev => ({ ...prev, company_type: typeId }));
+        setCompanyData(prev => ({ ...prev, company_type: typeId }));
     };
 
     return (
@@ -61,20 +62,22 @@ export default function CompanyDetailsStep({ formData, setFormData }) {
                 {/* Info Inputs */}
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <InfoInput placeholder="שם מלא - איש גיוס" name="full_name" value={formData.full_name || ""} onChange={handleInputChange} />
-                        <InfoInput placeholder="שם חברה" name="company_name" value={formData.company_name || ""} onChange={handleInputChange} />
-                        <InfoInput placeholder="מספר טלפון - איש גיוס" name="phone" value={formData.phone || ""} onChange={handleInputChange} />
+                        <InfoInput placeholder="שם מלא - איש גיוס" name="full_name" value={companyData.full_name || ""} onChange={handleInputChange} />
+                        <InfoInput placeholder="שם חברה" name="company_name" value={companyData.company_name || ""} onChange={handleInputChange} />
+                        <InfoInput placeholder="מספר טלפון - איש גיוס" name="phone" value={companyData.phone || ""} onChange={handleInputChange} />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-                        <InfoInput placeholder="מייל לקבלת קו״ח" name="cv_reception_email" value={formData.cv_reception_email || ""} onChange={handleInputChange} />
-                        <div className="relative">
-                            <InfoInput placeholder="מספר טלפון" name="company_phone" value={formData.company_phone || ""} onChange={handleInputChange} />
-                            <Button type="button" className="absolute left-2 top-1/2 -translate-y-1/2 h-9 px-4 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200">
-                                שלח קוד
-                            </Button>
+                        <InfoInput placeholder="מייל לקבלת קו״ח" name="cv_reception_email" value={companyData.cv_reception_email || ""} onChange={handleInputChange} />
+                        <div>
+                            <div className="relative">
+                                <InfoInput placeholder="מספר טלפון" name="company_phone" value={companyData.company_phone || ""} onChange={handleInputChange} />
+                                <Button type="button" className="absolute left-2 top-1/2 -translate-y-1/2 h-9 px-4 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200">
+                                    שלח קוד
+                                </Button>
+                            </div>
+                            <p className="text-xs text-gray-500 hover:text-blue-600 cursor-pointer mt-1">לא קיבלת? שלח שוב</p>
                         </div>
                     </div>
-                     <p className="text-xs text-gray-500 hover:text-blue-600 cursor-pointer">לא קיבלת? שלח שוב</p>
                 </div>
 
                 {/* Company Type Selection */}
@@ -85,20 +88,22 @@ export default function CompanyDetailsStep({ formData, setFormData }) {
                             <ChipButton
                                 key={type.id}
                                 label={type.label}
-                                isSelected={formData.company_type === type.id}
+                                isSelected={companyData.company_type === type.id}
                                 onClick={() => handleCompanyTypeSelect(type.id)}
                             />
                         ))}
                     </div>
                 </div>
 
-                {/* Placeholder Chips */}
+                {/* Text Input Fields - Switched order */}
                 <div className="space-y-4">
-                     <div className="flex flex-wrap justify-center gap-4">
-                        <ChipButton label="כתובת ראשית" isSelected={false} onClick={() => {}} />
-                        <ChipButton label="תחום פעילות" isSelected={false} onClick={() => {}} />
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                        <InfoInput placeholder="תחום פעילות" name="field_of_activity" value={companyData.field_of_activity || ""} onChange={handleInputChange} />
+                        <div>
+                          <InfoInput placeholder="כתובת ראשית" name="main_address" value={companyData.main_address || ""} onChange={handleInputChange} />
+                          <p className="text-xs text-gray-500 text-right mt-1">* מיקום החברה יכול להיות שונה ממיקום המשרה</p>
+                        </div>
                      </div>
-                     <p className="text-xs text-gray-500">* מיקום החברה יכול להיות שונה ממיקום המשרה</p>
                 </div>
             </motion.div>
         </div>

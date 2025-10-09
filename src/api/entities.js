@@ -21,6 +21,12 @@ export const UserAction = base44.entities.UserAction;
 
 export const UserStats = base44.entities.UserStats;
 
+export const EmployerAction = base44.entities.EmployerAction;
+
+export const EmployerStats = base44.entities.EmployerStats;
+
+export const CV = base44.entities.CV;
+
 
 
 // auth sdk:

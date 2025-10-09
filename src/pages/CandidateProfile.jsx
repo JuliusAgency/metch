@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { User } from "@/api/entities";
@@ -16,12 +15,13 @@ import {
     Instagram,
     Linkedin,
     Twitter,
-    ChevronLeft,
+    ChevronRight,
     Loader2,
     Sparkles
 } from 'lucide-react';
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
+import { EmployerAnalytics } from "@/components/EmployerAnalytics";
 
 const MOCK_CANDIDATE = {
     id: 'mock_idan_cohen',
@@ -40,6 +40,30 @@ const MOCK_CANDIDATE = {
     instagram_url: "https://instagram.com",
     facebook_url: "https://facebook.com",
     preferred_job_types: ["full_time"]
+};
+
+// Additional mock candidates for different demo IDs
+const DEMO_CANDIDATES = {
+    'demo-candidate-1': {
+        ...MOCK_CANDIDATE,
+        id: 'demo-candidate-1',
+        full_name: "שרה לוי (דוגמה)",
+        email: "sarah.levi@example.com",
+        bio: "מפתחת Full Stack עם 3 שנים ניסיון בפיתוח יישומי web מורכבים. מתמחה ב-React, Node.js ו-MongoDB. אוהבת לעבוד בסביבה דינמית ולהתמודד עם אתגרים טכנולוגיים חדשים.",
+        looking_for_summary: "מחפשת תפקיד פיתוח Full Stack בחברת טכנולוגיה מובילה, עם דגש על פרויקטים מאתגרים וצוות מקצועי. מעדיפה חברות בתחום ה-SaaS או E-commerce.",
+        skills: ["React", "Node.js", "MongoDB", "TypeScript", "Docker"],
+        experience_level: "mid_level"
+    },
+    'demo-candidate-2': {
+        ...MOCK_CANDIDATE,
+        id: 'demo-candidate-2', 
+        full_name: "דניאל כהן (דוגמה)",
+        email: "daniel.cohen@example.com",
+        bio: "מעצב UX/UI עם 4 שנים ניסיון בעיצוב חוויות משתמש מרתקות ופונקציונליות. מתמחה בעיצוב מובייל, מערכות עיצוב ומחקר משתמשים.",
+        looking_for_summary: "מחפש תפקיד עיצוב UX/UI בחברה חדשנית שמעוניינת להשקיע בחוויית משתמש מעולה. מעדיף חברות בתחום הפינטק או הבריאות הדיגיטליים.",
+        skills: ["Figma", "Sketch", "User Research", "Prototyping", "Design Systems"],
+        experience_level: "senior_level"
+    }
 };
 
 export default function CandidateProfile() {
@@ -72,18 +96,64 @@ export default function CandidateProfile() {
     const loadCandidate = async (id) => {
         setLoading(true);
         try {
+            // Check if this is a demo/mock candidate ID
             if (id === MOCK_CANDIDATE.id) {
                 setCandidate(MOCK_CANDIDATE);
-            } else {
+                return;
+            }
+            
+            // Check other demo candidates
+            if (DEMO_CANDIDATES[id]) {
+                setCandidate(DEMO_CANDIDATES[id]);
+                return;
+            }
+            
+            // For any other demo-* or mock-* IDs, use a default mock candidate
+            if (id && (id.startsWith('demo-') || id.startsWith('mock-'))) {
+                setCandidate({
+                    ...MOCK_CANDIDATE,
+                    id: id,
+                    full_name: "מועמד דוגמה",
+                    email: `${id}@example.com`
+                });
+                return;
+            }
+            
+            // Try to fetch real candidate data only if it's not a demo ID
+            try {
                 const results = await User.filter({ id });
                 if (results.length > 0) {
                     setCandidate(results[0]);
                 } else {
-                    console.error("Candidate not found");
+                    console.log(`Candidate with ID ${id} not found, using default mock data`);
+                    // Fallback to mock data when candidate not found
+                    setCandidate({
+                        ...MOCK_CANDIDATE,
+                        id: id,
+                        full_name: "מועמד לא נמצא",
+                        email: `${id}@example.com`,
+                        bio: "פרופיל זה אינו זמין כרגע."
+                    });
                 }
+            } catch (error) {
+                console.log("Error fetching candidate data, using mock data:", error);
+                // Fallback to mock data on any database error
+                setCandidate({
+                    ...MOCK_CANDIDATE,
+                    id: id,
+                    full_name: "מועמד דוגמה",
+                    email: `${id}@example.com`
+                });
             }
         } catch (error) {
-            console.error("Error loading candidate:", error);
+            console.error("Error in loadCandidate:", error);
+            // Final fallback
+            setCandidate({
+                ...MOCK_CANDIDATE,
+                id: id || 'unknown',
+                full_name: "מועמד דוגמה",
+                email: `${id || 'unknown'}@example.com`
+            });
         } finally {
             setLoading(false);
         }
@@ -91,7 +161,7 @@ export default function CandidateProfile() {
 
     const handleStartConversation = async () => {
         if (!user || !candidate) return;
-        
+
         setCreatingConversation(true);
         try {
             // Check if conversation already exists
@@ -124,6 +194,21 @@ export default function CandidateProfile() {
             setCreatingConversation(false);
         }
     };
+
+    useEffect(() => {
+        const trackCandidateView = async () => {
+            if (candidate && user && !user.isDemo) {
+                try {
+                    await EmployerAnalytics.trackCandidateView(user.email, candidate);
+                } catch (error) {
+                    console.error("Error tracking candidate view:", error);
+                }
+            }
+        };
+
+        trackCandidateView();
+    }, [candidate, user]);
+
 
     if (loading) {
         return <div className="flex justify-center items-center h-screen"><Loader2 className="w-12 h-12 animate-spin text-blue-600" /></div>;
@@ -166,7 +251,7 @@ export default function CandidateProfile() {
                                 }}
                             ></div>
                             <Link to={createPageUrl("Dashboard")} className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-10">
-                                <ChevronLeft className="w-6 h-6 text-gray-800 rotate-180" />
+                                <ChevronRight className="w-6 h-6 text-gray-800" />
                             </Link>
                         </div>
 
@@ -183,9 +268,9 @@ export default function CandidateProfile() {
                                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{candidate.full_name}</h1>
 
                                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-                                    {candidate.preferred_job_types?.[0] && <Badge variant="outline" className="text-base border-gray-300"><Briefcase className="w-4 h-4 ml-2" />{jobTypeText[candidate.preferred_job_types[0]] || candidate.preferred_job_types[0]}</Badge>}
-                                    {candidate.preferred_location && <Badge variant="outline" className="text-base border-gray-300"><MapPin className="w-4 h-4 ml-2" />{candidate.preferred_location}</Badge>}
-                                    {candidate.availability && <Badge variant="outline" className="text-base border-gray-300"><Clock className="w-4 h-4 ml-2" />{availabilityText[candidate.availability] || candidate.availability}</Badge>}
+                                    {candidate.preferred_job_types?.[0] && <Badge variant="outline" className="text-base border-gray-300"><Briefcase className="w-4 h-4 mr-2" />{jobTypeText[candidate.preferred_job_types[0]] || candidate.preferred_job_types[0]}</Badge>}
+                                    {candidate.preferred_location && <Badge variant="outline" className="text-base border-gray-300"><MapPin className="w-4 h-4 mr-2" />{candidate.preferred_location}</Badge>}
+                                    {candidate.availability && <Badge variant="outline" className="text-base border-gray-300"><Clock className="w-4 h-4 mr-2" />{availabilityText[candidate.availability] || candidate.availability}</Badge>}
                                 </div>
 
                                 <div className="w-full max-w-md pt-4">
@@ -197,7 +282,7 @@ export default function CandidateProfile() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full text-right pt-6">
                                     <div className="bg-gray-50/80 p-6 rounded-xl border border-gray-200/80">
-                                        <h3 className="font-bold text-lg mb-3 flex items-center justify-end gap-2"><Sparkles className="w-5 h-5 text-yellow-500" />מה אני חושב</h3>
+                                        <h3 className="font-bold text-lg mb-3 flex items-center"><Sparkles className="w-5 h-5 text-yellow-500 ml-2" />מה אני חושב</h3>
                                         <p className="text-gray-700">{candidate.looking_for_summary || 'אין מידע זמין.'}</p>
                                     </div>
                                     <div className="bg-gray-50/80 p-6 rounded-xl border border-gray-200/80">
@@ -231,8 +316,8 @@ export default function CandidateProfile() {
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 pt-8 w-full sm:w-auto">
-                                    <Button 
-                                        size="lg" 
+                                    <Button
+                                        size="lg"
                                         className="w-full sm:w-auto px-6 sm:px-10 h-12 rounded-full bg-blue-600 hover:bg-blue-700 font-bold text-sm sm:text-base"
                                         onClick={handleStartConversation}
                                         disabled={creatingConversation}
@@ -242,7 +327,7 @@ export default function CandidateProfile() {
                                         ) : null}
                                         שלח הודעה למועמד
                                     </Button>
-                                    <a 
+                                    <a
                                         href={`mailto:${candidate.email}`}
                                         className="w-full sm:w-auto"
                                     >

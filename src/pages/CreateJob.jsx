@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
@@ -6,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Job } from '@/api/entities';
+import { User } from '@/api/entities'; // Added User import
 import Stepper from '@/components/job_creation/Stepper';
 import Step1Details from '@/components/job_creation/Step1Details';
 import Step2Screening from '@/components/job_creation/Step2Screening';
@@ -13,6 +13,7 @@ import Step3Company from '@/components/job_creation/Step3Company';
 import Step4Packages from '@/components/job_creation/Step4Packages';
 import Step5Preview from '@/components/job_creation/Step5Preview';
 import Success from '@/components/job_creation/Success';
+import { EmployerAnalytics } from "@/components/EmployerAnalytics"; // Added EmployerAnalytics import
 
 const STEPS = ["פרטי המשרה", "שאלון סינון", "פרטי החברה", "חבילות", "תצוגה מקדימה"];
 
@@ -84,13 +85,33 @@ export default function CreateJob() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      let createdOrUpdatedJob;
+      
       if (isEditing) {
         await Job.update(jobData.id, jobData);
-        setLastCreatedJob(jobData);
+        createdOrUpdatedJob = jobData;
+        
+        // Track job edit
+        const userData = await User.me();
+        if (!userData.isDemo) {
+          await EmployerAnalytics.trackJobEdit(userData.email, jobData);
+        }
       } else {
-        const createdJob = await Job.create(jobData);
-        setLastCreatedJob(createdJob);
+        createdOrUpdatedJob = await Job.create(jobData);
+        
+        // Track job creation
+        const userData = await User.me();
+        if (!userData.isDemo) {
+          await EmployerAnalytics.trackJobCreate(userData.email, createdOrUpdatedJob);
+          
+          // If job is being published (not draft), track publish action too
+          if (jobData.status === 'active') { // Assuming 'active' means published
+            await EmployerAnalytics.trackJobPublish(userData.email, createdOrUpdatedJob);
+          }
+        }
       }
+      
+      setLastCreatedJob(createdOrUpdatedJob);
       setIsSubmitted(true);
     } catch (error) {
       console.error(`Failed to ${isEditing ? 'update' : 'create'} job:`, error);
@@ -176,8 +197,8 @@ export default function CreateJob() {
                 onClick={prevStep}
                 disabled={step === 1 || isSubmitting}
               >
-                <ArrowRight className="w-5 h-5 ml-2" />
                 חזור
+                <ArrowRight className="w-5 h-5 mr-2" />
               </Button>
               <Button
                 className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-3 rounded-full font-bold text-lg shadow-lg"
@@ -185,7 +206,7 @@ export default function CreateJob() {
                 disabled={isSubmitting}
               >
                 {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : (isFinalStep ? (isEditing ? 'עדכן משרה' : 'סיום ופרסום') : 'המשך')}
-                {!isSubmitting && <ArrowLeft className="w-5 h-5 mr-2" />}
+                {!isSubmitting && <ArrowLeft className="w-5 h-5 ml-2" />}
               </Button>
             </div>
           )}

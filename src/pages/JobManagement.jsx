@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { User } from "@/api/entities";
 import { Job } from "@/api/entities";
@@ -142,6 +141,15 @@ export default function JobManagement() {
                 <div className="flex gap-2 bg-gray-100 p-1 rounded-full">
                   <Button
                     className={`px-6 py-2 rounded-full font-semibold transition-colors ${
+                    activeView === 'active' ?
+                    'bg-blue-600 hover:bg-blue-700 text-white' :
+                    'bg-transparent hover:bg-gray-200 text-gray-700'}`
+                    }
+                    onClick={() => setActiveView('active')}>
+                    משרות פעילות
+                  </Button>
+                  <Button
+                    className={`px-6 py-2 rounded-full font-semibold transition-colors ${
                     activeView === 'ended' ?
                     'bg-blue-600 hover:bg-blue-700 text-white' :
                     'bg-transparent hover:bg-gray-200 text-gray-700'}`
@@ -149,16 +157,6 @@ export default function JobManagement() {
                     onClick={() => setActiveView('ended')}>
 
                     משרות שהסתיימו
-                  </Button>
-                  <Button
-                    className={`px-6 py-2 rounded-full font-semibold transition-colors ${
-                    activeView === 'active' ?
-                    'bg-blue-600 hover:bg-blue-700 text-white' :
-                    'bg-transparent hover:bg-gray-200 text-gray-700'}`
-                    }
-                    onClick={() => setActiveView('active')}>
-
-                    משרות פעילות
                   </Button>
                 </div>
               </div>
@@ -180,6 +178,10 @@ export default function JobManagement() {
                         <div className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
                           {/* Top Section */}
                           <div className="flex items-center justify-between pb-4">
+                             <div className="flex items-center gap-2">
+                              <div className={`w-2.5 h-2.5 ${config.dotColor} rounded-full`}></div>
+                              <p className="font-semibold text-gray-800">{config.label}</p>
+                            </div>
                             <div className="flex items-center gap-4 text-gray-400">
                                <Switch
                               id={`status-switch-${job.id}`}
@@ -197,26 +199,22 @@ export default function JobManagement() {
                               onClick={() => handleDuplicateJob(job)} />
 
                             </div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-semibold text-gray-800">{config.label}</p>
-                              <div className={`w-2.5 h-2.5 ${config.dotColor} rounded-full`}></div>
-                            </div>
                           </div>
 
                           <div className="border-t border-gray-200"></div>
 
                           {/* Bottom Section */}
                           <div className="flex items-center justify-between pt-4">
-                            <Link to={createPageUrl(`JobDetails?id=${job.id}`)}>
-                                <Button className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold">
-                                  צפייה במשרה
-                                </Button>
-                            </Link>
                             <div className="text-right">
                               <h3 className="font-bold text-lg text-gray-900">{job.title}</h3>
                               <p className="text-gray-600">{job.location}</p>
                               <p className="text-sm text-gray-500 mt-1">פורסם {timeAgo}</p>
                             </div>
+                             <Link to={createPageUrl(`JobDetails?id=${job.id}`)}>
+                                <Button className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold">
+                                  צפייה במשרה
+                                </Button>
+                            </Link>
                           </div>
                         </div>
                       </motion.div>);
