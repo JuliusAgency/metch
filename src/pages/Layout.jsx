@@ -21,65 +21,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { User as UserEntity } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion"; // Added
+import { useUser } from "@/contexts/UserContext";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [user, setUser] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
+  const { user, loading, switchUserType } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Added
-
-  React.useEffect(() => {
-    loadUser();
-  }, []);
-
-  const loadUser = async () => {
-    try {
-      const userData = await UserEntity.me();
-      setUser(userData);
-    } catch (error) {
-      console.log("User not authenticated, using demo mode");
-      // Set default demo user for non-authenticated users
-      setUser({
-        user_type: 'employer',
-        full_name: 'רפאל (דוגמה)',
-        email: 'demo@example.com',
-        isDemo: true
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const switchUserType = async () => {
-    const newUserType = user?.user_type === 'employer' ? 'job_seeker' : 'employer';
-    const newUser = {
-      ...user,
-      user_type: newUserType,
-      full_name: newUserType === 'job_seeker' ? 'דניאל (מחפש עבודה)' : 'רפאל (מעסיק)',
-      isDemo: true
-    };
-
-    // Update local state immediately
-    setUser(newUser);
-
-    // Try to update in database only if not demo user
-    if (!user?.isDemo) {
-      try {
-        await UserEntity.updateMyUserData({ user_type: newUserType });
-      } catch (error) {
-        console.log("Could not update user type in database");
-      }
-    }
-
-    // Navigate to dashboard to show the correct view
-    navigate(createPageUrl("Dashboard"));
-
-    // Force a small delay to ensure state is updated
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
-  };
   
   const closeMenu = () => setIsMobileMenuOpen(false); // Added
 
@@ -172,7 +120,11 @@ export default function Layout({ children, currentPageName }) {
       {/* Debug Button - Moved to right for RTL */}
       <div className="fixed top-4 right-4 z-[60]">
         <Button
-          onClick={switchUserType}
+          onClick={() => {
+            switchUserType();
+            // Navigate to dashboard to show the correct view
+            navigate(createPageUrl("Dashboard"));
+          }}
           className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-full text-xs font-bold shadow-lg transition-all hover:scale-105"
         >
           DEMO: {isJobSeeker ? '👤 מחפש עבודה' : '🏢 מעסיק'}

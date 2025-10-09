@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { User } from "@/api/entities";
 import { Job } from "@/api/entities";
-import { JobApplication } from "@/api/entities";
 import { Notification } from "@/api/entities";
 import { CandidateView } from "@/api/entities";
 import { JobView } from "@/api/entities";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { useUser } from "@/contexts/UserContext";
 import {
   Plus,
   Eye,
@@ -22,7 +22,6 @@ import {
   User as UserIcon,
   Briefcase,
   FileText,
-  Sparkles,
   MapPin,
   Clock,
   Bell,
@@ -299,7 +298,6 @@ const JobSeekerDashboard = ({ user }) => {
 
 // --- EMPLOYER DASHBOARD COMPONENT ---
 const EmployerDashboard = ({ user }) => {
-  const [jobs, setJobs] = useState([]);
   const [viewedCandidates, setViewedCandidates] = useState([]);
   const [candidates, setCandidates] = useState([]);
   const [currentNotificationIndex, setCurrentNotificationIndex] = useState(0);
@@ -349,7 +347,6 @@ const EmployerDashboard = ({ user }) => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        let jobsData = [];
         let notificationsData = [];
         let candidatesData = [];
         let viewedCandidatesData = [];
@@ -358,8 +355,7 @@ const EmployerDashboard = ({ user }) => {
         // Try to fetch real data first
         if (!user?.isDemo) {
           try {
-            [jobsData, notificationsData, viewedCandidatesData, candidatesData, dashboardData] = await Promise.all([
-              Job.list("-created_date", 20),
+            [notificationsData, viewedCandidatesData, candidatesData, dashboardData] = await Promise.all([
               Notification.filter({ is_read: false }, "-created_date", 5),
               CandidateView.filter({ viewer_email: user.email }, "-created_date", 50),
               User.filter({ user_type: 'job_seeker' }, "-created_date", 10),
@@ -374,18 +370,34 @@ const EmployerDashboard = ({ user }) => {
         }
 
         // Use demo data if real data failed or for demo users
-        if (jobsData.length === 0) {
-          jobsData = [
+        if (notificationsData.length === 0) {
+          notificationsData = [
+            { id: "demo-notif-1", message: "יש לך 3 מועמדויות חדשות" },
+            { id: "demo-notif-2", message: "המשרה שלך קיבלה 15 צפיות השבוע" }
+          ];
+        }
+
+        if (candidatesData.length === 0) {
+          candidatesData = [
             {
-              id: "demo-employer-job-1",
-              title: "מנהל מכירות",
-              company: user?.company_name || "החברה שלי",
-              status: "active",
-              created_date: new Date().toISOString()
+              id: "demo-candidate-1",
+              full_name: "דניאל כהן",
+              email: "daniel@example.com",
+              experience_level: "mid_level",
+              skills: ["JavaScript", "React", "Node.js"]
+            },
+            {
+              id: "demo-candidate-2",
+              full_name: "שרה לוי",
+              email: "sarah@example.com",
+              experience_level: "senior_level",
+              skills: ["Marketing", "SEO", "Analytics"]
             }
           ];
-          
-          // Demo stats for demo users
+        }
+
+        // Demo stats for demo users
+        if (!user?.isDemo || !employerStats) {
           setEmployerStats({
             total_jobs_created: 3,
             total_jobs_published: 2,
@@ -426,33 +438,6 @@ const EmployerDashboard = ({ user }) => {
           ]);
         }
 
-        if (notificationsData.length === 0) {
-          notificationsData = [
-            { id: "demo-notif-1", message: "יש לך 3 מועמדויות חדשות" },
-            { id: "demo-notif-2", message: "המשרה שלך קיבלה 15 צפיות השבוע" }
-          ];
-        }
-
-        if (candidatesData.length === 0) {
-          candidatesData = [
-            {
-              id: "demo-candidate-1",
-              full_name: "דניאל כהן",
-              email: "daniel@example.com",
-              experience_level: "mid_level",
-              skills: ["JavaScript", "React", "Node.js"]
-            },
-            {
-              id: "demo-candidate-2",
-              full_name: "שרה לוי",
-              email: "sarah@example.com",
-              experience_level: "senior_level",
-              skills: ["Marketing", "SEO", "Analytics"]
-            }
-          ];
-        }
-
-        setJobs(jobsData);
         setNotifications(notificationsData);
         setViewedCandidates(viewedCandidatesData);
         setCandidates(candidatesData);
@@ -651,37 +636,15 @@ const EmployerDashboard = ({ user }) => {
 
 // --- MAIN DASHBOARD ROUTER ---
 export default function Dashboard() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useUser();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userData = await User.me();
-        
-        // Onboarding Redirect for new employers
-        if (userData && userData.user_type === 'employer' && !userData.company_name) {
-          navigate(createPageUrl('CompanyProfileCompletion'));
-          return; // Stop further processing
-        }
-        
-        setUser(userData);
-      } catch (e) {
-        console.log("User not authenticated, using demo mode");
-        // Fallback demo user
-        setUser({
-          user_type: 'job_seeker',
-          full_name: 'דניאל (דוגמה)',
-          email: 'demo@example.com',
-          isDemo: true
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUser();
-  }, [navigate]);
+    // Onboarding Redirect for new employers
+    if (user && user.user_type === 'employer' && !user.company_name) {
+      navigate(createPageUrl('CompanyProfileCompletion'));
+    }
+  }, [user, navigate]);
 
   if (loading) {
     return (
@@ -692,8 +655,6 @@ export default function Dashboard() {
   }
 
   if (!user) {
-    // This case should ideally not be reached if the catch block always sets a demo user on failure.
-    // However, keeping it as a safeguard.
     return <div className="p-8 text-center" dir="rtl">נראה שאתה לא מחובר. <Button onClick={() => User.login()}>התחבר</Button></div>;
   }
 
