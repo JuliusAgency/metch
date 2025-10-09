@@ -5,6 +5,59 @@
     <link rel="icon" type="image/svg+xml" href="" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Metch</title>
+    <script>
+      // Suppress console output immediately to prevent any logs from appearing
+      (function() {
+        const noop = function() {};
+        const originalConsole = window.console;
+        
+        // Override all console methods
+        Object.keys(originalConsole).forEach(method => {
+          originalConsole[method] = noop;
+        });
+        
+        // Handle uncaught errors
+        window.addEventListener('error', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        });
+        
+        // Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        });
+        
+        // Override console object completely
+        Object.defineProperty(window, 'console', {
+          value: {
+            log: noop,
+            error: noop,
+            warn: noop,
+            info: noop,
+            debug: noop,
+            trace: noop,
+            table: noop,
+            group: noop,
+            groupEnd: noop,
+            groupCollapsed: noop,
+            time: noop,
+            timeEnd: noop,
+            timeLog: noop,
+            count: noop,
+            countReset: noop,
+            clear: noop,
+            dir: noop,
+            dirxml: noop,
+            assert: noop
+          },
+          writable: false,
+          configurable: false
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

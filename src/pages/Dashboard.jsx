@@ -85,6 +85,7 @@ const JobSeekerDashboard = ({ user }) => {
     const loadData = async () => { // Renamed loadJobs to loadData
       setLoading(true);
       if (!user) return; // Ensure user is available before fetching
+      
       try {
         let jobsData = [];
         let jobViewsData = [];
