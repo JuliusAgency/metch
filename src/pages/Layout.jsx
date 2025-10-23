@@ -19,14 +19,13 @@ import {
   X // Added
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { User as UserEntity } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion"; // Added
 import { useUser } from "@/contexts/UserContext";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, loading, switchUserType } = useUser();
+  const { user, loading } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Added
   
   const closeMenu = () => setIsMobileMenuOpen(false); // Added
@@ -117,19 +116,6 @@ export default function Layout({ children, currentPageName }) {
         `}
       </style>
 
-      {/* Debug Button - Moved to right for RTL */}
-      <div className="fixed top-4 right-4 z-[60]">
-        <Button
-          onClick={() => {
-            switchUserType();
-            // Navigate to dashboard to show the correct view
-            navigate(createPageUrl("Dashboard"));
-          }}
-          className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-full text-xs font-bold shadow-lg transition-all hover:scale-105"
-        >
-          DEMO: {isJobSeeker ? '👤 מחפש עבודה' : '🏢 מעסיק'}
-        </Button>
-      </div>
 
       {/* Desktop Navbar Wrapper */}
       <div className="hidden md:block pt-6 sticky top-0 z-50">

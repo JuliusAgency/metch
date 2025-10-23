@@ -1,33 +1,46 @@
-import { base44 } from './base44Client';
+import { createEntityMethods, auth, ensureProfile, getUserWithProfile } from './supabaseClient';
 
+// Create entity methods for each table
+export const Job = createEntityMethods('jobs');
+export const JobApplication = createEntityMethods('job_applications');
+export const Notification = createEntityMethods('notifications');
+export const CandidateView = createEntityMethods('candidate_views');
+export const Message = createEntityMethods('messages');
+export const Conversation = createEntityMethods('conversations');
+export const QuestionnaireResponse = createEntityMethods('questionnaire_responses');
+export const JobView = createEntityMethods('job_views');
+export const UserAction = createEntityMethods('user_actions');
+export const UserStats = createEntityMethods('user_stats');
+export const EmployerAction = createEntityMethods('employer_actions');
+export const EmployerStats = createEntityMethods('employer_stats');
+export const CV = createEntityMethods('cvs');
 
-export const Job = base44.entities.Job;
+// Auth methods
+export const User = auth;
 
-export const JobApplication = base44.entities.JobApplication;
+// Additional auth method for getting current user (similar to base44.auth.me())
+User.me = async () => {
+  const user = await auth.getCurrentUser();
+  if (!user) throw new Error('No authenticated user');
 
-export const Notification = base44.entities.Notification;
+  // Get user profile
+  const profile = await getUserWithProfile(user.id);
 
-export const CandidateView = base44.entities.CandidateView;
+  return {
+    ...user,
+    ...profile,
+    user_type: profile?.user_type || 'job_seeker',
+    full_name: profile?.full_name || user.email,
+    email: user.email
+  };
+};
 
-export const Message = base44.entities.Message;
+// Method to update current user's data
+User.updateMyUserData = async (userData) => {
+  const user = await auth.getCurrentUser();
+  if (!user) throw new Error('No authenticated user');
 
-export const Conversation = base44.entities.Conversation;
-
-export const QuestionnaireResponse = base44.entities.QuestionnaireResponse;
-
-export const JobView = base44.entities.JobView;
-
-export const UserAction = base44.entities.UserAction;
-
-export const UserStats = base44.entities.UserStats;
-
-export const EmployerAction = base44.entities.EmployerAction;
-
-export const EmployerStats = base44.entities.EmployerStats;
-
-export const CV = base44.entities.CV;
-
-
-
-// auth sdk:
-export const User = base44.auth;
+  // Update profile data
+  const updatedProfile = await ensureProfile(user.id, userData);
+  return updatedProfile;
+};

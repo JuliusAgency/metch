@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { CV } from '@/api/entities';
-import { User as UserEntity } from '@/api/entities';
+import { User } from '@/api/entities';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
@@ -23,7 +23,7 @@ export default function Profile() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const userData = await UserEntity.me();
+        const userData = await User.me();
         setUser(userData);
         setIsLookingForJob(userData.available_for_work !== false); 
 
@@ -49,7 +49,7 @@ export default function Profile() {
     if (!user) return;
     setIsLookingForJob(checked);
     try {
-      await UserEntity.updateMyUserData({ available_for_work: checked });
+      await User.updateMyUserData({ available_for_work: checked });
     } catch (error) {
       console.error("Error updating user status:", error);
       setIsLookingForJob(!checked);
