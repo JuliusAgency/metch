@@ -47,90 +47,37 @@ export default function JobDetailsSeeker() {
   const loadData = React.useCallback(async () => {
     setLoading(true);
     try {
-      let userData = null;
-      
-      try {
-        userData = await User.me();
-      } catch (error) {
-        userData = { 
-          full_name: "דניאל (דוגמה)", 
-          email: "demo@example.com",
-          isDemo: true
-        };
-      }
-      
+      const userData = await User.me();
       setUser(userData);
 
       const params = new URLSearchParams(location.search);
       const jobId = params.get('id');
       
       if (jobId) {
-        let fetchedJob = null;
-        
-        if (!userData?.isDemo) {
-          try {
-            const jobResults = await Job.filter({ id: jobId });
-            if (jobResults.length > 0) {
-              fetchedJob = jobResults[0];
-            } else {
-               console.log(`Job with ID ${jobId} not found, falling back to mock data.`);
+        const jobResults = await Job.filter({ id: jobId });
+        if (jobResults.length > 0) {
+          const fetchedJob = jobResults[0];
+          setJob(fetchedJob);
+          
+          if (userData?.email) {
+            try {
+              await UserAnalytics.trackJobView(userData.email, fetchedJob);
+            } catch (error) {
+              console.log("Failed to track job view for " + userData.email);
             }
-          } catch (error) {
-            console.log("Failed to fetch real job data, using mock data", error);
           }
-        }
-        
-        if (!fetchedJob) {
-          fetchedJob = {
-            id: jobId,
-            title: "מנהלת קשרי לקוחות",
-            company: "Google",
-            company_logo_url: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
-            location: "מרכז",
-            employment_type: "full_time",
-            start_date: "מיידי",
-            description: "אנחנו ב-Techwise מחפשים מנהלת קשרי לקוחות מנוסה להצטרף לצוות שלנו. התפקיד כולל ניהול קשרים עם לקוחות עסקיים, טיפול בפניות ומתן שירות ברמה הגבוהה ביותר. תהיה זו הזדמנות מצוינת להשפיע על חוויית הלקוח ולהוביל פרויקטים משמעותיים.",
-            structured_requirements: [
-              { value: "ניסיון של שנתיים לפחות בשירות לקוחות או מכירות - חובה", type: "required" },
-              { value: "ניסיון קודם בתחום הטכנולוגיה או הביטוח או בתחום סמוך - יתרון", type: "advantage" },
-              { value: "יכולת עבודה במסגרת לחץ וריבוי משימות (אופציה בטלפונים)", type: "required" },
-              { value: "עבודה בצוות (אופציה בטלפונים)", type: "required" },
-              { value: "שליטה טובה באנגלית", type: "required" }
-            ],
-            structured_education: [
-              { value: "ניסיון של שנתיים לפחות בחברת הפקות מומלץ - יתרון", type: "advantage" },
-              { value: "ניסיון קודם בתחום הרפואה או הביטוח או בתחום סמוך - יתרון", type: "advantage" },
-              { value: "יכולת עבודה במסגרת הקשרת מורכבת (אופציה באטלבוקס)", type: "required" },
-              { value: "עבודה בצוותי בעלות (אופציה באטלבוקס)", type: "required" },
-              { value: "שליטת פרמדים", type: "required" }
-            ],
-            match_score: 90,
-            screening_questions: [
-              { text: "מה הניסיון שלך בשירות לקוחות?", type: "text" },
-              { text: "האם יש לך ניסיון במכירות?", type: "yes_no" }
-            ],
-            status: "active",
-            // Add a more robust attachments mock for better testing
-            attachments: JOB_IMAGES.map(url => ({ name: 'workplace image', url, type: 'image/jpeg', size: 123456 }))
-          };
-        }
-        
-        setJob(fetchedJob);
-        
-        if (userData?.email && !userData?.isDemo) {
-          try {
-            await UserAnalytics.trackJobView(userData.email, fetchedJob);
-          } catch (error) {
-            console.log("Failed to track job view for " + userData.email);
-          }
+        } else {
+          console.error(`Job with ID ${jobId} not found`);
+          navigate(createPageUrl("JobSearch"));
         }
       }
     } catch (error) {
       console.error("Error loading job details:", error);
+      navigate(createPageUrl("JobSearch"));
     } finally {
       setLoading(false);
     }
-  }, [location.search]);
+  }, [location.search, navigate]);
 
   useEffect(() => {
     loadData();
@@ -144,7 +91,7 @@ export default function JobDetailsSeeker() {
       return;
     }
 
-    if (user?.email && !user?.isDemo) {
+    if (user?.email) {
       await UserAnalytics.trackJobApplication(user.email, job);
     }
 
@@ -155,13 +102,11 @@ export default function JobDetailsSeeker() {
 
     setApplying(true);
     try {
-      if (!user?.isDemo) {
-        await JobApplication.create({
-          job_id: job.id,
-          applicant_email: user.email,
-          status: 'pending'
-        });
-      }
+      await JobApplication.create({
+        job_id: job.id,
+        applicant_email: user.email,
+        status: 'pending'
+      });
       
       setTimeout(() => {
         navigate(createPageUrl("Dashboard"));
@@ -174,7 +119,7 @@ export default function JobDetailsSeeker() {
   };
 
   const handleReject = async () => {
-    if (user?.email && job && !user?.isDemo) {
+    if (user?.email && job) {
       await UserAnalytics.trackJobRejection(user.email, job);
     }
     navigate(createPageUrl("JobSearch"));

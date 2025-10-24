@@ -26,15 +26,28 @@ import { useUser } from "@/contexts/UserContext";
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, loading, switchUserType } = useUser();
+  const { user, loading } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Added
   
   const closeMenu = () => setIsMobileMenuOpen(false); // Added
+
+  // Pages that should not show navbar (authentication pages)
+  const authPages = ['Login', 'Register', 'Landing', 'EmailConfirmation', 'UserTypeSelection'];
+  const shouldHideNavbar = authPages.includes(currentPageName);
 
   if (loading) {
     return (
       <div className="min-h-screen page-gradient flex items-center justify-center" dir="rtl">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // If it's an auth page, render children without navbar
+  if (shouldHideNavbar) {
+    return (
+      <div className="min-h-screen" dir="rtl">
+        {children}
       </div>
     );
   }
@@ -116,20 +129,6 @@ export default function Layout({ children, currentPageName }) {
           }
         `}
       </style>
-
-      {/* Debug Button - Moved to right for RTL */}
-      <div className="fixed top-4 right-4 z-[60]">
-        <Button
-          onClick={() => {
-            switchUserType();
-            // Navigate to dashboard to show the correct view
-            navigate(createPageUrl("Dashboard"));
-          }}
-          className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-full text-xs font-bold shadow-lg transition-all hover:scale-105"
-        >
-          DEMO: {isJobSeeker ? '👤 מחפש עבודה' : '🏢 מעסיק'}
-        </Button>
-      </div>
 
       {/* Desktop Navbar Wrapper */}
       <div className="hidden md:block pt-6 sticky top-0 z-50">

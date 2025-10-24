@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { User as UserIcon, FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2 } from 'lucide-react';
+import { User as UserIcon, FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2, LogOut } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -10,6 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import { useUser } from '@/contexts/UserContext';
 
 export default function Profile() {
   const [cvData, setCvData] = useState(null);
@@ -18,6 +19,7 @@ export default function Profile() {
   const [isLookingForJob, setIsLookingForJob] = useState(true);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+  const { signOut } = useUser();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,6 +77,15 @@ export default function Profile() {
       // Here you would handle the delete logic (e.g., call CV.delete)
       console.log("Deleting file");
       setCvData(null);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate(createPageUrl('Login'));
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   const NoCvView = () => (
@@ -167,6 +178,17 @@ export default function Profile() {
                                 />
                                 <label htmlFor="looking-for-job" className="font-semibold text-gray-800 text-base">אני מחפש עבודה</label>
                             </div>
+                        </div>
+
+                        <div className="flex justify-center pt-6">
+                            <Button 
+                                onClick={handleLogout}
+                                variant="outline" 
+                                className="h-12 rounded-lg border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 font-semibold text-base px-6"
+                            >
+                                <LogOut className="w-5 h-5 ml-2" />
+                                התנתק
+                            </Button>
                         </div>
 
                     </motion.div>

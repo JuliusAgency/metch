@@ -197,7 +197,7 @@ export default function CandidateProfile() {
 
     useEffect(() => {
         const trackCandidateView = async () => {
-            if (candidate && user && !user.isDemo) {
+            if (candidate && user) {
                 try {
                     await EmployerAnalytics.trackCandidateView(user.email, candidate);
                 } catch (error) {

@@ -74,7 +74,7 @@ export default function JobDetails() {
       setJob(prev => ({ ...prev, status: newStatus }));
       
       // Track status change
-      if (user && !user.isDemo) {
+      if (user) {
         await EmployerAnalytics.trackJobStatusChange(user.email, job, oldStatus, newStatus);
       }
       
@@ -89,7 +89,7 @@ export default function JobDetails() {
   // Add job view tracking when component loads
   useEffect(() => {
     const trackJobView = async () => {
-      if (job && user && !user.isDemo) {
+      if (job && user) {
         await EmployerAnalytics.trackJobView(user.email, job);
       }
     };

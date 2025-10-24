@@ -1,4 +1,5 @@
 import Layout from "./Layout.jsx";
+import AuthGuard from "@/components/AuthGuard";
 
 import Dashboard from "./Dashboard";
 
@@ -47,6 +48,19 @@ import NotFound from "./NotFound";
 import CVGenerator from "./CVGenerator";
 
 import PreferenceQuestionnaire from "./PreferenceQuestionnaire";
+
+import Login from "./Login";
+
+import Register from "./Register";
+
+import Landing from "./Landing";
+
+import EmailConfirmation from "./EmailConfirmation";
+
+import EmailConfirmed from "./EmailConfirmed";
+
+import UserTypeSelection from "./UserTypeSelection";
+
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -100,6 +114,18 @@ const PAGES = {
     
     PreferenceQuestionnaire: PreferenceQuestionnaire,
     
+    Login: Login,
+    
+    Register: Register,
+    
+    Landing: Landing,
+    
+    EmailConfirmation: EmailConfirmation,
+    
+    EmailConfirmed: EmailConfirmed,
+    
+    UserTypeSelection: UserTypeSelection,
+    
 }
 
 function _getCurrentPage(url) {
@@ -112,7 +138,7 @@ function _getCurrentPage(url) {
     }
 
     const pageName = Object.keys(PAGES).find(page => page.toLowerCase() === urlLastPart.toLowerCase());
-    return pageName || Object.keys(PAGES)[0];
+    return pageName || 'Login';
 }
 
 // Create a wrapper component that uses useLocation inside the Router context
@@ -123,58 +149,42 @@ function PagesContent() {
     return (
         <Layout currentPageName={currentPage}>
             <Routes>            
+                {/* Public routes - no authentication required */}
+                <Route path="/" element={<Login />} />
+                <Route path="/Login" element={<Login />} />
+                <Route path="/Register" element={<Register />} />
+                <Route path="/Landing" element={<Landing />} />
+                <Route path="/EmailConfirmation" element={<EmailConfirmation />} />
+                <Route path="/EmailConfirmed" element={<EmailConfirmed />} />
+                <Route path="/UserTypeSelection" element={<UserTypeSelection />} />
                 
-                    <Route path="/" element={<Dashboard />} />
+                {/* Protected routes - authentication required */}
+                <Route path="/Dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
+                <Route path="/Profile" element={<AuthGuard><Profile /></AuthGuard>} />
+                <Route path="/CandidateProfile" element={<AuthGuard><CandidateProfile /></AuthGuard>} />
+                <Route path="/Messages" element={<AuthGuard><Messages /></AuthGuard>} />
+                <Route path="/Notifications" element={<AuthGuard><Notifications /></AuthGuard>} />
+                <Route path="/ViewQuestionnaire" element={<AuthGuard><ViewQuestionnaire /></AuthGuard>} />
+                <Route path="/JobManagement" element={<AuthGuard><JobManagement /></AuthGuard>} />
+                <Route path="/JobDetails" element={<AuthGuard><JobDetails /></AuthGuard>} />
+                <Route path="/JobApplications" element={<AuthGuard><JobApplications /></AuthGuard>} />
+                <Route path="/CreateJob" element={<AuthGuard><CreateJob /></AuthGuard>} />
+                <Route path="/Contact" element={<AuthGuard><Contact /></AuthGuard>} />
+                <Route path="/Insights" element={<AuthGuard><Insights /></AuthGuard>} />
+                <Route path="/CompanyProfileCompletion" element={<AuthGuard><CompanyProfileCompletion /></AuthGuard>} />
+                <Route path="/JobSearch" element={<AuthGuard><JobSearch /></AuthGuard>} />
+                <Route path="/Settings" element={<AuthGuard><Settings /></AuthGuard>} />
+                <Route path="/AnswerQuestionnaire" element={<AuthGuard><AnswerQuestionnaire /></AuthGuard>} />
+                <Route path="/ScreeningQuestionnaire" element={<AuthGuard><ScreeningQuestionnaire /></AuthGuard>} />
+                <Route path="/JobDetailsSeeker" element={<AuthGuard><JobDetailsSeeker /></AuthGuard>} />
+                <Route path="/MessagesSeeker" element={<AuthGuard><MessagesSeeker /></AuthGuard>} />
+                <Route path="/UserActivity" element={<AuthGuard><UserActivity /></AuthGuard>} />
+                <Route path="/FAQ" element={<AuthGuard><FAQ /></AuthGuard>} />
+                <Route path="/CVGenerator" element={<AuthGuard><CVGenerator /></AuthGuard>} />
+                <Route path="/PreferenceQuestionnaire" element={<AuthGuard><PreferenceQuestionnaire /></AuthGuard>} />
                 
-                
-                <Route path="/Dashboard" element={<Dashboard />} />
-                
-                <Route path="/Profile" element={<Profile />} />
-                
-                <Route path="/CandidateProfile" element={<CandidateProfile />} />
-                
-                <Route path="/Messages" element={<Messages />} />
-                
-                <Route path="/Notifications" element={<Notifications />} />
-                
-                <Route path="/ViewQuestionnaire" element={<ViewQuestionnaire />} />
-                
-                <Route path="/JobManagement" element={<JobManagement />} />
-                
-                <Route path="/JobDetails" element={<JobDetails />} />
-                
-                <Route path="/JobApplications" element={<JobApplications />} />
-                
-                <Route path="/CreateJob" element={<CreateJob />} />
-                
-                <Route path="/Contact" element={<Contact />} />
-                
-                <Route path="/Insights" element={<Insights />} />
-                
-                <Route path="/CompanyProfileCompletion" element={<CompanyProfileCompletion />} />
-                
-                <Route path="/JobSearch" element={<JobSearch />} />
-                
-                <Route path="/Settings" element={<Settings />} />
-                
-                <Route path="/AnswerQuestionnaire" element={<AnswerQuestionnaire />} />
-                
-                <Route path="/ScreeningQuestionnaire" element={<ScreeningQuestionnaire />} />
-                
-                <Route path="/JobDetailsSeeker" element={<JobDetailsSeeker />} />
-                
-                <Route path="/MessagesSeeker" element={<MessagesSeeker />} />
-                
-                <Route path="/UserActivity" element={<UserActivity />} />
-                
-                <Route path="/FAQ" element={<FAQ />} />
-                
-                <Route path="/NotFound" element={<NotFound />} />
-                
-                <Route path="/CVGenerator" element={<CVGenerator />} />
-                
-                <Route path="/PreferenceQuestionnaire" element={<PreferenceQuestionnaire />} />
-                
+                {/* Catch-all route */}
+                <Route path="*" element={<NotFound />} />
             </Routes>
         </Layout>
     );

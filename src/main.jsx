@@ -4,7 +4,7 @@ import App from '@/App.jsx'
 import '@/index.css'
 
 // Suppress all console output and errors
-import '@/utils/consoleSuppression'
+// import '@/utils/consoleSuppression'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <App />
