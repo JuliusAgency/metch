@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase, auth } from '@/api/supabaseClient';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
+import { supabase } from '@/api/supabaseClient';
 
 const UserContext = createContext();
 
@@ -7,6 +8,7 @@ const UserContext = createContext();
  * Hook to use user context
  * @returns {Object} User context with user, loading, and auth methods
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {
@@ -29,20 +31,84 @@ export const UserProvider = ({ children }) => {
    */
   const loadUserProfile = async (userId) => {
     try {
-      const { data, error } = await supabase
-        .from('users')
+      console.log('Loading user profile for user ID:', userId);
+      
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Profile loading timeout')), 3000);
+      });
+      
+      const profilePromise = supabase
+        .from('UserProfile')
         .select('*')
         .eq('id', userId)
         .single();
       
-      if (error && error.code !== 'PGRST116') {
+      const { data, error } = await Promise.race([profilePromise, timeoutPromise]);
+      
+      if (error) {
         console.error('Error loading user profile:', error);
-        return null;
+        
+        // If profile doesn't exist (PGRST116), return null - EmailConfirmed will handle creation
+        if (error.code === 'PGRST116') {
+          console.log('User profile not found - will redirect to EmailConfirmed for profile creation');
+          return null;
+        }
       }
       
+      console.log('User profile loaded:', data);
       return data;
     } catch (error) {
       console.error('Error loading user profile:', error);
+      // Return null to trigger EmailConfirmed redirect for profile creation
+      return null;
+    }
+  };
+
+  /**
+   * Create user profile with no userType selected   */
+  const createUserProfile = async (userId) => {
+    try {
+      console.log('Creating user profile for user ID:', userId);
+      
+      // Get user data from auth
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      if (authError || !authUser) {
+        console.error('Error getting auth user:', authError);
+        return null;
+      }
+      
+      const profileData = {
+        id: userId,
+        email: authUser.email,
+        role: 'user',
+        full_name: authUser.user_metadata?.full_name || '',
+        user_type: null, // No user type selected initially
+        // Only include safe fields from user_metadata that exist in UserProfile schema
+        ...(authUser.user_metadata?.bio && { bio: authUser.user_metadata.bio }),
+        ...(authUser.user_metadata?.phone && { phone: authUser.user_metadata.phone }),
+        ...(authUser.user_metadata?.linkedin_url && { linkedin_url: authUser.user_metadata.linkedin_url }),
+        ...(authUser.user_metadata?.company_name && { company_name: authUser.user_metadata.company_name })
+      };
+      
+      console.log('Creating profile with data:', profileData);
+      
+      const { data, error } = await supabase
+        .from('UserProfile')
+        .insert(profileData)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error creating user profile:', error);
+        return null;
+      }
+      
+      console.log('User profile created:', data);
+      setProfile(data);
+      return data;
+    } catch (error) {
+      console.error('Error creating user profile:', error);
       return null;
     }
   };
@@ -50,21 +116,35 @@ export const UserProvider = ({ children }) => {
   /**
    * Initialize user session
    */
-  const initializeUser = async () => {
+  const initializeUser = useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Initializing user session...');  
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Error getting session:', error);
+        setLoading(false);
+        return;
+      }
+      
+      console.log('Session data:', session);
       
       if (session?.user) {
+        console.log('User found in session:', session.user);
         setUser(session.user);
         const userProfile = await loadUserProfile(session.user.id);
+        console.log('Profile loaded in initializeUser:', userProfile);
         setProfile(userProfile);
+      } else {
+        console.log('No user in session');
       }
     } catch (error) {
       console.error('Error initializing user:', error);
     } finally {
+      console.log('Setting loading to false');
       setLoading(false);
     }
-  };
+  }, []);
 
   /**
    * Sign up a new user
@@ -84,10 +164,13 @@ export const UserProvider = ({ children }) => {
       // Create user profile
       if (data.user) {
         const { error: profileError } = await supabase
-          .from('users')
+          .from('UserProfile')
           .insert({
             id: data.user.id,
             email: data.user.email,
+            role: 'user',
+            full_name: '',
+            user_type: 'job_seeker',
             ...metadata
           });
         
@@ -149,54 +232,30 @@ export const UserProvider = ({ children }) => {
     try {
       if (!user) throw new Error('No user logged in');
       
+      // If profile doesn't exist, throw an error
+      if (!profile) throw new Error('User profile not found');
+      
+      // Profile exists, update it
       const { data, error } = await supabase
-        .from('users')
+        .from('UserProfile')
         .update(updates)
         .eq('id', user.id)
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        // If update fails because profile doesn't exist, create it
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found during update, creating new profile with updates:', updates);
+          return await createUserProfile(user.id, updates);
+        }
+        throw error;
+      }
       
       setProfile(data);
       return data;
     } catch (error) {
       console.error('Error updating profile:', error);
-      throw error;
-    }
-  };
-
-  /**
-   * Ensure user profile exists (create if missing)
-   */
-  const ensureProfile = async () => {
-    try {
-      if (!user) throw new Error('No user logged in');
-      
-      const existingProfile = await loadUserProfile(user.id);
-      
-      if (existingProfile) {
-        setProfile(existingProfile);
-        return existingProfile;
-      }
-      
-      // Create profile if it doesn't exist
-      const { data, error } = await supabase
-        .from('users')
-        .insert({
-          id: user.id,
-          email: user.email,
-          ...user.user_metadata
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
-      
-      setProfile(data);
-      return data;
-    } catch (error) {
-      console.error('Error ensuring profile:', error);
       throw error;
     }
   };
@@ -212,33 +271,15 @@ export const UserProvider = ({ children }) => {
     };
   };
 
-  // Initialize user on mount
+  // listen to auth state changes
   useEffect(() => {
-    initializeUser();
-
-    // Listen to auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event);
-        
-        if (session?.user) {
-          setUser(session.user);
-          const userProfile = await loadUserProfile(session.user.id);
-          setProfile(userProfile);
-        } else {
-          setUser(null);
-          setProfile(null);
-        }
-        
-        setLoading(false);
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        initializeUser();
       }
-    );
-
-    // Cleanup subscription
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+    });
+    return () => subscription.unsubscribe();
+  }, [initializeUser]);
 
   const value = {
     user: user ? getUserWithProfile() : null,
@@ -248,7 +289,8 @@ export const UserProvider = ({ children }) => {
     signIn,
     signOut,
     updateProfile,
-    ensureProfile,
+    createUserProfile,
+    loadUserProfile,
     getUserWithProfile,
     // Backwards compatibility
     setUser: (newUser) => {
@@ -264,4 +306,8 @@ export const UserProvider = ({ children }) => {
       {children}
     </UserContext.Provider>
   );
+};
+
+UserProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

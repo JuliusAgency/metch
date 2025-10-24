@@ -62,7 +62,7 @@ const JobSeekerDashboard = ({ user }) => {
   // Check if user needs onboarding guide
   useEffect(() => {
     const hasSeenGuide = localStorage.getItem(`jobseeker_guide_${user?.email}`);
-    if (!hasSeenGuide && !user?.isDemo) {
+    if (!hasSeenGuide) {
       setShowGuide(true);
     }
   }, [user]);
@@ -82,70 +82,23 @@ const JobSeekerDashboard = ({ user }) => {
   };
 
   useEffect(() => {
-    const loadData = async () => { // Renamed loadJobs to loadData
+    const loadData = async () => {
       setLoading(true);
-      if (!user) return; // Ensure user is available before fetching
+      if (!user) return;
       
       try {
-        let jobsData = [];
-        let jobViewsData = [];
-
-        // Try to fetch real data first
-        if (!user.isDemo) {
-          try {
-            [jobsData, jobViewsData] = await Promise.all([
-              Job.filter({ status: 'active' }, "-created_date", 50), // Fetch more jobs initially
-              JobView.filter({ user_email: user.email }) // Fetch user's job views
-            ]);
-          } catch (error) {
-            console.log("Failed to fetch real data for job seeker, using demo data");
-          }
-        }
-
-        // Use demo data if real data failed or for demo users
-        if (jobsData.length === 0) {
-          jobsData = [
-            {
-              id: "demo-job-1",
-              title: "מנהל/ת מכירות",
-              company: "חברת SaaS מובילה",
-              location: "תל אביב",
-              employment_type: "full_time",
-              start_date: "מיידי",
-              match_score: 92,
-              company_logo_url: "https://ui-avatars.com/api/?name=SaaS&background=random"
-            },
-            {
-              id: "demo-job-2",
-              title: "מפתח Frontend",
-              company: "סטארט-אפ טכנולוגי",
-              location: "הרצליה",
-              employment_type: "full_time",
-              start_date: "תוך חודש",
-              match_score: 88,
-              company_logo_url: "https://ui-avatars.com/api/?name=Tech&background=random"
-            },
-            {
-              id: "demo-job-3",
-              title: "מעצב UX/UI",
-              company: "סטודיו עיצוב דיגיטלי",
-              location: "רמת גן",
-              employment_type: "full_time",
-              start_date: "גמיש",
-              match_score: 85,
-              company_logo_url: "https://ui-avatars.com/api/?name=Design&background=random"
-            }
-          ];
-        }
+        const [jobsData, jobViewsData] = await Promise.all([
+          Job.filter({ status: 'active' }, "-created_date", 50),
+          JobView.filter({ user_email: user.email })
+        ]);
 
         setAllJobs(jobsData);
         setViewedJobIds(new Set(jobViewsData.map(view => view.job_id)));
 
-        // This tracking call is removed to prevent potential network issues on load.
-        // Analytics for job views are still tracked when a user clicks on a job.
-
       } catch (error) {
         console.error("Error loading jobs for seeker:", error);
+        setAllJobs([]);
+        setViewedJobIds(new Set());
       } finally {
         setLoading(false);
       }
@@ -267,7 +220,7 @@ const JobSeekerDashboard = ({ user }) => {
                                   to={createPageUrl(`JobDetailsSeeker?id=${job.id}`)}
                                   onClick={() => {
                                     // Track job view when user clicks to view details
-                                    if (user?.email && !user.isDemo) { // Only track if not a demo user
+                                    if (user?.email) {
                                       UserAnalytics.trackJobView(user.email, job);
                                     }
                                   }}
@@ -326,7 +279,7 @@ const EmployerDashboard = ({ user }) => {
   // Check if user needs onboarding guide
   useEffect(() => {
     const hasSeenGuide = localStorage.getItem(`employer_guide_${user?.email}`);
-    if (!hasSeenGuide && !user?.isDemo) {
+    if (!hasSeenGuide) {
       setShowGuide(true);
     }
   }, [user]);
@@ -348,104 +301,25 @@ const EmployerDashboard = ({ user }) => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        let notificationsData = [];
-        let candidatesData = [];
-        let viewedCandidatesData = [];
-        let dashboardData = {};
-
-        // Try to fetch real data first
-        if (!user?.isDemo) {
-          try {
-            [notificationsData, viewedCandidatesData, candidatesData, dashboardData] = await Promise.all([
-              Notification.filter({ is_read: false }, "-created_date", 5),
-              CandidateView.filter({ viewer_email: user.email }, "-created_date", 50),
-              User.filter({ user_type: 'job_seeker' }, "-created_date", 10),
-              EmployerAnalytics.getDashboardData(user.email) // Get comprehensive analytics data
-            ]);
-            
-            setEmployerStats(dashboardData.stats);
-            setEmployerActivity(dashboardData.recentActivity);
-          } catch (error) {
-            console.log("Failed to fetch real data for employer, using demo data");
-          }
-        }
-
-        // Use demo data if real data failed or for demo users
-        if (notificationsData.length === 0) {
-          notificationsData = [
-            { id: "demo-notif-1", message: "יש לך 3 מועמדויות חדשות" },
-            { id: "demo-notif-2", message: "המשרה שלך קיבלה 15 צפיות השבוע" }
-          ];
-        }
-
-        if (candidatesData.length === 0) {
-          candidatesData = [
-            {
-              id: "demo-candidate-1",
-              full_name: "דניאל כהן",
-              email: "daniel@example.com",
-              experience_level: "mid_level",
-              skills: ["JavaScript", "React", "Node.js"]
-            },
-            {
-              id: "demo-candidate-2",
-              full_name: "שרה לוי",
-              email: "sarah@example.com",
-              experience_level: "senior_level",
-              skills: ["Marketing", "SEO", "Analytics"]
-            }
-          ];
-        }
-
-        // Demo stats for demo users
-        if (!user?.isDemo || !employerStats) {
-          setEmployerStats({
-            total_jobs_created: 3,
-            total_jobs_published: 2,
-            total_job_views: 45,
-            total_applications_received: 8,
-            total_candidates_viewed: 12,
-            conversion_rate: 17.8,
-            jobs_filled: 1,
-            jobs_filled_via_metch: 0
-          });
-          
-          setEmployerActivity([
-            {
-              id: "demo-1",
-              action_type: "job_create",
-              job_title: "מנהל מכירות",
-              created_date: new Date(Date.now() - 86400000).toISOString() // 1 day ago
-            },
-            {
-              id: "demo-2", 
-              action_type: "candidate_view",
-              candidate_name: "שרה לוי",
-              created_date: new Date(Date.now() - 3600000).toISOString() // 1 hour ago
-            },
-            {
-              id: "demo-3",
-              action_type: "job_publish",
-              job_title: "מפתח Fullstack",
-              created_date: new Date(Date.now() - 2 * 86400000).toISOString() // 2 days ago
-            },
-            {
-              id: "demo-4",
-              action_type: "application_received",
-              job_title: "מנהל מכירות",
-              candidate_name: "דניאל כהן",
-              created_date: new Date(Date.now() - 3 * 3600000).toISOString() // 3 hours ago
-            }
-          ]);
-        }
-
+        const [notificationsData, viewedCandidatesData, candidatesData, dashboardData] = await Promise.all([
+          Notification.filter({ is_read: false }, "-created_date", 5),
+          CandidateView.filter({ viewer_email: user.email }, "-created_date", 50),
+          User.filter({ user_type: 'job_seeker' }, "-created_date", 10),
+          EmployerAnalytics.getDashboardData(user.email)
+        ]);
+        
+        setEmployerStats(dashboardData.stats);
+        setEmployerActivity(dashboardData.recentActivity);
         setNotifications(notificationsData);
         setViewedCandidates(viewedCandidatesData);
         setCandidates(candidatesData);
       } catch (error) {
         console.error("Error loading employer dashboard:", error);
-      } finally {
-        setLoading(false);
+        setNotifications([]);
+        setViewedCandidates([]);
+        setCandidates([]);
+        setEmployerStats({});
+        setEmployerActivity([]);
       }
     };
     loadData();
@@ -454,23 +328,21 @@ const EmployerDashboard = ({ user }) => {
   const handleViewCandidate = async (candidate) => {
     try {
       // Track candidate profile view
-      if (user?.email && !user.isDemo) { // Only track if not a demo user
+      if (user?.email) {
         await UserAnalytics.trackAction(user.email, 'profile_view', {
           candidate_name: candidate.full_name,
           candidate_email: candidate.email
         });
       }
 
-      if (!user?.isDemo) { // Only create view record if not a demo user
-        await CandidateView.create({
-          candidate_name: candidate.full_name,
-          candidate_role: candidate.experience_level || 'N/A',
-          viewer_email: user.email,
-          viewed_at: new Date().toISOString()
-        });
-        const updatedViewed = await CandidateView.filter({ viewer_email: user.email }, "-created_date", 50);
-        setViewedCandidates(updatedViewed);
-      }
+      await CandidateView.create({
+        candidate_name: candidate.full_name,
+        candidate_role: candidate.experience_level || 'N/A',
+        viewer_email: user.email,
+        viewed_at: new Date().toISOString()
+      });
+      const updatedViewed = await CandidateView.filter({ viewer_email: user.email }, "-created_date", 50);
+      setViewedCandidates(updatedViewed);
     } catch (error) {
       console.error("Error recording candidate view:", error);
     }
@@ -663,10 +535,6 @@ export default function Dashboard() {
   if (user.user_type === 'job_seeker') {
     return <JobSeekerDashboard user={user} />;
   } else {
-    // If user_type is 'employer' or any other type not 'job_seeker'
-    // For demo purposes, if the initial demo user is a job_seeker, this won't be hit immediately.
-    // If you need an employer demo user, you could adjust the catch block or add logic to switch.
-    // For now, assuming if `user.isDemo` it's a job seeker unless explicitly changed elsewhere.
     return <EmployerDashboard user={user} />;
   }
 }

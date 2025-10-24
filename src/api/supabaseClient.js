@@ -11,11 +11,26 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY');
+console.log('Supabase URL:', supabaseUrl);
+console.log('Supabase Anon Key:', supabaseAnonKey ? 'Present' : 'Missing');
+
+// Check if environment variables are properly set
+const hasValidConfig = supabaseUrl && supabaseAnonKey && 
+  supabaseUrl !== 'https://your-project.supabase.co' && 
+  supabaseAnonKey !== 'your-anon-key-here';
+
+if (!hasValidConfig) {
+  console.error('Missing or invalid Supabase environment variables.');
+  console.error('Please create a .env file with:');
+  console.error('VITE_SUPABASE_URL=https://your-project.supabase.co');
+  console.error('VITE_SUPABASE_ANON_KEY=your-anon-key-here');
 }
 
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
+// Create Supabase client with fallback for development
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co', 
+  supabaseAnonKey || 'placeholder-key'
+);
 
 /**
  * Create entity methods for CRUD operations

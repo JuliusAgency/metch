@@ -93,21 +93,17 @@ export default function CreateJob() {
         
         // Track job edit
         const userData = await User.me();
-        if (!userData.isDemo) {
-          await EmployerAnalytics.trackJobEdit(userData.email, jobData);
-        }
+        await EmployerAnalytics.trackJobEdit(userData.email, jobData);
       } else {
         createdOrUpdatedJob = await Job.create(jobData);
         
         // Track job creation
         const userData = await User.me();
-        if (!userData.isDemo) {
-          await EmployerAnalytics.trackJobCreate(userData.email, createdOrUpdatedJob);
-          
-          // If job is being published (not draft), track publish action too
-          if (jobData.status === 'active') { // Assuming 'active' means published
-            await EmployerAnalytics.trackJobPublish(userData.email, createdOrUpdatedJob);
-          }
+        await EmployerAnalytics.trackJobCreate(userData.email, createdOrUpdatedJob);
+        
+        // If job is being published (not draft), track publish action too
+        if (jobData.status === 'active') { // Assuming 'active' means published
+          await EmployerAnalytics.trackJobPublish(userData.email, createdOrUpdatedJob);
         }
       }
       
