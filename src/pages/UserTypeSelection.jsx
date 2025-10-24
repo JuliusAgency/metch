@@ -40,8 +40,12 @@ const UserTypeSelection = () => {
         description: "ברוכים הבאים למאצי",
       });
 
-      // Navigate to dashboard
-      navigate('/Dashboard');
+      // Navigate based on user type
+      if (userType === 'job_seeker') {
+        navigate('/CVGenerator');
+      } else {
+        navigate('/Dashboard');
+      }
     } catch (error) {
       console.error('Error updating user type:', error);
       toast({
@@ -62,7 +66,7 @@ const UserTypeSelection = () => {
         <div id="desktop-container" className='w-full h-full overflow-hidden'>
             <div id="card-container" className='absolute bottom-0 left-1/2 translate-x-[-50%] w-[95vw] h-[90vh] bg-[rgba(255,255,255,0.5)] rounded-t-[40px]  shadow-[0px_0px_17.611px_0px_rgba(0,0,0,0.2)] '>
               {/* Desktop User Type Selection Content */}
-              <div className="absolute right-[60px] top-1/2 translate-y-[-50%] flex flex-col gap-[38px] items-start w-[401px]">
+              <div className="absolute mr-[10vw] top-1/2 translate-y-[-50%] flex flex-col gap-[38px] items-center justify-center w-[25vw] h-full">
                 {/* Title */}
                 <div className="flex flex-col gap-[15px] items-center w-full">
                   <p className="font-['Rubik:Bold',_sans-serif] font-bold leading-[1.3] text-[#32343d] text-[46px] text-center w-[477px]">
@@ -110,7 +114,7 @@ const UserTypeSelection = () => {
             </div>
 
 
-            <div id="decorative-element" className='absolute bottom-[-20vh] left-[-25vw] w-[100vw] h-[100vh]'>
+            <div id="decorative-element" className='absolute bottom-[-20vh] left-[-25vw] w-[75vw] h-[100vh]'>
                 <img alt="" src={"/astronaut.svg"} className='w-full h-full' />
             </div>
         </div>

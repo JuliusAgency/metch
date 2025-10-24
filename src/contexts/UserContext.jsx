@@ -66,10 +66,11 @@ export const UserProvider = ({ children }) => {
   };
 
   /**
-   * Create user profile with no userType selected   */
-  const createUserProfile = async (userId) => {
+   * Create user profile with optional updates
+   */
+  const createUserProfile = async (userId, updates = {}) => {
     try {
-      console.log('Creating user profile for user ID:', userId);
+      console.log('Creating user profile for user ID:', userId, 'with updates:', updates);
       
       // Get user data from auth
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
@@ -88,7 +89,9 @@ export const UserProvider = ({ children }) => {
         ...(authUser.user_metadata?.bio && { bio: authUser.user_metadata.bio }),
         ...(authUser.user_metadata?.phone && { phone: authUser.user_metadata.phone }),
         ...(authUser.user_metadata?.linkedin_url && { linkedin_url: authUser.user_metadata.linkedin_url }),
-        ...(authUser.user_metadata?.company_name && { company_name: authUser.user_metadata.company_name })
+        ...(authUser.user_metadata?.company_name && { company_name: authUser.user_metadata.company_name }),
+        // Apply any updates passed in
+        ...updates
       };
       
       console.log('Creating profile with data:', profileData);
@@ -232,8 +235,11 @@ export const UserProvider = ({ children }) => {
     try {
       if (!user) throw new Error('No user logged in');
       
-      // If profile doesn't exist, throw an error
-      if (!profile) throw new Error('User profile not found');
+      // If profile doesn't exist, create it with the updates
+      if (!profile) {
+        console.log('Profile not found, creating new profile with updates:', updates);
+        return await createUserProfile(user.id, updates);
+      }
       
       // Profile exists, update it
       const { data, error } = await supabase

@@ -66,10 +66,18 @@ export const reducer = (state, action) => {
       // ! Side effects ! - This could be extracted into a dismissToast() action,
       // but I'll keep it here for simplicity
       if (toastId) {
-        addToRemoveQueue(toastId);
+        // Clear any existing timeout for this toast
+        clearFromRemoveQueue(toastId);
+        // Add to remove queue after animation completes
+        setTimeout(() => {
+          addToRemoveQueue(toastId);
+        }, 300); // Give time for animation
       } else {
         state.toasts.forEach((toast) => {
-          addToRemoveQueue(toast.id);
+          clearFromRemoveQueue(toast.id);
+          setTimeout(() => {
+            addToRemoveQueue(toast.id);
+          }, 300);
         });
       }
 

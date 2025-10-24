@@ -77,11 +77,30 @@ const Register = () => {
       
       navigate('/EmailConfirmation');
     } catch (error) {
-      toast({
-        title: "שגיאה בהרשמה",
-        description: error.message || "אירעה שגיאה בעת ההרשמה",
-        variant: "destructive",
-      });
+      // Check if user already exists - Supabase returns specific error messages
+      if (error.message && (
+        error.message.includes('already registered') ||
+        error.message.includes('User already registered') ||
+        error.message.includes('email address is already registered') ||
+        error.message.includes('duplicate key value')
+      )) {
+        toast({
+          title: "משתמש כבר קיים",
+          description: "כתובת המייל כבר רשומה במערכת. אנא התחברו במקום",
+          variant: "destructive",
+          action: (
+            <Link to="/Login" className="text-white underline">
+              התחברות
+            </Link>
+          ),
+        });
+      } else {
+        toast({
+          title: "שגיאה בהרשמה",
+          description: error.message || "אירעה שגיאה בעת ההרשמה",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
