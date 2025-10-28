@@ -211,7 +211,7 @@ export class UserAnalytics {
     try {
       const actions = await UserAction.filter(
         { user_email: userEmail }, 
-        "-created_date", 
+        "-created_at", 
         limit
       );
       return actions;

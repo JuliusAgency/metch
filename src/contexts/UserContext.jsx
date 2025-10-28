@@ -22,44 +22,54 @@ export const useUser = () => {
  * Manages authentication state and provides auth methods
  */
 export const UserProvider = ({ children }) => {
+  console.log('[UserProvider] Component rendering');
+  
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  console.log('[UserProvider] Initial state - loading:', loading, 'user:', user, 'profile:', profile);
 
   /**
    * Load user profile from database
    */
   const loadUserProfile = async (userId) => {
     try {
-      console.log('Loading user profile for user ID:', userId);
+      console.log('[loadUserProfile] Starting to load profile for user ID:', userId);
       
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Profile loading timeout')), 3000);
       });
       
+      console.log('[loadUserProfile] Querying UserProfile table...');
       const profilePromise = supabase
         .from('UserProfile')
         .select('*')
         .eq('id', userId)
         .single();
       
+      console.log('[loadUserProfile] Waiting for profile query or timeout...');
       const { data, error } = await Promise.race([profilePromise, timeoutPromise]);
+      console.log('[loadUserProfile] Query completed');
       
       if (error) {
-        console.error('Error loading user profile:', error);
+        console.error('[loadUserProfile] Error loading user profile:', error);
+        console.error('[loadUserProfile] Error code:', error.code);
+        console.error('[loadUserProfile] Error message:', error.message);
         
         // If profile doesn't exist (PGRST116), return null - EmailConfirmed will handle creation
         if (error.code === 'PGRST116') {
-          console.log('User profile not found - will redirect to EmailConfirmed for profile creation');
+          console.log('[loadUserProfile] User profile not found (PGRST116) - will redirect to EmailConfirmed for profile creation');
           return null;
         }
       }
       
-      console.log('User profile loaded:', data);
+      console.log('[loadUserProfile] User profile loaded successfully:', data ? 'data exists' : 'no data');
       return data;
     } catch (error) {
-      console.error('Error loading user profile:', error);
+      console.error('[loadUserProfile] Exception caught:', error);
+      console.error('[loadUserProfile] Exception message:', error.message);
       // Return null to trigger EmailConfirmed redirect for profile creation
       return null;
     }
@@ -121,31 +131,39 @@ export const UserProvider = ({ children }) => {
    */
   const initializeUser = useCallback(async () => {
     try {
-      console.log('Initializing user session...');  
+      console.log('[initializeUser] Starting user session initialization...');  
+      console.log('[initializeUser] Calling supabase.auth.getSession()...');
       const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) {
-        console.error('Error getting session:', error);
+        console.error('[initializeUser] Error getting session:', error);
+        console.log('[initializeUser] Setting loading to false due to error');
         setLoading(false);
         return;
       }
       
-      console.log('Session data:', session);
+      console.log('[initializeUser] Session retrieved:', session ? 'session exists' : 'no session');
+      console.log('[initializeUser] Session user:', session?.user ? 'user exists' : 'no user');
       
       if (session?.user) {
-        console.log('User found in session:', session.user);
+        console.log('[initializeUser] User found in session, ID:', session.user.id);
+        console.log('[initializeUser] Setting user state...');
         setUser(session.user);
+        console.log('[initializeUser] Loading user profile...');
         const userProfile = await loadUserProfile(session.user.id);
-        console.log('Profile loaded in initializeUser:', userProfile);
+        console.log('[initializeUser] Profile loaded:', userProfile ? 'profile exists' : 'no profile');
+        console.log('[initializeUser] Setting profile state...');
         setProfile(userProfile);
       } else {
-        console.log('No user in session');
+        console.log('[initializeUser] No user in session');
       }
     } catch (error) {
-      console.error('Error initializing user:', error);
+      console.error('[initializeUser] Exception caught:', error);
+      console.error('[initializeUser] Error stack:', error.stack);
     } finally {
-      console.log('Setting loading to false');
+      console.log('[initializeUser] Finally block - setting loading to false');
       setLoading(false);
+      console.log('[initializeUser] Initialization complete');
     }
   }, []);
 
@@ -277,14 +295,41 @@ export const UserProvider = ({ children }) => {
     };
   };
 
+  // Track loading state changes
+  useEffect(() => {
+    console.log('[UserProvider] Loading state changed to:', loading);
+  }, [loading]);
+
+  // Track user state changes
+  useEffect(() => {
+    console.log('[UserProvider] User state changed:', user ? `user exists (ID: ${user.id})` : 'user is null');
+  }, [user]);
+
+  // Track profile state changes
+  useEffect(() => {
+    console.log('[UserProvider] Profile state changed:', profile ? 'profile exists' : 'profile is null');
+  }, [profile]);
+
+  // Initialize user on mount
+  useEffect(() => {
+    console.log('[UserProvider] Mounting - calling initializeUser');
+    initializeUser();
+  }, [initializeUser]);
+
   // listen to auth state changes
   useEffect(() => {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    console.log('[UserProvider] Setting up auth state listener');
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      console.log('[UserProvider] Auth state change event:', event);
       if (event === 'SIGNED_IN') {
+        console.log('[UserProvider] SIGNED_IN event - calling initializeUser');
         initializeUser();
       }
     });
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('[UserProvider] Cleaning up auth state listener');
+      subscription.unsubscribe();
+    };
   }, [initializeUser]);
 
   const value = {

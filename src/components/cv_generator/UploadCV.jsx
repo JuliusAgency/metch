@@ -27,6 +27,12 @@ export default function UploadCV({ user, onUploadComplete }) {
         setErrorMessage('');
 
         try {
+            // Ensure we have user email
+            const userEmail = user?.email;
+            if (!userEmail) {
+                throw new Error("User email is not available. Please refresh the page.");
+            }
+
             // 1. Upload the file
             const uploadResult = await UploadFile({ file });
             if (!uploadResult || !uploadResult.file_url) {
@@ -38,9 +44,9 @@ export default function UploadCV({ user, onUploadComplete }) {
             await User.updateMyUserData({ resume_url: fileUrl });
 
             // 3. Find existing CV record or create a new one to store metadata
-            const existingCvs = await CV.filter({ user_email: user.email });
+            const existingCvs = await CV.filter({ user_email: userEmail });
             const cvMetadata = {
-                user_email: user.email,
+                user_email: userEmail,
                 file_name: file.name,
                 file_size_kb: Math.round(file.size / 1024),
                 last_modified: new Date().toISOString(),

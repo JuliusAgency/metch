@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { User } from "@/api/entities";
 import { Job } from "@/api/entities";
-import { JobApplication } from "@/api/entities"; // Keep for consistency if JobApplication is used elsewhere in the component, though no longer directly used in job card display logic.
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch"; // New import
@@ -10,16 +9,15 @@ import {
   Edit,
   Copy,
   Briefcase
-} from
-"lucide-react";
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { format, formatDistanceToNow } from "date-fns"; // Updated import
+import { formatDistanceToNow } from "date-fns"; // Updated import
 import { he } from 'date-fns/locale'; // New import
 
 export default function JobManagement() {
-  const [user, setUser] = useState(null);
+  const [, setUser] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState('active'); // 'active' or 'ended'

@@ -39,7 +39,16 @@ const EmailConfirmed = () => {
 
         const profile = await loadUserProfile(currentUser.id);
 
-        if (profile) {
+        // If profile exists and has a user_type, go to dashboard
+        if (profile && profile.user_type) {
+          console.log('Profile exists with user_type, redirecting to Dashboard');
+          navigate('/Dashboard');
+          return;
+        }
+        
+        // If profile exists but no user_type, go to UserTypeSelection
+        if (profile && !profile.user_type) {
+          console.log('Profile exists without user_type, redirecting to UserTypeSelection');
           navigate('/UserTypeSelection');
           return;
         }

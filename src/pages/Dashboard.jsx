@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { User } from "@/api/entities";
+import { UserProfile } from "@/api/entities";
 import { Job } from "@/api/entities";
 import { Notification } from "@/api/entities";
 import { CandidateView } from "@/api/entities";
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useUser } from "@/contexts/UserContext";
 import {
@@ -88,7 +89,7 @@ const JobSeekerDashboard = ({ user }) => {
       
       try {
         const [jobsData, jobViewsData] = await Promise.all([
-          Job.filter({ status: 'active' }, "-created_date", 50),
+          Job.filter({ status: 'active' }, "-created_at", 50),
           JobView.filter({ user_email: user.email })
         ]);
 
@@ -304,7 +305,7 @@ const EmployerDashboard = ({ user }) => {
         const [notificationsData, viewedCandidatesData, candidatesData, dashboardData] = await Promise.all([
           Notification.filter({ is_read: false }, "-created_date", 5),
           CandidateView.filter({ viewer_email: user.email }, "-created_date", 50),
-          User.filter({ user_type: 'job_seeker' }, "-created_date", 10),
+          UserProfile.filter({ user_type: 'job_seeker' }, "-created_at", 10),
           EmployerAnalytics.getDashboardData(user.email)
         ]);
         
@@ -510,14 +511,6 @@ const EmployerDashboard = ({ user }) => {
 // --- MAIN DASHBOARD ROUTER ---
 export default function Dashboard() {
   const { user, loading } = useUser();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Onboarding Redirect for new employers
-    if (user && user.user_type === 'employer' && !user.company_name) {
-      navigate(createPageUrl('CompanyProfileCompletion'));
-    }
-  }, [user, navigate]);
 
   if (loading) {
     return (

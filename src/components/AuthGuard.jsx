@@ -19,8 +19,11 @@ const AuthGuard = ({ children }) => {
       console.log('AuthGuard redirecting to Login - no user');
       navigate('/Login');
     } else if (!loading && user && !user.profile) {
-      console.log('AuthGuard redirecting to EmailConfirmation - no profile');
-      navigate('/EmailConfirmation');
+      console.log('AuthGuard redirecting to EmailConfirmed - no profile');
+      navigate('/EmailConfirmed');
+    } else if (!loading && user && user.profile && !user.user_type) {
+      console.log('AuthGuard redirecting to UserTypeSelection - no user_type');
+      navigate('/UserTypeSelection');
     }
   }, [user, loading, navigate]);
 
@@ -42,7 +45,13 @@ const AuthGuard = ({ children }) => {
 
   // Don't render children if user doesn't have a profile
   if (!user.profile) {
-    console.log('AuthGuard not rendering children - no profile, navigating to EmailConfirmation');
+    console.log('AuthGuard not rendering children - no profile');
+    return null;
+  }
+
+  // Don't render children if user doesn't have a user_type
+  if (!user.user_type) {
+    console.log('AuthGuard not rendering children - no user_type');
     return null;
   }
 

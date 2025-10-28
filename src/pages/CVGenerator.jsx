@@ -93,11 +93,21 @@ export default function CVGenerator() {
 
     setSaving(true);
     try {
+      // Ensure we have user email - use from user state or cvData personal_details
+      const userEmail = user?.email || cvData?.personal_details?.email;
+      
+      if (!userEmail) {
+        console.error("Cannot save CV: user email is not available");
+        alert("Unable to save CV. Please refresh the page and try again.");
+        setSaving(false);
+        return;
+      }
+
       let savedCv;
       if (cvId) {
         savedCv = await CV.update(cvId, cvData);
       } else {
-        savedCv = await CV.create({ ...cvData, user_email: user.email });
+        savedCv = await CV.create({ ...cvData, user_email: userEmail });
         setCvId(savedCv.id);
       }
       console.log("Saved CV data:", savedCv);

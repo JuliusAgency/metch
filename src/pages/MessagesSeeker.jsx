@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { User } from "@/api/entities";
 import { Conversation } from "@/api/entities";
 import { Message } from "@/api/entities";
+import { UserProfile } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,7 @@ export default function MessagesSeeker() {
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
+    const [loadingMessages, setLoadingMessages] = useState(false);
 
     const totalPages = Math.ceil(conversations.length / ITEMS_PER_PAGE);
 
@@ -56,9 +58,46 @@ export default function MessagesSeeker() {
             const userData = await User.me();
             setUser(userData);
             
-            // In a real implementation, load conversations for job seeker
-            // const conversationsData = await Conversation.filter({ candidate_email: userData.email });
-            // setConversations(conversationsData);
+            // Load conversations for job seeker from database
+            try {
+                const conversationsData = await Conversation.filter(
+                    { candidate_email: userData.email },
+                    "-last_message_time",
+                    100
+                );
+                
+                // Fetch employer information for each conversation
+                const mappedConversations = await Promise.all(conversationsData.map(async (conv) => {
+                    let employerName = "מעסיק לא ידוע";
+                    let profileImage = "";
+                    
+                    // Try to fetch employer info from UserProfile
+                    try {
+                        const employerResults = await UserProfile.filter({ email: conv.employer_email });
+                        if (employerResults.length > 0) {
+                            employerName = employerResults[0].full_name || employerResults[0].company_name || "מעסיק לא ידוע";
+                            profileImage = employerResults[0].profile_image || "";
+                        }
+                    } catch (error) {
+                        console.error("Error fetching employer info:", error);
+                    }
+                    
+                    return {
+                        id: conv.id,
+                        employer_name: employerName,
+                        employer_email: conv.employer_email,
+                        last_message_time: conv.last_message_time,
+                        last_message: conv.last_message || "",
+                        profileImage: profileImage,
+                        job_title: conv.job_title || "משרה כללית"
+                    };
+                }));
+                
+                setConversations(mappedConversations);
+            } catch (error) {
+                console.error("Error loading conversations:", error);
+                // Keep using mock data on error
+            }
         } catch (error) {
             console.error("Error loading data:", error);
         } finally {
@@ -67,34 +106,36 @@ export default function MessagesSeeker() {
     };
 
     const loadMessages = async (conversationId) => {
+        setLoadingMessages(true);
         try {
-            // Mock messages for the selected conversation
-            const mockMessages = [
-                {
-                    id: "1",
-                    content: "שלום! ראיתי את הקורות חיים שלך ואני מעוניין לשמוע עליך יותר",
-                    sender_email: "employer@aroma.com",
-                    created_date: "2025-01-03T16:45:00Z",
-                    is_read: true
-                },
-                {
-                    id: "2", 
-                    content: "שלום! תודה על הפנייה. אשמח לשמוע עוד על התפקיד",
-                    sender_email: user?.email || "seeker@example.com",
-                    created_date: "2025-01-03T16:48:00Z",
-                    is_read: true
-                },
-                {
-                    id: "3",
-                    content: "מתי תוכל להגיע לראיון?",
-                    sender_email: "employer@aroma.com",
-                    created_date: "2025-01-03T17:00:00Z",
-                    is_read: false
-                }
-            ];
-            setMessages(mockMessages);
+            // If it's a support conversation, use mock messages
+            if (conversationId === "support") {
+                setMessages([
+                    {
+                        id: "support_1",
+                        content: "שלום! איך אנחנו יכולים לעזור לך היום?",
+                        sender_email: "support@metch.com",
+                        created_date: new Date().toISOString(),
+                        is_read: true
+                    }
+                ]);
+                setLoadingMessages(false);
+                return;
+            }
+            
+            // Load real messages from database
+            const messagesData = await Message.filter(
+                { conversation_id: conversationId },
+                "created_at",
+                100
+            );
+            
+            setMessages(messagesData);
         } catch (error) {
             console.error("Error loading messages:", error);
+            setMessages([]);
+        } finally {
+            setLoadingMessages(false);
         }
     };
 
@@ -122,15 +163,39 @@ export default function MessagesSeeker() {
 
         setSendingMessage(true);
         try {
-            const newMsg = {
-                id: Date.now().toString(),
-                content: newMessage.trim(),
-                sender_email: user?.email || "seeker@example.com",
-                created_date: new Date().toISOString(),
-                is_read: false
-            };
+            // If it's a support conversation, don't save to database
+            if (selectedConversation?.is_support) {
+                const newMsg = {
+                    id: Date.now().toString(),
+                    content: newMessage.trim(),
+                    sender_email: user?.email || "seeker@example.com",
+                    created_date: new Date().toISOString(),
+                    is_read: false
+                };
 
-            setMessages(prev => [...prev, newMsg]);
+                setMessages(prev => [...prev, newMsg]);
+                setNewMessage("");
+                setSendingMessage(false);
+                return;
+            }
+
+            // Create message in database
+            const createdMessage = await Message.create({
+                conversation_id: selectedConversation.id,
+                sender_email: user?.email,
+                recipient_email: selectedConversation.employer_email,
+                content: newMessage.trim(),
+                is_read: false
+            });
+
+            // Update conversation with last message info
+            await Conversation.update(selectedConversation.id, {
+                last_message: newMessage.trim(),
+                last_message_time: new Date().toISOString()
+            });
+
+            // Add message to UI
+            setMessages(prev => [...prev, createdMessage]);
             setNewMessage("");
         } catch (error) {
             console.error("Error sending message:", error);
@@ -202,8 +267,13 @@ export default function MessagesSeeker() {
 
                             {/* Messages Area */}
                             <div className="flex-1 p-6 overflow-y-auto space-y-4">
+                                {loadingMessages && (
+                                    <div className="flex justify-center items-center py-8">
+                                        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                    </div>
+                                )}
                                 <AnimatePresence>
-                                    {messages.map((message, index) => {
+                                    {!loadingMessages && messages.map((message, index) => {
                                         const isMyMessage = message.sender_email === user?.email || message.sender_email === "seeker@example.com";
                                         return (
                                             <motion.div
@@ -331,7 +401,16 @@ export default function MessagesSeeker() {
 
                         {/* Conversations List */}
                         <div className="space-y-4 mb-8">
-                            {paginatedConversations.map((conversation, index) => (
+                            {loading ? (
+                                <div className="flex justify-center items-center py-12">
+                                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                            ) : paginatedConversations.length === 0 ? (
+                                <div className="text-center py-12 text-gray-500">
+                                    <p>אין הודעות כרגע</p>
+                                </div>
+                            ) : (
+                                paginatedConversations.map((conversation, index) => (
                                 <motion.div
                                     key={conversation.id}
                                     initial={{ opacity: 0, y: 20 }}
@@ -365,7 +444,8 @@ export default function MessagesSeeker() {
                                         </div>
                                     </div>
                                 </motion.div>
-                            ))}
+                            ))
+                            )}
                         </div>
 
                         {/* Pagination */}

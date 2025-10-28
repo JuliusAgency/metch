@@ -146,6 +146,41 @@ export const createEntityMethods = (tableName) => {
     async find(query = {}) {
       return this.list({ filters: query });
     },
+
+    /**
+     * Filter records with optional ordering and limit
+     * @param {Object} filters - Filter conditions
+     * @param {string} orderBy - Column name to order by (prefix with - for descending)
+     * @param {number} limit - Maximum number of records to return
+     * @returns {Promise<Array>} Array of matching records
+     */
+    async filter(filters = {}, orderBy = null, limit = null) {
+      let query = supabase.from(tableName).select('*');
+      
+      // Apply filters
+      if (filters && Object.keys(filters).length > 0) {
+        Object.entries(filters).forEach(([key, value]) => {
+          query = query.eq(key, value);
+        });
+      }
+      
+      // Apply ordering
+      if (orderBy) {
+        const isDescending = orderBy.startsWith('-');
+        const column = isDescending ? orderBy.substring(1) : orderBy;
+        query = query.order(column, { ascending: !isDescending });
+      }
+      
+      // Apply limit
+      if (limit) {
+        query = query.limit(limit);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      return data || [];
+    },
   };
 };
 
@@ -164,7 +199,7 @@ export const auth = {
     
     // Fetch user profile
     const { data: profile, error: profileError } = await supabase
-      .from('users')
+      .from('UserProfile')
       .select('*')
       .eq('id', user.id)
       .single();
@@ -219,6 +254,47 @@ export const auth = {
   },
 
   /**
+   * Update current user's data in the UserProfile table
+   * @param {Object} data - The data to update
+   * @returns {Promise<Object>} The updated profile
+   */
+  async updateMyUserData(data) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError) throw authError;
+    if (!user) throw new Error('Not authenticated');
+    
+    // Update user profile
+    const { data: updatedProfile, error: updateError } = await supabase
+      .from('UserProfile')
+      .update(data)
+      .eq('id', user.id)
+      .select()
+      .single();
+    
+    if (updateError) {
+      // If profile doesn't exist, try to create it
+      if (updateError.code === 'PGRST116') {
+        const { data: newProfile, error: createError } = await supabase
+          .from('UserProfile')
+          .insert({
+            id: user.id,
+            email: user.email,
+            ...data
+          })
+          .select()
+          .single();
+        
+        if (createError) throw createError;
+        return newProfile;
+      }
+      throw updateError;
+    }
+    
+    return updatedProfile;
+  },
+
+  /**
    * Get the current session
    * @returns {Promise<Object>} The current session
    */
@@ -240,7 +316,7 @@ export const auth = {
     
     // Check if profile exists
     const { data: existingProfile } = await supabase
-      .from('users')
+      .from('UserProfile')
       .select('*')
       .eq('id', user.id)
       .single();
@@ -251,7 +327,7 @@ export const auth = {
     
     // Create profile if it doesn't exist
     const { data: newProfile, error: createError } = await supabase
-      .from('users')
+      .from('UserProfile')
       .insert({
         id: user.id,
         email: user.email,
@@ -275,7 +351,7 @@ export const auth = {
     if (!user) return null;
     
     const { data: profile } = await supabase
-      .from('users')
+      .from('UserProfile')
       .select('*')
       .eq('id', user.id)
       .single();

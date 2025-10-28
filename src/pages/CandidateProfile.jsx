@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { User } from "@/api/entities";
+import { UserProfile } from "@/api/entities";
 import { Conversation } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -121,7 +122,7 @@ export default function CandidateProfile() {
             
             // Try to fetch real candidate data only if it's not a demo ID
             try {
-                const results = await User.filter({ id });
+                const results = await UserProfile.filter({ id });
                 if (results.length > 0) {
                     setCandidate(results[0]);
                 } else {

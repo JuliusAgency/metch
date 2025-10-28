@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -21,9 +21,17 @@ const imgEllipse480Mobile = "http://localhost:3845/assets/89b89e723ec104e845beb6
 const UserTypeSelection = () => {
   const [selectedType, setSelectedType] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { updateProfile } = useUser();
+  const { user, updateProfile, loading: userLoading } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Redirect to dashboard if user already has a user_type
+  useEffect(() => {
+    if (!userLoading && user && user.user_type) {
+      console.log('User already has user_type, redirecting to Dashboard');
+      navigate('/Dashboard');
+    }
+  }, [user, userLoading, navigate]);
 
   const handleTypeSelection = async (userType) => {
     if (loading) return;
@@ -57,6 +65,15 @@ const UserTypeSelection = () => {
       setLoading(false);
     }
   };
+
+  // Show loading while checking user data
+  if (userLoading) {
+    return (
+      <div className="bg-gradient-to-b from-[#dbecf3] from-[12.35%] to-[#ffffff] via-[#ffffff] via-[32.336%] h-screen w-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2987cd]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gradient-to-b from-[#dbecf3] from-[12.35%] to-[#ffffff] via-[#ffffff] via-[32.336%] h-screen w-screen relative overflow-hidden">
