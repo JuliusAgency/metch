@@ -17,16 +17,11 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { UserAnalytics } from "@/components/UserAnalytics";
 
-// Mock User service for demonstration purposes
-// In a real application, this would fetch user data from an API or context
 const User = {
   me: async () => {
-    // Simulate an API call
     return new Promise(resolve => {
       setTimeout(() => {
-        // Return a mock user object or null if not authenticated
         resolve({ email: "example@user.com", name: "Test User" });
-        // resolve(null); // Uncomment to simulate no logged-in user
       }, 500);
     });
   }
@@ -119,7 +114,6 @@ export default function JobSearch() {
         : [...prev, jobId]
     );
 
-    // Track save/unsave action
     if (user?.email && job) {
       if (wasLiked) {
         await UserAnalytics.trackJobUnsave(user.email, job);
@@ -130,15 +124,13 @@ export default function JobSearch() {
   };
 
   const handleSearch = async (e) => {
-    e.preventDefault(); // Prevent default form submission behavior
+    e.preventDefault();
     if (user?.email && searchTerm.trim()) {
       await UserAnalytics.trackAction(user.email, 'search_query', {
         search_term: searchTerm.trim(),
         search_context: 'job_search'
       });
     }
-    // The actual filtering happens via searchTerm state change,
-    // which triggers re-render of filteredJobs.
   };
 
   const filteredJobs = MOCK_JOBS.filter(job =>
@@ -156,7 +148,6 @@ export default function JobSearch() {
           <div className="text-center mb-8">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">חיפוש משרות</h1>
             
-            {/* Search Bar */}
             <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
               <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input

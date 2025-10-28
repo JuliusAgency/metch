@@ -35,7 +35,6 @@ export default function AnswerQuestionnaire() {
                 if (jobResults.length > 0) {
                     setJob(jobResults[0]);
                 } else {
-                    // Mock job for development
                     setJob({
                         id: jobId,
                         title: "מנהלת קשרי לקוחות",
@@ -67,7 +66,6 @@ export default function AnswerQuestionnaire() {
         setSubmitting(true);
         
         try {
-            // Save questionnaire responses
             const formattedResponses = job.screening_questions.map(q => ({
                 question: q.text,
                 answer: answers[q.text] || 'לא נמסרה תשובה'
@@ -80,14 +78,12 @@ export default function AnswerQuestionnaire() {
                 responses: formattedResponses
             });
 
-            // Create job application
             await JobApplication.create({
                 job_id: job.id,
                 applicant_email: user.email,
                 status: 'pending'
             });
 
-            // Navigate to success or dashboard
             navigate(createPageUrl("Dashboard"));
             
         } catch (error) {

@@ -27,17 +27,16 @@ import {
   Clock,
   Bell,
   HelpCircle,
-  CheckCircle // Added CheckCircle import
+  CheckCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { UserAnalytics } from "@/components/UserAnalytics";
-import { EmployerAnalytics } from "@/components/EmployerAnalytics"; // Added EmployerAnalytics import
-import EmployerStatsCard from "@/components/employer/EmployerStatsCard"; // Added EmployerStatsCard import
-import EmployerActivityFeed from "@/components/employer/EmployerActivityFeed"; // Added EmployerActivityFeed import
+import { EmployerAnalytics } from "@/components/EmployerAnalytics";
+import EmployerStatsCard from "@/components/employer/EmployerStatsCard";
+import EmployerActivityFeed from "@/components/employer/EmployerActivityFeed";
 import JobSeekerGuide from "@/components/guides/JobSeekerGuide";
 import EmployerGuide from "@/components/guides/EmployerGuide";
 
-// --- MOCK DATA FOR JOB SEEKER DASHBOARD (NO LONGER USED FOR JOBS) ---
 const MOCK_NOTIFICATIONS_SEEKER = [
   { id: 1, message: "מישהו בארומה צפה בקורות החיים שלך" },
   { id: 2, message: "התקבלה מועמדותך למשרת מנהל/ת מוצר ב-Wix" },
@@ -51,16 +50,14 @@ const MOCK_STATS = {
     profile_viewed: 10
 };
 
-// --- JOB SEEKER DASHBOARD COMPONENT (New) ---
 const JobSeekerDashboard = ({ user }) => {
   const [jobFilter, setJobFilter] = useState('new');
   const [currentNotificationIndex, setCurrentNotificationIndex] = useState(0);
-  const [allJobs, setAllJobs] = useState([]); // Renamed 'jobs' to 'allJobs'
-  const [viewedJobIds, setViewedJobIds] = useState(new Set()); // New state for viewed job IDs
+  const [allJobs, setAllJobs] = useState([]);
+  const [viewedJobIds, setViewedJobIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [showGuide, setShowGuide] = useState(false);
 
-  // Check if user needs onboarding guide
   useEffect(() => {
     const hasSeenGuide = localStorage.getItem(`jobseeker_guide_${user?.email}`);
     if (!hasSeenGuide) {
@@ -122,7 +119,6 @@ const JobSeekerDashboard = ({ user }) => {
   const handlePrevNotification = () => setCurrentNotificationIndex(prev => prev > 0 ? prev - 1 : MOCK_NOTIFICATIONS_SEEKER.length - 1);
   const handleNextNotification = () => setCurrentNotificationIndex(prev => prev < MOCK_NOTIFICATIONS_SEEKER.length - 1 ? prev + 1 : 0);
 
-  // Filter jobs based on the current jobFilter state
   const displayedJobs = allJobs.filter(job => {
     if (jobFilter === 'new') {
       return !viewedJobIds.has(job.id);
@@ -130,7 +126,7 @@ const JobSeekerDashboard = ({ user }) => {
     if (jobFilter === 'viewed') {
       return viewedJobIds.has(job.id);
     }
-    return true; // Should not happen with 'new'/'viewed' filters
+    return true;
   });
 
   return (
@@ -155,15 +151,13 @@ const JobSeekerDashboard = ({ user }) => {
           </div>
 
           <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
-            {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stats-grid">
-              <StatCard icon={Briefcase} title="משרות רלוונטיות" value={allJobs.length} /> {/* Changed to allJobs.length */}
+              <StatCard icon={Briefcase} title="משרות רלוונטיות" value={allJobs.length} />
               <StatCard icon={Eye} title="צפו בקורות חיים שלי" value={MOCK_STATS.cv_viewed} />
               <StatCard icon={FileText} title="מועמדויות שהגשתי" value={MOCK_STATS.applications_submitted} />
               <StatCard icon={UserIcon} title="צפו בפרופיל שלי" value={MOCK_STATS.profile_viewed} />
             </div>
 
-            {/* Notification Carousel */}
             <Card className="bg-[#E7F2F7] shadow-none border-0 rounded-lg notification-carousel">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -177,7 +171,6 @@ const JobSeekerDashboard = ({ user }) => {
                 </CardContent>
             </Card>
 
-            {/* Filter Toggle */}
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div className="relative w-full md:w-96 job-search-input">
                   <Input placeholder="אפשר גם לחפש" className="pl-12 pr-4 py-2 border-gray-300 focus:border-blue-400 rounded-full h-11" />
@@ -189,11 +182,10 @@ const JobSeekerDashboard = ({ user }) => {
                 </div>
             </div>
 
-            {/* Jobs List */}
             <div className="space-y-4 job-list">
                 {loading ? (
                    <div className="text-center py-8 text-gray-500">טוען משרות...</div>
-                ) : displayedJobs.length > 0 ? ( // Changed to displayedJobs
+                ) : displayedJobs.length > 0 ? (
                     displayedJobs.map((job, index) => (
                     <motion.div key={job.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
                       <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
@@ -220,7 +212,6 @@ const JobSeekerDashboard = ({ user }) => {
                                 <Link
                                   to={createPageUrl(`JobDetailsSeeker?id=${job.id}`)}
                                   onClick={() => {
-                                    // Track job view when user clicks to view details
                                     if (user?.email) {
                                       UserAnalytics.trackJobView(user.email, job);
                                     }
@@ -234,7 +225,6 @@ const JobSeekerDashboard = ({ user }) => {
                     </motion.div>
                 ))
                 ) : (
-                  // Updated empty state messages
                   <div className="text-center py-8 text-gray-500">{jobFilter === 'new' ? 'אין משרות חדשות עבורך כרגע.' : 'עדיין לא צפית באף משרה.'}</div>
                 )}
             </div>
@@ -251,7 +241,6 @@ const JobSeekerDashboard = ({ user }) => {
   );
 };
 
-// --- EMPLOYER DASHBOARD COMPONENT ---
 const EmployerDashboard = ({ user }) => {
   const [viewedCandidates, setViewedCandidates] = useState([]);
   const [candidates, setCandidates] = useState([]);
@@ -262,8 +251,6 @@ const EmployerDashboard = ({ user }) => {
   const [showOnboardingHint, setShowOnboardingHint] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const location = useLocation();
-
-  // New state for employer analytics
   const [employerStats, setEmployerStats] = useState(null);
   const [employerActivity, setEmployerActivity] = useState([]);
   
@@ -271,13 +258,11 @@ const EmployerDashboard = ({ user }) => {
     const params = new URLSearchParams(location.search);
     if (params.get('onboarding') === 'complete') {
       setShowOnboardingHint(true);
-      // Hide hint after a few seconds
       const timer = setTimeout(() => setShowOnboardingHint(false), 8000);
       return () => clearTimeout(timer);
     }
   }, [location]);
 
-  // Check if user needs onboarding guide
   useEffect(() => {
     const hasSeenGuide = localStorage.getItem(`employer_guide_${user?.email}`);
     if (!hasSeenGuide) {
@@ -328,7 +313,6 @@ const EmployerDashboard = ({ user }) => {
 
   const handleViewCandidate = async (candidate) => {
     try {
-      // Track candidate profile view
       if (user?.email) {
         await UserAnalytics.trackAction(user.email, 'profile_view', {
           candidate_name: candidate.full_name,
@@ -382,7 +366,6 @@ const EmployerDashboard = ({ user }) => {
             </Button>
           </motion.div>
           <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
-              {/* Enhanced Stats Grid with Real Analytics */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 employer-stats">
                 <EmployerStatsCard
                   icon={Eye}
@@ -422,7 +405,6 @@ const EmployerDashboard = ({ user }) => {
                 </Card>
               </div>
 
-              {/* Additional Analytics Row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                 <EmployerStatsCard
                   icon={Users}
@@ -460,7 +442,6 @@ const EmployerDashboard = ({ user }) => {
                 </CardContent>
               </Card>
 
-              {/* Activity Feed */}
               <EmployerActivityFeed activities={employerActivity} />
 
               <div className="flex flex-col md:flex-row gap-4 items-center justify-between candidate-filter-buttons">
@@ -508,7 +489,6 @@ const EmployerDashboard = ({ user }) => {
   );
 };
 
-// --- MAIN DASHBOARD ROUTER ---
 export default function Dashboard() {
   const { user, loading } = useUser();
 
@@ -524,7 +504,6 @@ export default function Dashboard() {
     return <div className="p-8 text-center" dir="rtl">נראה שאתה לא מחובר. <Button onClick={() => User.login()}>התחבר</Button></div>;
   }
 
-  // Use user_type to decide which dashboard to render
   if (user.user_type === 'job_seeker') {
     return <JobSeekerDashboard user={user} />;
   } else {

@@ -11,7 +11,6 @@ import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
 import { SendEmail } from "@/api/integrations";
 
-// Mock data to use until real data is available
 const MOCK_RESPONSE = {
     id: "mock_response_1",
     candidate_name: "עידן כהן (דוגמה)",

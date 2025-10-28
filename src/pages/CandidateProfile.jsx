@@ -43,7 +43,6 @@ const MOCK_CANDIDATE = {
     preferred_job_types: ["full_time"]
 };
 
-// Additional mock candidates for different demo IDs
 const DEMO_CANDIDATES = {
     'demo-candidate-1': {
         ...MOCK_CANDIDATE,
@@ -97,19 +96,16 @@ export default function CandidateProfile() {
     const loadCandidate = async (id) => {
         setLoading(true);
         try {
-            // Check if this is a demo/mock candidate ID
             if (id === MOCK_CANDIDATE.id) {
                 setCandidate(MOCK_CANDIDATE);
                 return;
             }
             
-            // Check other demo candidates
             if (DEMO_CANDIDATES[id]) {
                 setCandidate(DEMO_CANDIDATES[id]);
                 return;
             }
             
-            // For any other demo-* or mock-* IDs, use a default mock candidate
             if (id && (id.startsWith('demo-') || id.startsWith('mock-'))) {
                 setCandidate({
                     ...MOCK_CANDIDATE,
@@ -120,14 +116,12 @@ export default function CandidateProfile() {
                 return;
             }
             
-            // Try to fetch real candidate data only if it's not a demo ID
             try {
                 const results = await UserProfile.filter({ id });
                 if (results.length > 0) {
                     setCandidate(results[0]);
                 } else {
                     console.log(`Candidate with ID ${id} not found, using default mock data`);
-                    // Fallback to mock data when candidate not found
                     setCandidate({
                         ...MOCK_CANDIDATE,
                         id: id,
@@ -138,7 +132,6 @@ export default function CandidateProfile() {
                 }
             } catch (error) {
                 console.log("Error fetching candidate data, using mock data:", error);
-                // Fallback to mock data on any database error
                 setCandidate({
                     ...MOCK_CANDIDATE,
                     id: id,
@@ -148,7 +141,6 @@ export default function CandidateProfile() {
             }
         } catch (error) {
             console.error("Error in loadCandidate:", error);
-            // Final fallback
             setCandidate({
                 ...MOCK_CANDIDATE,
                 id: id || 'unknown',
@@ -165,7 +157,6 @@ export default function CandidateProfile() {
 
         setCreatingConversation(true);
         try {
-            // Check if conversation already exists
             const existingConversations = await Conversation.filter({
                 employer_email: user.email,
                 candidate_email: candidate.email
@@ -175,19 +166,17 @@ export default function CandidateProfile() {
             if (existingConversations.length > 0) {
                 conversation = existingConversations[0];
             } else {
-                // Create new conversation
                 conversation = await Conversation.create({
                     employer_email: user.email,
                     candidate_email: candidate.email,
                     candidate_name: candidate.full_name,
-                    job_title: "משרה כללית", // Default job title
+                    job_title: "משרה כללית",
                     last_message: "",
                     last_message_time: new Date().toISOString(),
                     unread_count: 0
                 });
             }
 
-            // Navigate to messages page
             window.location.href = createPageUrl("Messages");
         } catch (error) {
             console.error("Error creating conversation:", error);
@@ -219,7 +208,7 @@ export default function CandidateProfile() {
         return <div className="text-center py-12">Candidate not found.</div>;
     }
 
-    const matchScore = 90; // Mock data as per design
+    const matchScore = 90;
 
     const availabilityText = {
         immediate: 'מיידי',
