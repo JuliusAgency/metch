@@ -25,7 +25,6 @@ import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
-// Mock conversations data for job seekers
 const MOCK_CONVERSATIONS = [
     { id: "1", employer_name: "ארומה", employer_email: "aroma@example.com", last_message_time: "2025-03-10T10:00:00Z", last_message: "שלום, ראיתי את הקורות חיים שלך", profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face", job_title: "מנהלת קשרי לקוחות" },
     { id: "2", employer_name: "ארומה", employer_email: "aroma2@example.com", last_message_time: "2025-03-09T09:30:00Z", last_message: "מתי תוכל להתחיל לעבוד?", profileImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Aroma_Espresso_Bar_logo.svg/1200px-Aroma_Espresso_Bar_logo.svg.png", job_title: "בריסטה" },

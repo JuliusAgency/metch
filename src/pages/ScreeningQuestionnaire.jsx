@@ -12,7 +12,6 @@ import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
-// Default screening questions for job seekers
 const DEFAULT_QUESTIONS = [
 { id: 1, text: "האם יש לך רישיון רכב?", type: "yes_no", answer: "" },
 { id: 2, text: "האם מיקום העבודה מתאים עבורך למשרה מלאה בחברה שלנו?", type: "text", answer: "" },
@@ -127,7 +126,7 @@ export default function ScreeningQuestionnaire() {
                                                 </div>
                                             </div>
                                             
-                                            <div className="flex justify-start"> {/* Added for RTL alignment */}
+                                            <div className="flex justify-start">
                                                 {question.type === 'text' ?
                       <Input
                         value={question.answer}

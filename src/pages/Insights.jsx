@@ -6,7 +6,6 @@ import { ChevronLeft, Sparkles, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
-// Mock data for the charts
 const chartData1 = [
   { name: 'ינו', uv: 12 }, { name: 'פבר', uv: 19 }, { name: 'מרץ', uv: 15 },
   { name: 'אפר', uv: 22 }, { name: 'מאי', uv: 18 }, { name: 'יונ', uv: 25 }, { name: 'יול', uv: 20 }

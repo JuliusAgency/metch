@@ -24,7 +24,6 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import ConversationStatusIndicator from "@/components/conversations/ConversationStatusIndicator";
 
-// Mock conversations data with job status
 const MOCK_CONVERSATIONS = [
     {
         id: "1",

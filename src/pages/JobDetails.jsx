@@ -21,7 +21,7 @@ import {
   Pause,
   Copy,
   BarChart3,
-  ClipboardList // Added ClipboardList icon for screening questionnaire
+  ClipboardList
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
@@ -61,11 +61,11 @@ export default function JobDetails() {
     } finally {
       setLoading(false);
     }
-  }, [location.search]); // Depend on location.search to re-run when URL params change
+  }, [location.search]);
 
   useEffect(() => {
     loadData();
-  }, [loadData]); // Depend on loadData to re-run when loadData itself changes (due to its dependencies)
+  }, [loadData]);
 
   const handleStatusChange = async (newStatus) => {
     try {
@@ -73,12 +73,10 @@ export default function JobDetails() {
       await Job.update(job.id, { status: newStatus });
       setJob(prev => ({ ...prev, status: newStatus }));
       
-      // Track status change
       if (user) {
         await EmployerAnalytics.trackJobStatusChange(user.email, job, oldStatus, newStatus);
       }
       
-      // Show notification for status change
       setLastStatusChange(newStatus);
       setShowStatusNotification(true);
     } catch (error) {
@@ -86,7 +84,6 @@ export default function JobDetails() {
     }
   };
 
-  // Add job view tracking when component loads
   useEffect(() => {
     const trackJobView = async () => {
       if (job && user) {
@@ -117,7 +114,7 @@ export default function JobDetails() {
   }
 
   const config = statusConfig[job.status] || statusConfig.active;
-  const viewsCount = Math.floor(Math.random() * 200) + 50; // Mock data
+  const viewsCount = Math.floor(Math.random() * 200) + 50;
 
   return (
     <>
@@ -125,7 +122,6 @@ export default function JobDetails() {
         <div className="w-[85vw] mx-auto">
           <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
             <div className="relative">
-              {/* Header */}
               <div className="relative h-24 overflow-hidden -m-px">
                 <div 
                   className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
