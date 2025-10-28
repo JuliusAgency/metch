@@ -29,8 +29,6 @@ export default function Layout({ children, currentPageName }) {
   const { user, loading } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Added
   
-  console.log('Layout: Rendering - loading:', loading, 'user:', user ? 'present' : 'null', 'page:', currentPageName);
-  
   const closeMenu = () => setIsMobileMenuOpen(false); // Added
 
   // Pages that should not show navbar (authentication pages)
@@ -38,7 +36,6 @@ export default function Layout({ children, currentPageName }) {
   const shouldHideNavbar = authPages.includes(currentPageName);
 
   if (loading) {
-    console.log('Layout: Showing loading spinner');
     return (
       <div className="min-h-screen page-gradient flex items-center justify-center" dir="rtl">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>

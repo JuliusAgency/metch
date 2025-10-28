@@ -9,13 +9,13 @@ export const Notification = createEntityMethods('Notification');
 
 export const CandidateView = createEntityMethods('CandidateView');
 
-export const Message = createEntityMethods('messages');
+export const Message = createEntityMethods('Message');
 
-export const Conversation = createEntityMethods('conversations');
+export const Conversation = createEntityMethods('Conversation');
 
-export const QuestionnaireResponse = createEntityMethods('questionnaire_responses');
+export const QuestionnaireResponse = createEntityMethods('QuestionnaireResponse');
 
-export const JobView = createEntityMethods('job_views');
+export const JobView = createEntityMethods('JobView');
 
 export const UserAction = createEntityMethods('user_actions');
 
@@ -25,7 +25,7 @@ export const EmployerAction = createEntityMethods('EmployerAction');
 
 export const EmployerStats = createEntityMethods('EmployerStats');
 
-export const CV = createEntityMethods('cvs');
+export const CV = createEntityMethods('CV');
 
 export const UserProfile = createEntityMethods('UserProfile');
 
