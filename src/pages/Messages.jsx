@@ -3,89 +3,23 @@ import { User } from "@/api/entities";
 import { Conversation } from "@/api/entities";
 import { Message } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-    MessageCircle,
-    Send,
-    ChevronLeft,
-    ChevronRight,
-    HelpCircle,
-    User as UserIcon,
-    Clock,
-    Check,
-    CheckCheck,
-    Search
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { format } from "date-fns";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { Search } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 import ConversationStatusIndicator from "@/components/conversations/ConversationStatusIndicator";
-
-// Mock conversations data with job status
-const MOCK_CONVERSATIONS = [
-    {
-        id: "1",
-        candidate_name: "עידן",
-        candidate_email: "idan@example.com",
-        last_message_time: "2025-03-15T10:00:00Z",
-        profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-        job_status: "active",
-        job_title: "מפתח Full Stack"
-    },
-    {
-        id: "2",
-        candidate_name: "שירלי",
-        candidate_email: "shirly@example.com",
-        last_message_time: "2025-03-15T09:30:00Z",
-        profileImage: "https://images.unsplash.com/photo-1494790108755-2616b612b977?w=150&h=150&fit=crop&crop=face",
-        job_status: "filled",
-        job_title: "מנהלת שיווק"
-    },
-    {
-        id: "3",
-        candidate_name: "אביטל",
-        candidate_email: "avital@example.com",
-        last_message_time: "2025-03-15T09:00:00Z",
-        profileImage: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-        job_status: "closed",
-        job_title: "מעצבת UX/UI"
-    },
-    {
-        id: "4",
-        candidate_name: "שחם ג",
-        candidate_email: "saham@example.com",
-        last_message_time: "2025-03-15T08:30:00Z",
-        profileImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
-        job_status: "filled_via_metch",
-        job_title: "מנהל פרויקטים"
-    },
-];
+import ChatHeader from "@/components/messages/ChatHeader";
+import MessageItem from "@/components/messages/MessageItem";
+import MessageInput from "@/components/messages/MessageInput";
+import ConversationList from "@/components/messages/ConversationList";
+import Pagination from "@/components/messages/Pagination";
 
 const ITEMS_PER_PAGE = 4;
 
 export default function Messages() {
     const [user, setUser] = useState(null);
-    const [conversations, setConversations] = useState(MOCK_CONVERSATIONS);
+    const [conversations, setConversations] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
-    const [messages, setMessages] = useState([
-        {
-            id: "1",
-            content: "שלום עידן! שמח לשמוע",
-            sender_email: "employer@example.com",
-            created_date: "2025-01-03T16:45:00Z",
-            is_read: true
-        },
-        {
-            id: "2",
-            content: "שלום אהרון! שמח להכיר",
-            sender_email: "candidate@example.com",
-            created_date: "2025-01-03T16:48:00Z",
-            is_read: true
-        }
-    ]);
+    const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const [sendingMessage, setSendingMessage] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
@@ -101,6 +35,11 @@ export default function Messages() {
         try {
             const userData = await User.me();
             setUser(userData);
+
+            if (userData) {
+                const convs = await Conversation.filter({ employer_email: userData.email });
+                setConversations(convs);
+            }
         } catch (error) {
             console.error("Error loading data:", error);
         }
@@ -129,13 +68,11 @@ export default function Messages() {
 
         setSendingMessage(true);
         try {
-            const newMsg = {
-                id: Date.now().toString(),
+            const newMsg = await Message.create({
+                conversation_id: selectedConversation.id,
+                sender_email: user.email,
                 content: newMessage.trim(),
-                sender_email: user?.email || "employer@example.com",
-                created_date: new Date().toISOString(),
-                is_read: false
-            };
+            });
 
             setMessages(prev => [...prev, newMsg]);
             setNewMessage("");
@@ -146,43 +83,24 @@ export default function Messages() {
         }
     };
 
+    const selectConversation = async (conversation) => {
+        setSelectedConversation(conversation);
+        const msgs = await Message.filter({ conversation_id: conversation.id });
+        setMessages(msgs);
+    };
+
     if (selectedConversation) {
         return (
             <div className="p-4 md:p-6" dir="rtl">
                 <div className="w-[85vw] mx-auto">
                     <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden h-[80vh]">
                         <div className="relative h-full flex flex-col">
-                            {/* Header */}
-                            <div className="relative h-24 overflow-hidden -m-px">
-                                <div
-                                    className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
-                                    style={{
-                                        backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
-                                        backgroundSize: 'cover',
-                                        backgroundPosition: 'center',
-                                        backgroundRepeat: 'no-repeat'
-                                    }}
-                                />
-                                <button
-                                    onClick={() => setSelectedConversation(null)}
-                                    className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-10"
-                                >
-                                    <ChevronRight className="w-6 h-6 text-gray-800" />
-                                </button>
-                            </div>
-
-                            {/* Chat Header with Job Status */}
-                            <div className="text-center py-4 -mt-6 relative z-10 space-y-2">
-                                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">הודעות</h1>
-                                <div className="flex justify-center items-center gap-2">
-                                    <span className="text-sm text-gray-600">{selectedConversation.job_title}</span>
-                                    <ConversationStatusIndicator jobStatus={selectedConversation.job_status} />
-                                </div>
-                            </div>
-
-                            {/* Messages Area */}
+                            <ChatHeader
+                                setSelectedConversation={setSelectedConversation}
+                                selectedConversation={selectedConversation}
+                                ConversationStatusIndicator={ConversationStatusIndicator}
+                            />
                             <div className="flex-1 p-6 overflow-y-auto space-y-4">
-                                {/* Job Status Message if job is closed/filled */}
                                 {selectedConversation.job_status && ['filled', 'filled_via_metch', 'closed'].includes(selectedConversation.job_status) && (
                                     <div className="bg-gray-100 rounded-lg p-4 text-center">
                                         <p className="text-sm text-gray-600">
@@ -194,37 +112,16 @@ export default function Messages() {
                                 )}
 
                                 <AnimatePresence>
-                                    {messages.map((message, index) => {
-                                        const isMyMessage = message.sender_email === user?.email || message.sender_email === "employer@example.com";
-                                        return (
-                                            <motion.div
-                                                key={message.id}
-                                                initial={{ opacity: 0, y: 20 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ duration: 0.3, delay: index * 0.1 }}
-                                                className={`flex ${isMyMessage ? 'justify-start' : 'justify-end'}`}
-                                            >
-                                                <div className={`max-w-xs lg:max-w-md px-6 py-3 rounded-2xl ${
-                                                    isMyMessage
-                                                        ? 'bg-blue-600 text-white'
-                                                        : 'bg-gray-100 text-gray-900'
-                                                }`}>
-                                                    <p className="text-base">{message.content}</p>
-                                                    <div className={`flex items-center justify-start gap-1 mt-2 text-xs ${
-                                                        isMyMessage ? 'text-blue-100' : 'text-gray-500'
-                                                    }`}>
-                                                        {isMyMessage && (
-                                                            <CheckCheck className="w-3 h-3" />
-                                                        )}
-                                                        <span>{format(new Date(message.created_date), "HH:mm")} PM</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        );
-                                    })}
+                                    {messages.map((message, index) => (
+                                        <MessageItem
+                                            key={message.id}
+                                            message={message}
+                                            index={index}
+                                            user={user}
+                                        />
+                                    ))}
                                 </AnimatePresence>
 
-                                {/* Typing indicator */}
                                 <div className="flex justify-end">
                                     <div className="bg-gray-100 px-4 py-3 rounded-2xl">
                                         <div className="flex gap-1">
@@ -236,34 +133,13 @@ export default function Messages() {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Message Input - Disabled for closed/filled jobs */}
-                            <div className="border-t border-gray-200 p-6">
-                                {['filled', 'filled_via_metch', 'closed'].includes(selectedConversation.job_status) ? (
-                                    <div className="text-center py-4">
-                                        <p className="text-gray-500">לא ניתן לשלוח הודעות - המשרה לא פעילה</p>
-                                    </div>
-                                ) : (
-                                    <form onSubmit={sendMessage} className="flex flex-row-reverse gap-3 items-center">
-                                        <Button
-                                            type="submit"
-                                            disabled={!newMessage.trim() || sendingMessage}
-                                            className="bg-blue-100 hover:bg-blue-200 rounded-full w-12 h-12 flex-shrink-0"
-                                            size="icon"
-                                        >
-                                            <Send className="w-4 h-4 text-blue-600" />
-                                        </Button>
-                                        <Input
-                                            value={newMessage}
-                                            onChange={(e) => setNewMessage(e.target.value)}
-                                            placeholder="הקלד כאן..."
-                                            className="flex-1 rounded-full h-12 pr-6 pl-6 text-right border-gray-200 focus:border-blue-400"
-                                            dir="rtl"
-                                            disabled={sendingMessage}
-                                        />
-                                    </form>
-                                )}
-                            </div>
+                            <MessageInput
+                                newMessage={newMessage}
+                                setNewMessage={setNewMessage}
+                                sendMessage={sendMessage}
+                                sendingMessage={sendingMessage}
+                                selectedConversation={selectedConversation}
+                            />
                         </div>
                     </Card>
                 </div>
@@ -292,7 +168,6 @@ export default function Messages() {
                             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">הודעות</h1>
                         </div>
 
-                        {/* Search */}
                         <div className="relative mb-8">
                             <Input
                                 placeholder="חיפוש בהודעות"
@@ -304,81 +179,17 @@ export default function Messages() {
                             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                         </div>
 
-                        {/* Conversations List */}
-                        <div className="space-y-4 mb-8">
-                            {paginatedConversations.map((conversation, index) => (
-                                <motion.div
-                                    key={conversation.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                                    className="flex items-center justify-between p-4 hover:bg-gray-50/80 rounded-xl cursor-pointer transition-colors"
-                                    onClick={() => setSelectedConversation(conversation)}
-                                >
-                                    <div className="flex items-center gap-4">
-                                         <div className="space-y-1 text-right">
-                                            <span className={`font-medium ${
-                                                ['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'text-gray-500' : 'text-gray-800'
-                                            }`}>
-                                                {conversation.candidate_name}
-                                            </span>
-                                            <div className="text-xs text-gray-500">{conversation.job_title}</div>
-                                            <ConversationStatusIndicator jobStatus={conversation.job_status} className="text-xs" />
-                                        </div>
-                                        <div className={`w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 ${
-                                            ['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'grayscale opacity-75' : ''
-                                        }`}>
-                                            <img
-                                                src={conversation.profileImage}
-                                                alt={conversation.candidate_name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                    </div>
-                                    <span className="text-gray-500 text-sm whitespace-nowrap">
-                                        {format(new Date(conversation.last_message_time), "dd.MM.yy")}
-                                    </span>
-                                </motion.div>
-                            ))}
-                        </div>
+                        <ConversationList
+                            conversations={paginatedConversations}
+                            selectConversation={selectConversation}
+                        />
 
-                        {/* Pagination */}
-                        <div className="flex justify-center items-center pt-4">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => goToPage(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="rounded-full hover:bg-gray-100"
-                            >
-                                <ChevronRight className="w-5 h-5" />
-                            </Button>
-                            <div className="flex items-center gap-2 mx-4">
-                                {pageNumbers.map(number => (
-                                    <Button
-                                        key={number}
-                                        variant="ghost"
-                                        onClick={() => goToPage(number)}
-                                        className={`rounded-full w-9 h-9 transition-colors ${
-                                            currentPage === number
-                                                ? 'bg-blue-600 text-white font-bold shadow-md'
-                                                : 'text-gray-600 hover:bg-gray-100'
-                                        }`}
-                                    >
-                                        {number}
-                                    </Button>
-                                ))}
-                            </div>
-                           <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => goToPage(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="rounded-full hover:bg-gray-100"
-                            >
-                                <ChevronLeft className="w-5 h-5" />
-                            </Button>
-                        </div>
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            goToPage={goToPage}
+                            pageNumbers={pageNumbers}
+                        />
                     </CardContent>
                 </Card>
             </div>
