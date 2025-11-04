@@ -24,10 +24,12 @@ import {
   ClipboardList // Added ClipboardList icon for screening questionnaire
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { createPageUrl } from "@/utils";
-import { format } from "date-fns";
-import JobStatusNotification from "@/components/notifications/JobStatusNotification";
 import { EmployerAnalytics } from "@/components/EmployerAnalytics";
+import JobHeader from "@/components/job/JobHeader";
+import JobTitle from "@/components/job/JobTitle";
+import JobStats from "@/components/job/JobStats";
+import JobInfo from "@/components/job/JobInfo";
+import JobActions from "@/components/job/JobActions";
 
 export default function JobDetails() {
   const [job, setJob] = useState(null);
@@ -36,8 +38,6 @@ export default function JobDetails() {
   const [matchesCount, setMatchesCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [showStatusNotification, setShowStatusNotification] = useState(false);
-  const [lastStatusChange, setLastStatusChange] = useState(null);
   const location = useLocation();
 
   const loadData = useCallback(async () => {
@@ -53,7 +53,6 @@ export default function JobDetails() {
         if (jobResults.length > 0) {
           setJob(jobResults[0]);
           
-          // Load applications for this job
           const appResults = await JobApplication.filter({ job_id: jobId });
           setApplications(appResults);
           
@@ -71,11 +70,11 @@ export default function JobDetails() {
     } finally {
       setLoading(false);
     }
-  }, [location.search]); // Depend on location.search to re-run when URL params change
+  }, [location.search]);
 
   useEffect(() => {
     loadData();
-  }, [loadData]); // Depend on loadData to re-run when loadData itself changes (due to its dependencies)
+  }, [loadData]);
 
   const handleStatusChange = async (newStatus) => {
     try {
@@ -83,20 +82,14 @@ export default function JobDetails() {
       await Job.update(job.id, { status: newStatus });
       setJob(prev => ({ ...prev, status: newStatus }));
       
-      // Track status change
       if (user) {
         await EmployerAnalytics.trackJobStatusChange(user.email, job, oldStatus, newStatus);
       }
-      
-      // Show notification for status change
-      setLastStatusChange(newStatus);
-      setShowStatusNotification(true);
     } catch (error) {
       console.error("Error updating job status:", error);
     }
   };
 
-  // Add job view tracking when component loads
   useEffect(() => {
     const trackJobView = async () => {
       if (job && user) {
@@ -129,20 +122,22 @@ export default function JobDetails() {
   const config = statusConfig[job.status] || statusConfig.active;
 
   return (
-    <>
-      <div className="p-4 md:p-6" dir="rtl">
-        <div className="w-[85vw] mx-auto">
-          <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
-            <div className="relative">
-              {/* Header */}
-              <div className="relative h-24 overflow-hidden -m-px">
-                <div 
-                  className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
-                  style={{
-                    backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/ca93821b0_image.png)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center top'
-                  }}
+    <div className="p-4 md:p-6" dir="rtl">
+      <div className="w-[85vw] mx-auto">
+        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
+          <div className="relative">
+            <JobHeader />
+            <CardContent className="p-4 sm:p-6 md:p-8 -mt-6 relative z-10">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-8"
+              >
+                <JobTitle
+                  title={job.title}
+                  company={job.company}
+                  statusConfig={statusConfig}
+                  status={job.status}
                 />
                 <Link 
                   to={createPageUrl("JobManagement")} 
@@ -295,14 +290,6 @@ export default function JobDetails() {
           </Card>
         </div>
       </div>
-
-      {/* Status Change Notification */}
-      <JobStatusNotification
-        status={lastStatusChange}
-        jobTitle={job?.title}
-        isVisible={showStatusNotification}
-        onClose={() => setShowStatusNotification(false)}
-      />
-    </>
+    </div>
   );
 }

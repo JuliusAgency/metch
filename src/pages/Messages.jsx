@@ -5,7 +5,6 @@ import { Message } from "@/api/entities";
 import { UserProfile } from "@/api/entities";
 import { Job } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
     Send,
@@ -17,6 +16,11 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import ConversationStatusIndicator from "@/components/conversations/ConversationStatusIndicator";
+import ChatHeader from "@/components/messages/ChatHeader";
+import MessageItem from "@/components/messages/MessageItem";
+import MessageInput from "@/components/messages/MessageInput";
+import ConversationList from "@/components/messages/ConversationList";
+import Pagination from "@/components/messages/Pagination";
 
 const ITEMS_PER_PAGE = 4;
 
@@ -216,35 +220,11 @@ export default function Messages() {
                 <div className="w-[85vw] mx-auto">
                     <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden h-[80vh]">
                         <div className="relative h-full flex flex-col">
-                            {/* Header */}
-                            <div className="relative h-24 overflow-hidden -m-px">
-                                <div
-                                    className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
-                                    style={{
-                                        backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
-                                        backgroundSize: 'cover',
-                                        backgroundPosition: 'center',
-                                        backgroundRepeat: 'no-repeat'
-                                    }}
-                                />
-                                <button
-                                    onClick={() => setSelectedConversation(null)}
-                                    className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-10"
-                                >
-                                    <ChevronRight className="w-6 h-6 text-gray-800" />
-                                </button>
-                            </div>
-
-                            {/* Chat Header with Job Status */}
-                            <div className="text-center py-4 -mt-6 relative z-10 space-y-2">
-                                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">הודעות</h1>
-                                <div className="flex justify-center items-center gap-2">
-                                    <span className="text-sm text-gray-600">{selectedConversation.job_title}</span>
-                                    <ConversationStatusIndicator jobStatus={selectedConversation.job_status} />
-                                </div>
-                            </div>
-
-                            {/* Messages Area */}
+                            <ChatHeader
+                                setSelectedConversation={setSelectedConversation}
+                                selectedConversation={selectedConversation}
+                                ConversationStatusIndicator={ConversationStatusIndicator}
+                            />
                             <div className="flex-1 p-6 overflow-y-auto space-y-4">
                                 {loadingMessages && (
                                     <div className="flex justify-center items-center py-8">
@@ -294,34 +274,13 @@ export default function Messages() {
                                     })}
                                 </AnimatePresence>
                             </div>
-
-                            {/* Message Input - Disabled for closed/filled jobs */}
-                            <div className="border-t border-gray-200 p-6">
-                                {['filled', 'filled_via_metch', 'closed'].includes(selectedConversation.job_status) ? (
-                                    <div className="text-center py-4">
-                                        <p className="text-gray-500">לא ניתן לשלוח הודעות - המשרה לא פעילה</p>
-                                    </div>
-                                ) : (
-                                    <form onSubmit={sendMessage} className="flex flex-row-reverse gap-3 items-center">
-                                        <Button
-                                            type="submit"
-                                            disabled={!newMessage.trim() || sendingMessage}
-                                            className="bg-blue-100 hover:bg-blue-200 rounded-full w-12 h-12 flex-shrink-0"
-                                            size="icon"
-                                        >
-                                            <Send className="w-4 h-4 text-blue-600" />
-                                        </Button>
-                                        <Input
-                                            value={newMessage}
-                                            onChange={(e) => setNewMessage(e.target.value)}
-                                            placeholder="הקלד כאן..."
-                                            className="flex-1 rounded-full h-12 pr-6 pl-6 text-right border-gray-200 focus:border-blue-400"
-                                            dir="rtl"
-                                            disabled={sendingMessage}
-                                        />
-                                    </form>
-                                )}
-                            </div>
+                            <MessageInput
+                                newMessage={newMessage}
+                                setNewMessage={setNewMessage}
+                                sendMessage={sendMessage}
+                                sendingMessage={sendingMessage}
+                                selectedConversation={selectedConversation}
+                            />
                         </div>
                     </Card>
                 </div>
@@ -350,7 +309,6 @@ export default function Messages() {
                             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">הודעות</h1>
                         </div>
 
-                        {/* Search */}
                         <div className="relative mb-8">
                             <Input
                                 placeholder="חיפוש בהודעות"
@@ -418,43 +376,12 @@ export default function Messages() {
                             )}
                         </div>
 
-                        {/* Pagination */}
-                        <div className="flex justify-center items-center pt-4">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => goToPage(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="rounded-full hover:bg-gray-100"
-                            >
-                                <ChevronRight className="w-5 h-5" />
-                            </Button>
-                            <div className="flex items-center gap-2 mx-4">
-                                {pageNumbers.map(number => (
-                                    <Button
-                                        key={number}
-                                        variant="ghost"
-                                        onClick={() => goToPage(number)}
-                                        className={`rounded-full w-9 h-9 transition-colors ${
-                                            currentPage === number
-                                                ? 'bg-blue-600 text-white font-bold shadow-md'
-                                                : 'text-gray-600 hover:bg-gray-100'
-                                        }`}
-                                    >
-                                        {number}
-                                    </Button>
-                                ))}
-                            </div>
-                           <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => goToPage(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="rounded-full hover:bg-gray-100"
-                            >
-                                <ChevronLeft className="w-5 h-5" />
-                            </Button>
-                        </div>
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            goToPage={goToPage}
+                            pageNumbers={pageNumbers}
+                        />
                     </CardContent>
                 </Card>
             </div>

@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from "react";
-import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { QuestionnaireResponse } from "@/api/entities";
 import { User } from "@/api/entities";
 import { Conversation } from "@/api/entities";
@@ -9,26 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
-import { SendEmail } from "@/api/integrations";
-
-// Mock data to use until real data is available
-const MOCK_RESPONSE = {
-    id: "mock_response_1",
-    candidate_name: "עידן כהן (דוגמה)",
-    candidate_email: "idan.cohen@example.com",
-    responses: [
-        { question: "מה הניסיון שלך בתחום המכירות?", answer: "5 שנים של ניסיון במכירות B2B, עם התמחות בלקוחות אנטרפרייז." },
-        { question: "תאר את ההצלחה הגדולה ביותר שלך במכירה.", answer: "סגירת עסקה בשווי 250,000 דולר עם לקוח בינלאומי לאחר מחזור מכירה של 6 חודשים." },
-        { question: "איך אתה מתמודד עם התנגדויות של לקוחות?", answer: "אני מאזין להבין את שורש ההתנגדות, מאשר את חשש הלקוח, ומציג פתרון מותאם אישית שמטפל בבעיה." }
-    ]
-};
-
-const ResponseField = ({ label, value }) => (
-    <div className="w-full p-3 bg-white border border-gray-200 rounded-xl text-gray-800 min-h-[48px] flex items-center justify-end">
-        <p className="flex-1 text-right mr-4">{value}</p>
-        <span className="text-gray-500 font-medium">{label}</span>
-    </div>
-);
+import ResponseField from "@/components/questionnaire/ResponseField";
 
 export default function ViewQuestionnaire() {
     const [response, setResponse] = useState(null);
@@ -48,22 +28,16 @@ export default function ViewQuestionnaire() {
                 const params = new URLSearchParams(location.search);
                 const responseId = params.get('id');
 
-                if (responseId === 'mock_response_1') {
-                    setResponse(MOCK_RESPONSE);
-                } else if (responseId) {
+                if (responseId) {
                     const results = await QuestionnaireResponse.filter({ id: responseId });
                     if (results.length > 0) {
                         setResponse(results[0]);
                     } else {
                         console.error("Response not found");
-                         setResponse(MOCK_RESPONSE); // fallback for dev
                     }
-                } else {
-                     setResponse(MOCK_RESPONSE);
                 }
             } catch (error) {
                 console.error("Error loading data:", error);
-                 setResponse(MOCK_RESPONSE); // fallback for dev
             } finally {
                 setLoading(false);
             }

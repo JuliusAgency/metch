@@ -1,217 +1,32 @@
-import { useUser } from "@/contexts/UserContext";
-import JobSeekerDashboard from "@/components/dashboard/JobSeekerDashboard";
-import EmployerDashboard from "@/components/dashboard/EmployerDashboard";
+import { useState, useEffect } from "react";
+import { UserProfile } from "@/api/entities";
+import { Notification } from "@/api/entities";
+import { CandidateView } from "@/api/entities";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Link, useLocation } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import {
+  Plus,
+  Eye,
+  Users,
+  TrendingUp,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  User as UserIcon,
+  HelpCircle,
+  CheckCircle
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { UserAnalytics } from "@/components/UserAnalytics";
+import { EmployerAnalytics } from "@/components/EmployerAnalytics";
+import EmployerStatsCard from "@/components/employer/EmployerStatsCard";
+import EmployerActivityFeed from "@/components/employer/EmployerActivityFeed";
+import EmployerGuide from "@/components/guides/EmployerGuide";
 
-// --- JOB SEEKER DASHBOARD COMPONENT (New) ---
-const JobSeekerDashboard = ({ user }) => {
-  const [jobFilter, setJobFilter] = useState('new');
-  const [currentNotificationIndex, setCurrentNotificationIndex] = useState(0);
-  const [allJobs, setAllJobs] = useState([]); // Renamed 'jobs' to 'allJobs'
-  const [viewedJobIds, setViewedJobIds] = useState(new Set()); // New state for viewed job IDs
-  const [loading, setLoading] = useState(true);
-  const [showGuide, setShowGuide] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const [userStats, setUserStats] = useState(null);
-
-  // Check if user needs onboarding guide
-  useEffect(() => {
-    const hasSeenGuide = localStorage.getItem(`jobseeker_guide_${user?.email}`);
-    if (!hasSeenGuide) {
-      setShowGuide(true);
-    }
-  }, [user]);
-
-  const handleGuideComplete = () => {
-    setShowGuide(false);
-    if (user?.email) {
-      localStorage.setItem(`jobseeker_guide_${user.email}`, 'completed');
-    }
-  };
-
-  const handleGuideSkip = () => {
-    setShowGuide(false);
-    if (user?.email) {
-      localStorage.setItem(`jobseeker_guide_${user.email}`, 'skipped');
-    }
-  };
-
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      if (!user) return;
-      
-      try {
-        const [jobsData, jobViewsData, notificationsData, statsData] = await Promise.all([
-          Job.filter({ status: 'active' }, "-created_at", 50),
-          JobView.filter({ user_email: user.email }),
-          Notification.filter({ is_read: false }, "-created_date", 5),
-          UserAnalytics.getUserStats(user.email)
-        ]);
-
-        setAllJobs(jobsData);
-        setViewedJobIds(new Set(jobViewsData.map(view => view.job_id)));
-        setNotifications(notificationsData);
-        setUserStats(statsData);
-
-      } catch (error) {
-        console.error("Error loading jobs for seeker:", error);
-        setAllJobs([]);
-        setViewedJobIds(new Set());
-        setNotifications([]);
-        setUserStats(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, [user]);
-
-  const StatCard = ({ icon: Icon, title, value, color = "bg-blue-50" }) => (
-    <Card className="bg-white border-gray-200/80 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
-      <CardContent className="p-6 text-center">
-        <div className={`w-12 h-12 ${color} rounded-full flex items-center justify-center mx-auto mb-3`}>
-          <Icon className="w-6 h-6 text-blue-600" />
-        </div>
-        <div className="text-2xl font-bold text-gray-900 mb-2">{value}</div>
-        <p className="text-gray-600 font-medium text-sm">{title}</p>
-      </CardContent>
-    </Card>
-  );
-
-  const handlePrevNotification = () => setCurrentNotificationIndex(prev => prev > 0 ? prev - 1 : (notifications.length - 1 || 0));
-  const handleNextNotification = () => setCurrentNotificationIndex(prev => prev < (notifications.length - 1) ? prev + 1 : 0);
-
-  // Filter jobs based on the current jobFilter state
-  const displayedJobs = allJobs.filter(job => {
-    if (jobFilter === 'new') {
-      return !viewedJobIds.has(job.id);
-    }
-    if (jobFilter === 'viewed') {
-      return viewedJobIds.has(job.id);
-    }
-    return true; // Should not happen with 'new'/'viewed' filters
-  });
-
-  return (
-    <>
-      <div className="p-4 md:p-6" dir="rtl">
-        <div className="max-w-6xl mx-auto space-y-6">
-          <div className="flex justify-between items-center px-2">
-              <h1 className="text-xl font-bold text-gray-900 mb-2">👋 היי {user.full_name?.split(' ')[0] || 'דניאל'}!</h1>
-              <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowGuide(true)}
-                    className="rounded-full px-3 py-1 text-xs"
-                  >
-                    מדריך
-                    <HelpCircle className="w-3 h-3 mr-1" />
-                  </Button>
-                  <span className="text-sm text-gray-600">התראות חדשות</span>
-                  <Bell className="w-5 h-5 text-yellow-500"/>
-              </div>
-          </div>
-
-          <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stats-grid">
-              <StatCard icon={Briefcase} title="משרות רלוונטיות" value={allJobs.length} />
-              <StatCard icon={Eye} title="צפו בקורות חיים שלי" value={0} />
-              <StatCard icon={FileText} title="מועמדויות שהגשתי" value={userStats?.total_applications || 0} />
-              <StatCard icon={UserIcon} title="צפו בפרופיל שלי" value={0} />
-            </div>
-
-            {/* Notification Carousel */}
-            <Card className="bg-[#E7F2F7] shadow-none border-0 rounded-lg notification-carousel">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handleNextNotification} disabled={notifications.length <= 1}><ChevronRight className="w-6 h-6 text-blue-600" /></Button>
-                    <div className="text-center flex items-center gap-3 overflow-hidden">
-                      <p className="text-blue-800 font-semibold text-sm sm:text-base whitespace-nowrap">{notifications[currentNotificationIndex]?.message || "אין התראות חדשות"}</p>
-                      {notifications.length > 1 && (<div className="hidden sm:flex gap-1.5">{notifications.map((_, index) => (<div key={index} className={`w-2.5 h-2.5 rounded-full ${index === currentNotificationIndex ? 'bg-blue-600' : 'bg-gray-300'}`}/>))}</div>)}
-                    </div>
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handlePrevNotification} disabled={notifications.length <= 1}><ChevronLeft className="w-6 h-6 text-blue-600" /></Button>
-                  </div>
-                </CardContent>
-            </Card>
-
-            {/* Filter Toggle */}
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div className="relative w-full md:w-96 job-search-input">
-                  <Input placeholder="אפשר גם לחפש" className="pl-12 pr-4 py-2 border-gray-300 focus:border-blue-400 rounded-full h-11" />
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                </div>
-                <div className="flex gap-2 bg-gray-100 p-1 rounded-full w-full md:w-auto job-filter-buttons">
-                  <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${jobFilter === 'viewed' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-transparent text-gray-700'}`} onClick={() => setJobFilter('viewed')}>משרות שצפיתי</Button>
-                  <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${jobFilter === 'new' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-transparent text-gray-700'}`} onClick={() => setJobFilter('new')}>משרות חדשות</Button>
-                </div>
-            </div>
-
-            {/* Jobs List */}
-            <div className="space-y-4 job-list">
-                {loading ? (
-                   <div className="text-center py-8 text-gray-500">טוען משרות...</div>
-                ) : displayedJobs.length > 0 ? ( // Changed to displayedJobs
-                    displayedJobs.map((job, index) => (
-                    <motion.div key={job.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
-                      <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
-                        <div className="flex items-center justify-between gap-4">
-                             <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">
-                              <img src={job.company_logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=random`} alt={job.company} className="w-full h-full object-cover" />
-                            </div>
-                            <div className="text-right">
-                                <h3 className="font-bold text-lg text-gray-900">{job.title}</h3>
-                                <p className="text-gray-600 text-sm">{job.company}</p>
-                                <div className="flex gap-4 text-xs text-gray-500 mt-1">
-                                    <span className="flex items-center gap-1"><MapPin className="w-3 h-3 ml-1"/>{job.location}</span>
-                                    <span className="flex items-center gap-1"><Briefcase className="w-3 h-3 ml-1"/>משרה מלאה</span>
-                                    <span className="flex items-center gap-1"><Clock className="w-3 h-3 ml-1"/>{job.start_date || 'מיידי'}</span>
-                                </div>
-                            </div>
-                            <div className="flex-1 text-right">
-                                <div className="text-sm text-gray-600 mb-1.5">{job.match_score || (Math.floor(Math.random() * 15) + 80)}% התאמה</div>
-                                <div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                                  <div className={`h-full transition-all duration-500 ${job.match_score >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${job.match_score || (Math.floor(Math.random() * 15) + 80)}%` }}></div>
-                                </div>
-                            </div>
-                            <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-28 view-job-button">
-                                <Link
-                                  to={createPageUrl(`JobDetailsSeeker?id=${job.id}`)}
-                                  onClick={() => {
-                                    // Track job view when user clicks to view details
-                                    if (user?.email) {
-                                      UserAnalytics.trackJobView(user.email, job);
-                                    }
-                                  }}
-                                >
-                                  לצפייה
-                                </Link>
-                            </Button>
-                        </div>
-                      </Card>
-                    </motion.div>
-                ))
-                ) : (
-                  // Updated empty state messages
-                  <div className="text-center py-8 text-gray-500">{jobFilter === 'new' ? 'אין משרות חדשות עבורך כרגע.' : 'עדיין לא צפית באף משרה.'}</div>
-                )}
-            </div>
-          </Card>
-        </div>
-      </div>
-
-      <JobSeekerGuide 
-        isActive={showGuide}
-        onComplete={handleGuideComplete}
-        onSkip={handleGuideSkip}
-      />
-    </>
-  );
-};
-
-// --- EMPLOYER DASHBOARD COMPONENT ---
 const EmployerDashboard = ({ user }) => {
   const [viewedCandidates, setViewedCandidates] = useState([]);
   const [candidates, setCandidates] = useState([]);
@@ -226,7 +41,7 @@ const EmployerDashboard = ({ user }) => {
   // New state for employer analytics
   const [employerStats, setEmployerStats] = useState(null);
   const [employerActivity, setEmployerActivity] = useState([]);
-  
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('onboarding') === 'complete') {
@@ -261,7 +76,6 @@ const EmployerDashboard = ({ user }) => {
 
   useEffect(() => {
     const loadData = async () => {
-      setLoading(true);
       try {
         const [notificationsData, viewedCandidatesData, candidatesData, dashboardData] = await Promise.all([
           Notification.filter({ is_read: false }, "-created_date", 5),
@@ -269,7 +83,7 @@ const EmployerDashboard = ({ user }) => {
           UserProfile.filter({ user_type: 'job_seeker' }, "-created_at", 10),
           EmployerAnalytics.getDashboardData(user.email)
         ]);
-        
+
         setEmployerStats(dashboardData.stats);
         setEmployerActivity(dashboardData.recentActivity);
         setNotifications(notificationsData);
@@ -282,8 +96,6 @@ const EmployerDashboard = ({ user }) => {
         setCandidates([]);
         setEmployerStats({});
         setEmployerActivity([]);
-      } finally {
-        setLoading(false);
       }
     };
     loadData();
@@ -462,7 +274,7 @@ const EmployerDashboard = ({ user }) => {
         </div>
       </div>
 
-      <EmployerGuide 
+      <EmployerGuide
         isActive={showGuide}
         onComplete={handleGuideComplete}
         onSkip={handleGuideSkip}
@@ -471,26 +283,4 @@ const EmployerDashboard = ({ user }) => {
   );
 };
 
-// --- MAIN DASHBOARD ROUTER ---
-export default function Dashboard() {
-  const { user, loading } = useUser();
-
-  if (loading) {
-    return (
-      <div className="p-8 space-y-8 flex justify-center items-center h-screen" dir="rtl">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <div className="p-8 text-center" dir="rtl">נראה שאתה לא מחובר. <Button onClick={() => User.login()}>התחבר</Button></div>;
-  }
-
-  // Use user_type to decide which dashboard to render
-  if (user.user_type === 'job_seeker') {
-    return <JobSeekerDashboard user={user} />;
-  } else {
-    return <EmployerDashboard user={user} />;
-  }
-}
+export default EmployerDashboard;
