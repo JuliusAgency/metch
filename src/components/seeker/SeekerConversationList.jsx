@@ -3,7 +3,7 @@ import { format } from "date-fns";
 
 const SeekerConversationList = ({ conversations, handleConversationSelect }) => (
     <div className="space-y-4 mb-8">
-        {conversations.map((conversation, index) => (
+        {Array.isArray(conversations) && conversations.map((conversation, index) => (
             <motion.div
                 key={conversation.id}
                 initial={{ opacity: 0, y: 20 }}

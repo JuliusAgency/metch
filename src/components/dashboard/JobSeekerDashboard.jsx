@@ -59,7 +59,7 @@ const JobSeekerDashboard = ({ user }) => {
 
       try {
         const [jobsData, jobViewsData] = await Promise.all([
-          Job.filter({ status: 'active' }, "-created_at", 50),
+          Job.filter({ status: 'active' }, "-created_date", 50),
           JobView.filter({ user_email: user.email })
         ]);
 
@@ -148,12 +148,14 @@ const JobSeekerDashboard = ({ user }) => {
                                     <span className="flex items-center gap-1"><Clock className="w-3 h-3 ml-1"/>{job.start_date || 'מיידי'}</span>
                                 </div>
                             </div>
+                            {job.match_score !== null && (
                             <div className="flex-1 text-right">
-                                <div className="text-sm text-gray-600 mb-1.5">{job.match_score || (Math.floor(Math.random() * 15) + 80)}% התאמה</div>
+                                <div className="text-sm text-gray-600 mb-1.5">{job.match_score}% התאמה</div>
                                 <div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                                  <div className={`h-full transition-all duration-500 ${job.match_score >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${job.match_score || (Math.floor(Math.random() * 15) + 80)}%` }}></div>
+                                  <div className={`h-full transition-all duration-500 ${job.match_score >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${job.match_score}%` }}></div>
                                 </div>
                             </div>
+                            )}
                             <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-28 view-job-button">
                                 <Link
                                   to={createPageUrl(`JobDetailsSeeker?id=${job.id}`)}

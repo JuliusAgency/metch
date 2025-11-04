@@ -6,6 +6,7 @@ import { User } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { createPageUrl } from "@/utils";
 import { UserAnalytics } from "@/components/UserAnalytics";
+import { useToast } from "@/components/ui/use-toast";
 import JobStatusBanner from "@/components/jobs/JobStatusBanner";
 import SeekerHeader from "@/components/seeker/SeekerHeader";
 import SeekerJobTitle from "@/components/seeker/SeekerJobTitle";
@@ -19,8 +20,10 @@ export default function JobDetailsSeeker() {
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
   const [user, setUser] = useState(null);
+  const [hasExistingApplication, setHasExistingApplication] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const loadData = React.useCallback(async () => {
     setLoading(true);
@@ -37,9 +40,17 @@ export default function JobDetailsSeeker() {
           const fetchedJob = jobResults[0];
           setJob(fetchedJob);
           
+          // Check for existing application
           if (userData?.email) {
             try {
               await UserAnalytics.trackJobView(userData.email, fetchedJob);
+              
+              // Check if user already applied
+              const existingApps = await JobApplication.filter({ 
+                job_id: jobId,
+                applicant_email: userData.email 
+              });
+              setHasExistingApplication(existingApps.length > 0);
             } catch (error) {
               console.log("Failed to track job view for " + userData.email);
             }
@@ -62,18 +73,52 @@ export default function JobDetailsSeeker() {
   }, [loadData]);
 
   const handleApply = async () => {
-    if (!job || !user) return;
-
-    const unavailableStatuses = ['filled', 'filled_via_metch', 'closed', 'paused'];
-    if (unavailableStatuses.includes(job.status)) {
+    if (!job || !user) {
+      toast({
+        title: "שגיאה",
+        description: "לא ניתן להגיש מועמדות. נא לרענן את הדף ולנסות שוב.",
+        variant: "destructive",
+      });
       return;
     }
 
-    if (user?.email) {
-      await UserAnalytics.trackJobApplication(user.email, job);
+    if (!user.email) {
+      toast({
+        title: "שגיאה",
+        description: "לא ניתן לזהות את המשתמש. נא להתחבר מחדש.",
+        variant: "destructive",
+      });
+      return;
     }
 
-    if (job.screening_questions && job.screening_questions.length > 0) {
+    const unavailableStatuses = ['filled', 'filled_via_metch', 'closed', 'paused'];
+    if (unavailableStatuses.includes(job.status)) {
+      toast({
+        title: "משרה לא זמינה",
+        description: "משרה זו אינה זמינה עוד להגשת מועמדות.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (hasExistingApplication) {
+      toast({
+        title: "מועמדות קיימת",
+        description: "כבר הגשת מועמדות למשרה זו. ניתן לראות את הסטטוס בלוח הבקרה.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      if (user.email) {
+        await UserAnalytics.trackJobApplication(user.email, job);
+      }
+    } catch (error) {
+      console.log("Failed to track job application:", error);
+    }
+
+    if (Array.isArray(job.screening_questions) && job.screening_questions.length > 0) {
       navigate(createPageUrl(`AnswerQuestionnaire?job_id=${job.id}`));
       return;
     }
@@ -86,11 +131,23 @@ export default function JobDetailsSeeker() {
         status: 'pending'
       });
       
+      toast({
+        title: "מועמדות הוגשה בהצלחה!",
+        description: "המועמדות שלך נשלחה למעסיק. תקבל עדכון על הסטטוס.",
+      });
+      
+      setHasExistingApplication(true);
+      
       setTimeout(() => {
         navigate(createPageUrl("Dashboard"));
       }, 1500);
     } catch (error) {
       console.error("Error applying to job:", error);
+      toast({
+        title: "שגיאה בהגשת מועמדות",
+        description: error?.message || "אירעה שגיאה בעת הגשת המועמדות. נא לנסות שוב.",
+        variant: "destructive",
+      });
     } finally {
       setApplying(false);
     }
@@ -120,7 +177,9 @@ export default function JobDetailsSeeker() {
   }
 
   const isUnavailable = ['filled', 'filled_via_metch', 'closed', 'paused'].includes(job.status);
-  const imageAttachments = job.attachments?.filter(att => att.type?.startsWith('image/')) || [];
+  const imageAttachments = Array.isArray(job.attachments) 
+    ? job.attachments.filter(att => att.type?.startsWith('image/')) 
+    : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#DBECF3] via-white to-white" dir="rtl">
@@ -139,6 +198,7 @@ export default function JobDetailsSeeker() {
               handleApply={handleApply}
               applying={applying}
               isUnavailable={isUnavailable}
+              hasExistingApplication={hasExistingApplication}
               handleReject={handleReject}
             />
           </CardContent>

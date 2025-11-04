@@ -48,18 +48,20 @@ const JobListItem = ({ job, index, savedJobs, toggleSaveJob, user }) => (
                         </Button>
                     </div>
 
-                    <div className="text-center min-w-[120px]">
-                        <div className="text-sm text-gray-600 mb-2">{job.match_score}% התאמה</div>
-                        <div dir="ltr" className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                            <div
-                                className={`h-full transition-all duration-500 ${
-                                    job.match_score >= 85 ? 'bg-green-400' :
-                                    job.match_score >= 70 ? 'bg-yellow-400' : 'bg-orange-400'
-                                }`}
-                                style={{ width: `${job.match_score}%` }}
-                            ></div>
+                    {job.match_score !== null && (
+                        <div className="text-center min-w-[120px]">
+                            <div className="text-sm text-gray-600 mb-2">{job.match_score}% התאמה</div>
+                            <div dir="ltr" className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                                <div
+                                    className={`h-full transition-all duration-500 ${
+                                        job.match_score >= 85 ? 'bg-green-400' :
+                                        job.match_score >= 70 ? 'bg-yellow-400' : 'bg-orange-400'
+                                    }`}
+                                    style={{ width: `${job.match_score}%` }}
+                                ></div>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     <div className="flex-1 text-right">
                         <h3 className="font-bold text-xl text-gray-900 mb-2">{job.title}</h3>

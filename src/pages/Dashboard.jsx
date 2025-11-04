@@ -31,6 +31,7 @@ import EmployerStatsCard from "@/components/employer/EmployerStatsCard";
 import EmployerActivityFeed from "@/components/employer/EmployerActivityFeed";
 import JobSeekerGuide from "@/components/guides/JobSeekerGuide";
 import EmployerGuide from "@/components/guides/EmployerGuide";
+import { calculate_match_score } from "@/utils/matchScore";
 
 // --- JOB SEEKER DASHBOARD COMPONENT (New) ---
 const JobSeekerDashboard = ({ user }) => {
@@ -71,17 +72,53 @@ const JobSeekerDashboard = ({ user }) => {
       if (!user) return;
       
       try {
-        const [jobsData, jobViewsData, notificationsData, statsData] = await Promise.all([
-          Job.filter({ status: 'active' }, "-created_at", 50),
+        const [jobsData, jobViewsData, notificationsData, statsData, profileViewsData, userProfile] = await Promise.all([
+          Job.filter({ status: 'active' }, "-created_date", 50),
           JobView.filter({ user_email: user.email }),
           Notification.filter({ is_read: false }, "-created_date", 5),
-          UserAnalytics.getUserStats(user.email)
+          UserAnalytics.getUserStats(user.email),
+          CandidateView.filter({ candidate_name: user.full_name }), // Get profile views for this job seeker
+          UserProfile.filter({ email: user.email }).then(profiles => profiles[0] || null) // Get user profile
         ]);
 
-        setAllJobs(jobsData);
+        // Calculate match scores for each job
+        const jobsWithScores = await Promise.all(
+          jobsData.map(async (job) => {
+            let matchScore = null;
+            if (userProfile) {
+              try {
+                const userSettings = {
+                  prefers_no_career_change: userProfile.prefers_no_career_change || false
+                };
+                const score = await calculate_match_score(userProfile, job, userSettings);
+                matchScore = score !== null ? Math.round(score * 100) : null; // Convert to percentage
+              } catch (error) {
+                console.error(`Error calculating match score for job ${job.id}:`, error);
+              }
+            }
+            return {
+              ...job,
+              match_score: matchScore
+            };
+          })
+        );
+
+        setAllJobs(jobsWithScores);
         setViewedJobIds(new Set(jobViewsData.map(view => view.job_id)));
         setNotifications(notificationsData);
-        setUserStats(statsData);
+        
+        // Enhance stats with profile views data
+        const enhancedStats = statsData ? {
+          ...statsData,
+          profile_views: profileViewsData.length,
+          resume_views: profileViewsData.length // Resume views same as profile views for now
+        } : {
+          profile_views: profileViewsData.length,
+          resume_views: profileViewsData.length,
+          total_applications: 0
+        };
+        
+        setUserStats(enhancedStats);
 
       } catch (error) {
         console.error("Error loading jobs for seeker:", error);
@@ -147,9 +184,9 @@ const JobSeekerDashboard = ({ user }) => {
             {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stats-grid">
               <StatCard icon={Briefcase} title="משרות רלוונטיות" value={allJobs.length} />
-              <StatCard icon={Eye} title="צפו בקורות חיים שלי" value={0} />
+              <StatCard icon={Eye} title="צפו בקורות חיים שלי" value={userStats?.resume_views || userStats?.profile_views || 0} />
               <StatCard icon={FileText} title="מועמדויות שהגשתי" value={userStats?.total_applications || 0} />
-              <StatCard icon={UserIcon} title="צפו בפרופיל שלי" value={0} />
+              <StatCard icon={UserIcon} title="צפו בפרופיל שלי" value={userStats?.profile_views || 0} />
             </div>
 
             {/* Notification Carousel */}
@@ -199,12 +236,14 @@ const JobSeekerDashboard = ({ user }) => {
                                     <span className="flex items-center gap-1"><Clock className="w-3 h-3 ml-1"/>{job.start_date || 'מיידי'}</span>
                                 </div>
                             </div>
+                            {job.match_score !== null && (
                             <div className="flex-1 text-right">
-                                <div className="text-sm text-gray-600 mb-1.5">{job.match_score || (Math.floor(Math.random() * 15) + 80)}% התאמה</div>
+                                <div className="text-sm text-gray-600 mb-1.5">{job.match_score}% התאמה</div>
                                 <div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                                  <div className={`h-full transition-all duration-500 ${job.match_score >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${job.match_score || (Math.floor(Math.random() * 15) + 80)}%` }}></div>
+                                  <div className={`h-full transition-all duration-500 ${job.match_score >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${job.match_score}%` }}></div>
                                 </div>
                             </div>
+                            )}
                             <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-28 view-job-button">
                                 <Link
                                   to={createPageUrl(`JobDetailsSeeker?id=${job.id}`)}
@@ -292,14 +331,25 @@ const EmployerDashboard = ({ user }) => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const [notificationsData, viewedCandidatesData, candidatesData, dashboardData] = await Promise.all([
+        const [notificationsData, viewedCandidatesData, candidatesData, dashboardData, activeJobsData] = await Promise.all([
           Notification.filter({ is_read: false }, "-created_date", 5),
           CandidateView.filter({ viewer_email: user.email }, "-created_date", 50),
           UserProfile.filter({ user_type: 'job_seeker' }, "-created_at", 10),
-          EmployerAnalytics.getDashboardData(user.email)
+          EmployerAnalytics.getDashboardData(user.email),
+          Job.filter({ created_by: user.email, status: 'active' })
         ]);
         
-        setEmployerStats(dashboardData.stats);
+        // Enhance stats with real-time data
+        const enhancedStats = {
+          ...dashboardData.stats,
+          total_jobs_published: activeJobsData.length, // Use actual active jobs count
+          total_candidates_viewed: viewedCandidatesData.length, // Use actual viewed candidates count
+          total_job_views: dashboardData.stats?.total_job_views || 0,
+          total_applications_received: dashboardData.stats?.total_applications_received || 0,
+          conversion_rate: dashboardData.stats?.conversion_rate || 0
+        };
+        
+        setEmployerStats(enhancedStats);
         setEmployerActivity(dashboardData.recentActivity);
         setNotifications(notificationsData);
         setViewedCandidates(viewedCandidatesData);
@@ -379,19 +429,19 @@ const EmployerDashboard = ({ user }) => {
                 <EmployerStatsCard
                   icon={Eye}
                   title="צפיות במשרות"
-                  value={employerStats?.total_job_views || 10}
+                  value={employerStats?.total_job_views || 0}
                   color="bg-blue-50 text-blue-600"
                 />
                 <EmployerStatsCard
                   icon={Users}
                   title="מועמדויות שהתקבלו"
-                  value={employerStats?.total_applications_received || 3}
+                  value={employerStats?.total_applications_received || 0}
                   color="bg-green-50 text-green-600"
                 />
                 <EmployerStatsCard
                   icon={TrendingUp}
                   title="משרות פעילות"
-                  value={employerStats?.total_jobs_published || 6}
+                  value={employerStats?.total_jobs_published || 0}
                   color="bg-purple-50 text-purple-600"
                 />
                 <Card className="relative col-span-2 sm:col-span-1 bg-[#84CC9E] text-white border-0 shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl create-job-card">
@@ -419,14 +469,14 @@ const EmployerDashboard = ({ user }) => {
                 <EmployerStatsCard
                   icon={Users}
                   title="מועמדים שנצפו"
-                  value={employerStats?.total_candidates_viewed || 12}
+                  value={employerStats?.total_candidates_viewed || 0}
                   subtitle="פרופילים ייחודיים"
                   color="bg-indigo-50 text-indigo-600"
                 />
                 <EmployerStatsCard
                   icon={TrendingUp}
                   title="אחוז המרה"
-                  value={`${employerStats?.conversion_rate || 17.8}%`}
+                  value={`${employerStats?.conversion_rate || 0}%`}
                   subtitle="צפיות למועמדויות"
                   color="bg-yellow-50 text-yellow-600"
                 />

@@ -17,9 +17,9 @@ export const QuestionnaireResponse = createEntityMethods('QuestionnaireResponse'
 
 export const JobView = createEntityMethods('JobView');
 
-export const UserAction = createEntityMethods('user_actions');
+export const UserAction = createEntityMethods('UserAction');
 
-export const UserStats = createEntityMethods('user_stats');
+export const UserStats = createEntityMethods('UserStats');
 
 export const EmployerAction = createEntityMethods('EmployerAction');
 

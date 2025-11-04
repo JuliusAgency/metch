@@ -6,7 +6,7 @@ import { User, MapPin, Clock, Briefcase, Upload, ChevronRight, X, FileText, Imag
 import { UploadFile } from "@/api/integrations";
 
 export default function Step5Preview({ jobData, setJobData }) {
-  const [uploadedFiles, setUploadedFiles] = useState(jobData.attachments || []);
+  const [uploadedFiles, setUploadedFiles] = useState(Array.isArray(jobData.attachments) ? jobData.attachments : []);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef(null);

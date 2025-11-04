@@ -96,17 +96,17 @@ export default function JobCard({ job, onView, userType = "job_seeker", classNam
 
             {/* Job Info */}
             <div className="flex-1 text-right">
-              {userType === "job_seeker" && (
+              {userType === "job_seeker" && job.match_score !== null && (
                 <>
                   <div className="text-sm text-gray-600 mb-1.5">
-                    {job.match_score || (Math.floor(Math.random() * 15) + 80)}% התאמה
+                    {job.match_score}% התאמה
                   </div>
                   <div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden mb-3">
                     <div 
                       className={`h-full transition-all duration-500 ${
-                        (job.match_score || 85) >= 80 ? 'bg-green-400' : 'bg-orange-400'
+                        job.match_score >= 80 ? 'bg-green-400' : 'bg-orange-400'
                       } ${isUnavailable ? 'opacity-50' : ''}`} 
-                      style={{ width: `${job.match_score || (Math.floor(Math.random() * 15) + 80)}%` }}
+                      style={{ width: `${job.match_score}%` }}
                     ></div>
                   </div>
                 </>
