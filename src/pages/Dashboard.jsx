@@ -1,7 +1,36 @@
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
-import JobSeekerDashboard from "@/components/dashboard/JobSeekerDashboard";
-import EmployerDashboard from "@/components/dashboard/EmployerDashboard";
+import { Job, JobView, Notification, UserProfile, CandidateView } from "@/api/entities";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Briefcase,
+  Eye,
+  FileText,
+  User as UserIcon,
+  Bell,
+  HelpCircle,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  MapPin,
+  Clock,
+  Users,
+  TrendingUp,
+  CheckCircle,
+  Plus
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { createPageUrl } from "@/utils";
+import { UserAnalytics } from "@/components/UserAnalytics";
+import { EmployerAnalytics } from "@/components/EmployerAnalytics";
+import EmployerStatsCard from "@/components/employer/EmployerStatsCard";
+import EmployerActivityFeed from "@/components/employer/EmployerActivityFeed";
+import JobSeekerGuide from "@/components/guides/JobSeekerGuide";
+import EmployerGuide from "@/components/guides/EmployerGuide";
 
 // --- JOB SEEKER DASHBOARD COMPONENT (New) ---
 const JobSeekerDashboard = ({ user }) => {
@@ -484,7 +513,14 @@ export default function Dashboard() {
   }
 
   if (!user) {
-    return <div className="p-8 text-center" dir="rtl">נראה שאתה לא מחובר. <Button onClick={() => User.login()}>התחבר</Button></div>;
+    return (
+      <div className="p-8 text-center" dir="rtl">
+        נראה שאתה לא מחובר. 
+        <Button asChild>
+          <Link to={createPageUrl("Login")}>התחבר</Link>
+        </Button>
+      </div>
+    );
   }
 
   // Use user_type to decide which dashboard to render
