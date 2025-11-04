@@ -180,7 +180,17 @@ export default function Profile() {
                             </div>
                         </div>
 
-                        <div className="flex justify-center pt-6">
+                        <div className="flex flex-col items-center space-y-4 pt-8 pb-4">
+                            <Button 
+                                asChild
+                                variant="link" 
+                                className="text-red-500 hover:text-red-600 font-medium"
+                            >
+                                <Link to={createPageUrl('Settings')}>
+                                    מחק חשבון
+                                </Link>
+                            </Button>
+                            
                             <Button 
                                 onClick={handleLogout}
                                 variant="outline" 

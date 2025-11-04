@@ -1,95 +1,48 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { User } from "@/api/entities";
 import { Conversation } from "@/api/entities";
 import { Message } from "@/api/entities";
+import { UserProfile } from "@/api/entities";
+import { Job } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
-    MessageCircle,
     Send,
     ChevronLeft,
     ChevronRight,
-    HelpCircle,
-    User as UserIcon,
-    Clock,
-    Check,
     CheckCheck,
     Search
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
 import ConversationStatusIndicator from "@/components/conversations/ConversationStatusIndicator";
-
-// Mock conversations data with job status
-const MOCK_CONVERSATIONS = [
-    {
-        id: "1",
-        candidate_name: "עידן",
-        candidate_email: "idan@example.com",
-        last_message_time: "2025-03-15T10:00:00Z",
-        profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-        job_status: "active",
-        job_title: "מפתח Full Stack"
-    },
-    {
-        id: "2",
-        candidate_name: "שירלי",
-        candidate_email: "shirly@example.com",
-        last_message_time: "2025-03-15T09:30:00Z",
-        profileImage: "https://images.unsplash.com/photo-1494790108755-2616b612b977?w=150&h=150&fit=crop&crop=face",
-        job_status: "filled",
-        job_title: "מנהלת שיווק"
-    },
-    {
-        id: "3",
-        candidate_name: "אביטל",
-        candidate_email: "avital@example.com",
-        last_message_time: "2025-03-15T09:00:00Z",
-        profileImage: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-        job_status: "closed",
-        job_title: "מעצבת UX/UI"
-    },
-    {
-        id: "4",
-        candidate_name: "שחם ג",
-        candidate_email: "saham@example.com",
-        last_message_time: "2025-03-15T08:30:00Z",
-        profileImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
-        job_status: "filled_via_metch",
-        job_title: "מנהל פרויקטים"
-    },
-];
 
 const ITEMS_PER_PAGE = 4;
 
+// Helper function to safely format dates
+const safeFormatDate = (dateValue, formatString, fallback = "") => {
+    if (!dateValue) return fallback;
+    try {
+        const date = new Date(dateValue);
+        if (isNaN(date.getTime())) return fallback;
+        return format(date, formatString);
+    } catch {
+        return fallback;
+    }
+};
+
 export default function Messages() {
     const [user, setUser] = useState(null);
-    const [conversations, setConversations] = useState(MOCK_CONVERSATIONS);
+    const [conversations, setConversations] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
-    const [messages, setMessages] = useState([
-        {
-            id: "1",
-            content: "שלום עידן! שמח לשמוע",
-            sender_email: "employer@example.com",
-            created_date: "2025-01-03T16:45:00Z",
-            is_read: true
-        },
-        {
-            id: "2",
-            content: "שלום אהרון! שמח להכיר",
-            sender_email: "candidate@example.com",
-            created_date: "2025-01-03T16:48:00Z",
-            is_read: true
-        }
-    ]);
+    const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const [sendingMessage, setSendingMessage] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    const [loading, setLoading] = useState(true);
+    const [loadingMessages, setLoadingMessages] = useState(false);
 
     const totalPages = Math.ceil(conversations.length / ITEMS_PER_PAGE);
 
@@ -101,8 +54,90 @@ export default function Messages() {
         try {
             const userData = await User.me();
             setUser(userData);
+            
+            // Load conversations for employer from database
+            try {
+                const conversationsData = await Conversation.filter(
+                    { employer_email: userData.email },
+                    "-last_message_time",
+                    100
+                );
+                
+                // Fetch candidate information and job status for each conversation
+                const mappedConversations = await Promise.all(conversationsData.map(async (conv) => {
+                    let candidateName = conv.candidate_name || "מועמד לא ידוע";
+                    let profileImage = "";
+                    let jobStatus = "active";
+                    
+                    // Try to fetch candidate info from UserProfile
+                    try {
+                        const candidateResults = await UserProfile.filter({ email: conv.candidate_email });
+                        if (candidateResults.length > 0) {
+                            candidateName = candidateResults[0].full_name || conv.candidate_name || "מועמד לא ידוע";
+                            profileImage = candidateResults[0].profile_image || "";
+                        }
+                    } catch (error) {
+                        console.error("Error fetching candidate info:", error);
+                    }
+                    
+                    // Try to fetch job status if job_id exists
+                    if (conv.job_id) {
+                        try {
+                            const jobResults = await Job.filter({ id: conv.job_id });
+                            if (jobResults.length > 0) {
+                                jobStatus = jobResults[0].status || "active";
+                            }
+                        } catch (error) {
+                            console.error("Error fetching job status:", error);
+                        }
+                    }
+                    
+                    return {
+                        id: conv.id,
+                        candidate_name: candidateName,
+                        candidate_email: conv.candidate_email,
+                        last_message_time: conv.last_message_time,
+                        last_message: conv.last_message || "",
+                        profileImage: profileImage,
+                        job_title: conv.job_title || "משרה כללית",
+                        job_status: jobStatus,
+                        job_id: conv.job_id
+                    };
+                }));
+                
+                setConversations(mappedConversations);
+            } catch (error) {
+                console.error("Error loading conversations:", error);
+            }
         } catch (error) {
             console.error("Error loading data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const loadMessages = async (conversationId) => {
+        setLoadingMessages(true);
+        try {
+            // Load real messages from database
+            const messagesData = await Message.filter(
+                { conversation_id: conversationId },
+                "created_date",
+                100
+            );
+            
+            // Ensure created_date is set for all messages
+            const mappedMessages = messagesData.map(msg => ({
+                ...msg,
+                created_date: msg.created_date || msg.created_at || new Date().toISOString()
+            }));
+            
+            setMessages(mappedMessages);
+        } catch (error) {
+            console.error("Error loading messages:", error);
+            setMessages([]);
+        } finally {
+            setLoadingMessages(false);
         }
     };
 
@@ -125,25 +160,54 @@ export default function Messages() {
 
     const sendMessage = async (e) => {
         e.preventDefault();
-        if (!newMessage.trim()) return;
+        if (!newMessage.trim() || !selectedConversation) return;
 
         setSendingMessage(true);
         try {
-            const newMsg = {
-                id: Date.now().toString(),
+            const currentDate = new Date().toISOString();
+            
+            // Create message in database with explicit created_date
+            const createdMessage = await Message.create({
+                conversation_id: selectedConversation.id,
+                sender_email: user?.email,
+                recipient_email: selectedConversation.candidate_email,
                 content: newMessage.trim(),
-                sender_email: user?.email || "employer@example.com",
-                created_date: new Date().toISOString(),
-                is_read: false
+                is_read: false,
+                created_date: currentDate
+            });
+
+            // Update conversation with last message info
+            await Conversation.update(selectedConversation.id, {
+                last_message: newMessage.trim(),
+                last_message_time: currentDate
+            });
+
+            // Ensure created_date is set for the UI
+            const messageWithDate = {
+                ...createdMessage,
+                created_date: createdMessage.created_date || createdMessage.created_at || currentDate
             };
 
-            setMessages(prev => [...prev, newMsg]);
+            // Add message to UI
+            setMessages(prev => [...prev, messageWithDate]);
             setNewMessage("");
+
+            // Update conversation in list
+            setConversations(prev => prev.map(conv => 
+                conv.id === selectedConversation.id
+                    ? { ...conv, last_message: newMessage.trim(), last_message_time: currentDate }
+                    : conv
+            ));
         } catch (error) {
             console.error("Error sending message:", error);
         } finally {
             setSendingMessage(false);
         }
+    };
+
+    const handleConversationSelect = (conversation) => {
+        setSelectedConversation(conversation);
+        loadMessages(conversation.id);
     };
 
     if (selectedConversation) {
@@ -182,8 +246,14 @@ export default function Messages() {
 
                             {/* Messages Area */}
                             <div className="flex-1 p-6 overflow-y-auto space-y-4">
+                                {loadingMessages && (
+                                    <div className="flex justify-center items-center py-8">
+                                        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                    </div>
+                                )}
+                                
                                 {/* Job Status Message if job is closed/filled */}
-                                {selectedConversation.job_status && ['filled', 'filled_via_metch', 'closed'].includes(selectedConversation.job_status) && (
+                                {!loadingMessages && selectedConversation.job_status && ['filled', 'filled_via_metch', 'closed'].includes(selectedConversation.job_status) && (
                                     <div className="bg-gray-100 rounded-lg p-4 text-center">
                                         <p className="text-sm text-gray-600">
                                             {selectedConversation.job_status === 'filled' && "המשרה הזו כבר אוישה"}
@@ -194,8 +264,8 @@ export default function Messages() {
                                 )}
 
                                 <AnimatePresence>
-                                    {messages.map((message, index) => {
-                                        const isMyMessage = message.sender_email === user?.email || message.sender_email === "employer@example.com";
+                                    {!loadingMessages && messages.map((message, index) => {
+                                        const isMyMessage = message.sender_email === user?.email;
                                         return (
                                             <motion.div
                                                 key={message.id}
@@ -216,25 +286,13 @@ export default function Messages() {
                                                         {isMyMessage && (
                                                             <CheckCheck className="w-3 h-3" />
                                                         )}
-                                                        <span>{format(new Date(message.created_date), "HH:mm")} PM</span>
+                                                        <span>{safeFormatDate(message.created_date || message.created_at, "HH:mm", "--:--")}</span>
                                                     </div>
                                                 </div>
                                             </motion.div>
                                         );
                                     })}
                                 </AnimatePresence>
-
-                                {/* Typing indicator */}
-                                <div className="flex justify-end">
-                                    <div className="bg-gray-100 px-4 py-3 rounded-2xl">
-                                        <div className="flex gap-1">
-                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                                        </div>
-                                        <div className="text-xs text-gray-500 mt-1 text-right">הקלד/ת...</div>
-                                    </div>
-                                </div>
                             </div>
 
                             {/* Message Input - Disabled for closed/filled jobs */}
@@ -306,40 +364,58 @@ export default function Messages() {
 
                         {/* Conversations List */}
                         <div className="space-y-4 mb-8">
-                            {paginatedConversations.map((conversation, index) => (
-                                <motion.div
-                                    key={conversation.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                                    className="flex items-center justify-between p-4 hover:bg-gray-50/80 rounded-xl cursor-pointer transition-colors"
-                                    onClick={() => setSelectedConversation(conversation)}
-                                >
-                                    <div className="flex items-center gap-4">
-                                         <div className="space-y-1 text-right">
-                                            <span className={`font-medium ${
-                                                ['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'text-gray-500' : 'text-gray-800'
+                            {loading ? (
+                                <div className="flex justify-center items-center py-12">
+                                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                            ) : paginatedConversations.length === 0 ? (
+                                <div className="text-center py-12 text-gray-500">
+                                    <p>אין הודעות כרגע</p>
+                                </div>
+                            ) : (
+                                paginatedConversations.map((conversation, index) => (
+                                    <motion.div
+                                        key={conversation.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                                        className="flex items-center justify-between p-4 hover:bg-gray-50/80 rounded-xl cursor-pointer transition-colors"
+                                        onClick={() => handleConversationSelect(conversation)}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                             <div className="space-y-1 text-right">
+                                                <span className={`font-medium ${
+                                                    ['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'text-gray-500' : 'text-gray-800'
+                                                }`}>
+                                                    {conversation.candidate_name}
+                                                </span>
+                                                <div className="text-xs text-gray-500">{conversation.job_title}</div>
+                                                <ConversationStatusIndicator jobStatus={conversation.job_status} className="text-xs" />
+                                            </div>
+                                            <div className={`w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 ${
+                                                ['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'grayscale opacity-75' : ''
                                             }`}>
-                                                {conversation.candidate_name}
-                                            </span>
-                                            <div className="text-xs text-gray-500">{conversation.job_title}</div>
-                                            <ConversationStatusIndicator jobStatus={conversation.job_status} className="text-xs" />
+                                                {conversation.profileImage && conversation.profileImage !== "" ? (
+                                                    <img
+                                                        src={conversation.profileImage}
+                                                        alt={conversation.candidate_name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
+                                                        <span className="text-xs font-bold text-gray-600">
+                                                            {conversation.candidate_name.slice(0, 2)}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className={`w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 ${
-                                            ['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'grayscale opacity-75' : ''
-                                        }`}>
-                                            <img
-                                                src={conversation.profileImage}
-                                                alt={conversation.candidate_name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                    </div>
-                                    <span className="text-gray-500 text-sm whitespace-nowrap">
-                                        {format(new Date(conversation.last_message_time), "dd.MM.yy")}
-                                    </span>
-                                </motion.div>
-                            ))}
+                                        <span className="text-gray-500 text-sm whitespace-nowrap">
+                                            {safeFormatDate(conversation.last_message_time, "dd.MM.yy", "--")}
+                                        </span>
+                                    </motion.div>
+                                ))
+                            )}
                         </div>
 
                         {/* Pagination */}

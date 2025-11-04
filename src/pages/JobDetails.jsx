@@ -1,8 +1,9 @@
 
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Job } from "@/api/entities";
 import { JobApplication } from "@/api/entities";
+import { JobView } from "@/api/entities";
 import { User } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,6 @@ import {
   Users, 
   Eye,
   Edit,
-  Trash2,
   Play,
   Pause,
   Copy,
@@ -32,6 +32,8 @@ import { EmployerAnalytics } from "@/components/EmployerAnalytics";
 export default function JobDetails() {
   const [job, setJob] = useState(null);
   const [applications, setApplications] = useState([]);
+  const [viewsCount, setViewsCount] = useState(0);
+  const [matchesCount, setMatchesCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [showStatusNotification, setShowStatusNotification] = useState(false);
@@ -54,6 +56,14 @@ export default function JobDetails() {
           // Load applications for this job
           const appResults = await JobApplication.filter({ job_id: jobId });
           setApplications(appResults);
+          
+          // Load view count for this job
+          const views = await JobView.filter({ job_id: jobId });
+          setViewsCount(views.length);
+          
+          // Calculate matches count - applications with match_score >= 70
+          const matches = appResults.filter(app => app.match_score && app.match_score >= 70);
+          setMatchesCount(matches.length);
         }
       }
     } catch (error) {
@@ -117,7 +127,6 @@ export default function JobDetails() {
   }
 
   const config = statusConfig[job.status] || statusConfig.active;
-  const viewsCount = Math.floor(Math.random() * 200) + 50; // Mock data
 
   return (
     <>
@@ -178,7 +187,7 @@ export default function JobDetails() {
                     <Card className="bg-purple-50 border-purple-200">
                       <CardContent className="p-6 text-center">
                         <BarChart3 className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                        <div className="text-2xl font-bold text-gray-900">{Math.floor(applications.length * 0.7)}</div>
+                        <div className="text-2xl font-bold text-gray-900">{matchesCount}</div>
                         <p className="text-gray-600">התאמות</p>
                       </CardContent>
                     </Card>

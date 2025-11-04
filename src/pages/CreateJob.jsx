@@ -85,24 +85,39 @@ export default function CreateJob() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      // Get user data first to ensure created_by fields are set
+      const userData = await User.me();
+      
+      // Prepare job data with created_by fields
+      const jobDataToSave = {
+        ...jobData,
+        created_by: userData.email,
+        created_by_id: userData.id
+      };
+      
       let createdOrUpdatedJob;
       
       if (isEditing) {
-        await Job.update(jobData.id, jobData);
-        createdOrUpdatedJob = jobData;
+        // For updates, preserve created_by if it already exists, otherwise set it
+        const updatedJobData = {
+          ...jobDataToSave,
+          // Preserve original created_by if editing someone else's job (shouldn't happen, but safety check)
+          created_by: jobData.created_by || userData.email,
+          created_by_id: jobData.created_by_id || userData.id
+        };
+        createdOrUpdatedJob = await Job.update(jobData.id, updatedJobData);
         
         // Track job edit
-        const userData = await User.me();
-        await EmployerAnalytics.trackJobEdit(userData.email, jobData);
+        await EmployerAnalytics.trackJobEdit(userData.email, createdOrUpdatedJob);
       } else {
-        createdOrUpdatedJob = await Job.create(jobData);
+        // For new jobs, always set created_by fields
+        createdOrUpdatedJob = await Job.create(jobDataToSave);
         
         // Track job creation
-        const userData = await User.me();
         await EmployerAnalytics.trackJobCreate(userData.email, createdOrUpdatedJob);
         
         // If job is being published (not draft), track publish action too
-        if (jobData.status === 'active') { // Assuming 'active' means published
+        if (jobDataToSave.status === 'active') { // Assuming 'active' means published
           await EmployerAnalytics.trackJobPublish(userData.email, createdOrUpdatedJob);
         }
       }

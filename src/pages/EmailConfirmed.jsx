@@ -9,21 +9,27 @@ const imgHugeiconsAiMagic = "http://localhost:3845/assets/289919713a3bb46a7fa492
 const EmailConfirmed = () => {
   const [loading, setLoading] = useState(true);
   const toastShownRef = useRef(false);
+  const redirectInitiatedRef = useRef(false);
   const { user, loading: userLoading, createUserProfile, loadUserProfile } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Prevent multiple executions
+    if (redirectInitiatedRef.current) {
+      return;
+    }
+
     const checkUserConfirmation = async () => {
       try {
         // Wait for user context to load
-        if (userLoading) return;
+        if (userLoading) {
+          return;
+        }
 
-        // Check if user exists in localStorage or context
-        const storedUser = localStorage.getItem('user');
-        const currentUser = user || (storedUser ? JSON.parse(storedUser) : null);
-
-        if (!currentUser) {
+        // Check if user exists from UserContext (which uses Supabase session)
+        if (!user) {
+          redirectInitiatedRef.current = true;
           toast({
             title: "משתמש לא נמצא",
             description: "אנא התחברו מחדש",
@@ -33,15 +39,16 @@ const EmailConfirmed = () => {
           return;
         }
 
-        // Check if user email is confirmed
-        console.log('currentUser', currentUser);
-        const isEmailConfirmed = currentUser.confirmed_at !== null;
+        // Check if user email is confirmed - use email_confirmed_at instead of confirmed_at
+        console.log('currentUser', user);
+        const isEmailConfirmed = user.email_confirmed_at !== null || user.confirmed_at !== null;
 
-        const profile = await loadUserProfile(currentUser.id);
+        const profile = await loadUserProfile(user.id);
 
         // If profile exists and has a user_type, go to dashboard
         if (profile && profile.user_type) {
           console.log('Profile exists with user_type, redirecting to Dashboard');
+          redirectInitiatedRef.current = true;
           navigate('/Dashboard');
           return;
         }
@@ -49,6 +56,7 @@ const EmailConfirmed = () => {
         // If profile exists but no user_type, go to UserTypeSelection
         if (profile && !profile.user_type) {
           console.log('Profile exists without user_type, redirecting to UserTypeSelection');
+          redirectInitiatedRef.current = true;
           navigate('/UserTypeSelection');
           return;
         }
@@ -56,8 +64,8 @@ const EmailConfirmed = () => {
         if (isEmailConfirmed ) {
           // Create user profile with no user_type
           try {
-            console.log('Attempting to create profile for user:', currentUser.id);
-            const profile = await createUserProfile(currentUser.id);
+            console.log('Attempting to create profile for user:', user.id);
+            const profile = await createUserProfile(user.id);
             
             if (profile) {
               console.log('Profile created successfully:', profile);
@@ -71,9 +79,11 @@ const EmailConfirmed = () => {
               }
               
               // Always redirect to user type selection page
+              redirectInitiatedRef.current = true;
               navigate('/UserTypeSelection');
             } else {
               console.error('createUserProfile returned null/undefined');
+              redirectInitiatedRef.current = true;
               toast({
                 title: "שגיאה ביצירת פרופיל",
                 description: "לא ניתן ליצור פרופיל משתמש. אנא נסו שוב או פנו לתמיכה.",
@@ -83,6 +93,7 @@ const EmailConfirmed = () => {
             }
           } catch (profileError) {
             console.error('Error creating profile:', profileError);
+            redirectInitiatedRef.current = true;
             toast({
               title: "שגיאה ביצירת פרופיל",
               description: `אירעה שגיאה בעת יצירת הפרופיל: ${profileError.message || 'שגיאה לא ידועה'}`,
@@ -91,6 +102,7 @@ const EmailConfirmed = () => {
             navigate('/Login');
           }
         } else {
+          redirectInitiatedRef.current = true;
           toast({
             title: "אימייל לא אומת",
             description: "אנא בדקו את המייל שלכם ואימתו את החשבון",
@@ -100,6 +112,7 @@ const EmailConfirmed = () => {
         }
       } catch (error) {
         console.error('Error checking user confirmation:', error);
+        redirectInitiatedRef.current = true;
         toast({
           title: "שגיאה",
           description: "אירעה שגיאה בעת בדיקת האימות",
@@ -112,7 +125,9 @@ const EmailConfirmed = () => {
     };
 
     checkUserConfirmation();
-  }, [user, userLoading, navigate, createUserProfile, toast, loadUserProfile]);
+    // Remove loadUserProfile and createUserProfile from dependencies to prevent infinite loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, userLoading, navigate, toast]);
 
   // Show loading state while checking
   if (loading || userLoading) {

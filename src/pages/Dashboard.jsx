@@ -37,20 +37,6 @@ import EmployerActivityFeed from "@/components/employer/EmployerActivityFeed"; /
 import JobSeekerGuide from "@/components/guides/JobSeekerGuide";
 import EmployerGuide from "@/components/guides/EmployerGuide";
 
-// --- MOCK DATA FOR JOB SEEKER DASHBOARD (NO LONGER USED FOR JOBS) ---
-const MOCK_NOTIFICATIONS_SEEKER = [
-  { id: 1, message: "מישהו בארומה צפה בקורות החיים שלך" },
-  { id: 2, message: "התקבלה מועמדותך למשרת מנהל/ת מוצר ב-Wix" },
-  { id: 3, message: "תזכורת: יש לך 5 משרות חדשות שמתאימות לך" },
-];
-
-const MOCK_STATS = {
-    relevant_jobs: 6,
-    applications_submitted: 3,
-    cv_viewed: 8,
-    profile_viewed: 10
-};
-
 // --- JOB SEEKER DASHBOARD COMPONENT (New) ---
 const JobSeekerDashboard = ({ user }) => {
   const [jobFilter, setJobFilter] = useState('new');
@@ -59,6 +45,8 @@ const JobSeekerDashboard = ({ user }) => {
   const [viewedJobIds, setViewedJobIds] = useState(new Set()); // New state for viewed job IDs
   const [loading, setLoading] = useState(true);
   const [showGuide, setShowGuide] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [userStats, setUserStats] = useState(null);
 
   // Check if user needs onboarding guide
   useEffect(() => {
@@ -88,18 +76,24 @@ const JobSeekerDashboard = ({ user }) => {
       if (!user) return;
       
       try {
-        const [jobsData, jobViewsData] = await Promise.all([
+        const [jobsData, jobViewsData, notificationsData, statsData] = await Promise.all([
           Job.filter({ status: 'active' }, "-created_at", 50),
-          JobView.filter({ user_email: user.email })
+          JobView.filter({ user_email: user.email }),
+          Notification.filter({ is_read: false }, "-created_date", 5),
+          UserAnalytics.getUserStats(user.email)
         ]);
 
         setAllJobs(jobsData);
         setViewedJobIds(new Set(jobViewsData.map(view => view.job_id)));
+        setNotifications(notificationsData);
+        setUserStats(statsData);
 
       } catch (error) {
         console.error("Error loading jobs for seeker:", error);
         setAllJobs([]);
         setViewedJobIds(new Set());
+        setNotifications([]);
+        setUserStats(null);
       } finally {
         setLoading(false);
       }
@@ -119,8 +113,8 @@ const JobSeekerDashboard = ({ user }) => {
     </Card>
   );
 
-  const handlePrevNotification = () => setCurrentNotificationIndex(prev => prev > 0 ? prev - 1 : MOCK_NOTIFICATIONS_SEEKER.length - 1);
-  const handleNextNotification = () => setCurrentNotificationIndex(prev => prev < MOCK_NOTIFICATIONS_SEEKER.length - 1 ? prev + 1 : 0);
+  const handlePrevNotification = () => setCurrentNotificationIndex(prev => prev > 0 ? prev - 1 : (notifications.length - 1 || 0));
+  const handleNextNotification = () => setCurrentNotificationIndex(prev => prev < (notifications.length - 1) ? prev + 1 : 0);
 
   // Filter jobs based on the current jobFilter state
   const displayedJobs = allJobs.filter(job => {
@@ -157,22 +151,22 @@ const JobSeekerDashboard = ({ user }) => {
           <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
             {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stats-grid">
-              <StatCard icon={Briefcase} title="משרות רלוונטיות" value={allJobs.length} /> {/* Changed to allJobs.length */}
-              <StatCard icon={Eye} title="צפו בקורות חיים שלי" value={MOCK_STATS.cv_viewed} />
-              <StatCard icon={FileText} title="מועמדויות שהגשתי" value={MOCK_STATS.applications_submitted} />
-              <StatCard icon={UserIcon} title="צפו בפרופיל שלי" value={MOCK_STATS.profile_viewed} />
+              <StatCard icon={Briefcase} title="משרות רלוונטיות" value={allJobs.length} />
+              <StatCard icon={Eye} title="צפו בקורות חיים שלי" value={0} />
+              <StatCard icon={FileText} title="מועמדויות שהגשתי" value={userStats?.total_applications || 0} />
+              <StatCard icon={UserIcon} title="צפו בפרופיל שלי" value={0} />
             </div>
 
             {/* Notification Carousel */}
             <Card className="bg-[#E7F2F7] shadow-none border-0 rounded-lg notification-carousel">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handleNextNotification}><ChevronRight className="w-6 h-6 text-blue-600" /></Button>
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handleNextNotification} disabled={notifications.length <= 1}><ChevronRight className="w-6 h-6 text-blue-600" /></Button>
                     <div className="text-center flex items-center gap-3 overflow-hidden">
-                      <p className="text-blue-800 font-semibold text-sm sm:text-base whitespace-nowrap">{MOCK_NOTIFICATIONS_SEEKER[currentNotificationIndex].message}</p>
-                      <div className="hidden sm:flex gap-1.5">{MOCK_NOTIFICATIONS_SEEKER.map((_, index) => (<div key={index} className={`w-2.5 h-2.5 rounded-full ${index === currentNotificationIndex ? 'bg-blue-600' : 'bg-gray-300'}`}/>))}</div>
+                      <p className="text-blue-800 font-semibold text-sm sm:text-base whitespace-nowrap">{notifications[currentNotificationIndex]?.message || "אין התראות חדשות"}</p>
+                      {notifications.length > 1 && (<div className="hidden sm:flex gap-1.5">{notifications.map((_, index) => (<div key={index} className={`w-2.5 h-2.5 rounded-full ${index === currentNotificationIndex ? 'bg-blue-600' : 'bg-gray-300'}`}/>))}</div>)}
                     </div>
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handlePrevNotification}><ChevronLeft className="w-6 h-6 text-blue-600" /></Button>
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handlePrevNotification} disabled={notifications.length <= 1}><ChevronLeft className="w-6 h-6 text-blue-600" /></Button>
                   </div>
                 </CardContent>
             </Card>
@@ -301,6 +295,7 @@ const EmployerDashboard = ({ user }) => {
 
   useEffect(() => {
     const loadData = async () => {
+      setLoading(true);
       try {
         const [notificationsData, viewedCandidatesData, candidatesData, dashboardData] = await Promise.all([
           Notification.filter({ is_read: false }, "-created_date", 5),
@@ -321,6 +316,8 @@ const EmployerDashboard = ({ user }) => {
         setCandidates([]);
         setEmployerStats({});
         setEmployerActivity([]);
+      } finally {
+        setLoading(false);
       }
     };
     loadData();

@@ -58,11 +58,16 @@ export default function JobManagement() {
 
   const handleDuplicateJob = async (job) => {
     try {
+      // Get current user data to set created_by fields
+      const userData = await User.me();
+      
       const duplicatedJob = {
         ...job,
         title: `${job.title} (עותק)`,
         status: 'draft',
-        applications_count: 0
+        applications_count: 0,
+        created_by: userData.email,
+        created_by_id: userData.id
       };
       delete duplicatedJob.id;
       delete duplicatedJob.created_date;

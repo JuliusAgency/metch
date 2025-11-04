@@ -126,7 +126,7 @@ export default function MessagesSeeker() {
             // Load real messages from database
             const messagesData = await Message.filter(
                 { conversation_id: conversationId },
-                "created_at",
+                "created_date",
                 100
             );
             
