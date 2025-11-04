@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { User as UserIcon, FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2, LogOut } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2, LogOut } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -19,7 +19,7 @@ export default function Profile() {
   const [isLookingForJob, setIsLookingForJob] = useState(true);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
-  const { signOut } = useUser();
+  const { signOut, user: contextUser } = useUser();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,14 +29,17 @@ export default function Profile() {
         setUser(userData);
         setIsLookingForJob(userData.available_for_work !== false); 
 
-        const cvs = await CV.filter({ user_email: userData.email });
-        if (cvs.length > 0) {
-          setCvData({
-              ...cvs[0],
-              file_name: cvs[0].file_name || 'אלון כהן...מעבדה ux ui סביון קורץ 2025.pdf',
-              last_modified: cvs[0].last_modified || '2025-05-30T11:30:00Z',
-              file_size_kb: cvs[0].file_size_kb || 867,
-          });
+        // Only fetch CVs for job seekers
+        if (contextUser?.user_type === 'job_seeker' || !contextUser?.user_type) {
+          const cvs = await CV.filter({ user_email: userData.email });
+          if (cvs.length > 0) {
+            setCvData({
+                ...cvs[0],
+                file_name: cvs[0].file_name || 'אלון כהן...מעבדה ux ui סביון קורץ 2025.pdf',
+                last_modified: cvs[0].last_modified || '2025-05-30T11:30:00Z',
+                file_size_kb: cvs[0].file_size_kb || 867,
+            });
+          }
         }
       } catch (error) {
         console.error("Error fetching profile data:", error);
@@ -45,7 +48,7 @@ export default function Profile() {
       }
     };
     fetchData();
-  }, []);
+  }, [contextUser]);
 
   const handleToggleLookingForJob = async (checked) => {
     if (!user) return;
@@ -161,24 +164,29 @@ export default function Profile() {
                             onChange={handleFileUpload}
                         />
 
-                        {cvData ? <FileManagementCard /> : <NoCvView />}
+                        {/* CV Section - Only for job seekers */}
+                        {(contextUser?.user_type === 'job_seeker' || !contextUser?.user_type) && (
+                          <>
+                            {cvData ? <FileManagementCard /> : <NoCvView />}
 
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-4">
-                             <Button asChild variant="outline" className="w-full sm:w-auto h-12 rounded-lg border-gray-300 text-gray-800 font-semibold text-base justify-between px-5">
-                                <Link to={createPageUrl('PreferenceQuestionnaire')}>
-                                    ניהול שאלון העדפה
-                                    <ChevronLeft className="w-5 h-5" />
-                                </Link>
-                            </Button>
-                            <div className="flex items-center gap-3">
-                                <Switch 
-                                    checked={isLookingForJob}
-                                    onCheckedChange={handleToggleLookingForJob}
-                                    id="looking-for-job" 
-                                />
-                                <label htmlFor="looking-for-job" className="font-semibold text-gray-800 text-base">אני מחפש עבודה</label>
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-4">
+                                 <Button asChild variant="outline" className="w-full sm:w-auto h-12 rounded-lg border-gray-300 text-gray-800 font-semibold text-base justify-between px-5">
+                                    <Link to={createPageUrl('PreferenceQuestionnaire')}>
+                                        ניהול שאלון העדפה
+                                        <ChevronLeft className="w-5 h-5" />
+                                    </Link>
+                                </Button>
+                                <div className="flex items-center gap-3">
+                                    <Switch 
+                                        checked={isLookingForJob}
+                                        onCheckedChange={handleToggleLookingForJob}
+                                        id="looking-for-job" 
+                                    />
+                                    <label htmlFor="looking-for-job" className="font-semibold text-gray-800 text-base">אני מחפש עבודה</label>
+                                </div>
                             </div>
-                        </div>
+                          </>
+                        )}
 
                         <div className="flex flex-col items-center space-y-4 pt-8 pb-4">
                             <Button 
@@ -194,7 +202,7 @@ export default function Profile() {
                             <Button 
                                 onClick={handleLogout}
                                 variant="outline" 
-                                className="h-12 rounded-lg border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 font-semibold text-base px-6"
+                                className="w-full sm:w-auto h-12 rounded-lg border-2 border-red-400 bg-white text-red-600 hover:bg-red-50 hover:border-red-500 font-semibold text-base px-6 shadow-sm"
                             >
                                 <LogOut className="w-5 h-5 ml-2" />
                                 התנתק

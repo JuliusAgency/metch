@@ -15,11 +15,13 @@ import {
   Calendar,
   ChevronRight,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  LogOut
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { useUser } from "@/contexts/UserContext";
 
 export default function Settings() {
   const [user, setUser] = useState(null);
@@ -36,6 +38,8 @@ export default function Settings() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const fileInputRef = useRef(null);
+  const navigate = useNavigate();
+  const { signOut } = useUser();
 
   useEffect(() => {
     loadUser();
@@ -79,6 +83,15 @@ export default function Settings() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate(createPageUrl('Login'));
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     setDeleteLoading(true);
     try {
@@ -87,7 +100,8 @@ export default function Settings() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Log out the user after account deletion
-      await User.logout();
+      await signOut();
+      navigate(createPageUrl('Login'));
       console.log("Account deleted successfully");
     } catch (error) {
       console.error("Error deleting account:", error);
@@ -256,6 +270,16 @@ export default function Settings() {
                       onClick={() => setShowDeleteConfirm(true)}
                     >
                       מחק חשבון
+                    </Button>
+                    
+                    <Button 
+                      type="button"
+                      onClick={handleLogout}
+                      variant="outline" 
+                      className="w-full md:w-96 h-12 rounded-lg border-2 border-red-400 bg-white text-red-600 hover:bg-red-50 hover:border-red-500 font-semibold text-base px-6 shadow-sm"
+                    >
+                      <LogOut className="w-5 h-5 ml-2" />
+                      התנתק
                     </Button>
                   </div>
                 </form>
