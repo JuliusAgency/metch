@@ -157,7 +157,7 @@ export const UserProvider = ({ children }) => {
           email: data.user.email,
           role: 'user',
           full_name: '',
-          user_type: 'job_seeker',
+          user_type: null, // No user type selected initially - user will select after email confirmation
           ...metadata
         });
     }
