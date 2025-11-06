@@ -7,8 +7,10 @@ import InsightsContent from "@/components/insights/InsightsContent";
 import InsightChart from "@/components/insights/InsightChart";
 import { JobApplication } from "@/api/entities";
 import { useUser } from "@/contexts/UserContext";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 export default function Insights() {
+  useRequireUserType(); // Ensure user has selected a user type
   const { user } = useUser();
   const [chartData1, setChartData1] = useState([]);
   const [chartData2, setChartData2] = useState([]);

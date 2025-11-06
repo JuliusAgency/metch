@@ -18,8 +18,10 @@ import ProfileInfo from "@/components/candidate/ProfileInfo";
 import ProfileResume from "@/components/candidate/ProfileResume";
 import ProfileSocials from "@/components/candidate/ProfileSocials";
 import ProfileActions from "@/components/candidate/ProfileActions";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 export default function CandidateProfile() {
+    useRequireUserType(); // Ensure user has selected a user type
     const [candidate, setCandidate] = useState(null);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);

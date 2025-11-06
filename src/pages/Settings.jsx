@@ -22,8 +22,10 @@ import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useUser } from "@/contexts/UserContext";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 export default function Settings() {
+  useRequireUserType(); // Ensure user has selected a user type
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     full_name: "",

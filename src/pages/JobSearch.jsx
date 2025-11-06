@@ -6,8 +6,10 @@ import SearchBar from "@/components/search/SearchBar";
 import JobListItem from "@/components/search/JobListItem";
 import NoResults from "@/components/search/NoResults";
 import { UserAnalytics } from "@/components/UserAnalytics";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 export default function JobSearch() {
+  useRequireUserType(); // Ensure user has selected a user type
   const [searchTerm, setSearchTerm] = useState("");
   const [savedJobs, setSavedJobs] = useState([]);
   const [user, setUser] = useState(null);

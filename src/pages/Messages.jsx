@@ -21,6 +21,7 @@ import MessageItem from "@/components/messages/MessageItem";
 import MessageInput from "@/components/messages/MessageInput";
 import ConversationList from "@/components/messages/ConversationList";
 import Pagination from "@/components/messages/Pagination";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 const ITEMS_PER_PAGE = 4;
 
@@ -37,6 +38,7 @@ const safeFormatDate = (dateValue, formatString, fallback = "") => {
 };
 
 export default function Messages() {
+    useRequireUserType(); // Ensure user has selected a user type
     const [user, setUser] = useState(null);
     const [conversations, setConversations] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);

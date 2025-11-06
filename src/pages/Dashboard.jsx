@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { Job, JobView, Notification, UserProfile, CandidateView } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -552,6 +553,7 @@ const EmployerDashboard = ({ user }) => {
 
 // --- MAIN DASHBOARD ROUTER ---
 export default function Dashboard() {
+  useRequireUserType(); // Ensure user has selected a user type
   const { user, loading } = useUser();
 
   if (loading) {

@@ -8,8 +8,10 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import ScreeningHeader from "@/components/screening/ScreeningHeader";
 import ScreeningQuestion from "@/components/screening/ScreeningQuestion";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 export default function ScreeningQuestionnaire() {
+  useRequireUserType(); // Ensure user has selected a user type
   const [user, setUser] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [submitting, setSubmitting] = useState(false);

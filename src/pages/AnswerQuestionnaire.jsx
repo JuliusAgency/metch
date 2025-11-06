@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import QuestionnaireHeader from "@/components/questionnaire/QuestionnaireHeader";
 import Question from "@/components/questionnaire/Question";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 export default function AnswerQuestionnaire() {
+    useRequireUserType(); // Ensure user has selected a user type
     const [job, setJob] = useState(null);
     const [answers, setAnswers] = useState({});
     const [loading, setLoading] = useState(true);

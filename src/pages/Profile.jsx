@@ -11,8 +11,10 @@ import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { useUser } from '@/contexts/UserContext';
+import { useRequireUserType } from '@/hooks/use-require-user-type';
 
 export default function Profile() {
+  useRequireUserType(); // Ensure user has selected a user type
   const [cvData, setCvData] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);

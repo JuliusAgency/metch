@@ -14,6 +14,7 @@ import Step4Packages from '@/components/job_creation/Step4Packages';
 import Step5Preview from '@/components/job_creation/Step5Preview';
 import Success from '@/components/job_creation/Success';
 import { EmployerAnalytics } from "@/components/EmployerAnalytics"; // Added EmployerAnalytics import
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 const STEPS = ["פרטי המשרה", "שאלון סינון", "פרטי החברה", "חבילות", "תצוגה מקדימה"];
 
@@ -36,6 +37,7 @@ const initialJobData = {
 };
 
 export default function CreateJob() {
+  useRequireUserType(); // Ensure user has selected a user type
   const [step, setStep] = useState(1);
   const [jobData, setJobData] = useState(initialJobData);
   const [isSubmitting, setIsSubmitting] = useState(false);

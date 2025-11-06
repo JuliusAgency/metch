@@ -15,8 +15,10 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { formatDistanceToNow } from "date-fns"; // Updated import
 import { he } from 'date-fns/locale'; // New import
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 export default function JobManagement() {
+  useRequireUserType(); // Ensure user has selected a user type
   const [, setUser] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -10,10 +10,12 @@ import PaymentStep from "@/components/company_profile/PaymentStep";
 import CompletionStep from "@/components/company_profile/CompletionStep";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 const STEPS = ["פרטי חברה", "בחירת חבילה", "תשלום", "סיום"];
 
 export default function CompanyProfileCompletion() {
+  useRequireUserType(); // Ensure user has selected a user type
   const [step, setStep] = useState(1);
   const [companyData, setCompanyData] = useState({
     company_name: "",

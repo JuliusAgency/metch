@@ -13,8 +13,10 @@ import {
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 export default function Contact() {
+  useRequireUserType(); // Ensure user has selected a user type
   const [chatLoading, setChatLoading] = useState(false);
 
   const handleSupportChat = () => {

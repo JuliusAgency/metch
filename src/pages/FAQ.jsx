@@ -12,6 +12,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 const FAQ_DATA = [
   {
@@ -57,6 +58,7 @@ const FAQ_DATA = [
 ];
 
 export default function FAQ() {
+  useRequireUserType(); // Ensure user has selected a user type
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedQuestions, setExpandedQuestions] = useState({});
 

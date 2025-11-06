@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Notification } from "@/api/entities";
 import { useUser } from "@/contexts/UserContext";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { 
   Eye, 
   MessageSquare, 
@@ -32,6 +33,7 @@ const getNotificationConfig = (type) => {
 };
 
 export default function Notifications() {
+  useRequireUserType(); // Ensure user has selected a user type
   const { user } = useUser();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);

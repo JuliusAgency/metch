@@ -16,6 +16,7 @@ import { ArrowLeft, ArrowRight, Loader2, Sparkles, FileText } from 'lucide-react
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
+import { useRequireUserType } from '@/hooks/use-require-user-type';
 
 const STEPS = ["פרטים אישיים", "ניסיון תעסוקתי", "השכלה", "הסמכות", "כישורים", "תמצית", "תצוגה מקדימה"];
 
@@ -40,6 +41,7 @@ const ChoiceCard = ({ title, description, icon: Icon, onClick, isSelected }) => 
 
 
 export default function CVGenerator() {
+  useRequireUserType(); // Ensure user has selected a user type
   const [step, setStep] = useState(0); // Start at step 0 for choice
   const [cvData, setCvData] = useState({});
   const [user, setUser] = useState(null);

@@ -9,8 +9,10 @@ import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
 import ResponseField from "@/components/questionnaire/ResponseField";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 export default function ViewQuestionnaire() {
+    useRequireUserType(); // Ensure user has selected a user type
     const [response, setResponse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);

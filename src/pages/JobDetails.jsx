@@ -28,12 +28,14 @@ import { format } from "date-fns";
 import { createPageUrl } from "@/utils";
 import { EmployerAnalytics } from "@/components/EmployerAnalytics";
 import JobHeader from "@/components/job/JobHeader";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 import JobTitle from "@/components/job/JobTitle";
 import JobStats from "@/components/job/JobStats";
 import JobInfo from "@/components/job/JobInfo";
 import JobActions from "@/components/job/JobActions";
 
 export default function JobDetails() {
+  useRequireUserType(); // Ensure user has selected a user type
   const [job, setJob] = useState(null);
   const [applications, setApplications] = useState([]);
   const [viewsCount, setViewsCount] = useState(0);

@@ -18,8 +18,10 @@ import {
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
 import { format } from "date-fns";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 export default function JobApplications() {
+  useRequireUserType(); // Ensure user has selected a user type
   const [job, setJob] = useState(null);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);

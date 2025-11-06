@@ -21,6 +21,7 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 const actionTypeLabels = {
     job_match: "התאמת משרה",
@@ -56,6 +57,7 @@ const actionTypeColors = {
 };
 
 export default function UserActivity() {
+    useRequireUserType(); // Ensure user has selected a user type
     const [user, setUser] = useState(null);
     const [stats, setStats] = useState(null);
     const [activity, setActivity] = useState([]);

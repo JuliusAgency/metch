@@ -14,8 +14,10 @@ import SeekerJobPerks from "@/components/seeker/SeekerJobPerks";
 import SeekerJobInfo from "@/components/seeker/SeekerJobInfo";
 import SeekerJobImages from "@/components/seeker/SeekerJobImages";
 import SeekerJobActions from "@/components/seeker/SeekerJobActions";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 export default function JobDetailsSeeker() {
+  useRequireUserType(); // Ensure user has selected a user type
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);

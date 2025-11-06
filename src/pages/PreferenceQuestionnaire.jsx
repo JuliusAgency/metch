@@ -8,6 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { useRequireUserType } from '@/hooks/use-require-user-type';
 
 const Question = ({ question, type = 'text', value, onChange }) => {
   const [localValue, setLocalValue] = useState(value || '');
@@ -69,6 +70,7 @@ const Question = ({ question, type = 'text', value, onChange }) => {
 
 
 export default function PreferenceQuestionnaire() {
+  useRequireUserType(); // Ensure user has selected a user type
   const [answers, setAnswers] = useState({
     driving_license: '',
     relocation_interest: '',

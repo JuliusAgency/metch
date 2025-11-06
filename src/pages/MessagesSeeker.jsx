@@ -13,10 +13,12 @@ import SeekerMessageItem from "@/components/seeker/SeekerMessageItem";
 import SeekerMessageInput from "@/components/seeker/SeekerMessageInput";
 import SeekerConversationList from "@/components/seeker/SeekerConversationList";
 import SeekerPagination from "@/components/seeker/SeekerPagination";
+import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 const ITEMS_PER_PAGE = 4;
 
 export default function MessagesSeeker() {
+    useRequireUserType(); // Ensure user has selected a user type
     const [user, setUser] = useState(null);
     const [conversations, setConversations] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
