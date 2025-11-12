@@ -16,6 +16,7 @@ import { UserAnalytics } from "@/components/UserAnalytics";
 const JobListItem = ({ job, index, savedJobs, toggleSaveJob, user }) => (
     <motion.div
         key={job.id}
+        id={`job-${job.id}`}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -35,7 +36,7 @@ const JobListItem = ({ job, index, savedJobs, toggleSaveJob, user }) => (
                         </Button>
                         <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-6 py-2 rounded-full font-bold">
                             <Link
-                                to={createPageUrl(`JobDetailsSeeker?id=${job.id}`)}
+                                to={createPageUrl(`JobDetailsSeeker?id=${job.id}&from=JobSearch`)}
                                 onClick={() => {
                                     if (user?.email) {
                                         UserAnalytics.trackJobView(user.email, job);

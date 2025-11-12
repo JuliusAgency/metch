@@ -7,6 +7,7 @@ import JobListItem from "@/components/search/JobListItem";
 import NoResults from "@/components/search/NoResults";
 import { UserAnalytics } from "@/components/UserAnalytics";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+import { useLocation } from "react-router-dom";
 
 export default function JobSearch() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -14,6 +15,7 @@ export default function JobSearch() {
   const [savedJobs, setSavedJobs] = useState([]);
   const [user, setUser] = useState(null);
   const [jobs, setJobs] = useState([]);
+  const location = useLocation();
 
   useEffect(() => {
     loadJobs();
@@ -73,6 +75,18 @@ export default function JobSearch() {
     job.tags?.some(tag => tag.includes(searchTerm)) ||
     job.description.includes(searchTerm)
   );
+
+  useEffect(() => {
+    if (location.hash && location.hash.startsWith('#job-')) {
+      const timeout = setTimeout(() => {
+        const element = document.querySelector(location.hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 50);
+      return () => clearTimeout(timeout);
+    }
+  }, [location.hash, filteredJobs.length]);
 
   return (
     <div className="p-4 md:p-6" dir="rtl">

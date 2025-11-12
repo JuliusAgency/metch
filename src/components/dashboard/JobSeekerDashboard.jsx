@@ -133,7 +133,13 @@ const JobSeekerDashboard = ({ user }) => {
                    <div className="text-center py-8 text-gray-500">טוען משרות...</div>
                 ) : displayedJobs.length > 0 ? ( // Changed to displayedJobs
                     displayedJobs.map((job, index) => (
-                    <motion.div key={job.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
+                    <motion.div
+                      key={job.id}
+                      id={`job-${job.id}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                    >
                       <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
                         <div className="flex items-center justify-between gap-4">
                              <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">

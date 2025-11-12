@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const PillInput = ({ name, placeholder, value, onChange, type = "text", onFocus, onBlur }) =>
+const PillInput = ({ name, placeholder, value, onChange, type = "text", onFocus, onBlur, ...rest }) =>
 <Input
   name={name}
   placeholder={placeholder}
@@ -14,6 +14,7 @@ const PillInput = ({ name, placeholder, value, onChange, type = "text", onFocus,
   type={type}
   onFocus={onFocus}
   onBlur={onBlur}
+  {...rest}
   className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400" />;
 
 
@@ -31,6 +32,8 @@ const newExperienceItem = () => ({
 
 export default function Step2_WorkExperience({ data, setData }) {
   const [currentItem, setCurrentItem] = useState(newExperienceItem());
+  const minDate = '1900-01-01';
+  const today = new Date().toISOString().split('T')[0];
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -80,8 +83,8 @@ export default function Step2_WorkExperience({ data, setData }) {
                     <PillInput name="location" placeholder="מיקום" value={currentItem.location} onChange={handleInputChange} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <PillInput type="text" name="start_date" placeholder="תאריך התחלה" value={currentItem.start_date} onChange={handleInputChange} onFocus={(e) => e.target.type = 'date'} onBlur={(e) => e.target.type = 'text'} />
-                    <PillInput type="text" name="end_date" placeholder="תאריך סיום" value={currentItem.end_date} onChange={handleInputChange} disabled={currentItem.is_current} onFocus={(e) => e.target.type = 'date'} onBlur={(e) => e.target.type = 'text'} />
+                    <PillInput type="text" name="start_date" placeholder="תאריך התחלה" value={currentItem.start_date} onChange={handleInputChange} onFocus={(e) => e.target.type = 'date'} onBlur={(e) => e.target.type = 'text'} min={minDate} max={today} />
+                    <PillInput type="text" name="end_date" placeholder="תאריך סיום" value={currentItem.end_date} onChange={handleInputChange} disabled={currentItem.is_current} onFocus={(e) => e.target.type = 'date'} onBlur={(e) => e.target.type = 'text'} min={minDate} max={today} />
                 </div>
                 <div className="flex items-center gap-2 justify-center">
                     <input type="checkbox" id={`is_current_${currentItem.id}`} name="is_current" checked={currentItem.is_current} onChange={handleInputChange} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />

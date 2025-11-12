@@ -26,6 +26,10 @@ export default function JobDetailsSeeker() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const searchParams = new URLSearchParams(location.search);
+  const jobIdParam = searchParams.get('id');
+  const rawFromParam = searchParams.get('from') || 'Dashboard';
+  const fromParam = rawFromParam.replace(/[^a-z0-9_-]/gi, '') || 'Dashboard';
 
   const loadData = React.useCallback(async () => {
     setLoading(true);
@@ -33,8 +37,7 @@ export default function JobDetailsSeeker() {
       const userData = await User.me();
       setUser(userData);
 
-      const params = new URLSearchParams(location.search);
-      const jobId = params.get('id');
+      const jobId = jobIdParam;
       
       if (jobId) {
         const jobResults = await Job.filter({ id: jobId });
@@ -68,7 +71,7 @@ export default function JobDetailsSeeker() {
     } finally {
       setLoading(false);
     }
-  }, [location.search, navigate]);
+  }, [jobIdParam, navigate]);
 
   useEffect(() => {
     loadData();
@@ -182,13 +185,17 @@ export default function JobDetailsSeeker() {
   const imageAttachments = Array.isArray(job.attachments) 
     ? job.attachments.filter(att => att.type?.startsWith('image/')) 
     : [];
+  const normalizedReturnPage = fromParam || 'Dashboard';
+  const baseReturnPath = createPageUrl(normalizedReturnPage);
+  const jobAnchorId = job?.id || jobIdParam;
+  const returnUrl = jobAnchorId ? `${baseReturnPath}#job-${jobAnchorId}` : baseReturnPath;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#DBECF3] via-white to-white" dir="rtl">
       <div className="max-w-5xl mx-auto p-4 md:p-6">
         <Card className="bg-white rounded-3xl shadow-lg overflow-hidden relative">
           <CardContent className="relative z-10 px-4 sm:px-8 py-12">
-            <SeekerHeader job={job} />
+            <SeekerHeader job={job} returnUrl={returnUrl} />
             {isUnavailable && (
               <JobStatusBanner status={job.status} className="mb-6" />
             )}
