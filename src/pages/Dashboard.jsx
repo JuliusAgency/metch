@@ -166,7 +166,7 @@ const JobSeekerDashboard = ({ user }) => {
       const scrollToTarget = () => {
         const element = document.querySelector(location.hash);
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       };
       // Allow DOM to paint before scrolling

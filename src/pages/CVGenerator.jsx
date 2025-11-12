@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CV } from '@/api/entities';
 import { User } from '@/api/entities';
 import { UploadFile } from '@/api/integrations';
@@ -49,7 +49,12 @@ export default function CVGenerator() {
   const [saving, setSaving] = useState(false);
   const [cvId, setCvId] = useState(null);
   const [choice, setChoice] = useState(null); // 'upload' or 'create'
+  const [isStep1Valid, setIsStep1Valid] = useState(false);
   const navigate = useNavigate();
+
+  const handleStep1ValidityChange = useCallback((isValid) => {
+    setIsStep1Valid(isValid);
+  }, []);
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -93,6 +98,10 @@ export default function CVGenerator() {
       return;
     }
 
+    if (step === 1 && !isStep1Valid) {
+      return;
+    }
+
     setSaving(true);
     try {
       // Ensure we have user email - use from user state or cvData personal_details
@@ -128,6 +137,9 @@ export default function CVGenerator() {
   };
 
   const handleStepSelect = (index) => {
+    if (!isStep1Valid && index > 0) {
+      return;
+    }
     setStep(index + 1);
   };
 
@@ -187,7 +199,7 @@ export default function CVGenerator() {
             </div>
           </motion.div>);
 
-      case 1: return <Step1PersonalDetails data={cvData.personal_details} setData={(d) => setCvData((prev) => ({ ...prev, personal_details: d(prev.personal_details) }))} user={user} />;
+      case 1: return <Step1PersonalDetails data={cvData.personal_details} setData={(d) => setCvData((prev) => ({ ...prev, personal_details: d(prev.personal_details) }))} user={user} onValidityChange={handleStep1ValidityChange} />;
       case 2: return <Step2WorkExperience data={cvData.work_experience || []} setData={(updater) => setCvData((prev) => ({ ...prev, work_experience: updater(prev.work_experience || []) }))} />;
       case 3: return <Step3Education data={cvData.education || []} setData={(updater) => setCvData((prev) => ({ ...prev, education: updater(prev.education || []) }))} />;
       case 4: return <Step4Certifications data={cvData.certifications || []} setData={(updater) => setCvData((prev) => ({ ...prev, certifications: updater(prev.certifications || []) }))} />;
@@ -198,6 +210,12 @@ export default function CVGenerator() {
     }
   };
 
+  const disabledStepIndexes = !isStep1Valid
+    ? STEPS.map((_, idx) => (idx > 0 ? idx : null)).filter((idx) => idx !== null)
+    : [];
+
+  const isNextDisabled = saving || (step === 0 && !choice) || (step === 1 && !isStep1Valid);
+
   return (
     <div className="p-4 md:p-8" dir="rtl">
       <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-10">
@@ -206,6 +224,7 @@ export default function CVGenerator() {
             currentStep={step - 1}
             steps={STEPS}
             onStepSelect={handleStepSelect}
+            disabledSteps={disabledStepIndexes}
           />
         )}
 
@@ -221,7 +240,11 @@ export default function CVGenerator() {
             </Button>
           )}
           {step !== -1 && step < STEPS.length + 1 && (
-            <Button onClick={handleNext} disabled={saving || (step === 0 && !choice)} className="px-10 py-4 rounded-full font-bold text-lg h-auto bg-blue-600 hover:bg-blue-700">
+            <Button
+              onClick={handleNext}
+              disabled={isNextDisabled}
+              className="px-10 py-4 rounded-full font-bold text-lg h-auto bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:bg-gray-300"
+            >
               {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : (step === 0 ? 'המשך' : (step === STEPS.length ? 'שמור וסיים' : 'הבא'))}
               {!saving && step !== 0 && <ArrowLeft className="w-5 h-5 mr-2" />}
             </Button>

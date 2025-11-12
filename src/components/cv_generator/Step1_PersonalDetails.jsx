@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -26,7 +26,24 @@ const PillSelect = ({ name, placeholder, value, onValueChange, children }) => (
     </Select>
 );
 
-export default function Step1_PersonalDetails({ data, setData, user }) {
+const getBirthDateValue = (source) => source?.birth_date || source?.birthDate || '';
+const REQUIRED_FIELDS = ['firstName', 'lastName', 'phone', 'address', 'birthDate', 'gender'];
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+const isFormComplete = (formData) => (
+  REQUIRED_FIELDS.every((field) => {
+    const fieldValue = formData?.[field];
+    if (field === 'birthDate') {
+      return typeof fieldValue === 'string' && DATE_REGEX.test(fieldValue.trim());
+    }
+    if (typeof fieldValue === 'string') {
+      return fieldValue.trim().length > 0;
+    }
+    return Boolean(fieldValue);
+  })
+);
+
+export default function Step1_PersonalDetails({ data, setData, user, onValidityChange = () => {} }) {
   const [localData, setLocalData] = useState({
     firstName: '',
     lastName: '',
@@ -36,6 +53,10 @@ export default function Step1_PersonalDetails({ data, setData, user }) {
     gender: ''
   });
 
+  const notifyValidity = useCallback((formState) => {
+    onValidityChange(isFormComplete(formState));
+  }, [onValidityChange]);
+
   useEffect(() => {
     // Initialize local state from parent data or user data
     const fullName = data?.full_name || user?.full_name || '';
@@ -43,21 +64,26 @@ export default function Step1_PersonalDetails({ data, setData, user }) {
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
 
-    setLocalData({
+    const initialState = {
         firstName: firstName,
         lastName: lastName,
         phone: data?.phone || user?.phone || '',
         address: data?.address || user?.preferred_location || '',
-        birthDate: data?.birth_date || '',
+        birthDate: getBirthDateValue(data) || '',
         gender: data?.gender || '',
-    });
-  }, [data, user]);
+    };
+
+    setLocalData(initialState);
+    notifyValidity(initialState);
+  }, [data, user, notifyValidity]);
 
     const updateParentData = (key, value, currentLocalData) => {
          setData(parentData => {
-            const newParentData = { ...parentData };
+            const newParentData = { ...(parentData || {}) };
             if (key === 'firstName' || key === 'lastName') {
                 newParentData.full_name = `${currentLocalData.firstName} ${currentLocalData.lastName}`.trim();
+            } else if (key === 'birthDate') {
+                newParentData.birth_date = value;
             } else {
                  newParentData[key] = value;
             }
@@ -67,9 +93,15 @@ export default function Step1_PersonalDetails({ data, setData, user }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    const sanitizedValue = name === 'birthDate' ? value.trim() : value;
+    const nextValue = name === 'birthDate' && sanitizedValue && !DATE_REGEX.test(sanitizedValue)
+      ? ''
+      : sanitizedValue;
+
     setLocalData(prev => {
-        const updatedLocal = { ...prev, [name]: value };
-        updateParentData(name, value, updatedLocal);
+        const updatedLocal = { ...prev, [name]: nextValue };
+        updateParentData(name, nextValue, updatedLocal);
+        notifyValidity(updatedLocal);
         return updatedLocal;
     });
   };
@@ -89,6 +121,7 @@ export default function Step1_PersonalDetails({ data, setData, user }) {
       setLocalData(prev => {
           const updatedLocal = {...prev, gender: value};
           updateParentData('gender', value, updatedLocal);
+          notifyValidity(updatedLocal);
           return updatedLocal;
       });
   };
