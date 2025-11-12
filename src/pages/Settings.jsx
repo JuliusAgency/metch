@@ -35,6 +35,8 @@ export default function Settings() {
     preferred_location: "",
     experience_level: ""
   });
+  const [initialFormData, setInitialFormData] = useState(null);
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -59,6 +61,15 @@ export default function Settings() {
         preferred_location: userData.preferred_location || "",
         experience_level: userData.experience_level || ""
       });
+      setInitialFormData({
+        full_name: userData.full_name || "",
+        email: userData.email || "",
+        phone: userData.phone || "",
+        whatsapp_phone: userData.whatsapp_phone || "",
+        preferred_location: userData.preferred_location || "",
+        experience_level: userData.experience_level || ""
+      });
+      setErrors({});
     } catch (error) {
       console.error("Error loading user:", error);
     } finally {
@@ -66,16 +77,41 @@ export default function Settings() {
     }
   };
 
+  const validateField = (field, value) => {
+    const trimmedValue = typeof value === 'string' ? value.trim() : value;
+    const errorMessage = trimmedValue ? "" : "שדה חובה";
+    setErrors(prev => ({ ...prev, [field]: errorMessage }));
+    return !errorMessage;
+  };
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    validateField(field, value);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    Object.entries(formData).forEach(([field, value]) => {
+      const trimmedValue = typeof value === 'string' ? value.trim() : value;
+      if (!trimmedValue && field !== 'email') {
+        newErrors[field] = "שדה חובה";
+      }
+    });
+    setErrors(prev => ({ ...prev, ...newErrors }));
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      return;
+    }
     setSaving(true);
     try {
       await User.updateMyUserData(formData);
       setUser(prev => ({...prev, ...formData}));
+      setInitialFormData({ ...formData });
+      setErrors({});
       // Show success feedback (you could add a toast here)
       console.log("Profile updated successfully");
     } catch (error) {
@@ -112,6 +148,16 @@ export default function Settings() {
       setShowDeleteConfirm(false);
     }
   };
+
+  const formFields = ['full_name', 'phone', 'whatsapp_phone', 'preferred_location', 'experience_level'];
+  const isFormComplete = formFields.every((field) => {
+    const value = formData[field];
+    return typeof value === 'string' ? value.trim() !== '' : !!value;
+  });
+  const hasChanges = initialFormData
+    ? formFields.some((field) => formData[field] !== initialFormData[field])
+    : false;
+  const isSubmitDisabled = saving || !isFormComplete || !hasChanges;
 
   if (loading) {
     return (
@@ -182,15 +228,21 @@ export default function Settings() {
                 <form onSubmit={handleSave} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Full Name */}
-                    <div className="relative">
-                      <UserIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <Input
-                        placeholder="שם מלא"
-                        value={formData.full_name}
-                        onChange={(e) => handleInputChange('full_name', e.target.value)}
-                        className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                        dir="rtl"
-                      />
+                    <div className="space-y-1">
+                      <div className="relative">
+                        <UserIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="שם מלא"
+                          value={formData.full_name}
+                          onChange={(e) => handleInputChange('full_name', e.target.value)}
+                          required
+                          className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                          dir="rtl"
+                        />
+                      </div>
+                      {errors.full_name && (
+                        <p className="text-red-500 text-sm text-right">{errors.full_name}</p>
+                      )}
                     </div>
 
                     {/* Email */}
@@ -207,51 +259,75 @@ export default function Settings() {
                     </div>
 
                     {/* Phone */}
-                    <div className="relative">
-                      <Phone className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <Input
-                        placeholder="מספר טלפון"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
-                        className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                        dir="rtl"
-                      />
+                    <div className="space-y-1">
+                      <div className="relative">
+                        <Phone className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="מספר טלפון"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          required
+                          className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                          dir="rtl"
+                        />
+                      </div>
+                      {errors.phone && (
+                        <p className="text-red-500 text-sm text-right">{errors.phone}</p>
+                      )}
                     </div>
 
                     {/* WhatsApp Phone */}
-                    <div className="relative">
-                      <Phone className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
-                      <Input
-                        placeholder="וואטסאפ לקבלת הודעות"
-                        value={formData.whatsapp_phone}
-                        onChange={(e) => handleInputChange('whatsapp_phone', e.target.value)}
-                        className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-green-400"
-                        dir="rtl"
-                      />
+                    <div className="space-y-1">
+                      <div className="relative">
+                        <Phone className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                        <Input
+                          placeholder="וואטסאפ לקבלת הודעות"
+                          value={formData.whatsapp_phone}
+                          onChange={(e) => handleInputChange('whatsapp_phone', e.target.value)}
+                          required
+                          className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-green-400"
+                          dir="rtl"
+                        />
+                      </div>
+                      {errors.whatsapp_phone && (
+                        <p className="text-red-500 text-sm text-right">{errors.whatsapp_phone}</p>
+                      )}
                     </div>
 
                     {/* Location */}
-                    <div className="relative">
-                      <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <Input
-                        placeholder="מיקום מועדף"
-                        value={formData.preferred_location}
-                        onChange={(e) => handleInputChange('preferred_location', e.target.value)}
-                        className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                        dir="rtl"
-                      />
+                    <div className="space-y-1">
+                      <div className="relative">
+                        <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="מיקום מועדף"
+                          value={formData.preferred_location}
+                          onChange={(e) => handleInputChange('preferred_location', e.target.value)}
+                          required
+                          className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                          dir="rtl"
+                        />
+                      </div>
+                      {errors.preferred_location && (
+                        <p className="text-red-500 text-sm text-right">{errors.preferred_location}</p>
+                      )}
                     </div>
 
                     {/* Experience Level */}
-                    <div className="relative">
-                      <Briefcase className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <Input
-                        placeholder="רמת ניסיון"
-                        value={formData.experience_level}
-                        onChange={(e) => handleInputChange('experience_level', e.target.value)}
-                        className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                        dir="rtl"
-                      />
+                    <div className="space-y-1">
+                      <div className="relative">
+                        <Briefcase className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="רמת ניסיון"
+                          value={formData.experience_level}
+                          onChange={(e) => handleInputChange('experience_level', e.target.value)}
+                          required
+                          className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                          dir="rtl"
+                        />
+                      </div>
+                      {errors.experience_level && (
+                        <p className="text-red-500 text-sm text-right">{errors.experience_level}</p>
+                      )}
                     </div>
                   </div>
 
@@ -259,8 +335,12 @@ export default function Settings() {
                   <div className="flex flex-col items-center space-y-4 pt-6">
                     <Button
                       type="submit"
-                      disabled={saving}
-                      className="w-full md:w-96 h-12 bg-blue-600 hover:bg-blue-700 rounded-full text-lg font-bold shadow-lg transition-all"
+                      disabled={isSubmitDisabled}
+                      className={`w-full md:w-96 h-12 rounded-full text-lg font-bold shadow-lg transition-all ${
+                        isSubmitDisabled
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      }`}
                     >
                       {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : 'עדכן'}
                     </Button>
