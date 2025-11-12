@@ -127,6 +127,10 @@ export default function CVGenerator() {
     }
   };
 
+  const handleStepSelect = (index) => {
+    setStep(index + 1);
+  };
+
   const handleBack = () => {
     if (step > 1) {
       setStep((prev) => prev - 1);
@@ -197,7 +201,13 @@ export default function CVGenerator() {
   return (
     <div className="p-4 md:p-8" dir="rtl">
       <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-10">
-        {step > 0 && <CVStepper currentStep={step - 1} steps={STEPS} />}
+        {step > 0 && (
+          <CVStepper
+            currentStep={step - 1}
+            steps={STEPS}
+            onStepSelect={handleStepSelect}
+          />
+        )}
 
         <div className="my-10 min-h-[400px]">
           {renderStep()}
