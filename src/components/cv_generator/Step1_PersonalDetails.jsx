@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const PillInput = ({ name, placeholder, value, onChange, type = "text" }) => (
+const PillInput = ({ name, placeholder, value, onChange, type = "text", ...props }) => (
     <Input
         name={name}
         placeholder={placeholder}
@@ -11,6 +11,7 @@ const PillInput = ({ name, placeholder, value, onChange, type = "text" }) => (
         onChange={onChange}
         type={type}
         className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400"
+        {...props}
     />
 );
 
@@ -73,6 +74,17 @@ export default function Step1_PersonalDetails({ data, setData, user }) {
     });
   };
 
+  const formatDateForInput = (date) => {
+      const year = date.getFullYear();
+      const month = `${date.getMonth() + 1}`.padStart(2, '0');
+      const day = `${date.getDate()}`.padStart(2, '0');
+      return `${year}-${month}-${day}`;
+  };
+
+  const today = new Date();
+  const maxBirthDate = formatDateForInput(new Date(today.getFullYear() - 15, today.getMonth(), today.getDate()));
+  const minBirthDate = formatDateForInput(new Date(today.getFullYear() - 100, today.getMonth(), today.getDate()));
+
   const handleSelectChange = (value) => {
       setLocalData(prev => {
           const updatedLocal = {...prev, gender: value};
@@ -102,7 +114,17 @@ export default function Step1_PersonalDetails({ data, setData, user }) {
                 <SelectItem value="other">אחר</SelectItem>
             </PillSelect>
             <PillInput name="address" placeholder="מקום מגורים" value={localData.address} onChange={handleInputChange} />
-            <PillInput name="birthDate" placeholder="תאריך לידה" value={localData.birthDate} onChange={handleInputChange} onFocus={(e) => e.target.type='date'} onBlur={(e) => e.target.type='text'} />
+            <PillInput
+                name="birthDate"
+                placeholder="תאריך לידה"
+                value={localData.birthDate}
+                onChange={handleInputChange}
+                type={localData.birthDate ? 'date' : 'text'}
+                min={minBirthDate}
+                max={maxBirthDate}
+                onFocus={(e) => { e.target.type = 'date'; }}
+                onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }}
+            />
         </div>
     </div>
   );
