@@ -82,7 +82,7 @@ export default function Step7_Preview({ cvData, setData, onEdit }) {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     const handleFileNameChange = (e) => {
-        setData(prev => ({...prev, file_name: e.target.value }));
+        setData({ file_name: e.target.value });
     };
 
     const handleDownload = () => {
