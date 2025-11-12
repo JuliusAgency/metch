@@ -6,6 +6,8 @@ import { Calendar } from "lucide-react";
 import DynamicRequirementInput from './DynamicRequirementInput';
 
 export default function Step1Details({ jobData, setJobData }) {
+  const today = new Date().toISOString().split('T')[0];
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setJobData(prev => ({ ...prev, [name]: value }));
@@ -55,6 +57,7 @@ export default function Step1Details({ jobData, setJobData }) {
               onBlur={(e) => e.target.type='text'}
               value={jobData.start_date || ''}
               onChange={handleInputChange}
+              min={today}
               className="h-12 rounded-full border-gray-300 text-right pr-12"
             />
           </div>
