@@ -79,7 +79,7 @@ export default function Step1Details({ jobData, setJobData }) {
             placeholder="תיאור התפקיד"
             value={jobData.description || ''}
             onChange={handleInputChange}
-            className="min-h-[48px] rounded-3xl border-gray-300 text-right"
+            className="min-h-[48px] max-h-80 resize-y rounded-3xl border-gray-300 text-right"
             rows={1}
           />
         </div>
