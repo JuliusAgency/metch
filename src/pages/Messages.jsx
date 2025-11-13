@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { User } from "@/api/entities";
 import { Conversation } from "@/api/entities";
 import { Message } from "@/api/entities";
@@ -22,6 +22,7 @@ import MessageInput from "@/components/messages/MessageInput";
 import ConversationList from "@/components/messages/ConversationList";
 import Pagination from "@/components/messages/Pagination";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 4;
 
@@ -49,6 +50,9 @@ export default function Messages() {
     const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [loadingMessages, setLoadingMessages] = useState(false);
+    const [pendingConversationParams, setPendingConversationParams] = useState(null);
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const totalPages = Math.ceil(conversations.length / ITEMS_PER_PAGE);
 
@@ -122,7 +126,16 @@ export default function Messages() {
         }
     };
 
-    const loadMessages = async (conversationId) => {
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const conversationId = params.get("conversationId");
+        const candidateEmail = params.get("candidateEmail");
+        if (conversationId || candidateEmail) {
+            setPendingConversationParams({ conversationId, candidateEmail });
+        }
+    }, [location.search]);
+
+    const loadMessages = useCallback(async (conversationId) => {
         setLoadingMessages(true);
         try {
             // Load real messages from database
@@ -145,7 +158,40 @@ export default function Messages() {
         } finally {
             setLoadingMessages(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        if (!pendingConversationParams || conversations.length === 0) return;
+
+        const { conversationId, candidateEmail } = pendingConversationParams;
+        let targetConversation = null;
+
+        if (conversationId) {
+            targetConversation = conversations.find(
+                (conversation) => String(conversation.id) === String(conversationId)
+            );
+        }
+
+        if (!targetConversation && candidateEmail) {
+            targetConversation = conversations.find(
+                (conversation) => conversation.candidate_email === candidateEmail
+            );
+        }
+
+        if (targetConversation) {
+            setSelectedConversation(targetConversation);
+            loadMessages(targetConversation.id);
+            setPendingConversationParams(null);
+
+            if (location.search) {
+                const params = new URLSearchParams(location.search);
+                params.delete("conversationId");
+                params.delete("candidateEmail");
+                const nextQuery = params.toString();
+                navigate(nextQuery ? `${location.pathname}?${nextQuery}` : location.pathname, { replace: true });
+            }
+        }
+    }, [pendingConversationParams, conversations, loadMessages, location.pathname, location.search, navigate]);
 
     const filteredConversations = conversations.filter(conv =>
         conv.candidate_name.toLowerCase().includes(searchTerm.toLowerCase())

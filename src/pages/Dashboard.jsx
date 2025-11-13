@@ -523,8 +523,6 @@ const EmployerDashboard = ({ user }) => {
                 </CardContent>
               </Card>
 
-              {/* Activity Feed */}
-              <EmployerActivityFeed activities={employerActivity} />
 
               <div className="flex flex-col md:flex-row gap-4 items-center justify-between candidate-filter-buttons">
                 <div className="relative w-full md:w-96 candidate-search-input">

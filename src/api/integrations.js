@@ -78,7 +78,7 @@ export async function InvokeLLM({
  * @param {string} params.text - Plain text content
  * @returns {Promise<Object>} Send result
  */
-export async function SendEmail({ to, from, subject, html, text }) {
+export async function SendEmail({ to, from, subject, html, text, attachments }) {
   const apiKey = import.meta.env.VITE_RESEND_API_KEY;
   
   if (!apiKey) {
@@ -96,7 +96,8 @@ export async function SendEmail({ to, from, subject, html, text }) {
       to: Array.isArray(to) ? to : [to],
       subject,
       html,
-      text
+      text,
+      ...(attachments && attachments.length ? { attachments } : {})
     })
   });
 
