@@ -197,30 +197,7 @@ const EmployerDashboard = ({ user }) => {
                 </Card>
               </div>
 
-              {/* Additional Analytics Row */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                <EmployerStatsCard
-                  icon={Users}
-                  title="מועמדים שנצפו"
-                  value={employerStats?.total_candidates_viewed || 12}
-                  subtitle="פרופילים ייחודיים"
-                  color="bg-indigo-50 text-indigo-600"
-                />
-                <EmployerStatsCard
-                  icon={TrendingUp}
-                  title="אחוז המרה"
-                  value={`${employerStats?.conversion_rate || 17.8}%`}
-                  subtitle="צפיות למועמדויות"
-                  color="bg-yellow-50 text-yellow-600"
-                />
-                <EmployerStatsCard
-                  icon={CheckCircle}
-                  title="משרות שאוישו"
-                  value={(employerStats?.jobs_filled || 0) + (employerStats?.jobs_filled_via_metch || 0)}
-                  subtitle={`${employerStats?.jobs_filled_via_metch || 0} דרך Metch`}
-                  color="bg-green-50 text-green-600"
-                />
-              </div>
+              
 
               <Card className="bg-[#E7F2F7] shadow-none border-0 rounded-lg notification-carousel">
                 <CardContent className="p-4">
