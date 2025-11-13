@@ -94,36 +94,9 @@ export default function FAQ() {
 
   const handleSupportClick = () => {
     if (typeof window === "undefined") return;
-
-    if (typeof window.openSupportChat === "function") {
-      window.openSupportChat();
-      return;
-    }
-
-    if (window.supportChat?.open) {
-      window.supportChat.open();
-      return;
-    }
-
-    if (window.ChatWidget?.open) {
-      window.ChatWidget.open();
-      return;
-    }
-
-    if (typeof window.zE === "function") {
-      window.zE("webWidget", "open");
-      return;
-    }
-
-    if (typeof document !== "undefined") {
-      const dataTrigger = document.querySelector("[data-support-chat-trigger]");
-      if (dataTrigger) {
-        dataTrigger.click();
-        return;
-      }
-    }
-
-    console.warn("Support chat handler is not available.");
+    
+    const whatsappUrl = "https://api.whatsapp.com/send/?phone=%2B972501234567&text=%D7%A9%D7%9C%D7%95%D7%9D%21+%D7%90%D7%A0%D7%99+%D7%96%D7%A7%D7%95%D7%A7%2F%D7%94+%D7%9C%D7%AA%D7%9E%D7%99%D7%9B%D7%94+%D7%9E%D7%A6%D7%95%D7%95%D7%AA+Metch&type=phone_number&app_absent=0";
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
