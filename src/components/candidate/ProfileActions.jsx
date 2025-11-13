@@ -8,7 +8,6 @@ const ProfileActions = ({
     creatingConversation,
     handleExportToEmail,
     exportingResume,
-    handleBack
 }) => (
     <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 sm:gap-4 pt-8 w-full">
         <Button
@@ -47,15 +46,6 @@ const ProfileActions = ({
                 צפה בשאלון סינון
             </Button>
         </Link>
-        <Button
-            size="lg"
-            variant="ghost"
-            className="w-full sm:flex-1 px-6 sm:px-10 h-12 rounded-full font-bold text-sm sm:text-base text-gray-700 hover:text-gray-900"
-            onClick={handleBack}
-            aria-label="חזור"
-        >
-            חזור
-        </Button>
     </div>
 );
 
