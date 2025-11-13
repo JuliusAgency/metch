@@ -20,6 +20,45 @@ import { useRequireUserType } from '@/hooks/use-require-user-type';
 
 const STEPS = ["פרטים אישיים", "ניסיון תעסוקתי", "השכלה", "הסמכות", "כישורים", "תמצית", "תצוגה מקדימה"];
 
+const ensureArray = (value) => {
+  if (Array.isArray(value)) {
+    return [...value];
+  }
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};
+
+const ensureObject = (value) => {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return { ...value };
+  }
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? { ...parsed } : {};
+    } catch {
+      return {};
+    }
+  }
+  return {};
+};
+
+const normalizeCvRecord = (record = {}) => ({
+  ...record,
+  personal_details: ensureObject(record.personal_details),
+  work_experience: ensureArray(record.work_experience),
+  education: ensureArray(record.education),
+  certifications: ensureArray(record.certifications),
+  skills: ensureArray(record.skills)
+});
+
 const ChoiceCard = ({ title, description, icon: Icon, onClick, isSelected }) => (
     <motion.div
         whileHover={{ scale: 1.03 }}
@@ -43,7 +82,7 @@ const ChoiceCard = ({ title, description, icon: Icon, onClick, isSelected }) => 
 export default function CVGenerator() {
   useRequireUserType(); // Ensure user has selected a user type
   const [step, setStep] = useState(0); // Start at step 0 for choice
-  const [cvData, setCvData] = useState({});
+  const [cvData, setCvData] = useState(() => normalizeCvRecord({}));
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -65,7 +104,7 @@ export default function CVGenerator() {
 
         const existingCvs = await CV.filter({ user_email: userData.email });
         if (existingCvs.length > 0) {
-          setCvData(existingCvs[0]);
+          setCvData(normalizeCvRecord(existingCvs[0]));
           setCvId(existingCvs[0].id);
         } else {
           // Prefill with user data if available
