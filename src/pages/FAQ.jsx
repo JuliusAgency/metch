@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ import { useRequireUserType } from "@/hooks/use-require-user-type";
 const FAQ_DATA = [
   {
     id: 1,
-    question: "איך אני נכניס למערכת?",
+    question: "איך אני נכנס למערכת?",
     answer: "כדי להיכנס למערכת, לחץ על כפתור 'התחבר' בראש העמוד והשתמש בחשבון Google שלך או צור חשבון חדש."
   },
   {
@@ -60,17 +60,70 @@ const FAQ_DATA = [
 export default function FAQ() {
   useRequireUserType(); // Ensure user has selected a user type
   const [searchTerm, setSearchTerm] = useState("");
-  const [expandedQuestions, setExpandedQuestions] = useState({});
+  const [activeQuestionId, setActiveQuestionId] = useState(null);
+  const questionRefs = useRef([]);
 
   const filteredFAQ = FAQ_DATA.filter(item =>
     item.question.includes(searchTerm) || item.answer.includes(searchTerm)
   );
 
   const toggleQuestion = (questionId) => {
-    setExpandedQuestions(prev => ({
-      ...prev,
-      [questionId]: !prev[questionId]
-    }));
+    setActiveQuestionId(prev => (prev === questionId ? null : questionId));
+  };
+
+  const handleQuestionKeyDown = (event, index) => {
+    const total = filteredFAQ.length;
+    if (!total) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      const nextIndex = (index + 1) % total;
+      questionRefs.current[nextIndex]?.focus();
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      const prevIndex = (index - 1 + total) % total;
+      questionRefs.current[prevIndex]?.focus();
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      questionRefs.current[0]?.focus();
+    } else if (event.key === "End") {
+      event.preventDefault();
+      questionRefs.current[total - 1]?.focus();
+    }
+  };
+
+  const handleSupportClick = () => {
+    if (typeof window === "undefined") return;
+
+    if (typeof window.openSupportChat === "function") {
+      window.openSupportChat();
+      return;
+    }
+
+    if (window.supportChat?.open) {
+      window.supportChat.open();
+      return;
+    }
+
+    if (window.ChatWidget?.open) {
+      window.ChatWidget.open();
+      return;
+    }
+
+    if (typeof window.zE === "function") {
+      window.zE("webWidget", "open");
+      return;
+    }
+
+    if (typeof document !== "undefined") {
+      const dataTrigger = document.querySelector("[data-support-chat-trigger]");
+      if (dataTrigger) {
+        dataTrigger.click();
+        return;
+      }
+    }
+
+    console.warn("Support chat handler is not available.");
   };
 
   return (
@@ -134,32 +187,44 @@ export default function FAQ() {
                       >
                         <button
                           onClick={() => toggleQuestion(item.id)}
-                          className="w-full p-4 text-right hover:bg-gray-50 transition-colors flex items-center justify-between"
+                          onKeyDown={(event) => handleQuestionKeyDown(event, index)}
+                          className="w-full p-4 text-right hover:bg-gray-50 transition-colors flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                          aria-expanded={activeQuestionId === item.id}
+                          aria-controls={`faq-content-${item.id}`}
+                          id={`faq-trigger-${item.id}`}
+                          ref={el => { questionRefs.current[index] = el; }}
+                          type="button"
                         >
                           <div className="flex items-center text-blue-600">
-                            {expandedQuestions[item.id] ? (
+                            {activeQuestionId === item.id ? (
                               <Minus className="w-5 h-5" />
                             ) : (
                               <Plus className="w-5 h-5" />
                             )}
                           </div>
                           <div className="flex-1 mr-4">
-                            <h3 className="font-semibold text-gray-900 text-lg">שאלה {item.id}</h3>
-                            <p className="text-gray-700 mt-1">{item.question}</p>
+                            <p
+                              className="text-gray-900 text-lg"
+                              id={`faq-title-${item.id}`}
+                            >
+                              {item.question}
+                            </p>
                           </div>
                         </button>
                         
                         <AnimatePresence>
-                          {expandedQuestions[item.id] && (
+                          {activeQuestionId === item.id && (
                             <motion.div
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: "auto", opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
                               transition={{ duration: 0.3 }}
                               className="border-t border-gray-200"
+                              id={`faq-content-${item.id}`}
+                              role="region"
+                              aria-labelledby={`faq-title-${item.id}`}
                             >
                               <div className="p-4 bg-gray-50">
-                                <h4 className="font-medium text-gray-800 mb-2">תשובה</h4>
                                 <p className="text-gray-700 leading-relaxed">{item.answer}</p>
                               </div>
                             </motion.div>
@@ -182,12 +247,15 @@ export default function FAQ() {
 
                 {/* Bottom contact message */}
                 <div className="text-center pt-6 border-t border-gray-200">
-                  <p className="text-gray-600">
-                    לא מצאת התשובה? 
-                    <Link to={createPageUrl("Contact")} className="text-blue-600 underline hover:text-blue-700 mr-1">
-                      פנה לתמיכה
-                    </Link>
-                  </p>
+                  <p className="text-gray-600 mb-4">לא מצאת התשובה?</p>
+                  <Button
+                    type="button"
+                    onClick={handleSupportClick}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full inline-flex items-center gap-2"
+                  >
+                    <HelpCircle className="w-5 h-5" />
+                    פנה לתמיכה
+                  </Button>
                 </div>
               </motion.div>
             </CardContent>
