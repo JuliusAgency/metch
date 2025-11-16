@@ -12,7 +12,8 @@ const SeekerHeader = ({ company, job, returnUrl }) => {
         className="absolute top-0 left-0 right-0 h-40 bg-no-repeat bg-cover bg-center"
         style={{
           backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
-          clipPath: 'ellipse(120% 100% at 50% 0%)'
+          clipPath: 'ellipse(120% 100% at 50% 0%)',
+          zIndex: '-1',
         }}
       />
 

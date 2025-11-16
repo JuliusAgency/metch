@@ -4,7 +4,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "lucide-react";
 import DynamicRequirementInput from './DynamicRequirementInput';
-import jobCategories from '../../../jobs.json';
+import jobCategoryList from '../../../jobs_category.json';
+import jobTitles from '../../../jobs.json';
 import CategorySelect from './CategorySelect';
 
 export default function Step1Details({ jobData, setJobData }) {
@@ -24,8 +25,11 @@ export default function Step1Details({ jobData, setJobData }) {
   };
 
   const jobTypes = ["full_time", "part_time", "contract", "freelance", "internship"];
-  const categoryOptions = Array.isArray(jobCategories)
-    ? jobCategories.filter(Boolean).filter((category, index, arr) => arr.indexOf(category) === index)
+  const categoryOptions = Array.isArray(jobCategoryList)
+    ? jobCategoryList.filter(Boolean).filter((category, index, arr) => arr.indexOf(category) === index)
+    : [];
+  const titleOptions = Array.isArray(jobTitles)
+    ? jobTitles.filter(Boolean).filter((title, index, arr) => arr.indexOf(title) === index)
     : [];
 
   return (
@@ -42,12 +46,11 @@ export default function Step1Details({ jobData, setJobData }) {
             options={categoryOptions}
             placeholder="תחום משרה"
           />
-          <Input
-            name="title"
-            placeholder="תפקיד"
+          <CategorySelect
             value={jobData.title || ''}
-            onChange={handleInputChange}
-            className="h-12 rounded-full border-gray-300 text-right"
+            onChange={(value) => handleSelectChange('title', value)}
+            options={titleOptions}
+            placeholder="תפקיד"
           />
           <div className="relative">
              <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
