@@ -11,30 +11,33 @@ import {
   Twitter
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 
+const SUPPORT_EMAIL = "support@metch.co.il";
+
 export default function Contact() {
-  useRequireUserType(); // Ensure user has selected a user type
+  const navigate = useNavigate();
+  const { user } = useRequireUserType(); // Ensure user has selected a user type
   const [chatLoading, setChatLoading] = useState(false);
 
   const handleSupportChat = () => {
     setChatLoading(true);
     setTimeout(() => {
       setChatLoading(false);
-      const whatsappNumber = "+972501234567";
-      const message = encodeURIComponent("שלום! אני זקוק/ה לתמיכה מצוות Metch");
-      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
-      window.open(whatsappUrl, '_blank');
+      const chatPage =
+        user?.user_type === "job_seeker" ? "MessagesSeeker" : "Messages";
+      navigate(createPageUrl(chatPage), {
+        state: { supportChat: true }
+      });
     }, 1000);
   };
 
   const handleEmailContact = () => {
-    const email = "metch@gmail.com";
     const subject = encodeURIComponent("פניה לתמיכה - Metch");
     const body = encodeURIComponent("שלום,\n\nאני מעוניין/ת לקבל תמיכה בנושא הבא:\n\n");
-    const emailUrl = `mailto:${email}?subject=${subject}&body=${body}`;
+    const emailUrl = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
     window.location.href = emailUrl;
   };
 
@@ -107,7 +110,7 @@ export default function Contact() {
                 </div>
 
                 {/* Email Display */}
-                <p className="text-gray-700 font-semibold pt-6">metch@gmail.com</p>
+                <p className="text-gray-700 font-semibold pt-6">{SUPPORT_EMAIL}</p>
               </motion.div>
             </CardContent>
           </div>

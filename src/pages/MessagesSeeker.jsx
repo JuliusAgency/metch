@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { User } from "@/api/entities";
 import { Conversation } from "@/api/entities";
 import { Message } from "@/api/entities";
@@ -14,8 +14,10 @@ import SeekerMessageInput from "@/components/seeker/SeekerMessageInput";
 import SeekerConversationList from "@/components/seeker/SeekerConversationList";
 import SeekerPagination from "@/components/seeker/SeekerPagination";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 4;
+const SUPPORT_EMAIL = "support@metch.co.il";
 
 export default function MessagesSeeker() {
     useRequireUserType(); // Ensure user has selected a user type
@@ -29,6 +31,8 @@ export default function MessagesSeeker() {
     const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [loadingMessages, setLoadingMessages] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const totalPages = Math.ceil(conversations.length / ITEMS_PER_PAGE);
 
@@ -92,7 +96,7 @@ export default function MessagesSeeker() {
                     {
                         id: "support_1",
                         content: "שלום! איך אנחנו יכולים לעזור לך היום?",
-                        sender_email: "support@metch.com",
+                        sender_email: SUPPORT_EMAIL,
                         created_date: new Date().toISOString(),
                         is_read: true
                     }
@@ -182,11 +186,11 @@ export default function MessagesSeeker() {
         loadMessages(conversation.id);
     };
 
-    const handleSupportContact = () => {
+    const startSupportConversation = useCallback(() => {
         const supportConversation = {
             id: "support",
             employer_name: "צוות התמיכה",
-            employer_email: "support@metch.com",
+            employer_email: SUPPORT_EMAIL,
             last_message_time: new Date().toISOString(),
             last_message: "איך אנחנו יכולים לעזור?",
             profileImage: "",
@@ -199,12 +203,23 @@ export default function MessagesSeeker() {
             {
                 id: "support_1",
                 content: "שלום! איך אנחנו יכולים לעזור לך היום?",
-                sender_email: "support@metch.com",
+                sender_email: SUPPORT_EMAIL,
                 created_date: new Date().toISOString(),
                 is_read: true
             }
         ]);
+    }, []);
+
+    const handleSupportContact = () => {
+        startSupportConversation();
     };
+
+    useEffect(() => {
+        if (location.state?.supportChat) {
+            startSupportConversation();
+            navigate(location.pathname, { replace: true, state: null });
+        }
+    }, [location.state, location.pathname, navigate, startSupportConversation]);
 
     if (selectedConversation) {
         return (

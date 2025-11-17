@@ -25,6 +25,7 @@ import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 4;
+const SUPPORT_EMAIL = "support@metch.co.il";
 
 // Helper function to safely format dates
 const safeFormatDate = (dateValue, formatString, fallback = "") => {
@@ -138,6 +139,19 @@ export default function Messages() {
     const loadMessages = useCallback(async (conversationId) => {
         setLoadingMessages(true);
         try {
+            if (conversationId === "support") {
+                setMessages([
+                    {
+                        id: "support_1",
+                        content: "שלום! איך אנחנו יכולים לעזור לך היום?",
+                        sender_email: SUPPORT_EMAIL,
+                        created_date: new Date().toISOString(),
+                        is_read: true
+                    }
+                ]);
+                setLoadingMessages(false);
+                return;
+            }
             // Load real messages from database
             const messagesData = await Message.filter(
                 { conversation_id: conversationId },
@@ -159,6 +173,40 @@ export default function Messages() {
             setLoadingMessages(false);
         }
     }, []);
+
+    const startSupportConversation = useCallback(() => {
+        const supportConversation = {
+            id: "support",
+            candidate_name: "צוות התמיכה",
+            candidate_email: SUPPORT_EMAIL,
+            last_message_time: new Date().toISOString(),
+            last_message: "איך אנחנו יכולים לעזור?",
+            profileImage: "",
+            job_title: "תמיכה טכנית",
+            job_status: "active",
+            job_id: null,
+            is_support: true
+        };
+
+        setSelectedConversation(supportConversation);
+        setMessages([
+            {
+                id: "support_1",
+                content: "שלום! איך אנחנו יכולים לעזור לך היום?",
+                sender_email: SUPPORT_EMAIL,
+                created_date: new Date().toISOString(),
+                is_read: true
+            }
+        ]);
+        setLoadingMessages(false);
+    }, []);
+
+    useEffect(() => {
+        if (location.state?.supportChat) {
+            startSupportConversation();
+            navigate(location.pathname, { replace: true, state: null });
+        }
+    }, [location.state, location.pathname, navigate, startSupportConversation]);
 
     useEffect(() => {
         if (!pendingConversationParams || conversations.length === 0) return;
@@ -216,6 +264,20 @@ export default function Messages() {
 
         setSendingMessage(true);
         try {
+            if (selectedConversation?.is_support) {
+                const newMsg = {
+                    id: Date.now().toString(),
+                    content: newMessage.trim(),
+                    sender_email: user?.email || "employer@example.com",
+                    created_date: new Date().toISOString(),
+                    is_read: false
+                };
+
+                setMessages(prev => [...prev, newMsg]);
+                setNewMessage("");
+                setSendingMessage(false);
+                return;
+            }
             const currentDate = new Date().toISOString();
             
             // Create message in database with explicit created_date
