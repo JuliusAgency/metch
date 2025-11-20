@@ -1,5 +1,6 @@
 import { UserAction } from '@/api/entities';
 import { UserStats } from '@/api/entities';
+import { JobView } from '@/api/entities';
 
 /**
  * Utility class for tracking user actions and updating analytics
@@ -31,7 +32,7 @@ export class UserAnalytics {
 
     try {
       const sessionId = this.initSession();
-      
+
       // Record the action
       const actionRecord = {
         user_email: userEmail,
@@ -129,12 +130,37 @@ export class UserAnalytics {
    * Track job detail view
    */
   static async trackJobView(userEmail, job) {
-    return this.trackAction(userEmail, 'job_view', {
-      job_id: job.id,
-      job_title: job.title,
-      job_company: job.company,
-      match_score: job.match_score
-    });
+    try {
+      // Track the analytics event
+      await this.trackAction(userEmail, 'job_view', {
+        job_id: job.id,
+        job_title: job.title,
+        job_company: job.company,
+        match_score: job.match_score
+      });
+
+      // Create persistent JobView record if it doesn't exist
+      const existingViews = await JobView.filter({
+        user_email: userEmail,
+        job_id: job.id
+      });
+
+      if (existingViews.length === 0) {
+        await JobView.create({
+          user_email: userEmail,
+          job_id: job.id
+        });
+      }
+    } catch (error) {
+      console.error('Error tracking job view:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
+      console.log('Input data:', { userEmail, jobId: job?.id });
+    }
   }
 
   /**
@@ -210,8 +236,8 @@ export class UserAnalytics {
   static async getUserActivity(userEmail, limit = 50) {
     try {
       const actions = await UserAction.filter(
-        { user_email: userEmail }, 
-        "-created_at", 
+        { user_email: userEmail },
+        "-created_at",
         limit
       );
       return actions;
