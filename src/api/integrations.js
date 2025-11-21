@@ -22,15 +22,15 @@ export const Core = {
  * @param {number} params.max_tokens - Max tokens in response
  * @returns {Promise<Object>} LLM response
  */
-export async function InvokeLLM({ 
-  prompt, 
-  model = 'gpt-3.5-turbo', 
-  temperature = 0.7, 
+export async function InvokeLLM({
+  prompt,
+  model = 'gpt-3.5-turbo',
+  temperature = 0.7,
   max_tokens = 1000,
   messages = null
 }) {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  
+
   if (!apiKey) {
     throw new Error('VITE_OPENAI_API_KEY environment variable is not set');
   }
@@ -57,7 +57,13 @@ export async function InvokeLLM({
   });
 
   if (!response.ok) {
-    throw new Error(`OpenAI API error: ${response.statusText}`);
+    const errorData = await response.json().catch(() => ({}));
+    console.error('OpenAI API Error Details:', {
+      status: response.status,
+      statusText: response.statusText,
+      data: errorData
+    });
+    throw new Error(`OpenAI API error: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`);
   }
 
   const data = await response.json();
@@ -80,7 +86,7 @@ export async function InvokeLLM({
  */
 export async function SendEmail({ to, from, subject, html, text, attachments }) {
   const apiKey = import.meta.env.VITE_RESEND_API_KEY;
-  
+
   if (!apiKey) {
     throw new Error('VITE_RESEND_API_KEY environment variable is not set');
   }
@@ -118,7 +124,7 @@ export async function SendEmail({ to, from, subject, html, text, attachments }) 
  */
 export async function UploadFile({ file, bucket = 'public-files', path }) {
   const fileName = path || `${Date.now()}-${file.name}`;
-  
+
   const { data, error } = await supabase.storage
     .from(bucket)
     .upload(fileName, file, {
@@ -151,7 +157,7 @@ export async function UploadFile({ file, bucket = 'public-files', path }) {
  */
 export async function UploadPrivateFile({ file, bucket = 'private-files', path }) {
   const fileName = path || `${Date.now()}-${file.name}`;
-  
+
   const { data, error } = await supabase.storage
     .from(bucket)
     .upload(fileName, file, {
@@ -201,7 +207,7 @@ export async function CreateFileSignedUrl({ bucket = 'private-files', path, expi
  */
 export async function GenerateImage({ prompt, size = '1024x1024', model = 'dall-e-2' }) {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  
+
   if (!apiKey) {
     throw new Error('VITE_OPENAI_API_KEY environment variable is not set');
   }
@@ -246,9 +252,9 @@ export async function ExtractDataFromUploadedFile({ fileUrl, fileType }) {
   // - AWS Textract
   // - Azure Form Recognizer
   // - Or custom OCR solutions
-  
+
   console.warn('ExtractDataFromUploadedFile is a placeholder. Implement with actual OCR/parsing service.');
-  
+
   return {
     text: '',
     metadata: {
