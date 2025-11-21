@@ -146,7 +146,7 @@ export default function PreferenceQuestionnaire() {
               transition={{ duration: 0.5 }}
               className="max-w-4xl mx-auto space-y-12">
 
-              <h1 className="text-center text-3xl font-bold text-gray-900">שאלון סינון</h1>
+              <h1 className="text-center text-3xl font-bold text-gray-900">ניהול שאלון העדפה</h1>
 
               <div className="border border-gray-200 rounded-2xl p-8 space-y-8">
                 <Question
