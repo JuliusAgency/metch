@@ -127,10 +127,10 @@ export default function PreferenceQuestionnaire() {
 
   return (
     <div className="p-4 md:p-6" dir="rtl">
-            <div className="w-[85vw] mx-auto">
-                <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
-                    <div className="relative h-24 overflow-hidden -m-px">
-                        <div
+      <div className="w-[85vw] mx-auto">
+        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
+          <div className="relative h-24 overflow-hidden -m-px">
+            <div
               className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
               style={{
                 backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/ca93821b0_image.png)',
@@ -138,49 +138,55 @@ export default function PreferenceQuestionnaire() {
                 backgroundPosition: 'center top'
               }} />
 
-                    </div>
-                    <CardContent className="p-4 sm:p-6 md:p-8 -mt-12 relative z-10">
-                        <motion.div
+          </div>
+          <CardContent className="p-4 sm:p-6 md:p-8 -mt-12 relative z-10">
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               className="max-w-4xl mx-auto space-y-12">
 
-                            <h1 className="text-center text-3xl font-bold text-gray-900">שאלון סינון</h1>
-                            
-                            <div className="border border-gray-200 rounded-2xl p-8 space-y-8">
-                                <Question
+              <h1 className="text-center text-3xl font-bold text-gray-900">שאלון סינון</h1>
+
+              <div className="border border-gray-200 rounded-2xl p-8 space-y-8">
+                <Question
                   question="האם יש רישיון רכב?"
                   type="yes_no"
                   value={answers.driving_license}
                   onChange={(val) => handleAnswerChange('driving_license', val)} />
 
-                                <Question
+                <Question
                   question="האם מיקום העבודה מתאים עבורך למשרה מלאה בחברה שלנו?"
                   value={answers.relocation_interest}
                   onChange={(val) => handleAnswerChange('relocation_interest', val)} />
 
-                                <Question
+                <Question
                   question="האם יש תואר ראשון בכלכלה?"
                   type="yes_no"
                   value={answers.first_degree}
                   onChange={(val) => handleAnswerChange('first_degree', val)} />
 
-                            </div>
+              </div>
 
-                            <div className="text-center">
-                                <Button
+              <div className="flex flex-col items-center gap-4">
+                <Button
                   onClick={handleSave}
                   disabled={saving}
-                  className="px-12 h-14 rounded-full font-bold text-lg bg-blue-600 hover:bg-blue-700">
+                  className="px-12 h-14 rounded-full font-bold text-lg bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
+                  {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : "שלחו קורות חיים"}
+                </Button>
 
-                                    {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : "שלחו קורות חיים"}
-                                </Button>
-                            </div>
-                        </motion.div>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>);
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate(createPageUrl('Profile'))}
+                  className="text-gray-500 hover:text-gray-700 hover:bg-transparent font-normal">
+                  דלג
+                </Button>
+              </div>
+            </motion.div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>);
 
 }
