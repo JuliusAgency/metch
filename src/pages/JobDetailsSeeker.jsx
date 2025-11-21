@@ -14,6 +14,7 @@ import SeekerJobPerks from "@/components/seeker/SeekerJobPerks";
 import SeekerJobInfo from "@/components/seeker/SeekerJobInfo";
 import SeekerJobImages from "@/components/seeker/SeekerJobImages";
 import SeekerJobActions from "@/components/seeker/SeekerJobActions";
+import ApplicationSuccessModal from "@/components/jobs/ApplicationSuccessModal";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 export default function JobDetailsSeeker() {
@@ -23,6 +24,7 @@ export default function JobDetailsSeeker() {
   const [applying, setApplying] = useState(false);
   const [user, setUser] = useState(null);
   const [hasExistingApplication, setHasExistingApplication] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -38,22 +40,22 @@ export default function JobDetailsSeeker() {
       setUser(userData);
 
       const jobId = jobIdParam;
-      
+
       if (jobId) {
         const jobResults = await Job.filter({ id: jobId });
         if (jobResults.length > 0) {
           const fetchedJob = jobResults[0];
           setJob(fetchedJob);
-          
+
           // Check for existing application
           if (userData?.email) {
             try {
               await UserAnalytics.trackJobView(userData.email, fetchedJob);
-              
+
               // Check if user already applied
-              const existingApps = await JobApplication.filter({ 
+              const existingApps = await JobApplication.filter({
                 job_id: jobId,
-                applicant_email: userData.email 
+                applicant_email: userData.email
               });
               setHasExistingApplication(existingApps.length > 0);
             } catch (error) {
@@ -135,17 +137,9 @@ export default function JobDetailsSeeker() {
         applicant_email: user.email,
         status: 'pending'
       });
-      
-      toast({
-        title: "מועמדות הוגשה בהצלחה!",
-        description: "המועמדות שלך נשלחה למעסיק. תקבל עדכון על הסטטוס.",
-      });
-      
+
       setHasExistingApplication(true);
-      
-      setTimeout(() => {
-        navigate(createPageUrl("Dashboard"));
-      }, 1500);
+      setShowSuccessModal(true);
     } catch (error) {
       console.error("Error applying to job:", error);
       toast({
@@ -182,8 +176,8 @@ export default function JobDetailsSeeker() {
   }
 
   const isUnavailable = ['filled', 'filled_via_metch', 'closed', 'paused'].includes(job.status);
-  const imageAttachments = Array.isArray(job.attachments) 
-    ? job.attachments.filter(att => att.type?.startsWith('image/')) 
+  const imageAttachments = Array.isArray(job.attachments)
+    ? job.attachments.filter(att => att.type?.startsWith('image/'))
     : [];
   const normalizedReturnPage = fromParam || 'Dashboard';
   const baseReturnPath = createPageUrl(normalizedReturnPage);
@@ -213,6 +207,11 @@ export default function JobDetailsSeeker() {
           </CardContent>
         </Card>
       </div>
+
+      <ApplicationSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+      />
     </div>
   );
 }
