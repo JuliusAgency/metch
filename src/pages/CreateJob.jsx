@@ -25,7 +25,7 @@ const initialJobData = {
   location: "",
   category: "",
   status: "draft",
-  employment_type: "full_time",
+  employment_type: "",
   start_date: "",
   structured_requirements: [{ value: "", type: "required" }],
   structured_education: [{ value: "", type: "required" }],
@@ -77,7 +77,7 @@ export default function CreateJob() {
       handleSubmit();
     }
   };
-  
+
   const prevStep = () => {
     if (step > 1) {
       setStep(step - 1);
@@ -89,16 +89,16 @@ export default function CreateJob() {
     try {
       // Get user data first to ensure created_by fields are set
       const userData = await User.me();
-      
+
       // Prepare job data with created_by fields
       const jobDataToSave = {
         ...jobData,
         created_by: userData.email,
         created_by_id: userData.id
       };
-      
+
       let createdOrUpdatedJob;
-      
+
       if (isEditing) {
         // For updates, preserve created_by if it already exists, otherwise set it
         const updatedJobData = {
@@ -108,22 +108,22 @@ export default function CreateJob() {
           created_by_id: jobData.created_by_id || userData.id
         };
         createdOrUpdatedJob = await Job.update(jobData.id, updatedJobData);
-        
+
         // Track job edit
         await EmployerAnalytics.trackJobEdit(userData.email, createdOrUpdatedJob);
       } else {
         // For new jobs, always set created_by fields
         createdOrUpdatedJob = await Job.create(jobDataToSave);
-        
+
         // Track job creation
         await EmployerAnalytics.trackJobCreate(userData.email, createdOrUpdatedJob);
-        
+
         // If job is being published (not draft), track publish action too
         if (jobDataToSave.status === 'active') { // Assuming 'active' means published
           await EmployerAnalytics.trackJobPublish(userData.email, createdOrUpdatedJob);
         }
       }
-      
+
       setLastCreatedJob(createdOrUpdatedJob);
       setIsSubmitted(true);
     } catch (error) {
@@ -142,7 +142,7 @@ export default function CreateJob() {
   };
 
   const handleDuplicate = () => {
-    const duplicatedData = { ...lastCreatedJob, title: `${lastCreatedJob.title} (עותק)`};
+    const duplicatedData = { ...lastCreatedJob, title: `${lastCreatedJob.title} (עותק)` };
     delete duplicatedData.id;
     delete duplicatedData.created_date;
     delete duplicatedData.updated_date;
@@ -157,8 +157,8 @@ export default function CreateJob() {
     if (isSubmitted) {
       return <Success onReset={handleReset} onDuplicate={handleDuplicate} />;
     }
-    
-    switch(step) {
+
+    switch (step) {
       case 1: return <Step1Details jobData={jobData} setJobData={setJobData} />;
       case 2: return <Step3Company jobData={jobData} setJobData={setJobData} />;
       case 3: return <Step2Screening jobData={jobData} setJobData={setJobData} />;
@@ -167,26 +167,26 @@ export default function CreateJob() {
       default: return <Step1Details jobData={jobData} setJobData={setJobData} />;
     }
   };
-  
+
   const isFinalStep = step === STEPS.length;
 
   if (loadingJob) {
-      return (
-          <div className="p-4 md:p-6 flex justify-center items-center h-[50vh]" dir="rtl">
-              <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
-          </div>
-      );
+    return (
+      <div className="p-4 md:p-6 flex justify-center items-center h-[50vh]" dir="rtl">
+        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+      </div>
+    );
   }
 
   return (
     <div className="p-4 md:p-6" dir="rtl">
       <div className="w-[85vw] mx-auto">
         <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden p-8">
-          
+
           <div className="text-center mb-4">
-              <h1 className="text-3xl font-bold text-gray-900">{isEditing ? 'עריכת משרה' : 'יצירת משרה חדשה'}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{isEditing ? 'עריכת משרה' : 'יצירת משרה חדשה'}</h1>
           </div>
-          
+
           {!isSubmitted && <Stepper currentStep={step} steps={STEPS} />}
 
           <AnimatePresence mode="wait">

@@ -19,12 +19,17 @@ export default function Step1Details({ jobData, setJobData }) {
   const handleSelectChange = (name, value) => {
     setJobData(prev => ({ ...prev, [name]: value }));
   };
-  
+
   const handleDynamicChange = (name, items) => {
     setJobData(prev => ({ ...prev, [name]: items }));
   };
 
-  const jobTypes = ["full_time", "part_time", "contract", "freelance", "internship"];
+  const jobTypes = [
+    { value: "full_time", label: "מלאה" },
+    { value: "part_time", label: "חלקית" },
+    { value: "shifts", label: "משמרות" },
+    { value: "flexible", label: "גמיש/גמישה" }
+  ];
   const categoryOptions = Array.isArray(jobCategoryList)
     ? jobCategoryList.filter(Boolean).filter((category, index, arr) => arr.indexOf(category) === index)
     : [];
@@ -37,7 +42,7 @@ export default function Step1Details({ jobData, setJobData }) {
       <div className="text-center mb-10">
         <h1 className="text-2xl font-bold text-gray-900">משרה מפורטת מובילה למועמדים מדוייקים</h1>
       </div>
-      
+
       <div className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <CategorySelect
@@ -53,13 +58,13 @@ export default function Step1Details({ jobData, setJobData }) {
             placeholder="תפקיד"
           />
           <div className="relative">
-             <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Input
               type="text"
               name="start_date"
               placeholder="תחילת עבודה"
-              onFocus={(e) => e.target.type='date'}
-              onBlur={(e) => e.target.type='text'}
+              onFocus={(e) => e.target.type = 'date'}
+              onBlur={(e) => e.target.type = 'text'}
               value={jobData.start_date || ''}
               onChange={handleInputChange}
               min={today}
@@ -78,7 +83,7 @@ export default function Step1Details({ jobData, setJobData }) {
             </SelectTrigger>
             <SelectContent>
               {jobTypes.map(type => (
-                <SelectItem key={type} value={type}>{type.replace('_', ' ')}</SelectItem>
+                <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
