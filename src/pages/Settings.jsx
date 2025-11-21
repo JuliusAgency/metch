@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { User } from "@/api/entities";
 import { UploadFile } from "@/api/integrations";
+import { supabase } from "@/api/supabaseClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,9 @@ import {
   ChevronRight,
   Loader2,
   AlertTriangle,
-  LogOut
+  LogOut,
+  Lock,
+  Users
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
@@ -31,9 +34,10 @@ export default function Settings() {
     full_name: "",
     email: "",
     phone: "",
-    whatsapp_phone: "",
-    preferred_location: "",
-    experience_level: ""
+    gender: "",
+    date_of_birth: "",
+    place_of_residence: "",
+    password: ""
   });
   const [initialFormData, setInitialFormData] = useState(null);
   const [errors, setErrors] = useState({});
@@ -57,17 +61,19 @@ export default function Settings() {
         full_name: userData.full_name || "",
         email: userData.email || "",
         phone: userData.phone || "",
-        whatsapp_phone: userData.whatsapp_phone || "",
-        preferred_location: userData.preferred_location || "",
-        experience_level: userData.experience_level || ""
+        gender: userData.gender || "",
+        date_of_birth: userData.date_of_birth || "",
+        place_of_residence: userData.place_of_residence || "",
+        password: ""
       });
       setInitialFormData({
         full_name: userData.full_name || "",
         email: userData.email || "",
         phone: userData.phone || "",
-        whatsapp_phone: userData.whatsapp_phone || "",
-        preferred_location: userData.preferred_location || "",
-        experience_level: userData.experience_level || ""
+        gender: userData.gender || "",
+        date_of_birth: userData.date_of_birth || "",
+        place_of_residence: userData.place_of_residence || "",
+        password: ""
       });
       setErrors({});
     } catch (error) {
@@ -93,7 +99,7 @@ export default function Settings() {
     const newErrors = {};
     Object.entries(formData).forEach(([field, value]) => {
       const trimmedValue = typeof value === 'string' ? value.trim() : value;
-      if (!trimmedValue && field !== 'email') {
+      if (!trimmedValue && field !== 'email' && field !== 'password') {
         newErrors[field] = "שדה חובה";
       }
     });
@@ -108,9 +114,20 @@ export default function Settings() {
     }
     setSaving(true);
     try {
-      await User.updateMyUserData(formData);
-      setUser(prev => ({...prev, ...formData}));
-      setInitialFormData({ ...formData });
+      // Update password if provided
+      if (formData.password) {
+        const { error } = await supabase.auth.updateUser({ password: formData.password });
+        if (error) throw error;
+      }
+
+      // Update profile data
+      const profileData = { ...formData };
+      delete profileData.password; // Don't save password to profile table
+
+      await User.updateMyUserData(profileData);
+      setUser(prev => ({ ...prev, ...profileData }));
+      setInitialFormData({ ...formData, password: "" });
+      setFormData(prev => ({ ...prev, password: "" }));
       setErrors({});
       // Show success feedback (you could add a toast here)
       console.log("Profile updated successfully");
@@ -118,6 +135,32 @@ export default function Settings() {
       console.error("Error saving profile:", error);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+      // Upload file
+      const { publicUrl } = await UploadFile({
+        file,
+        bucket: 'public', // Assuming 'public' bucket exists, adjust if needed
+        path: `avatars/${user.id}/${Date.now()}-${file.name}`
+      });
+
+      // Update user profile with new avatar URL
+      // Assuming there's an 'avatar_url' or similar field. 
+      // Based on the existing code, it seems the image is hardcoded in the UI.
+      // I will update a 'profile_picture' field.
+      await User.updateMyUserData({ profile_picture: publicUrl });
+
+      // Update local state
+      setUser(prev => ({ ...prev, profile_picture: publicUrl }));
+
+    } catch (error) {
+      console.error("Error uploading file:", error);
     }
   };
 
@@ -136,7 +179,7 @@ export default function Settings() {
       // In a real implementation, you would call an API to delete the account
       // For now, we'll just simulate the process
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       // Log out the user after account deletion
       await signOut();
       navigate(createPageUrl('Login'));
@@ -149,7 +192,7 @@ export default function Settings() {
     }
   };
 
-  const formFields = ['full_name', 'phone', 'whatsapp_phone', 'preferred_location', 'experience_level'];
+  const formFields = ['full_name', 'phone', 'gender', 'date_of_birth', 'place_of_residence'];
   const isFormComplete = formFields.every((field) => {
     const value = formData[field];
     return typeof value === 'string' ? value.trim() !== '' : !!value;
@@ -176,7 +219,7 @@ export default function Settings() {
           <div className="relative">
             {/* Header with curved background */}
             <div className="relative h-24 overflow-hidden -m-px">
-              <div 
+              <div
                 className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
                 style={{
                   backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
@@ -186,7 +229,7 @@ export default function Settings() {
                 }}
               />
               <Link to={createPageUrl("Dashboard")} className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-10">
-                <ChevronRight className="w-6 h-6 text-gray-800 rotate-180" />
+                <ChevronRight className="w-6 h-6 text-gray-800" />
               </Link>
             </div>
 
@@ -200,13 +243,13 @@ export default function Settings() {
                 {/* Header Section */}
                 <div className="flex flex-col items-center text-center space-y-4">
                   <h1 className="text-3xl md:text-4xl font-bold text-gray-900">הגדרות פרופיל משתמש</h1>
-                  
+
                   {/* Profile Picture with Edit Button */}
                   <div className="relative">
                     <div className="w-20 h-20 bg-blue-200 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
                       <UserIcon className="w-10 h-10 text-blue-600" />
                     </div>
-                    <button 
+                    <button
                       className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 transition-colors"
                       onClick={() => fileInputRef.current?.click()}
                     >
@@ -217,10 +260,10 @@ export default function Settings() {
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={() => {/* Handle file upload */}}
+                      onChange={handleFileUpload}
                     />
                   </div>
-                  
+
                   <h2 className="text-xl font-semibold text-gray-800">{user?.full_name || "ישראל ישראלי"}</h2>
                 </div>
 
@@ -276,57 +319,77 @@ export default function Settings() {
                       )}
                     </div>
 
-                    {/* WhatsApp Phone */}
+                    {/* Password */}
                     <div className="space-y-1">
                       <div className="relative">
-                        <Phone className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                        <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <Input
-                          placeholder="וואטסאפ לקבלת הודעות"
-                          value={formData.whatsapp_phone}
-                          onChange={(e) => handleInputChange('whatsapp_phone', e.target.value)}
-                          required
-                          className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-green-400"
+                          type="password"
+                          placeholder="סיסמה (השאר ריק אם אין שינוי)"
+                          value={formData.password}
+                          onChange={(e) => handleInputChange('password', e.target.value)}
+                          className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                           dir="rtl"
                         />
                       </div>
-                      {errors.whatsapp_phone && (
-                        <p className="text-red-500 text-sm text-right">{errors.whatsapp_phone}</p>
+                    </div>
+
+                    {/* Gender */}
+                    <div className="space-y-1">
+                      <div className="relative">
+                        <Users className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <select
+                          value={formData.gender}
+                          onChange={(e) => handleInputChange('gender', e.target.value)}
+                          required
+                          className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400 appearance-none"
+                          dir="rtl"
+                        >
+                          <option value="" disabled>בחר מגדר</option>
+                          <option value="male">זכר</option>
+                          <option value="female">נקבה</option>
+                          <option value="other">אחר</option>
+                        </select>
+                      </div>
+                      {errors.gender && (
+                        <p className="text-red-500 text-sm text-right">{errors.gender}</p>
                       )}
                     </div>
 
-                    {/* Location */}
+                    {/* Date of Birth */}
+                    <div className="space-y-1">
+                      <div className="relative">
+                        <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          type="date"
+                          placeholder="תאריך לידה"
+                          value={formData.date_of_birth}
+                          onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
+                          required
+                          className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                          dir="rtl"
+                        />
+                      </div>
+                      {errors.date_of_birth && (
+                        <p className="text-red-500 text-sm text-right">{errors.date_of_birth}</p>
+                      )}
+                    </div>
+
+                    {/* Place of Residence */}
                     <div className="space-y-1">
                       <div className="relative">
                         <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <Input
-                          placeholder="מיקום מועדף"
-                          value={formData.preferred_location}
-                          onChange={(e) => handleInputChange('preferred_location', e.target.value)}
+                          placeholder="מקום מגורים"
+                          value={formData.place_of_residence}
+                          onChange={(e) => handleInputChange('place_of_residence', e.target.value)}
                           required
                           className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                           dir="rtl"
                         />
                       </div>
-                      {errors.preferred_location && (
-                        <p className="text-red-500 text-sm text-right">{errors.preferred_location}</p>
-                      )}
-                    </div>
-
-                    {/* Experience Level */}
-                    <div className="space-y-1">
-                      <div className="relative">
-                        <Briefcase className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <Input
-                          placeholder="רמת ניסיון"
-                          value={formData.experience_level}
-                          onChange={(e) => handleInputChange('experience_level', e.target.value)}
-                          required
-                          className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                          dir="rtl"
-                        />
-                      </div>
-                      {errors.experience_level && (
-                        <p className="text-red-500 text-sm text-right">{errors.experience_level}</p>
+                      {errors.place_of_residence && (
+                        <p className="text-red-500 text-sm text-right">{errors.place_of_residence}</p>
                       )}
                     </div>
                   </div>
@@ -336,28 +399,27 @@ export default function Settings() {
                     <Button
                       type="submit"
                       disabled={isSubmitDisabled}
-                      className={`w-full md:w-96 h-12 rounded-full text-lg font-bold shadow-lg transition-all ${
-                        isSubmitDisabled
+                      className={`w-full md:w-96 h-12 rounded-full text-lg font-bold shadow-lg transition-all ${isSubmitDisabled
                           ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                           : 'bg-blue-600 hover:bg-blue-700 text-white'
-                      }`}
+                        }`}
                     >
                       {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : 'עדכן'}
                     </Button>
-                    
-                    <Button 
-                      type="button" 
-                      variant="link" 
+
+                    <Button
+                      type="button"
+                      variant="link"
                       className="text-red-500 hover:text-red-600 font-medium"
                       onClick={() => setShowDeleteConfirm(true)}
                     >
                       מחק חשבון
                     </Button>
-                    
-                    <Button 
+
+                    <Button
                       type="button"
                       onClick={handleLogout}
-                      variant="outline" 
+                      variant="outline"
                       className="w-full md:w-96 h-12 rounded-lg border-2 border-red-400 bg-white text-red-600 hover:bg-red-50 hover:border-red-500 font-semibold text-base px-6 shadow-sm"
                     >
                       <LogOut className="w-5 h-5 ml-2" />
@@ -382,12 +444,12 @@ export default function Settings() {
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
                   <AlertTriangle className="w-8 h-8 text-red-600" />
                 </div>
-                
+
                 <h3 className="text-xl font-bold text-gray-900">מחיקת חשבון</h3>
                 <p className="text-gray-600">
                   האם אתה בטוח שברצונך למחוק את החשבון? פעולה זו אינה הפיכה וכל הנתונים שלך יימחקו לצמיתות.
                 </p>
-                
+
                 <div className="flex gap-3 pt-4">
                   <Button
                     onClick={() => setShowDeleteConfirm(false)}
