@@ -36,22 +36,22 @@ export const UserProvider = ({ children }) => {
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Profile loading timeout')), 3000);
       });
-      
+
       const profilePromise = supabase
         .from('UserProfile')
         .select('*')
         .eq('id', userId)
         .single();
-      
+
       const { data, error } = await Promise.race([profilePromise, timeoutPromise]);
-      
+
       if (error) {
         // If profile doesn't exist (PGRST116), return null - EmailConfirmed will handle creation
         if (error.code === 'PGRST116') {
           return null;
         }
       }
-      
+
       return data;
     } catch {
       // Return null to trigger EmailConfirmed redirect for profile creation
@@ -69,7 +69,7 @@ export const UserProvider = ({ children }) => {
       if (authError || !authUser) {
         return null;
       }
-      
+
       const profileData = {
         id: userId,
         email: authUser.email,
@@ -84,17 +84,17 @@ export const UserProvider = ({ children }) => {
         // Apply any updates passed in
         ...updates
       };
-      
+
       const { data, error } = await supabase
         .from('UserProfile')
         .insert(profileData)
         .select()
         .single();
-      
+
       if (error) {
         return null;
       }
-      
+
       setProfile(data);
       return data;
     } catch {
@@ -114,12 +114,12 @@ export const UserProvider = ({ children }) => {
 
     try {
       const { data: { session }, error } = await supabase.auth.getSession();
-      
+
       if (error) {
         setLoading(false);
         return;
       }
-      
+
       if (session?.user) {
         setUser(session.user);
         const userProfile = await loadUserProfile(session.user.id);
@@ -142,12 +142,13 @@ export const UserProvider = ({ children }) => {
       email,
       password,
       options: {
-        data: metadata
+        data: metadata,
+        emailRedirectTo: `${window.location.origin}/EmailConfirmed`
       }
     });
-    
+
     if (error) throw error;
-    
+
     // Create user profile
     if (data.user) {
       await supabase
@@ -161,7 +162,7 @@ export const UserProvider = ({ children }) => {
           ...metadata
         });
     }
-    
+
     return data;
   };
 
@@ -173,13 +174,13 @@ export const UserProvider = ({ children }) => {
       email,
       password
     });
-    
+
     if (error) throw error;
-    
+
     setUser(data.user);
     const userProfile = await loadUserProfile(data.user.id);
     setProfile(userProfile);
-    
+
     return data;
   };
 
@@ -189,7 +190,7 @@ export const UserProvider = ({ children }) => {
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    
+
     setUser(null);
     setProfile(null);
   };
@@ -199,12 +200,12 @@ export const UserProvider = ({ children }) => {
    */
   const updateProfile = async (updates) => {
     if (!user) throw new Error('No user logged in');
-    
+
     // If profile doesn't exist, create it with the updates
     if (!profile) {
       return await createUserProfile(user.id, updates);
     }
-    
+
     // Profile exists, update it
     const { data, error } = await supabase
       .from('UserProfile')
@@ -212,7 +213,7 @@ export const UserProvider = ({ children }) => {
       .eq('id', user.id)
       .select()
       .single();
-    
+
     if (error) {
       // If update fails because profile doesn't exist, create it
       if (error.code === 'PGRST116') {
@@ -220,7 +221,7 @@ export const UserProvider = ({ children }) => {
       }
       throw error;
     }
-    
+
     setProfile(data);
     return data;
   };
