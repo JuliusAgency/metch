@@ -44,18 +44,33 @@ export default function MessagesSeeker() {
         try {
             const userData = await User.me();
             setUser(userData);
-            
+
             try {
                 const conversationsData = await Conversation.filter(
                     { candidate_email: userData.email },
                     "-last_message_time",
                     100
                 );
-                
+
+                // Fetch unread messages for the current user
+                let unreadConversationIds = new Set();
+                try {
+                    const unreadMessages = await Message.filter({
+                        recipient_email: userData.email,
+                        is_read: false
+                    });
+
+                    unreadMessages.forEach(msg => {
+                        unreadConversationIds.add(msg.conversation_id);
+                    });
+                } catch (error) {
+                    console.error("Error fetching unread messages:", error);
+                }
+
                 const mappedConversations = await Promise.all(conversationsData.map(async (conv) => {
                     let employerName = "מעסיק לא ידוע";
                     let profileImage = "";
-                    
+
                     try {
                         const employerResults = await UserProfile.filter({ email: conv.employer_email });
                         if (employerResults.length > 0) {
@@ -65,7 +80,7 @@ export default function MessagesSeeker() {
                     } catch (error) {
                         console.error("Error fetching employer info:", error);
                     }
-                    
+
                     return {
                         id: conv.id,
                         employer_name: employerName,
@@ -73,10 +88,11 @@ export default function MessagesSeeker() {
                         last_message_time: conv.last_message_time,
                         last_message: conv.last_message || "",
                         profileImage: profileImage,
-                        job_title: conv.job_title || "משרה כללית"
+                        job_title: conv.job_title || "משרה כללית",
+                        is_unread: unreadConversationIds.has(conv.id)
                     };
                 }));
-                
+
                 setConversations(mappedConversations);
             } catch (error) {
                 console.error("Error loading conversations:", error);
@@ -104,13 +120,13 @@ export default function MessagesSeeker() {
                 setLoadingMessages(false);
                 return;
             }
-            
+
             const messagesData = await Message.filter(
                 { conversation_id: conversationId },
                 "created_date",
                 100
             );
-            
+
             setMessages(messagesData);
         } catch (error) {
             console.error("Error loading messages:", error);
@@ -184,6 +200,13 @@ export default function MessagesSeeker() {
     const handleConversationSelect = (conversation) => {
         setSelectedConversation(conversation);
         loadMessages(conversation.id);
+
+        // Mark as read locally
+        setConversations(prev => prev.map(c =>
+            c.id === conversation.id
+                ? { ...c, is_unread: false }
+                : c
+        ));
     };
 
     const startSupportConversation = useCallback(() => {
@@ -197,7 +220,7 @@ export default function MessagesSeeker() {
             job_title: "תמיכה טכנית",
             is_support: true
         };
-        
+
         setSelectedConversation(supportConversation);
         setMessages([
             {
@@ -253,8 +276,8 @@ export default function MessagesSeeker() {
                                         <div className="bg-gray-100 px-4 py-3 rounded-2xl">
                                             <div className="flex gap-1">
                                                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                                             </div>
                                             <div className="text-xs text-gray-500 mt-1 text-right">הקלד/ת...</div>
                                         </div>
@@ -279,7 +302,7 @@ export default function MessagesSeeker() {
             <div className="w-[85vw] mx-auto">
                 <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
                     <div className="relative h-24 overflow-hidden -m-px">
-                        <div 
+                        <div
                             className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
                             style={{
                                 backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',

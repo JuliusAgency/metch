@@ -9,7 +9,8 @@ const SeekerConversationList = ({ conversations, handleConversationSelect }) => 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="flex items-center justify-between p-4 hover:bg-gray-50/80 rounded-xl cursor-pointer transition-colors border border-gray-100"
+                className={`flex items-center justify-between p-4 hover:bg-gray-50/80 rounded-xl cursor-pointer transition-colors border ${conversation.is_unread ? 'bg-blue-50 border-blue-200' : 'border-gray-100'
+                    }`}
                 onClick={() => handleConversationSelect(conversation)}
             >
                 <div className="flex items-center gap-4">
