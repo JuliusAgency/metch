@@ -60,21 +60,21 @@ const normalizeCvRecord = (record = {}) => ({
 });
 
 const ChoiceCard = ({ title, description, icon: Icon, onClick, isSelected }) => (
-    <motion.div
-        whileHover={{ scale: 1.03 }}
-        onClick={onClick}
-        className={`cursor-pointer bg-white rounded-2xl p-6 text-right border-2 transition-all duration-200 ${isSelected ? 'border-blue-500 shadow-lg' : 'border-gray-200 hover:border-gray-300'}`}>
+  <motion.div
+    whileHover={{ scale: 1.03 }}
+    onClick={onClick}
+    className={`cursor-pointer bg-white rounded-2xl p-6 text-right border-2 transition-all duration-200 ${isSelected ? 'border-blue-500 shadow-lg' : 'border-gray-200 hover:border-gray-300'}`}>
 
-        <div className="flex justify-between items-start">
-            <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
-            </div>
-            <div className="w-12 h-12 bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
-                <Icon className="w-6 h-6 text-white" />
-            </div>
-        </div>
-    </motion.div>
+    <div className="flex justify-between items-start">
+      <div>
+        <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
+        <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
+      </div>
+      <div className="w-12 h-12 bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
+        <Icon className="w-6 h-6 text-white" />
+      </div>
+    </div>
+  </motion.div>
 );
 
 
@@ -95,6 +95,32 @@ export default function CVGenerator() {
     setIsStep1Valid(isValid);
   }, []);
 
+  // Save draft to localStorage whenever cvData or step changes
+  useEffect(() => {
+    if (!user?.email || step < 1) return;
+
+    const draftKey = `cv_draft_${user.email}`;
+    const draftData = {
+      cvData,
+      step,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(draftKey, JSON.stringify(draftData));
+  }, [cvData, step, user]);
+
+  const validatePersonalDetails = (details) => {
+    if (!details) return false;
+    const { full_name, phone, address, birth_date, gender } = details;
+
+    const hasFullName = full_name && full_name.trim().split(' ').length >= 2;
+    const hasPhone = phone && phone.trim().length > 0;
+    const hasAddress = address && address.trim().length > 0;
+    const hasBirthDate = birth_date && birth_date.trim().length > 0;
+    const hasGender = gender && gender.trim().length > 0;
+
+    return hasFullName && hasPhone && hasAddress && hasBirthDate && hasGender;
+  };
+
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
@@ -102,10 +128,50 @@ export default function CVGenerator() {
         const userData = await User.me();
         setUser(userData);
 
+        // Check for local draft first
+        const draftKey = `cv_draft_${userData.email}`;
+        const savedDraft = localStorage.getItem(draftKey);
+
+        if (savedDraft) {
+          try {
+            const { cvData: draftCvData, step: draftStep } = JSON.parse(savedDraft);
+            // Restore draft if it exists
+            if (draftCvData) {
+              const normalizedData = normalizeCvRecord(draftCvData);
+              setCvData(normalizedData);
+              setStep(draftStep || 1);
+
+              // Validate Step 1 data to ensure navigation works
+              const isValid = validatePersonalDetails(normalizedData.personal_details);
+              setIsStep1Valid(isValid);
+
+              // If we have a draft, we also check if there's a saved CV ID to associate
+              const existingCvs = await CV.filter({ user_email: userData.email });
+              if (existingCvs.length > 0) {
+                setCvId(existingCvs[0].id);
+              }
+              return; // Stop here, we loaded the draft
+            }
+          } catch (e) {
+            console.error("Error parsing draft:", e);
+            localStorage.removeItem(draftKey); // Clear corrupted draft
+          }
+        }
+
+        // Fallback to DB if no draft
         const existingCvs = await CV.filter({ user_email: userData.email });
         if (existingCvs.length > 0) {
-          setCvData(normalizeCvRecord(existingCvs[0]));
+          const normalizedData = normalizeCvRecord(existingCvs[0]);
+          setCvData(normalizedData);
           setCvId(existingCvs[0].id);
+
+          // Validate Step 1 data
+          const isValid = validatePersonalDetails(normalizedData.personal_details);
+          setIsStep1Valid(isValid);
+
+          // If we loaded from DB, we might want to start at step 1 or infer progress
+          // For now, let's start at step 1 (Personal Details) if loading from DB
+          setStep(1);
         } else {
           // Prefill with user data if available
           setCvData((prev) => ({
@@ -126,11 +192,35 @@ export default function CVGenerator() {
     loadInitialData();
   }, []);
 
+  const [isDirty, setIsDirty] = useState(false);
+
+  const handleDirtyChange = useCallback((dirty) => {
+    setIsDirty(dirty);
+  }, []);
+
+  const confirmUnsavedChanges = () => {
+    if (!isDirty) return true;
+    return window.confirm("יש לך שינויים שלא נשמרו. אם תמשיך, השינויים יאבדו. האם להמשיך?");
+  };
+
+  // Warn on page refresh/close if dirty
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = ''; // Chrome requires returnValue to be set
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
   const handleNext = async () => {
     if (step === 0) {
       if (choice === 'upload') {
         // Go to upload step
-        setStep(-1); 
+        setStep(-1);
       } else if (choice === 'create') {
         setStep(1);
       }
@@ -141,11 +231,15 @@ export default function CVGenerator() {
       return;
     }
 
+    // Check for unsaved changes before proceeding
+    if (!confirmUnsavedChanges()) return;
+    setIsDirty(false); // Reset dirty state if proceeding
+
     setSaving(true);
     try {
       // Ensure we have user email - use from user state or cvData personal_details
       const userEmail = user?.email || cvData?.personal_details?.email;
-      
+
       if (!userEmail) {
         console.error("Cannot save CV: user email is not available");
         alert("Unable to save CV. Please refresh the page and try again.");
@@ -170,6 +264,10 @@ export default function CVGenerator() {
     if (step < STEPS.length) {
       setStep((prev) => prev + 1);
     } else {
+      // Clear draft on completion
+      if (userEmail) {
+        localStorage.removeItem(`cv_draft_${userEmail}`);
+      }
       // Last step, navigate to profile or dashboard
       navigate(createPageUrl('Profile'));
     }
@@ -179,10 +277,17 @@ export default function CVGenerator() {
     if (!isStep1Valid && index > 0) {
       return;
     }
+    // Check for unsaved changes before switching steps
+    if (!confirmUnsavedChanges()) return;
+    setIsDirty(false);
     setStep(index + 1);
   };
 
   const handleBack = () => {
+    // Check for unsaved changes before going back
+    if (!confirmUnsavedChanges()) return;
+    setIsDirty(false);
+
     if (step > 1) {
       setStep((prev) => prev - 1);
     } else if (step === 1 || step === -1) {
@@ -196,6 +301,10 @@ export default function CVGenerator() {
   };
 
   const handleUploadComplete = () => {
+    // Clear draft
+    if (user?.email) {
+      localStorage.removeItem(`cv_draft_${user.email}`);
+    }
     // After upload, user is done with this flow, navigate to profile
     navigate(createPageUrl('Profile'));
   };
@@ -239,12 +348,12 @@ export default function CVGenerator() {
           </motion.div>);
 
       case 1: return <Step1PersonalDetails data={cvData.personal_details} setData={(d) => setCvData((prev) => ({ ...prev, personal_details: d(prev.personal_details) }))} user={user} onValidityChange={handleStep1ValidityChange} />;
-      case 2: return <Step2WorkExperience data={cvData.work_experience || []} setData={(updater) => setCvData((prev) => ({ ...prev, work_experience: updater(prev.work_experience || []) }))} />;
-      case 3: return <Step3Education data={cvData.education || []} setData={(updater) => setCvData((prev) => ({ ...prev, education: updater(prev.education || []) }))} />;
-      case 4: return <Step4Certifications data={cvData.certifications || []} setData={(updater) => setCvData((prev) => ({ ...prev, certifications: updater(prev.certifications || []) }))} />;
+      case 2: return <Step2WorkExperience data={cvData.work_experience || []} setData={(updater) => setCvData((prev) => ({ ...prev, work_experience: updater(prev.work_experience || []) }))} onDirtyChange={handleDirtyChange} />;
+      case 3: return <Step3Education data={cvData.education || []} setData={(updater) => setCvData((prev) => ({ ...prev, education: updater(prev.education || []) }))} onDirtyChange={handleDirtyChange} />;
+      case 4: return <Step4Certifications data={cvData.certifications || []} setData={(updater) => setCvData((prev) => ({ ...prev, certifications: updater(prev.certifications || []) }))} onDirtyChange={handleDirtyChange} />;
       case 5: return <Step5Skills data={cvData.skills || []} setData={(d) => setCvData((prev) => ({ ...prev, skills: d }))} />;
       case 6: return <Step6Summary data={cvData.summary || ''} setData={(d) => setCvData((prev) => ({ ...prev, summary: d }))} />;
-      case 7: return <Step7Preview cvData={cvData} setData={(d) => setCvData(prev => ({...prev, ...d}))} onEdit={handleEdit} />;
+      case 7: return <Step7Preview cvData={cvData} setData={(d) => setCvData(prev => ({ ...prev, ...d }))} onEdit={handleEdit} />;
       default: return null;
     }
   };

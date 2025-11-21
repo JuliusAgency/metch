@@ -31,7 +31,7 @@ const newCertificationItem = () => ({
     type: ''
 });
 
-export default function Step4_Certifications({ data, setData }) {
+export default function Step4_Certifications({ data, setData, onDirtyChange }) {
     const [currentItem, setCurrentItem] = useState(newCertificationItem());
 
     const deriveType = (item) => {
@@ -100,7 +100,7 @@ export default function Step4_Certifications({ data, setData }) {
             setCurrentItem(newCertificationItem());
         }
     };
-    
+
     const getCertificationName = (item) => {
         if (!item) return 'הסמכה חדשה';
         const type = deriveType(item);
@@ -115,11 +115,21 @@ export default function Step4_Certifications({ data, setData }) {
         return CERTIFICATION_LABELS[type] || item.name || 'הסמכה חדשה';
     };
 
+    const checkDirty = (item) => {
+        return !!(item.name || item.notes || item.type);
+    };
+
+    React.useEffect(() => {
+        if (onDirtyChange) {
+            onDirtyChange(checkDirty(currentItem));
+        }
+    }, [currentItem, onDirtyChange]);
+
     return (
         <div className="max-w-4xl mx-auto text-center" dir="rtl">
             <h2 className="text-3xl font-bold text-gray-900 mb-3">הסמכות מקצועיות ורישיונות</h2>
             <p className="text-gray-600 mb-12 max-w-lg mx-auto">בחלק הזה תציינו בנוסף להשכלתכם הסמכות מקצועיות</p>
-            
+
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <PillSelect
@@ -141,14 +151,20 @@ export default function Step4_Certifications({ data, setData }) {
                     onChange={(e) => handleCurrentItemChange('notes', e.target.value)}
                     className="w-full bg-white border-gray-200 rounded-xl p-4 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400 min-h-[120px]" />
             </div>
-            
-            <div className="mt-6 flex justify-start">
+
+            <div className="mt-6 flex justify-between gap-4">
                 <Button variant="link" className="text-blue-600 font-semibold" onClick={handleSave}>
                     <Plus className="w-4 h-4 ml-2" />
                     {(data || []).find(i => i.id === currentItem.id) ? 'עדכן הסמכה' : 'הוסף הסמכה'}
                 </Button>
+                <Button
+                    onClick={handleSave}
+                    className="bg-green-600 hover:bg-green-700 text-white rounded-full px-6"
+                >
+                    שמור
+                </Button>
             </div>
-            
+
             {data && data.length > 0 && (
                 <div className="mt-8 p-4 bg-gray-50/70 border border-gray-200/90 rounded-2xl flex flex-wrap justify-start gap-3">
                     <AnimatePresence>
