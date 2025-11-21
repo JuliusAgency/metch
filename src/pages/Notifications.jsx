@@ -19,6 +19,9 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 const ITEMS_PER_PAGE = 7;
 
+// Allowed notification types for Employer users
+const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message'];
+
 // Map notification types to icons and titles
 const getNotificationConfig = (type) => {
   const configs = {
@@ -52,7 +55,13 @@ export default function Notifications() {
         { user_email: user.email },
         "-created_date"
       );
-      setNotifications(allNotifications);
+
+      // Filter notifications for Employer users to only show allowed types
+      const filteredNotifications = user.user_type === 'employer'
+        ? allNotifications.filter(notif => EMPLOYER_ALLOWED_NOTIFICATION_TYPES.includes(notif.type))
+        : allNotifications;
+
+      setNotifications(filteredNotifications);
     } catch (error) {
       console.error("Error loading notifications:", error);
       setNotifications([]);
@@ -177,11 +186,10 @@ export default function Notifications() {
                       key={number}
                       variant="ghost"
                       onClick={() => goToPage(number)}
-                      className={`rounded-full w-9 h-9 transition-colors ${
-                        currentPage === number
-                          ? "bg-blue-600 text-white font-bold shadow-md"
-                          : "text-gray-600 hover:bg-gray-100"
-                      }`}
+                      className={`rounded-full w-9 h-9 transition-colors ${currentPage === number
+                        ? "bg-blue-600 text-white font-bold shadow-md"
+                        : "text-gray-600 hover:bg-gray-100"
+                        }`}
                     >
                       {number}
                     </Button>
