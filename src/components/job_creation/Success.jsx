@@ -3,14 +3,16 @@ import { Button } from '@/components/ui/button';
 import { Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import Lottie from 'lottie-react';
+import confettiAnimation from '../../../Confetti banner.json';
 
 export default function Success({ onReset, onDuplicate }) {
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, type: 'spring' }}
-      className="max-w-xl mx-auto text-center py-12" 
+      className="max-w-xl mx-auto text-center py-12"
       dir="rtl"
     >
       {/* Success Icon */}
@@ -19,12 +21,22 @@ export default function Success({ onReset, onDuplicate }) {
           <Check className="w-8 h-8 text-blue-600" />
         </div>
       </div>
-      
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">משרה פורסמה בהצלחה</h1>
+
+      {/* Lottie Confetti Animation */}
+      <div className="relative mb-4">
+        <div className="absolute inset-x-0 top-0 -mt-8 flex justify-center pointer-events-none">
+          <Lottie
+            animationData={confettiAnimation}
+            loop={false}
+            style={{ width: '400px', height: '200px' }}
+          />
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2 relative z-10">משרה פורסמה בהצלחה</h1>
+      </div>
       <p className="text-gray-600 text-lg mb-8">
         תחילת פרסום באפליקטיביט {format(new Date(), 'dd.MM.yy')}
       </p>
-      
+
       <div className="flex justify-center gap-4 mb-8">
         <Button
           onClick={onReset}
