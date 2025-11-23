@@ -1,15 +1,16 @@
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Job } from "@/api/entities";
 import { JobApplication } from "@/api/entities";
 import { User } from "@/api/entities";
+import { Conversation } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ChevronLeft, 
-  User as UserIcon, 
+import {
+  ChevronLeft,
+  User as UserIcon,
   FileText,
   Mail,
   Calendar,
@@ -19,25 +20,33 @@ import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
 import { format } from "date-fns";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function JobApplications() {
   useRequireUserType(); // Ensure user has selected a user type
   const [job, setJob] = useState(null);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [creatingConversation, setCreatingConversation] = useState(false);
+  const [user, setUser] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const loadData = useCallback(async () => {
     try {
+      const userData = await User.me();
+      setUser(userData);
+
       const params = new URLSearchParams(location.search);
       const jobId = params.get('job_id');
-      
+
       if (jobId) {
         const jobResults = await Job.filter({ id: jobId });
         if (jobResults.length > 0) {
           setJob(jobResults[0]);
         }
-        
+
         const appResults = await JobApplication.filter({ job_id: jobId });
         setApplications(appResults);
       }
@@ -61,6 +70,49 @@ export default function JobApplications() {
     }
   };
 
+  const handleStartConversation = async (application) => {
+    if (!user || !job || creatingConversation) return;
+
+    setCreatingConversation(true);
+    try {
+      const existingConversations = await Conversation.filter({
+        employer_email: user.email,
+        candidate_email: application.applicant_email,
+        job_id: job.id,
+      });
+
+      let conversation;
+      if (existingConversations.length > 0) {
+        conversation = existingConversations[0];
+      } else {
+        conversation = await Conversation.create({
+          employer_email: user.email,
+          candidate_email: application.applicant_email,
+          job_id: job.id,
+          job_title: job.title,
+          last_message: "",
+          last_message_time: new Date().toISOString(),
+        });
+      }
+
+      toast({
+        title: "פתחנו צ'אט עם המועמד",
+        description: "מועברים להודעות",
+      });
+
+      navigate(createPageUrl("Messages"));
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      toast({
+        title: "שגיאה בפתיחת שיחה",
+        description: "לא הצלחנו לפתוח את הצ'אט עם המועמד. נסה שוב.",
+        variant: "destructive",
+      });
+    } finally {
+      setCreatingConversation(false);
+    }
+  };
+
   const statusConfig = {
     pending: { label: 'ממתין', color: 'bg-yellow-100 text-yellow-800' },
     reviewed: { label: 'נצפה', color: 'bg-blue-100 text-blue-800' },
@@ -79,7 +131,7 @@ export default function JobApplications() {
         <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
           <div className="relative">
             <div className="relative h-24 overflow-hidden -m-px">
-              <div 
+              <div
                 className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
                 style={{
                   backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/ca93821b0_image.png)',
@@ -87,8 +139,8 @@ export default function JobApplications() {
                   backgroundPosition: 'center top'
                 }}
               />
-              <Link 
-                to={createPageUrl(`JobDetails?id=${job?.id}`)} 
+              <Link
+                to={createPageUrl(`JobDetails?id=${job?.id}`)}
                 className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-10"
               >
                 <ChevronLeft className="w-6 h-6 text-gray-800 rotate-180" />
@@ -108,7 +160,7 @@ export default function JobApplications() {
                   applications.map((application, index) => {
                     const config = statusConfig[application.status] || statusConfig.pending;
                     const matchScore = application.match_score || Math.floor(Math.random() * (95 - 70) + 70);
-                    
+
                     return (
                       <motion.div
                         key={application.id}
@@ -126,9 +178,9 @@ export default function JobApplications() {
                                   <span className="font-bold text-blue-600">{matchScore}%</span>
                                 </div>
                                 {application.resume_url && (
-                                  <a 
+                                  <a
                                     href={application.resume_url}
-                                    target="_blank" 
+                                    target="_blank"
                                     rel="noopener noreferrer"
                                   >
                                     <Button variant="outline" size="sm">
@@ -151,7 +203,7 @@ export default function JobApplications() {
                                     <UserIcon className="w-6 h-6 text-blue-600" />
                                   </div>
                                 </div>
-                                
+
                                 {application.cover_letter && (
                                   <div className="text-sm text-gray-700 mt-2 max-w-md">
                                     <p className="line-clamp-2">{application.cover_letter}</p>
@@ -169,7 +221,12 @@ export default function JobApplications() {
                                     <option key={value} value={value}>{config.label}</option>
                                   ))}
                                 </select>
-                                <Button size="sm" variant="outline">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleStartConversation(application)}
+                                  disabled={creatingConversation}
+                                >
                                   <Mail className="w-4 h-4 ml-1" />
                                   שלח הודעה
                                 </Button>

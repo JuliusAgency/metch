@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { User } from "@/api/entities";
 import { Conversation } from "@/api/entities";
 import { Message } from "@/api/entities";
+import { Job } from "@/api/entities";
 import { UserProfile } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -81,6 +82,18 @@ export default function MessagesSeeker() {
                         console.error("Error fetching employer info:", error);
                     }
 
+                    let jobStatus = "unknown";
+                    try {
+                        if (conv.job_id) {
+                            const jobResults = await Job.filter({ id: conv.job_id });
+                            if (jobResults.length > 0) {
+                                jobStatus = jobResults[0].status;
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Error fetching job info:", error);
+                    }
+
                     return {
                         id: conv.id,
                         employer_name: employerName,
@@ -89,6 +102,7 @@ export default function MessagesSeeker() {
                         last_message: conv.last_message || "",
                         profileImage: profileImage,
                         job_title: conv.job_title || "משרה כללית",
+                        job_status: jobStatus,
                         is_unread: unreadConversationIds.has(conv.id)
                     };
                 }));
