@@ -61,71 +61,75 @@ import EmailConfirmed from "./EmailConfirmed";
 
 import UserTypeSelection from "./UserTypeSelection";
 
+import Statistics from "./Statistics";
+
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
-    
+
     Dashboard: Dashboard,
-    
+
     Profile: Profile,
-    
+
     CandidateProfile: CandidateProfile,
-    
+
     Messages: Messages,
-    
+
     Notifications: Notifications,
-    
+
     ViewQuestionnaire: ViewQuestionnaire,
-    
+
     JobManagement: JobManagement,
-    
+
     JobDetails: JobDetails,
-    
+
     JobApplications: JobApplications,
-    
+
     CreateJob: CreateJob,
-    
+
     Contact: Contact,
-    
+
     Insights: Insights,
-    
+
     CompanyProfileCompletion: CompanyProfileCompletion,
-    
+
     JobSearch: JobSearch,
-    
+
     Settings: Settings,
-    
+
     AnswerQuestionnaire: AnswerQuestionnaire,
-    
+
     ScreeningQuestionnaire: ScreeningQuestionnaire,
-    
+
     JobDetailsSeeker: JobDetailsSeeker,
-    
+
     MessagesSeeker: MessagesSeeker,
-    
+
     UserActivity: UserActivity,
-    
+
     FAQ: FAQ,
-    
+
     NotFound: NotFound,
-    
+
     CVGenerator: CVGenerator,
-    
+
     PreferenceQuestionnaire: PreferenceQuestionnaire,
-    
+
     Login: Login,
-    
+
     Register: Register,
-    
+
     Landing: Landing,
-    
+
     EmailConfirmation: EmailConfirmation,
-    
+
     EmailConfirmed: EmailConfirmed,
-    
+
     UserTypeSelection: UserTypeSelection,
-    
+
+    Statistics: Statistics,
+
 }
 
 function _getCurrentPage(url) {
@@ -145,10 +149,10 @@ function _getCurrentPage(url) {
 function PagesContent() {
     const location = useLocation();
     const currentPage = _getCurrentPage(location.pathname);
-    
+
     return (
         <Layout currentPageName={currentPage}>
-            <Routes>            
+            <Routes>
                 {/* Public routes - no authentication required */}
                 <Route path="/" element={<Login />} />
                 <Route path="/Login" element={<Login />} />
@@ -157,7 +161,7 @@ function PagesContent() {
                 <Route path="/EmailConfirmation" element={<EmailConfirmation />} />
                 <Route path="/EmailConfirmed" element={<EmailConfirmed />} />
                 <Route path="/UserTypeSelection" element={<UserTypeSelection />} />
-                
+
                 {/* Protected routes - authentication required */}
                 <Route path="/Dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
                 <Route path="/Profile" element={<AuthGuard><Profile /></AuthGuard>} />
@@ -182,7 +186,8 @@ function PagesContent() {
                 <Route path="/FAQ" element={<AuthGuard><FAQ /></AuthGuard>} />
                 <Route path="/CVGenerator" element={<AuthGuard><CVGenerator /></AuthGuard>} />
                 <Route path="/PreferenceQuestionnaire" element={<AuthGuard><PreferenceQuestionnaire /></AuthGuard>} />
-                
+                <Route path="/Statistics" element={<AuthGuard><Statistics /></AuthGuard>} />
+
                 {/* Catch-all route */}
                 <Route path="*" element={<NotFound />} />
             </Routes>

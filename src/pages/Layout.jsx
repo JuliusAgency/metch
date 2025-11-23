@@ -12,9 +12,11 @@ import {
   Headphones,
   CreditCard,
   Briefcase,
+
   TrendingUp,
   Search,
   HelpCircle,
+  BarChart2, // Added
   Menu, // Added
   X // Added
 } from "lucide-react";
@@ -28,7 +30,7 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const { user, loading } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Added
-  
+
   const closeMenu = () => setIsMobileMenuOpen(false); // Added
 
   // Pages that should not show navbar (authentication pages)
@@ -53,13 +55,14 @@ export default function Layout({ children, currentPageName }) {
   }
 
   const isJobSeeker = user?.user_type === 'job_seeker';
-  
+
   // Define navLinks array for dynamic rendering in mobile menu
   const navLinks = [
     { page: "Dashboard", icon: Home, text: "דף הבית", both: true },
     { page: "JobSearch", icon: Search, text: "חיפוש", seeker: true },
     { page: "Insights", icon: TrendingUp, text: "תובנות", seeker: true },
     { page: "JobManagement", icon: Briefcase, text: "משרות", employer: true },
+    { page: "Statistics", icon: BarChart2, text: "סטטיסטיקות", employer: true }, // Added
     { page: isJobSeeker ? "Profile" : "CompanyProfileCompletion", icon: User, text: "פרופיל", both: true },
     { page: "Notifications", icon: Bell, text: "התראות", both: true },
     { page: "CreditCard", icon: CreditCard, text: "תשלומים", both: true, isPlaceholder: true },
@@ -68,12 +71,12 @@ export default function Layout({ children, currentPageName }) {
     { page: "Contact", icon: Headphones, text: "צור קשר", both: true },
     { page: "FAQ", icon: HelpCircle, text: "שאלות", seeker: true }
   ];
-  
+
   // MobileNavLink component to render individual links in the mobile menu
   const MobileNavLink = ({ page, icon: Icon, text, isPlaceholder }) => {
     // Determine if the current page matches this link's target for active styling
-    const isActive = 
-      (currentPageName === page) || 
+    const isActive =
+      (currentPageName === page) ||
       (page === (isJobSeeker ? "Profile" : "CompanyProfileCompletion") && (currentPageName === "Profile" || currentPageName === "CompanyProfileCompletion")) ||
       (page === (isJobSeeker ? "MessagesSeeker" : "Messages") && (currentPageName === "Messages" || currentPageName === "MessagesSeeker"));
 
@@ -83,16 +86,16 @@ export default function Layout({ children, currentPageName }) {
     if (isPlaceholder) {
       return (
         <div key={page} className="flex items-center gap-4 p-3 rounded-lg text-lg font-medium text-gray-400 cursor-not-allowed">
-            <Icon className="w-7 h-7" />
-            <span>{text}</span>
+          <Icon className="w-7 h-7" />
+          <span>{text}</span>
         </div>
       );
     }
 
     return (
       <Link to={createPageUrl(page)} onClick={closeMenu} className={linkClass}>
-          <Icon className={iconClass} />
-          <span>{text}</span>
+        <Icon className={iconClass} />
+        <span>{text}</span>
       </Link>
     );
   };
@@ -154,7 +157,7 @@ export default function Layout({ children, currentPageName }) {
                     </Link>
                   </Button>
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
-                  
+
                   <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
                     <Link to={createPageUrl("Insights")} className="flex items-center gap-2">
                       <TrendingUp className="w-7 h-7 text-gray-700" />
@@ -172,6 +175,14 @@ export default function Layout({ children, currentPageName }) {
                     <Link to={createPageUrl("JobManagement")} className="flex items-center gap-2">
                       <Briefcase className="w-7 h-7 text-gray-700" />
                       {currentPageName === 'JobManagement' && <span className="font-medium text-gray-700">משרות</span>}
+                    </Link>
+                  </Button>
+                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+
+                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
+                    <Link to={createPageUrl("Statistics")} className="flex items-center gap-2">
+                      <BarChart2 className="w-7 h-7 text-gray-700" />
+                      {currentPageName === 'Statistics' && <span className="font-medium text-gray-700">סטטיסטיקות</span>}
                     </Link>
                   </Button>
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
@@ -212,19 +223,19 @@ export default function Layout({ children, currentPageName }) {
                   {(currentPageName === 'Messages' || currentPageName === 'MessagesSeeker') && <span className="font-medium text-gray-700">הודעות</span>}
                 </Link>
               </Button>
-              
+
               {!isJobSeeker && (
-                  <>
-                    <div className="h-6 w-px bg-white/50 mx-1"></div>
-                    <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                      <Link to={createPageUrl("Contact")} className="flex items-center gap-2">
-                        <Headphones className="w-7 h-7 text-gray-700" />
-                        {currentPageName === 'Contact' && <span className="font-medium text-gray-700">קשר</span>}
-                      </Link>
-                    </Button>
-                  </>
+                <>
+                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
+                    <Link to={createPageUrl("Contact")} className="flex items-center gap-2">
+                      <Headphones className="w-7 h-7 text-gray-700" />
+                      {currentPageName === 'Contact' && <span className="font-medium text-gray-700">קשר</span>}
+                    </Link>
+                  </Button>
+                </>
               )}
-              
+
               {isJobSeeker && (
                 <>
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
@@ -257,7 +268,7 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </header>
       </div>
-      
+
       {/* Mobile Navbar */}
       <div className="md:hidden pt-4 pb-2 px-4 sticky top-0 z-40 bg-[#DBECF3]/80 backdrop-blur-sm">
         <div className="flex items-center justify-between">
@@ -270,7 +281,7 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </div>
       </div>
-      
+
       {/* Mobile Menu Sidebar */}
       <AnimatePresence>
         {isMobileMenuOpen && (
@@ -300,7 +311,7 @@ export default function Layout({ children, currentPageName }) {
                 {navLinks.map((link) => {
                   if (link.seeker && !isJobSeeker) return null;
                   if (link.employer && isJobSeeker) return null;
-                  
+
                   return <MobileNavLink key={link.page} {...link} />;
                 })}
               </nav>
