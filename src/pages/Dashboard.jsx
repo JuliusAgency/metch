@@ -213,7 +213,7 @@ const JobSeekerDashboard = ({ user }) => {
               <StatCard icon={Briefcase} title="משרות רלוונטיות" value={allJobs.length} />
               <StatCard icon={Eye} title="צפו בקורות חיים שלי" value={userStats?.resume_views || userStats?.profile_views || 0} />
               <StatCard icon={FileText} title="מועמדויות שהגשתי" value={userStats?.total_applications || 0} />
-              <StatCard icon={UserIcon} title="צפו בפרופיל שלי" value={userStats?.profile_views || 0} />
+              <StatCard icon={UserIcon} title="צפו בכרטיס שלך" value={userStats?.profile_views || 0} />
             </div>
 
             {/* Notification Carousel */}
