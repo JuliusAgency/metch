@@ -1,12 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import {
-  MapPin,
-  Clock,
-  Briefcase,
+    MapPin,
+    Clock,
+    Briefcase,
 } from "lucide-react";
 
 const SeekerJobTitle = ({ job, employmentTypeText }) => (
     <div className="text-center mb-8">
+        <p className="text-xl text-gray-600 mb-2">{job.company}</p>
         <h1 className="text-3xl font-bold text-gray-900 mb-4">{job.title}</h1>
 
         <div className="flex justify-center items-center gap-6 mb-6">
