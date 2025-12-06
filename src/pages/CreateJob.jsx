@@ -98,12 +98,15 @@ export default function CreateJob() {
     try {
       // Get user data first to ensure created_by fields are set
       const userData = await User.me();
+      const now = new Date().toISOString();
 
       // Prepare job data with created_by fields
       const jobDataToSave = {
         ...jobData,
         created_by: userData.email,
-        created_by_id: userData.id
+        created_by_id: userData.id,
+        status: 'active', // Ensure status is active when submitting
+        updated_date: now
       };
 
       let createdOrUpdatedJob;
@@ -114,21 +117,26 @@ export default function CreateJob() {
           ...jobDataToSave,
           // Preserve original created_by if editing someone else's job (shouldn't happen, but safety check)
           created_by: jobData.created_by || userData.email,
-          created_by_id: jobData.created_by_id || userData.id
+          created_by_id: jobData.created_by_id || userData.id,
+          // created_date should already exist
         };
         createdOrUpdatedJob = await Job.update(jobData.id, updatedJobData);
 
         // Track job edit
         await EmployerAnalytics.trackJobEdit(userData.email, createdOrUpdatedJob);
       } else {
-        // For new jobs, always set created_by fields
-        createdOrUpdatedJob = await Job.create(jobDataToSave);
+        // For new jobs, always set created_by fields and created_date
+        const newJobData = {
+          ...jobDataToSave,
+          created_date: now
+        };
+        createdOrUpdatedJob = await Job.create(newJobData);
 
         // Track job creation
         await EmployerAnalytics.trackJobCreate(userData.email, createdOrUpdatedJob);
 
         // If job is being published (not draft), track publish action too
-        if (jobDataToSave.status === 'active') { // Assuming 'active' means published
+        if (newJobData.status === 'active') { // Assuming 'active' means published
           await EmployerAnalytics.trackJobPublish(userData.email, createdOrUpdatedJob);
         }
       }
