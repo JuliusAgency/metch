@@ -228,7 +228,7 @@ export default function Settings() {
                   backgroundRepeat: 'no-repeat'
                 }}
               />
-              <Link to={createPageUrl("Dashboard")} className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-10">
+              <Link to={createPageUrl("Dashboard")} className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-20">
                 <ChevronRight className="w-6 h-6 text-gray-800" />
               </Link>
             </div>
@@ -400,8 +400,8 @@ export default function Settings() {
                       type="submit"
                       disabled={isSubmitDisabled}
                       className={`w-full md:w-96 h-12 rounded-full text-lg font-bold shadow-lg transition-all ${isSubmitDisabled
-                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
                         }`}
                     >
                       {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : 'עדכן'}

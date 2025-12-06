@@ -282,7 +282,7 @@ const JobSeekerDashboard = ({ user }) => {
                             </div>
                           </div>
                         )}
-                        <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-28 view-job-button">
+                        <Button asChild className={`${viewedJobIds.has(job.id) ? 'bg-gray-400 hover:bg-gray-500' : 'bg-[#84CC9E] hover:bg-green-500'} text-white px-5 py-2 rounded-full font-bold w-28 view-job-button`}>
                           <Link
                             to={createPageUrl(`JobDetailsSeeker?id=${job.id}&from=Dashboard`)}
                             onClick={() => {
@@ -292,7 +292,7 @@ const JobSeekerDashboard = ({ user }) => {
                               }
                             }}
                           >
-                            לצפייה
+                            {viewedJobIds.has(job.id) ? "נצפה" : "צפייה"}
                           </Link>
                         </Button>
                       </div>
