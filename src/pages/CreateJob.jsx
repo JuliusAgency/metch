@@ -46,7 +46,11 @@ export default function CreateJob() {
   const [isEditing, setIsEditing] = useState(false);
   const [loadingJob, setLoadingJob] = useState(true);
 
-  const location = useLocation();
+  const [isScreeningSaved, setIsScreeningSaved] = useState(false);
+
+  useEffect(() => {
+    setIsScreeningSaved(false);
+  }, [jobData.screening_questions]);
 
   useEffect(() => {
     const loadJobForEditing = async () => {
@@ -58,6 +62,11 @@ export default function CreateJob() {
           const results = await Job.filter({ id: jobId });
           if (results.length > 0) {
             setJobData(results[0]);
+            // If editing and has questions, assume saved? Or force re-save?
+            // Let's assume saved if loaded from DB.
+            if (results[0].screening_questions && results[0].screening_questions.length > 0) {
+              setIsScreeningSaved(true);
+            }
           } else {
             console.error("Job not found for editing");
           }
@@ -161,7 +170,7 @@ export default function CreateJob() {
     switch (step) {
       case 1: return <Step1Details jobData={jobData} setJobData={setJobData} />;
       case 2: return <Step3Company jobData={jobData} setJobData={setJobData} />;
-      case 3: return <Step2Screening jobData={jobData} setJobData={setJobData} />;
+      case 3: return <Step2Screening jobData={jobData} setJobData={setJobData} onSave={() => setIsScreeningSaved(true)} />;
       case 4: return <Step4Packages />;
       case 5: return <Step5Preview jobData={jobData} setJobData={setJobData} />;
       default: return <Step1Details jobData={jobData} setJobData={setJobData} />;
@@ -188,6 +197,24 @@ export default function CreateJob() {
       );
     }
     return true;
+  };
+
+  const getNextButtonText = () => {
+    if (isSubmitting) return <Loader2 className="w-6 h-6 animate-spin" />;
+    if (step === 3) {
+      if (!jobData.screening_questions || jobData.screening_questions.length === 0) return 'דלג';
+      // If has questions
+      return 'המשך';
+    }
+    if (isFinalStep) return isEditing ? 'עדכן משרה' : 'סיום ופרסום';
+    return 'המשך';
+  };
+
+  const isNextDisabled = () => {
+    if (isSubmitting) return true;
+    if (step === 1 && !isStepValid()) return true;
+    if (step === 3 && jobData.screening_questions?.length > 0 && !isScreeningSaved) return true;
+    return false;
   };
 
   return (
@@ -226,11 +253,12 @@ export default function CreateJob() {
                 <ArrowRight className="w-5 h-5 mr-2" />
               </Button>
               <Button
-                className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-3 rounded-full font-bold text-lg shadow-lg"
+                className={`text-white px-12 py-3 rounded-full font-bold text-lg shadow-lg ${step === 3 && isScreeningSaved ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
                 onClick={nextStep}
-                disabled={isSubmitting || !isStepValid()}
+                disabled={isNextDisabled()}
               >
-                {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : (isFinalStep ? (isEditing ? 'עדכן משרה' : 'סיום ופרסום') : 'המשך')}
+                {getNextButtonText()}
                 {!isSubmitting && <ArrowLeft className="w-5 h-5 ml-2" />}
               </Button>
             </div>

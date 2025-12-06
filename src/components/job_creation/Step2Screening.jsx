@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { X, MessageSquare, CheckCircle, HelpCircle, Info } from "lucide-react";
+import { X, MessageSquare, CheckCircle, HelpCircle, Info, Save } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 
 const HelpTooltip = ({ isOpen, onClose }) => {
@@ -39,10 +39,10 @@ const HelpTooltip = ({ isOpen, onClose }) => {
               </div>
             </div>
           </div>
-          
+
           <p className="text-gray-700 leading-relaxed text-right">
-            שאלון זה נועד לקבל מידע נוסף מהמועמד בעת הגשת קורות חיים. 
-            השאלון יכול לעזור לכם לקבל פרטים שלא מופיעים בדרישות משרה או בקורות חיים - זכרו, 
+            שאלון זה נועד לקבל מידע נוסף מהמועמד בעת הגשת קורות חיים.
+            השאלון יכול לעזור לכם לקבל פרטים שלא מופיעים בדרישות משרה או בקורות חיים - זכרו,
             השאלון הוא לא מבחן אלא כלי לקבלת מידע נוסף.
           </p>
         </motion.div>
@@ -70,14 +70,14 @@ const DynamicQuestionInput = ({ type, placeholder, questions, onAdd, onRemove })
 
   return (
     <div className="space-y-4">
-        <div className="flex items-center gap-2">
-            <div className="relative w-full">
-                {type === 'text' ?
-          <MessageSquare className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /> :
+      <div className="flex items-center gap-2">
+        <div className="relative w-full">
+          {type === 'text' ?
+            <MessageSquare className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /> :
 
-          <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           }
-                <Input
+          <Input
             type="text"
             placeholder={placeholder}
             value={inputValue}
@@ -86,30 +86,30 @@ const DynamicQuestionInput = ({ type, placeholder, questions, onAdd, onRemove })
             className="h-12 rounded-full border-gray-300 text-right pr-12"
             dir="rtl" />
 
-            </div>
-            <Button type="button" onClick={handleAddItem} className="bg-slate-50 text-blue-600 px-4 py-2 text-sm font-semibold inline-flex items-center justify-center gap-2 rounded-md ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 hover:text-blue-800 whitespace-nowrap">
-                + הוסף שאלה
-            </Button>
         </div>
+        <Button type="button" onClick={handleAddItem} className="bg-slate-50 text-blue-600 px-4 py-2 text-sm font-semibold inline-flex items-center justify-center gap-2 rounded-md ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 hover:text-blue-800 whitespace-nowrap">
+          + הוסף שאלה
+        </Button>
+      </div>
       {questions.filter((q) => q.type === type).length > 0 &&
-      <div className="flex flex-wrap gap-2 pt-2">
+        <div className="flex flex-wrap gap-2 pt-2">
           <AnimatePresence>
             {questions.filter((q) => q.type === type).map((item, index) =>
-          <motion.div
-            key={`${type}-${index}`}
-            layout
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.5 }}
-            transition={{ duration: 0.2 }}
-            className="flex items-center gap-2 bg-gray-100 text-gray-800 rounded-lg px-3 py-1.5">
+              <motion.div
+                key={`${type}-${index}`}
+                layout
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center gap-2 bg-gray-100 text-gray-800 rounded-lg px-3 py-1.5">
 
                 <span>{item.text}</span>
                 <button type="button" onClick={() => onRemove(item)} className="text-gray-500 hover:text-gray-800">
                   <X className="w-4 h-4" />
                 </button>
               </motion.div>
-          )}
+            )}
           </AnimatePresence>
         </div>
       }
@@ -117,7 +117,7 @@ const DynamicQuestionInput = ({ type, placeholder, questions, onAdd, onRemove })
 
 };
 
-export default function Step2Screening({ jobData, setJobData }) {
+export default function Step2Screening({ jobData, setJobData, onSave }) {
   const [showTooltip, setShowTooltip] = useState(false);
 
   const handleAddQuestion = (question) => {
@@ -147,7 +147,7 @@ export default function Step2Screening({ jobData, setJobData }) {
           מה זה?
         </Button>
       </div>
-      
+
       <div className="space-y-8 bg-white p-8 rounded-2xl border border-gray-200">
         <DynamicQuestionInput
           type="text"
@@ -164,6 +164,16 @@ export default function Step2Screening({ jobData, setJobData }) {
           onAdd={handleAddQuestion}
           onRemove={handleRemoveQuestion} />
 
+        <div className="flex justify-end pt-4">
+          <Button
+            onClick={() => onSave && onSave()}
+            className="bg-green-600 hover:bg-green-700 text-white gap-2"
+            disabled={(!jobData.screening_questions || jobData.screening_questions.length === 0)}
+          >
+            <Save className="w-4 h-4" />
+            שמור שאלון
+          </Button>
+        </div>
       </div>
 
       <HelpTooltip
