@@ -153,6 +153,35 @@ const CVContent = ({ cvData }) => {
             </div>}
 
             {/* Other sections can be added here following the same pattern */}
+
+            {/* Certifications */}
+            {certifications?.length > 0 && <div className="mb-4">
+                <h2 className="text-base font-bold border-b-2 border-blue-500 pb-1 mb-2">הסמכות</h2>
+                <div className="space-y-3">
+                    {certifications.map((cert, index) => (
+                        <div key={cert.id || `cert-${index}`} className="text-xs">
+                            <div className="flex justify-between items-baseline gap-3">
+                                <h3 className="font-semibold">{cert.name}</h3>
+                                <p className="text-gray-500">{formatDate(cert.date)}</p>
+                            </div>
+                            <p className="font-medium text-gray-700">{cert.issuer}</p>
+                            {cert.description && <p className="mt-1 text-gray-600 whitespace-pre-wrap">{cert.description}</p>}
+                        </div>
+                    ))}
+                </div>
+            </div>}
+
+            {/* Skills */}
+            {skills?.length > 0 && <div className="mb-4">
+                <h2 className="text-base font-bold border-b-2 border-blue-500 pb-1 mb-2">כישורים</h2>
+                <div className="flex flex-wrap gap-2">
+                    {skills.map((skill, index) => (
+                        <span key={index} className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-medium">
+                            {typeof skill === 'string' ? skill : skill.name}
+                        </span>
+                    ))}
+                </div>
+            </div>}
         </div>
     );
 };
