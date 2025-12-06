@@ -66,10 +66,14 @@ const CVContent = ({ cvData }) => {
         if (!end) return start;
         return `${start} - ${end}`;
     };
-    
+
     return (
         <div className="p-8 bg-white text-gray-800 text-sm cv-print-area">
-             <style>{`
+            <style>{`
+                @page {
+                    margin: 0;
+                    size: auto;
+                }
                 @media print {
                     body * {
                         visibility: hidden;
@@ -82,6 +86,7 @@ const CVContent = ({ cvData }) => {
                         left: 0;
                         top: 0;
                         width: 100%;
+                        margin: 0;
                     }
                 }
             `}</style>
@@ -94,8 +99,8 @@ const CVContent = ({ cvData }) => {
                     {personal_details.address && <div className="flex items-center gap-1"><MapPin className="w-3 h-3" />{personal_details.address}</div>}
                 </div>
                 <div className="flex justify-center items-center gap-3 mt-2 text-xs text-blue-600">
-                   {personal_details.linkedin_url && <a href={personal_details.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:underline"><Linkedin className="w-3 h-3" />LinkedIn</a>}
-                   {personal_details.portfolio_url && <a href={personal_details.portfolio_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:underline"><LinkIcon className="w-3 h-3" />Portfolio</a>}
+                    {personal_details.linkedin_url && <a href={personal_details.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:underline"><Linkedin className="w-3 h-3" />LinkedIn</a>}
+                    {personal_details.portfolio_url && <a href={personal_details.portfolio_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:underline"><LinkIcon className="w-3 h-3" />Portfolio</a>}
                 </div>
             </div>
 
@@ -169,63 +174,63 @@ export default function Step7_Preview({ cvData, setData, onEdit }) {
 
     return (
         <>
-        <div className="max-w-4xl mx-auto text-center" dir="rtl">
-            <div className="mb-10">
-                <h2 className="text-3xl font-bold text-gray-900 mb-3">צפייה בקורות חיים</h2>
-                <p className="text-gray-600 max-w-lg mx-auto">בחלק הזה תעברו על קורות החיים ותוכלו לערוך במידת הצורך או לחזור אחורה ולתקן את אחד מהחלקים</p>
-            </div>
-
-            <div className="mb-8 max-w-md mx-auto">
-                 <Input
-                    placeholder="בחרו שם לקובץ קורות החיים"
-                    value={cvData.file_name || ''}
-                    onChange={handleFileNameChange}
-                    className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400"
-                />
-            </div>
-            
-            <div className="flex justify-center items-start gap-6">
-                <div className="flex flex-col gap-4 pt-8">
-                    <Button onClick={onEdit} variant="outline" size="icon" className="w-12 h-12 rounded-full border-gray-300 shadow-sm"><Edit className="w-6 h-6 text-gray-600" /></Button>
-                    <Button onClick={handleDownload} variant="outline" size="icon" className="w-12 h-12 rounded-full border-gray-300 shadow-sm"><Download className="w-6 h-6 text-gray-600" /></Button>
-                    <Button onClick={() => setIsPreviewOpen(true)} variant="outline" size="icon" className="w-12 h-12 rounded-full border-gray-300 shadow-sm"><Eye className="w-6 h-6 text-gray-600" /></Button>
+            <div className="max-w-4xl mx-auto text-center" dir="rtl">
+                <div className="mb-10">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-3">צפייה בקורות חיים</h2>
+                    <p className="text-gray-600 max-w-lg mx-auto">בחלק הזה תעברו על קורות החיים ותוכלו לערוך במידת הצורך או לחזור אחורה ולתקן את אחד מהחלקים</p>
                 </div>
-                
-                <div className="w-[450px] h-[636px] bg-white shadow-2xl rounded-lg overflow-hidden border">
-                    <CVContent cvData={cvData} />
-                </div>
-            </div>
-        </div>
 
-        <AnimatePresence>
-            {isPreviewOpen && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
-                    onClick={() => setIsPreviewOpen(false)}
-                >
-                    <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.9, opacity: 0 }}
-                        className="relative bg-white rounded-lg shadow-2xl w-full max-w-4xl h-[90vh] overflow-y-auto"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setIsPreviewOpen(false)}
-                            className="absolute top-2 right-2 rounded-full z-10 bg-white/50 hover:bg-white/80"
-                        >
-                            <X className="w-6 h-6" />
-                        </Button>
+                <div className="mb-8 max-w-md mx-auto">
+                    <Input
+                        placeholder="בחרו שם לקובץ קורות החיים"
+                        value={cvData.file_name || ''}
+                        onChange={handleFileNameChange}
+                        className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400"
+                    />
+                </div>
+
+                <div className="flex justify-center items-start gap-6">
+                    <div className="flex flex-col gap-4 pt-8">
+                        <Button onClick={onEdit} variant="outline" size="icon" className="w-12 h-12 rounded-full border-gray-300 shadow-sm"><Edit className="w-6 h-6 text-gray-600" /></Button>
+                        <Button onClick={handleDownload} variant="outline" size="icon" className="w-12 h-12 rounded-full border-gray-300 shadow-sm"><Download className="w-6 h-6 text-gray-600" /></Button>
+                        <Button onClick={() => setIsPreviewOpen(true)} variant="outline" size="icon" className="w-12 h-12 rounded-full border-gray-300 shadow-sm"><Eye className="w-6 h-6 text-gray-600" /></Button>
+                    </div>
+
+                    <div className="w-[450px] h-[636px] bg-white shadow-2xl rounded-lg overflow-hidden border">
                         <CVContent cvData={cvData} />
+                    </div>
+                </div>
+            </div>
+
+            <AnimatePresence>
+                {isPreviewOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                        onClick={() => setIsPreviewOpen(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="relative bg-white rounded-lg shadow-2xl w-full max-w-4xl h-[90vh] overflow-y-auto"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setIsPreviewOpen(false)}
+                                className="absolute top-2 right-2 rounded-full z-10 bg-white/50 hover:bg-white/80"
+                            >
+                                <X className="w-6 h-6" />
+                            </Button>
+                            <CVContent cvData={cvData} />
+                        </motion.div>
                     </motion.div>
-                </motion.div>
-            )}
-        </AnimatePresence>
+                )}
+            </AnimatePresence>
         </>
     );
 }

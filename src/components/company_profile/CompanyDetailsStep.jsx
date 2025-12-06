@@ -27,9 +27,8 @@ const ChipButton = ({ label, isSelected, onClick }) => (
         type="button"
         variant={isSelected ? 'default' : 'outline'}
         onClick={onClick}
-        className={`rounded-full px-8 py-3 h-auto transition-all duration-200 ${
-            isSelected ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-        }`}
+        className={`rounded-full px-8 py-3 h-auto transition-all duration-200 ${isSelected ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`}
     >
         {label}
     </Button>
@@ -97,13 +96,13 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
 
                 {/* Text Input Fields - Switched order */}
                 <div className="space-y-4">
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
                         <InfoInput placeholder="תחום פעילות" name="field_of_activity" value={companyData.field_of_activity || ""} onChange={handleInputChange} />
                         <div>
-                          <InfoInput placeholder="כתובת ראשית" name="main_address" value={companyData.main_address || ""} onChange={handleInputChange} />
-                          <p className="text-xs text-gray-500 text-right mt-1">* מיקום החברה יכול להיות שונה ממיקום המשרה</p>
+                            <InfoInput placeholder="כתובת ראשית" name="main_address" value={companyData.main_address || ""} onChange={handleInputChange} />
+                            <p className="text-xs text-gray-500 text-right mt-1">* מיקום החברה יכול להיות שונה ממיקום המשרה</p>
                         </div>
-                     </div>
+                    </div>
                 </div>
             </motion.div>
         </div>
