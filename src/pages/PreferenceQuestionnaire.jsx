@@ -1,192 +1,275 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User } from '@/api/entities';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft, Info, Check, ChevronsUpDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useRequireUserType } from '@/hooks/use-require-user-type';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import jobsList from '../../jobs.json';
+import locationsList from '../../locations.json';
 
-const Question = ({ question, type = 'text', value, onChange }) => {
-  const [localValue, setLocalValue] = useState(value || '');
+// Option constants
+const FIELDS = ["מכירות", "שירות לקוחות", "תמיכה טכנית", "ניהול משרד"];
+const JOB_TYPES = ["משמרות", "חלקית", "מלאה", "גמישה"];
+const AVAILABILITIES = ["חודש עד חודשיים", "שבוע עד שבועיים", "מיידי", "גמישה"];
 
-  const handleChange = (e) => {
-    setLocalValue(e.target.value);
-    onChange(e.target.value);
-  };
-
-  const handleRadioChange = (val) => {
-    setLocalValue(val);
-    onChange(val);
-  };
-
-  return (
-    <div className="space-y-3">
-      <div className="text-right">
-        <p className="inline-block bg-white border border-gray-300 rounded-full px-5 py-2">{question}</p>
-      </div>
-      <div>
-        {type === 'text' ?
-          <Input
-            type="text"
-            placeholder="תשובה"
-            className="h-12 rounded-full text-right border-gray-300 px-5"
-            value={localValue}
-            onChange={handleChange} /> :
-          <div className="flex items-center gap-4">
-            <Input
-              type="text"
-              placeholder="תשובה"
-              className="h-12 rounded-full text-right border-gray-300 px-5 flex-grow"
-              value={localValue === 'כן' || localValue === 'לא' ? '' : localValue}
-              onChange={handleChange}
-              disabled={localValue === 'כן' || localValue === 'לא'} />
-
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant={localValue === 'לא' ? 'default' : 'outline'}
-                onClick={() => handleRadioChange('לא')}
-                className={`rounded-full w-12 h-12 border-gray-300 ${localValue === 'לא' ? 'bg-blue-600 text-white' : ''}`}>
-                לא
-              </Button>
-              <Button
-                type="button"
-                variant={localValue === 'כן' ? 'default' : 'outline'}
-                onClick={() => handleRadioChange('כן')}
-                className={`rounded-full w-12 h-12 border-gray-300 ${localValue === 'כן' ? 'bg-blue-600 text-white' : ''}`}>
-                כן
-              </Button>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-  );
-};
-
+const PillButton = ({ label, isSelected, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`
+      px-6 py-2 rounded-full border transition-all duration-200 text-sm font-medium
+      ${isSelected
+        ? 'bg-blue-50 border-blue-500 text-blue-600 shadow-sm'
+        : 'bg-white border-blue-200 text-gray-600 hover:border-blue-400 hover:bg-blue-50/50'
+      }
+    `}
+  >
+    {label}
+  </button>
+);
 
 export default function PreferenceQuestionnaire() {
-  useRequireUserType(); // Ensure user has selected a user type
-  const [answers, setAnswers] = useState({
-    driving_license: '',
-    relocation_interest: '',
-    first_degree: ''
+  useRequireUserType();
+
+  const [preferences, setPreferences] = useState({
+    field: '',
+    profession_search: '',
+    location: '',
+    job_type: '',
+    availability: ''
   });
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+
   const [saving, setSaving] = useState(false);
+  const [openProfession, setOpenProfession] = useState(false);
+  const [openLocation, setOpenLocation] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const userData = await User.me();
-        setUser(userData);
-        setAnswers({
-          driving_license: userData.preference_driving_license || '',
-          relocation_interest: userData.preference_relocation_interest || '',
-          first_degree: userData.preference_first_degree || ''
-        });
-      } catch (error) {
-        console.error("User not logged in", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, []);
+  const handleSelection = (category, value) => {
+    setPreferences(prev => ({
+      ...prev,
+      [category]: prev[category] === value ? '' : value
+    }));
+  };
 
-  const handleAnswerChange = (questionKey, value) => {
-    setAnswers((prev) => ({ ...prev, [questionKey]: value }));
+  const handleChange = (field, value) => {
+    setPreferences(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSave = async () => {
-    if (!user) return;
     setSaving(true);
     try {
       await User.updateMyUserData({
-        preference_driving_license: answers.driving_license,
-        preference_relocation_interest: answers.relocation_interest,
-        preference_first_degree: answers.first_degree
+        preference_field: preferences.field,
+        preference_job_type: preferences.job_type,
+        preference_availability: preferences.availability,
+        preference_location: preferences.location,
+        preference_profession: preferences.profession_search,
       });
+
+      console.log("Preferences saved:", preferences);
       navigate(createPageUrl('Profile'));
     } catch (error) {
       console.error("Failed to save preferences:", error);
+      navigate(createPageUrl('Profile'));
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
-    return <div className="flex justify-center items-center h-screen"><Loader2 className="w-12 h-12 animate-spin text-blue-600" /></div>;
-  }
-
   return (
-    <div className="p-4 md:p-6" dir="rtl">
-      <div className="w-[85vw] mx-auto">
-        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
-          <div className="relative h-24 overflow-hidden -m-px">
-            <div
-              className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
-              style={{
-                backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/ca93821b0_image.png)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center top'
-              }} />
+    <div className="min-h-screen bg-gray-50/50 p-4 md:p-6" dir="rtl">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-4xl mx-auto"
+      >
+        <Card className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden min-h-[80vh]">
+          <CardContent className="p-8 md:p-12 flex flex-col items-center text-center space-y-10">
 
-          </div>
-          <CardContent className="p-4 sm:p-6 md:p-8 -mt-12 relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="max-w-4xl mx-auto space-y-12">
-
-              <h1 className="text-center text-3xl font-bold text-gray-900">ניהול שאלון העדפה</h1>
-
-              <div className="border border-gray-200 rounded-2xl p-8 space-y-8">
-                <Question
-                  question="האם יש רישיון רכב?"
-                  type="yes_no"
-                  value={answers.driving_license}
-                  onChange={(val) => handleAnswerChange('driving_license', val)} />
-
-                <Question
-                  question="האם מיקום העבודה מתאים עבורך למשרה מלאה בחברה שלנו?"
-                  value={answers.relocation_interest}
-                  onChange={(val) => handleAnswerChange('relocation_interest', val)} />
-
-                <Question
-                  question="האם יש תואר ראשון בכלכלה?"
-                  type="yes_no"
-                  value={answers.first_degree}
-                  onChange={(val) => handleAnswerChange('first_degree', val)} />
-
+            {/* Field Section */}
+            <div className="w-full space-y-6">
+              <h2 className="text-3xl font-bold text-gray-900">באיזה תחום?</h2>
+              <div className="flex flex-wrap justify-center gap-4">
+                {FIELDS.map(field => (
+                  <PillButton
+                    key={field}
+                    label={field}
+                    isSelected={preferences.field === field}
+                    onClick={() => handleSelection('field', field)}
+                  />
+                ))}
               </div>
+            </div>
 
-              <div className="flex flex-col items-center gap-4">
-                <Button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="px-12 h-14 rounded-full font-bold text-lg bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
-                  {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : "שלחו קורות חיים"}
-                </Button>
+            {/* Dropdowns Section */}
+            <div className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Location Select - Right in RTL */}
+              <Popover open={openLocation} onOpenChange={setOpenLocation}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openLocation}
+                    className="h-12 w-full justify-between rounded-full border-gray-200 text-right px-6 text-gray-500 font-normal hover:bg-white"
+                  >
+                    {preferences.location
+                      ? preferences.location
+                      : "איזור או עיר"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[300px] p-0" align="start" dir="rtl">
+                  <Command>
+                    <CommandInput placeholder="חפש איזור או עיר..." className="text-right gap-2" />
+                    <CommandList>
+                      <CommandEmpty>לא נמצא מיקום.</CommandEmpty>
+                      <CommandGroup className="max-h-[300px] overflow-y-auto">
+                        {locationsList.map((loc) => (
+                          <CommandItem
+                            key={loc}
+                            value={loc}
+                            onSelect={(currentValue) => {
+                              handleChange('location', currentValue);
+                              setOpenLocation(false);
+                            }}
+                            className="text-right flex justify-between cursor-pointer"
+                          >
+                            <Check
+                              className={cn(
+                                "h-4 w-4",
+                                preferences.location === loc ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {loc}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
 
-                <Button
-                  variant="ghost"
-                  onClick={() => navigate(createPageUrl('Profile'))}
-                  className="text-gray-500 hover:text-gray-700 hover:bg-transparent font-normal">
-                  דלג
-                </Button>
+              {/* Profession Search/Select - Left in RTL */}
+              <Popover open={openProfession} onOpenChange={setOpenProfession}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openProfession}
+                    className="h-12 w-full justify-between rounded-full border-gray-200 text-right px-6 text-gray-500 font-normal hover:bg-white"
+                  >
+                    {preferences.profession_search
+                      ? preferences.profession_search
+                      : "חפש מקצוע"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[300px] p-0" align="start" dir="rtl">
+                  <Command>
+                    <CommandInput placeholder="חפש מקצוע..." className="text-right gap-2" />
+                    <CommandList>
+                      <CommandEmpty>לא נמצא מקצוע.</CommandEmpty>
+                      <CommandGroup className="max-h-[300px] overflow-y-auto">
+                        {jobsList.map((job) => (
+                          <CommandItem
+                            key={job}
+                            value={job}
+                            onSelect={(currentValue) => {
+                              handleChange('profession_search', currentValue);
+                              setOpenProfession(false);
+                            }}
+                            className="text-right flex justify-between cursor-pointer"
+                          >
+                            <Check
+                              className={cn(
+                                "h-4 w-4",
+                                preferences.profession_search === job ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {job}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Job Type Section */}
+            <div className="w-full space-y-6">
+              <h3 className="text-xl font-bold text-gray-900">סוג משרה</h3>
+              <div className="flex flex-wrap justify-center gap-4">
+                {JOB_TYPES.map(type => (
+                  <PillButton
+                    key={type}
+                    label={type}
+                    isSelected={preferences.job_type === type}
+                    onClick={() => handleSelection('job_type', type)}
+                  />
+                ))}
               </div>
-            </motion.div>
+            </div>
+
+            {/* Availability Section */}
+            <div className="w-full space-y-6">
+              <h3 className="text-xl font-bold text-gray-900">זמינות</h3>
+              <div className="flex flex-wrap justify-center gap-4">
+                {AVAILABILITIES.map(avail => (
+                  <PillButton
+                    key={avail}
+                    label={avail}
+                    isSelected={preferences.availability === avail}
+                    onClick={() => handleSelection('availability', avail)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Info Note */}
+            <div className="flex items-center gap-2 text-gray-500 text-xs mt-4">
+              <Info className="w-3 h-3" />
+              <p>ההתאמה נעשית בהתבסס על קורות החיים, גם אם שאלו העדפה לא מדויק</p>
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-8">
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-12 py-6 text-lg font-bold flex items-center gap-2 shadow-lg shadow-blue-200"
+              >
+                {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                  <>
+                    המשך
+                    <ArrowLeft className="w-5 h-5" />
+                  </>
+                )}
+              </Button>
+            </div>
+
           </CardContent>
         </Card>
-      </div>
-    </div>);
-
+      </motion.div>
+    </div>
+  );
 }
