@@ -8,6 +8,8 @@ import jobCategoryList from '../../../jobs_category.json';
 import jobTitles from '../../../jobs.json';
 import CategorySelect from './CategorySelect';
 
+import jobTaxonomy from '../../job_taxonomy.json';
+
 export default function Step1Details({ jobData, setJobData }) {
   const today = new Date().toISOString().split('T')[0];
 
@@ -33,9 +35,17 @@ export default function Step1Details({ jobData, setJobData }) {
   const categoryOptions = Array.isArray(jobCategoryList)
     ? jobCategoryList.filter(Boolean).filter((category, index, arr) => arr.indexOf(category) === index)
     : [];
-  const titleOptions = Array.isArray(jobTitles)
-    ? jobTitles.filter(Boolean).filter((title, index, arr) => arr.indexOf(title) === index)
-    : [];
+
+  const getTitleOptions = () => {
+    if (jobData.category && jobTaxonomy[jobData.category]) {
+      return jobTaxonomy[jobData.category];
+    }
+    return Array.isArray(jobTitles)
+      ? jobTitles.filter(Boolean).filter((title, index, arr) => arr.indexOf(title) === index)
+      : [];
+  };
+
+  const titleOptions = getTitleOptions();
 
   return (
     <div className="max-w-4xl mx-auto" dir="rtl">
