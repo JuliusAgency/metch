@@ -10,9 +10,10 @@ import {
   HelpCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+import { useUser } from "@/contexts/UserContext";
 
 const FAQ_DATA = [
   {
@@ -92,9 +93,17 @@ export default function FAQ() {
     }
   };
 
+  const { user } = useUser();
+  const navigate = useNavigate();
+
   const handleSupportClick = () => {
+    if (user?.user_type === 'job_seeker') {
+      navigate(createPageUrl("MessagesSeeker"), { state: { supportChat: true } });
+      return;
+    }
+
     if (typeof window === "undefined") return;
-    
+
     const whatsappUrl = "https://api.whatsapp.com/send/?phone=%2B972501234567&text=%D7%A9%D7%9C%D7%95%D7%9D%21+%D7%90%D7%A0%D7%99+%D7%96%D7%A7%D7%95%D7%A7%2F%D7%94+%D7%9C%D7%AA%D7%9E%D7%99%D7%9B%D7%94+%D7%9E%D7%A6%D7%95%D7%95%D7%AA+Metch&type=phone_number&app_absent=0";
     window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
@@ -184,7 +193,7 @@ export default function FAQ() {
                             </p>
                           </div>
                         </button>
-                        
+
                         <AnimatePresence>
                           {activeQuestionId === item.id && (
                             <motion.div
