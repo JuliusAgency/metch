@@ -8,7 +8,8 @@ import {
   Plus,
   Edit,
   Copy,
-  Briefcase
+  Briefcase,
+  BarChart
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -62,7 +63,7 @@ export default function JobManagement() {
     try {
       // Get current user data to set created_by fields
       const userData = await User.me();
-      
+
       const duplicatedJob = {
         ...job,
         title: `${job.title} (עותק)`,
@@ -99,9 +100,9 @@ export default function JobManagement() {
   const endedStatuses = ['closed', 'filled', 'filled_via_metch']; // New array
 
   const filteredJobs = jobs.filter((job) => // New filtered array
-  activeView === 'active' ?
-  activeStatuses.includes(job.status) :
-  endedStatuses.includes(job.status)
+    activeView === 'active' ?
+      activeStatuses.includes(job.status) :
+      endedStatuses.includes(job.status)
   );
 
   if (loading) {
@@ -109,7 +110,7 @@ export default function JobManagement() {
       <div className="p-4 md:p-6" dir="rtl">
         <div className="w-[85vw] mx-auto">
           {Array(3).fill(0).map((_, i) =>
-          <div key={i} className="h-32 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl animate-pulse mb-4" />
+            <div key={i} className="h-32 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl animate-pulse mb-4" />
           )}
         </div>
       </div>);
@@ -145,19 +146,17 @@ export default function JobManagement() {
               <div className="flex justify-center mb-8">
                 <div className="flex gap-2 bg-gray-100 p-1 rounded-full">
                   <Button
-                    className={`px-6 py-2 rounded-full font-semibold transition-colors ${
-                    activeView === 'active' ?
-                    'bg-blue-600 hover:bg-blue-700 text-white' :
-                    'bg-transparent hover:bg-gray-200 text-gray-700'}`
+                    className={`px-6 py-2 rounded-full font-semibold transition-colors ${activeView === 'active' ?
+                      'bg-blue-600 hover:bg-blue-700 text-white' :
+                      'bg-transparent hover:bg-gray-200 text-gray-700'}`
                     }
                     onClick={() => setActiveView('active')}>
                     משרות פעילות
                   </Button>
                   <Button
-                    className={`px-6 py-2 rounded-full font-semibold transition-colors ${
-                    activeView === 'ended' ?
-                    'bg-blue-600 hover:bg-blue-700 text-white' :
-                    'bg-transparent hover:bg-gray-200 text-gray-700'}`
+                    className={`px-6 py-2 rounded-full font-semibold transition-colors ${activeView === 'ended' ?
+                      'bg-blue-600 hover:bg-blue-700 text-white' :
+                      'bg-transparent hover:bg-gray-200 text-gray-700'}`
                     }
                     onClick={() => setActiveView('ended')}>
 
@@ -169,39 +168,39 @@ export default function JobManagement() {
               {/* Jobs List */}
               <div className="space-y-4 mb-8">
                 {filteredJobs.length > 0 ?
-                filteredJobs.map((job, index) => {
-                  const config = statusConfig[job.status] || statusConfig.draft; // Fallback to draft
-                  const timeAgo = formatDistanceToNow(new Date(job.created_date), { addSuffix: true, locale: he }); // New
-                  return (
-                    <motion.div
-                      key={job.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.1 }}>
+                  filteredJobs.map((job, index) => {
+                    const config = statusConfig[job.status] || statusConfig.draft; // Fallback to draft
+                    const timeAgo = formatDistanceToNow(new Date(job.created_date), { addSuffix: true, locale: he }); // New
+                    return (
+                      <motion.div
+                        key={job.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.1 }}>
 
                         {/* Updated Card Structure */}
                         <div className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
                           {/* Top Section */}
                           <div className="flex items-center justify-between pb-4">
-                             <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
                               <div className={`w-2.5 h-2.5 ${config.dotColor} rounded-full`}></div>
                               <p className="font-semibold text-gray-800">{config.label}</p>
                             </div>
                             <div className="flex items-center gap-4 text-gray-400">
-                               <Switch
-                              id={`status-switch-${job.id}`}
-                              checked={job.status === 'active'}
-                              onCheckedChange={(checked) =>
-                              handleStatusChange(job.id, checked)
-                              }
-                              disabled={job.status !== 'active' && job.status !== 'paused'} // Disable if not active or paused
-                              className="peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input hidden" />
+                              <Switch
+                                id={`status-switch-${job.id}`}
+                                checked={job.status === 'active'}
+                                onCheckedChange={(checked) =>
+                                  handleStatusChange(job.id, checked)
+                                }
+                                disabled={job.status !== 'active' && job.status !== 'paused'} // Disable if not active or paused
+                                className="peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input hidden" />
                               <Link to={createPageUrl(`CreateJob?id=${job.id}`)}>
                                 <Edit className="w-5 h-5 cursor-pointer hover:text-blue-600" />
                               </Link>
                               <Copy
-                              className="w-5 h-5 cursor-pointer hover:text-blue-600"
-                              onClick={() => handleDuplicateJob(job)} />
+                                className="w-5 h-5 cursor-pointer hover:text-blue-600"
+                                onClick={() => handleDuplicateJob(job)} />
 
                             </div>
                           </div>
@@ -215,18 +214,18 @@ export default function JobManagement() {
                               <p className="text-gray-600">{job.location}</p>
                               <p className="text-sm text-gray-500 mt-1">פורסם {timeAgo}</p>
                             </div>
-                             <Link to={createPageUrl(`JobDetails?id=${job.id}`)}>
-                                <Button className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold">
-                                  צפייה במשרה
-                                </Button>
+                            <Link to={createPageUrl(`JobDetails?id=${job.id}`)}>
+                              <Button className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold">
+                                צפייה במשרה
+                              </Button>
                             </Link>
                           </div>
                         </div>
                       </motion.div>);
 
-                }) :
+                  }) :
 
-                <div className="text-center py-12">
+                  <div className="text-center py-12">
                     <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Briefcase className="w-8 h-8 text-gray-400" />
                     </div>
@@ -236,8 +235,15 @@ export default function JobManagement() {
                 }
               </div>
 
-              {/* Create New Job Button */}
-              <div className="flex justify-center">
+              {/* Create New Job & Stats Buttons */}
+              <div className="flex flex-col md:flex-row justify-center items-center gap-4">
+                <Link to={createPageUrl("Statistics")}>
+                  <Button variant="outline" className="px-8 py-3 rounded-full font-bold text-lg border-blue-600 text-blue-600 hover:bg-blue-50 shadow-sm">
+                    <BarChart className="w-5 h-5 ml-2" />
+                    הסטטיסטיקות שלי
+                  </Button>
+                </Link>
+
                 <Link to={createPageUrl("CreateJob")}>
                   <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg">
                     <Plus className="w-5 h-5 ml-2" />
