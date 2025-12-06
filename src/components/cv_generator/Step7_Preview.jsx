@@ -128,33 +128,29 @@ const CVContent = ({ cvData }) => {
             </div>}
 
             {/* Education */}
-            <div className="mb-4">
+            {educationEntries.length > 0 && <div className="mb-4">
                 <h2 className="text-base font-bold border-b-2 border-blue-500 pb-1 mb-2">השכלה</h2>
-                {educationEntries.length > 0 ? (
-                    <div className="space-y-3">
-                        {educationEntries.map((edu, index) => {
-                            const dateRange = formatDateRange(edu);
-                            const subtitle = [edu?.degree, getEducationTypeLabel(edu?.education_type)]
-                                .filter(Boolean)
-                                .join(' • ');
-                            const statusLabel = edu?.is_current ? 'סטטוס: לימודים פעילים' : 'סטטוס: הושלם';
-                            return (
-                                <div key={edu?.id || `education-${index}`} className="text-xs">
-                                    <div className="flex justify-between items-baseline gap-3">
-                                        <h3 className="font-semibold">{edu?.institution || 'מוסד לימודים'}</h3>
-                                        {dateRange && <p className="text-gray-500 flex-shrink-0">{dateRange}</p>}
-                                    </div>
-                                    {subtitle && <p className="font-medium text-gray-700">{subtitle}</p>}
-                                    <p className="text-gray-500">{statusLabel}</p>
-                                    {edu?.description && <p className="mt-1 text-gray-600 whitespace-pre-wrap">{edu.description}</p>}
+                <div className="space-y-3">
+                    {educationEntries.map((edu, index) => {
+                        const dateRange = formatDateRange(edu);
+                        const subtitle = [edu?.degree, getEducationTypeLabel(edu?.education_type)]
+                            .filter(Boolean)
+                            .join(' • ');
+                        const statusLabel = edu?.is_current ? 'סטטוס: לימודים פעילים' : 'סטטוס: הושלם';
+                        return (
+                            <div key={edu?.id || `education-${index}`} className="text-xs">
+                                <div className="flex justify-between items-baseline gap-3">
+                                    <h3 className="font-semibold">{edu?.institution || 'מוסד לימודים'}</h3>
+                                    {dateRange && <p className="text-gray-500 flex-shrink-0">{dateRange}</p>}
                                 </div>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <p className="text-xs text-gray-500">עוד לא הוזנה השכלה במערכת.</p>
-                )}
-            </div>
+                                {subtitle && <p className="font-medium text-gray-700">{subtitle}</p>}
+                                <p className="text-gray-500">{statusLabel}</p>
+                                {edu?.description && <p className="mt-1 text-gray-600 whitespace-pre-wrap">{edu.description}</p>}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>}
 
             {/* Other sections can be added here following the same pattern */}
         </div>
