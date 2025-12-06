@@ -35,14 +35,14 @@ const UserTypeSelection = () => {
 
   const handleTypeSelection = async (userType) => {
     if (loading) return;
-    
+
     setSelectedType(userType);
     setLoading(true);
 
     try {
       // Update user profile with selected type
       await updateProfile({ user_type: userType });
-      
+
       toast({
         title: "סוג משתמש נבחר בהצלחה!",
         description: "ברוכים הבאים למאצי",
@@ -52,7 +52,7 @@ const UserTypeSelection = () => {
       if (userType === 'job_seeker') {
         navigate('/CVGenerator');
       } else {
-        navigate('/Dashboard');
+        navigate('/CompanyProfileCompletion');
       }
     } catch (error) {
       console.error('Error updating user type:', error);
@@ -81,59 +81,56 @@ const UserTypeSelection = () => {
       <div className="hidden lg:block">
         {/* Main Content Container - Responsive */}
         <div id="desktop-container" className='w-full h-full overflow-hidden'>
-            <div id="card-container" className='absolute bottom-0 left-1/2 translate-x-[-50%] w-[95vw] h-[90vh] bg-[rgba(255,255,255,0.5)] rounded-t-[40px]  shadow-[0px_0px_17.611px_0px_rgba(0,0,0,0.2)] '>
-              {/* Desktop User Type Selection Content */}
-              <div className="absolute mr-[10vw] top-1/2 translate-y-[-50%] flex flex-col gap-[38px] items-center justify-center w-[25vw] h-full">
-                {/* Title */}
-                <div className="flex flex-col gap-[15px] items-center w-full">
-                  <p className="font-['Rubik:Bold',_sans-serif] font-bold leading-[1.3] text-[#32343d] text-[46px] text-center w-[477px]">
-                    איך תשתמש במאצ׳?
-                  </p>
-                </div>
-                
-                {/* Subtitle */}
-                <p className="font-['Rubik:Regular',_sans-serif] font-normal leading-[1.6] text-[#32343d] text-[23px] text-center">
-                  יש לבחור את האפשרות המתאימה עבורך
+          <div id="card-container" className='absolute bottom-0 left-1/2 translate-x-[-50%] w-[95vw] h-[90vh] bg-[rgba(255,255,255,0.5)] rounded-t-[40px]  shadow-[0px_0px_17.611px_0px_rgba(0,0,0,0.2)] '>
+            {/* Desktop User Type Selection Content */}
+            <div className="absolute mr-[10vw] top-1/2 translate-y-[-50%] flex flex-col gap-[38px] items-center justify-center w-[25vw] h-full">
+              {/* Title */}
+              <div className="flex flex-col gap-[15px] items-center w-full">
+                <p className="font-['Rubik:Bold',_sans-serif] font-bold leading-[1.3] text-[#32343d] text-[46px] text-center w-[477px]">
+                  איך תשתמש במאצ׳?
                 </p>
-                
-                {/* Buttons */}
-                <div className="flex flex-col gap-[32px] items-start w-[387px]">
-                  <button
-                    onClick={() => handleTypeSelection('job_seeker')}
-                    disabled={loading}
-                    className={`bg-[#2987cd] border-[1.227px] border-solid border-white box-border flex gap-[12px] h-[65px] items-center justify-center p-[17px] relative rounded-[74px] w-full transition-all duration-200 ${
-                      selectedType === 'job_seeker' 
-                        ? 'bg-[#2987cd]' 
-                        : 'bg-[#2987cd] hover:bg-[#1f6ba8]'
+              </div>
+
+              {/* Subtitle */}
+              <p className="font-['Rubik:Regular',_sans-serif] font-normal leading-[1.6] text-[#32343d] text-[23px] text-center">
+                יש לבחור את האפשרות המתאימה עבורך
+              </p>
+
+              {/* Buttons */}
+              <div className="flex flex-col gap-[32px] items-start w-[387px]">
+                <button
+                  onClick={() => handleTypeSelection('job_seeker')}
+                  disabled={loading}
+                  className={`bg-[#2987cd] border-[1.227px] border-solid border-white box-border flex gap-[12px] h-[65px] items-center justify-center p-[17px] relative rounded-[74px] w-full transition-all duration-200 ${selectedType === 'job_seeker'
+                      ? 'bg-[#2987cd]'
+                      : 'bg-[#2987cd] hover:bg-[#1f6ba8]'
                     } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                  >
-                    <p className="font-['Rubik:Bold',_sans-serif] font-bold leading-[normal] text-[26px] text-center text-white">
-                      אני מחפש עבודה
-                    </p>
-                  </button>
-                  <button
-                    onClick={() => handleTypeSelection('employer')}
-                    disabled={loading}
-                    className={`bg-white border-[1.227px] border-[#d9d9d9] border-solid box-border flex gap-[12px] h-[65px] items-center justify-center p-[17px] relative rounded-[74px] w-full transition-all duration-200 ${
-                      selectedType === 'employer' 
-                        ? 'bg-[#2987cd] border-white' 
-                        : 'bg-white border-[#d9d9d9] hover:bg-[#f5f5f5]'
+                >
+                  <p className="font-['Rubik:Bold',_sans-serif] font-bold leading-[normal] text-[26px] text-center text-white">
+                    אני מחפש עבודה
+                  </p>
+                </button>
+                <button
+                  onClick={() => handleTypeSelection('employer')}
+                  disabled={loading}
+                  className={`bg-white border-[1.227px] border-[#d9d9d9] border-solid box-border flex gap-[12px] h-[65px] items-center justify-center p-[17px] relative rounded-[74px] w-full transition-all duration-200 ${selectedType === 'employer'
+                      ? 'bg-[#2987cd] border-white'
+                      : 'bg-white border-[#d9d9d9] hover:bg-[#f5f5f5]'
                     } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                  >
-                    <p className={`font-['Rubik:Regular',_sans-serif] font-normal leading-[normal] text-[26px] text-center ${
-                      selectedType === 'employer' ? 'text-white' : 'text-[#162b6b]'
+                >
+                  <p className={`font-['Rubik:Regular',_sans-serif] font-normal leading-[normal] text-[26px] text-center ${selectedType === 'employer' ? 'text-white' : 'text-[#162b6b]'
                     }`}>
-                      אני מפרסם משרה
-                    </p>
-                  </button>
-                </div>
+                    אני מפרסם משרה
+                  </p>
+                </button>
               </div>
             </div>
+          </div>
 
 
-            <div id="decorative-element" className='absolute bottom-[-20vh] left-[-25vw] w-[75vw] h-[100vh]'>
-                <img alt="" src={"/astronaut.svg"} className='w-full h-full' />
-            </div>
+          <div id="decorative-element" className='absolute bottom-[-20vh] left-[-25vw] w-[75vw] h-[100vh]'>
+            <img alt="" src={"/astronaut.svg"} className='w-full h-full' />
+          </div>
         </div>
       </div>
 
@@ -143,7 +140,7 @@ const UserTypeSelection = () => {
         {/* Main Card - Responsive */}
         <div className="absolute h-[709px] sm:h-[808px] left-1/2 top-[50px] sm:top-[60px] translate-x-[-50%] w-[347px] sm:w-[395px]">
           <div className="absolute bg-[rgba(255,255,255,0.5)] h-[709px] sm:h-[808px] left-1/2 rounded-[16px] sm:rounded-[18px] shadow-[0px_0px_7px_0px_rgba(0,0,0,0.2)] sm:shadow-[0px_0px_8px_0px_rgba(0,0,0,0.2)] top-0 translate-x-[-50%] w-[347px] sm:w-[395px]" />
-          
+
           {/* Mobile Decorative Elements */}
           <div className="absolute flex inset-[44.01%_3.91%_15.79%_3.75%] items-center justify-center">
             <div className="flex-none h-[253.327px] rotate-[353.475deg] w-[293.549px]">
@@ -236,11 +233,10 @@ const UserTypeSelection = () => {
           <button
             onClick={() => handleTypeSelection('job_seeker')}
             disabled={loading}
-            className={`border border-solid border-white box-border flex gap-[10px] sm:gap-[11px] h-[53px] sm:h-[60px] items-center justify-center p-[14px] sm:p-[16px] relative rounded-[60px] sm:rounded-[68px] w-full transition-all duration-200 ${
-              selectedType === 'job_seeker' 
-                ? 'bg-[#2987cd]' 
+            className={`border border-solid border-white box-border flex gap-[10px] sm:gap-[11px] h-[53px] sm:h-[60px] items-center justify-center p-[14px] sm:p-[16px] relative rounded-[60px] sm:rounded-[68px] w-full transition-all duration-200 ${selectedType === 'job_seeker'
+                ? 'bg-[#2987cd]'
                 : 'bg-[#2987cd] hover:bg-[#1f6ba8]'
-            } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           >
             <p className="font-bold text-[22px] sm:text-[25px] text-center text-white">
               אני מחפש עבודה
@@ -249,15 +245,13 @@ const UserTypeSelection = () => {
           <button
             onClick={() => handleTypeSelection('employer')}
             disabled={loading}
-            className={`border border-[#d9d9d9] border-solid box-border flex gap-[10px] sm:gap-[11px] h-[53px] sm:h-[60px] items-center justify-center p-[14px] sm:p-[16px] relative rounded-[60px] sm:rounded-[68px] w-full transition-all duration-200 ${
-              selectedType === 'employer' 
-                ? 'bg-[#2987cd] border-white' 
+            className={`border border-[#d9d9d9] border-solid box-border flex gap-[10px] sm:gap-[11px] h-[53px] sm:h-[60px] items-center justify-center p-[14px] sm:p-[16px] relative rounded-[60px] sm:rounded-[68px] w-full transition-all duration-200 ${selectedType === 'employer'
+                ? 'bg-[#2987cd] border-white'
                 : 'bg-white border-[#d9d9d9] hover:bg-[#f5f5f5]'
-            } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           >
-            <p className={`font-normal text-[22px] sm:text-[25px] text-center ${
-              selectedType === 'employer' ? 'text-white' : 'text-[#162b6b]'
-            }`}>
+            <p className={`font-normal text-[22px] sm:text-[25px] text-center ${selectedType === 'employer' ? 'text-white' : 'text-[#162b6b]'
+              }`}>
               אני מפרסם משרה
             </p>
           </button>

@@ -34,7 +34,7 @@ export default function Layout({ children, currentPageName }) {
   const closeMenu = () => setIsMobileMenuOpen(false); // Added
 
   // Pages that should not show navbar (authentication pages)
-  const authPages = ['Login', 'Register', 'Landing', 'EmailConfirmation', 'UserTypeSelection'];
+  const authPages = ['Login', 'Register', 'Landing', 'EmailConfirmation', 'UserTypeSelection', 'CompanyProfileCompletion'];
   const shouldHideNavbar = authPages.includes(currentPageName);
 
   if (loading) {
@@ -63,7 +63,7 @@ export default function Layout({ children, currentPageName }) {
     { page: "Insights", icon: TrendingUp, text: "תובנות", seeker: true },
     { page: "JobManagement", icon: Briefcase, text: "משרות", employer: true },
     { page: "Statistics", icon: BarChart2, text: "סטטיסטיקות", employer: true }, // Added
-    { page: isJobSeeker ? "Profile" : "CompanyProfileCompletion", icon: User, text: "פרופיל", both: true },
+    { page: "Profile", icon: User, text: "פרופיל", seeker: true },
     { page: "Notifications", icon: Bell, text: "התראות", both: true },
     { page: "CreditCard", icon: CreditCard, text: "תשלומים", both: true, isPlaceholder: true },
     { page: "Settings", icon: Settings, text: "הגדרות", both: true },
@@ -77,8 +77,9 @@ export default function Layout({ children, currentPageName }) {
     // Determine if the current page matches this link's target for active styling
     const isActive =
       (currentPageName === page) ||
-      (page === (isJobSeeker ? "Profile" : "CompanyProfileCompletion") && (currentPageName === "Profile" || currentPageName === "CompanyProfileCompletion")) ||
-      (page === (isJobSeeker ? "MessagesSeeker" : "Messages") && (currentPageName === "Messages" || currentPageName === "MessagesSeeker"));
+      (page === "Profile" && currentPageName === "Profile") ||
+      (page === "MessagesSeeker" && currentPageName === "MessagesSeeker") || // Simplified for seeker vs employer messages
+      (page === "Messages" && currentPageName === "Messages");
 
     const linkClass = `flex items-center gap-4 p-3 rounded-lg text-lg font-medium transition-colors ${isActive ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`;
     const iconClass = `w-7 h-7 ${isActive ? 'text-blue-600' : 'text-gray-600'}`;
@@ -189,13 +190,17 @@ export default function Layout({ children, currentPageName }) {
                 </>
               )}
 
-              {/* Profile link */}
-              <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
-                <Link to={createPageUrl(isJobSeeker ? "Profile" : "CompanyProfileCompletion")}>
-                  <User className="w-7 h-7 text-gray-700" />
-                </Link>
-              </Button>
-              <div className="h-6 w-px bg-white/50 mx-1"></div>
+              {/* Profile link - ONLY for Job Seeker */}
+              {isJobSeeker && (
+                <>
+                  <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
+                    <Link to={createPageUrl("Profile")}>
+                      <User className="w-7 h-7 text-gray-700" />
+                    </Link>
+                  </Button>
+                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+                </>
+              )}
 
               <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
                 <Link to={createPageUrl("Notifications")} className="flex items-center gap-2">
