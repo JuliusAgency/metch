@@ -1,0 +1,606 @@
+[
+    {
+        "id": "cpa",
+        "label": "רואה חשבון (CPA)"
+    },
+    {
+        "id": "pmp",
+        "label": "מנהל פרויקטים (PMP)"
+    },
+    {
+        "id": "aws_architect",
+        "label": "אדריכל ענן (AWS)"
+    },
+    {
+        "id": "google_analytics",
+        "label": "Google Analytics IQ"
+    },
+    {
+        "id": "mba",
+        "label": "תואר שני במנהל עסקים (MBA)"
+    },
+    {
+        "id": "bar_association",
+        "label": "רישיון עריכת דין (לשכת עורכי הדין)"
+    },
+    {
+        "id": "md",
+        "label": "דוקטור לרפואה (MD)"
+    },
+    {
+        "id": "rn",
+        "label": "אחות מוסמכת (RN)"
+    },
+    {
+        "id": "electrician",
+        "label": "חשמלאי מוסמך"
+    },
+    {
+        "id": "teaching_certificate",
+        "label": "תעודת הוראה"
+    },
+    {
+        "id": "real_estate_broker",
+        "label": "רישיון תיווך נדל\"ן"
+    },
+    {
+        "id": "investment_advisor",
+        "label": "יועץ השקעות מוסמך"
+    },
+    {
+        "id": "pension_advisor",
+        "label": "יועץ פנסיוני"
+    },
+    {
+        "id": "insurance_agent",
+        "label": "סוכן ביטוח"
+    },
+    {
+        "id": "cissp",
+        "label": "מומחה אבטחת מידע (CISSP)"
+    },
+    {
+        "id": "ceh",
+        "label": "האקר אתי מוסמך (CEH)"
+    },
+    {
+        "id": "ccna",
+        "label": "מוסמך רשתות סיסקו (CCNA)"
+    },
+    {
+        "id": "ccnp",
+        "label": "מקצוען רשתות סיסקו (CCNP)"
+    },
+    {
+        "id": "azure_fundamentals",
+        "label": "יסודות Microsoft Azure"
+    },
+    {
+        "id": "scrum_master",
+        "label": "Scrum Master מוסמך (CSM)"
+    },
+    {
+        "id": "product_owner",
+        "label": "Product Owner מוסמך (CSPO)"
+    },
+    {
+        "id": "six_sigma_green",
+        "label": "Six Sigma Green Belt"
+    },
+    {
+        "id": "six_sigma_black",
+        "label": "Six Sigma Black Belt"
+    },
+    {
+        "id": "qa",
+        "label": "בודק תוכנה (QA - ISTQB)"
+    },
+    {
+        "id": "fullstack_bootcamp",
+        "label": "בוגר בוטקמפ Full Stack"
+    },
+    {
+        "id": "data_science_bootcamp",
+        "label": "בוגר בוטקמפ Data Science"
+    },
+    {
+        "id": "ux_ui_design",
+        "label": "עיצוב UX/UI"
+    },
+    {
+        "id": "digital_marketing",
+        "label": "שיווק דיגיטלי"
+    },
+    {
+        "id": "seo",
+        "label": "קידום אתרים (SEO)"
+    },
+    {
+        "id": "ppc",
+        "label": "ניהול קמפיינים ממומנים (PPC)"
+    },
+    {
+        "id": "copywriting",
+        "label": "קופירייטינג וכתיבה שיווקית"
+    },
+    {
+        "id": "graphic_design",
+        "label": "עיצוב גרפי"
+    },
+    {
+        "id": "video_editing",
+        "label": "עריכת וידאו"
+    },
+    {
+        "id": "translation",
+        "label": "תרגום ועריכה לשונית"
+    },
+    {
+        "id": "tour_guide",
+        "label": "מורה דרך מוסמך"
+    },
+    {
+        "id": "fitness_instructor",
+        "label": "מדריך כושר"
+    },
+    {
+        "id": "nutritionist",
+        "label": "תזונאי קליני"
+    },
+    {
+        "id": "mediator",
+        "label": "מגשר מוסמך"
+    },
+    {
+        "id": "social_worker",
+        "label": "עובד סוציאלי (רישום בפנקס)"
+    },
+    {
+        "id": "psychologist",
+        "label": "פסיכולוג (רישום בפנקס)"
+    },
+    {
+        "id": "architect",
+        "label": "אדריכל רשוי"
+    },
+    {
+        "id": "interior_design",
+        "label": "עיצוב פנים"
+    },
+    {
+        "id": "civil_engineer",
+        "label": "מהנדס אזרחי"
+    },
+    {
+        "id": "safety_officer",
+        "label": "ממונה בטיחות"
+    },
+    {
+        "id": "forklift_license",
+        "label": "רישיון מלגזה"
+    },
+    {
+        "id": "truck_license",
+        "label": "רישיון משאית (C/E)"
+    },
+    {
+        "id": "security_guard",
+        "label": "מאבטח מוסמך"
+    },
+    {
+        "id": "first_aid",
+        "label": "מגיש עזרה ראשונה"
+    },
+    {
+        "id": "paramedic",
+        "label": "פרמדיק"
+    },
+    {
+        "id": "driving_instructor",
+        "label": "מורה נהיגה"
+    },
+    {
+        "id": "tax_advisor",
+        "label": "יועץ מס"
+    },
+    {
+        "id": "payroll_controller",
+        "label": "חשב שכר"
+    },
+    {
+        "id": "bookkeeper_1_2",
+        "label": "הנהלת חשבונות סוג 1+2"
+    },
+    {
+        "id": "bookkeeper_3",
+        "label": "הנהלת חשבונות סוג 3 (ראשי)"
+    },
+    {
+        "id": "cyber_analyst",
+        "label": "אנליסט סייבר (SOC)"
+    },
+    {
+        "id": "penetration_tester",
+        "label": "בודק חדירות (PT)"
+    },
+    {
+        "id": "devops_engineer",
+        "label": "DevOps Engineer"
+    },
+    {
+        "id": "kubernetes_admin",
+        "label": "Certified Kubernetes Administrator (CKA)"
+    },
+    {
+        "id": "docker_associate",
+        "label": "Docker Certified Associate"
+    },
+    {
+        "id": "linux_plus",
+        "label": "CompTIA Linux+"
+    },
+    {
+        "id": "security_plus",
+        "label": "CompTIA Security+"
+    },
+    {
+        "id": "network_plus",
+        "label": "CompTIA Network+"
+    },
+    {
+        "id": "itil",
+        "label": "ITIL Foundation"
+    },
+    {
+        "id": "prince2",
+        "label": "PRINCE2"
+    },
+    {
+        "id": "salesforce_admin",
+        "label": "Salesforce Administrator"
+    },
+    {
+        "id": "hubspot_inbound",
+        "label": "HubSpot Inbound Marketing"
+    },
+    {
+        "id": "facebook_blueprint",
+        "label": "Meta (Facebook) Blueprint"
+    },
+    {
+        "id": "google_ads_search",
+        "label": "Google Ads Search"
+    },
+    {
+        "id": "google_ads_display",
+        "label": "Google Ads Display"
+    },
+    {
+        "id": "hr_management",
+        "label": "ניהול משאבי אנוש"
+    },
+    {
+        "id": "recruitment",
+        "label": "גיוס והשמה"
+    },
+    {
+        "id": "training_development",
+        "label": "הדרכה ופיתוח ארגוני"
+    },
+    {
+        "id": "supply_chain",
+        "label": "ניהול שרשרת אספקה"
+    },
+    {
+        "id": "logistics_management",
+        "label": "ניהול לוגיסטיקה"
+    },
+    {
+        "id": "procurement",
+        "label": "ניהול רכש"
+    },
+    {
+        "id": "import_export",
+        "label": "ייבוא וייצוא"
+    },
+    {
+        "id": "customs_agent",
+        "label": "פקיד רישוי מכס (משלח בינ\"ל)"
+    },
+    {
+        "id": "event_production",
+        "label": "הפקת אירועים"
+    },
+    {
+        "id": "chef",
+        "label": "טבח/שף (סיווג מקצועי)"
+    },
+    {
+        "id": "confectioner",
+        "label": "קונדיטור"
+    },
+    {
+        "id": "wine_sommelier",
+        "label": "סומלייה (יין)"
+    },
+    {
+        "id": "barista",
+        "label": "בריסטה"
+    },
+    {
+        "id": "bartender",
+        "label": "ברמן"
+    },
+    {
+        "id": "lifeguard",
+        "label": "מציל ים/בריכה"
+    },
+    {
+        "id": "swimming_instructor",
+        "label": "מדריך שחייה"
+    },
+    {
+        "id": "pilates_instructor",
+        "label": "מדריך פילאטיס"
+    },
+    {
+        "id": "yoga_instructor",
+        "label": "מורה ליוגה"
+    },
+    {
+        "id": "cbt_therapist",
+        "label": "מטפל CBT"
+    },
+    {
+        "id": "nlp_master",
+        "label": "NLP Master"
+    },
+    {
+        "id": "coaching",
+        "label": "אימון אישי (Coaching)"
+    },
+    {
+        "id": "group_facilitator",
+        "label": "הנחיית קבוצות"
+    },
+    {
+        "id": "biomedical_engineer",
+        "label": "הנדסה ביו-רפואית"
+    },
+    {
+        "id": "clinical_trials",
+        "label": "ניטור ניסויים קליניים (CRA)"
+    },
+    {
+        "id": "pharmacy_tech",
+        "label": "עוזר רוקח"
+    },
+    {
+        "id": "dental_hygienist",
+        "label": "שיננית"
+    },
+    {
+        "id": "dental_assistant",
+        "label": "סייע/ת רופא שיניים"
+    },
+    {
+        "id": "medical_secretary",
+        "label": "מזכירה רפואית"
+    },
+    {
+        "id": "legal_secretary",
+        "label": "מזכירה משפטית"
+    },
+    {
+        "id": "office_manager",
+        "label": "ניהול משרד בכיר"
+    },
+    {
+        "id": "sap_fi",
+        "label": "מיישם SAP FI"
+    },
+    {
+        "id": "sap_mm",
+        "label": "מיישם SAP MM"
+    },
+    {
+        "id": "oracle_dba",
+        "label": "Oracle DBA"
+    },
+    {
+        "id": "sql_server_dba",
+        "label": "SQL Server DBA"
+    },
+    {
+        "id": "java_developer",
+        "label": "Oracle Certified Professional: Java"
+    },
+    {
+        "id": "python_cert",
+        "label": "Python Institute Certified"
+    },
+    {
+        "id": "c_sharp_cert",
+        "label": "Microsoft Certified: C#"
+    },
+    {
+        "id": "unity_dev",
+        "label": "Unity Certified Developer"
+    },
+    {
+        "id": "unreal_engine",
+        "label": "Unreal Engine Certified"
+    },
+    {
+        "id": "photoshop",
+        "label": "Adobe Certified: Photoshop"
+    },
+    {
+        "id": "illustrator",
+        "label": "Adobe Certified: Illustrator"
+    },
+    {
+        "id": "premiere",
+        "label": "Adobe Certified: Premiere Pro"
+    },
+    {
+        "id": "after_effects",
+        "label": "Adobe Certified: After Effects"
+    },
+    {
+        "id": "sound_engineering",
+        "label": "הנדסת סאונד/קול"
+    },
+    {
+        "id": "lighting_design",
+        "label": "עיצוב תאורה"
+    },
+    {
+        "id": "makeup_artist",
+        "label": "איפור מקצועי"
+    },
+    {
+        "id": "hair_stylist",
+        "label": "עיצוב שיער"
+    },
+    {
+        "id": "cosmetician",
+        "label": "קוסמטיקה פרא-רפואית"
+    },
+    {
+        "id": "pedicure_manicure",
+        "label": "פדיקור/מניקור ומבנאות ציפורניים"
+    },
+    {
+        "id": "massage_therapist",
+        "label": "עיסוי רפואי/הוליסטי"
+    },
+    {
+        "id": "reiki_master",
+        "label": "רייקי מאסטר"
+    },
+    {
+        "id": "acupuncture",
+        "label": "דיקור סיני"
+    },
+    {
+        "id": "naturopathy",
+        "label": "נתורופתיה"
+    },
+    {
+        "id": "reflexology",
+        "label": "רפלקסולוגיה"
+    },
+    {
+        "id": "homeopathy",
+        "label": "הומאופתיה"
+    },
+    {
+        "id": "veterinary_assistant",
+        "label": "עוזר וטרינר"
+    },
+    {
+        "id": "dog_trainer",
+        "label": "מאלף כלבים"
+    },
+    {
+        "id": "agronomist",
+        "label": "אגרונום"
+    },
+    {
+        "id": "landscape_architect",
+        "label": "אדריכל נוף"
+    },
+    {
+        "id": "gardener",
+        "label": "גנן סוג 2/3"
+    },
+    {
+        "id": "pest_control",
+        "label": "מדביר מוסמך"
+    },
+    {
+        "id": "locksmith",
+        "label": "מנעולן"
+    },
+    {
+        "id": "plumber",
+        "label": "אינסטלטור (שרברב)"
+    },
+    {
+        "id": "ac_technician",
+        "label": "טכנאי מיזוג אוויר"
+    },
+    {
+        "id": "gas_technician",
+        "label": "טכנאי גז"
+    },
+    {
+        "id": "fire_safety",
+        "label": "נאמן בטיחות אש"
+    },
+    {
+        "id": "work_at_height",
+        "label": "עבודה בגובה"
+    },
+    {
+        "id": "crane_operator",
+        "label": "מנופאי (עגורן)"
+    },
+    {
+        "id": "welder",
+        "label": "רתך מוסמך"
+    },
+    {
+        "id": "cnc_operator",
+        "label": "כוון/מפעיל CNC"
+    },
+    {
+        "id": "qa_inspector",
+        "label": "ביקורת איכות (תעשייה)"
+    },
+    {
+        "id": "aviation_mechanic",
+        "label": "מכונאי מטוסים"
+    },
+    {
+        "id": "drone_pilot",
+        "label": "מפעיל רחפן (רישיון רת\"א)"
+    },
+    {
+        "id": "skipper",
+        "label": "משיט יאכטה (סקיפר)"
+    },
+    {
+        "id": "diver_master",
+        "label": "צוללן (Divemaster)"
+    },
+    {
+        "id": "insurance_underwriter",
+        "label": "חתם ביטוח"
+    },
+    {
+        "id": "actuary",
+        "label": "אקטואר"
+    },
+    {
+        "id": "economist",
+        "label": "כלכלן"
+    },
+    {
+        "id": "statistician",
+        "label": "סטטיסטיקאי"
+    },
+    {
+        "id": "archivist",
+        "label": "ארכיונאי"
+    },
+    {
+        "id": "librarian",
+        "label": "מידען/ספרן"
+    },
+    {
+        "id": "other",
+        "label": "אחר (נא לפרט בהערות)"
+    }
+]

@@ -1,28 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Check, ChevronsUpDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import certificationsList from '@/data/certifications.json';
 
-const PillSelect = ({ name, placeholder, value, onValueChange, children }) => (
-    <Select name={name} value={value} onValueChange={onValueChange}>
-        <SelectTrigger className="flex items-center justify-between border py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400">
-            <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-            {children}
-        </SelectContent>
-    </Select>
-);
-
-const CERTIFICATION_LABELS = {
-    cpa: "רואה חשבון (CPA)",
-    pmp: "מנהל פרויקטים (PMP)",
-    aws_architect: "אדריכל ענן (AWS)",
-    google_analytics: "Google Analytics IQ",
-    other: "אחר (נא לפרט בהערות)",
-};
+const CERTIFICATION_LABELS = certificationsList.reduce((acc, curr) => {
+    acc[curr.id] = curr.label;
+    return acc;
+}, {});
 
 const newCertificationItem = () => ({
     id: `cert_${Date.now()}_${Math.random()}`,
@@ -33,6 +33,7 @@ const newCertificationItem = () => ({
 
 export default function Step4_Certifications({ data, setData, onDirtyChange }) {
     const [currentItem, setCurrentItem] = useState(newCertificationItem());
+    const [open, setOpen] = useState(false);
 
     const deriveType = (item) => {
         if (!item) return '';
@@ -47,7 +48,9 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
         setCurrentItem(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleTypeChange = (value) => {
+    const handleTypeSelect = (currentValue) => {
+        const value = currentValue; // The value from CommandItem should be the ID
+
         setCurrentItem(prev => ({
             ...prev,
             type: value,
@@ -55,6 +58,7 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
                 ? (prev.type === 'other' ? prev.name : '')
                 : value
         }));
+        setOpen(false);
     };
 
     const handleSave = () => {
@@ -65,6 +69,9 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
         const isOther = selectedType === 'other';
         const trimmedNotes = currentItem.notes?.trim() || '';
 
+        // Verification logic for 'other' - description/notes is required?
+        // User requested: "Don't change logic in case user chooses other and then what he enters in description is what appears at the end"
+        // In existing logic: if (isOther && !trimmedNotes) return;
         if (isOther && !trimmedNotes) return;
 
         const itemToSave = {
@@ -88,7 +95,10 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
     };
 
     const handleSelectItem = (itemToSelect) => {
+        // First save current if valid? The original logic called handleSave() which might save incomplete data or just return.
+        // The original logic: handleSave(); then select new. This implies auto-save of current before switching.
         handleSave();
+
         const derivedType = deriveType(itemToSelect);
         setCurrentItem({ ...itemToSelect, type: derivedType });
     };
@@ -106,6 +116,7 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
         const type = deriveType(item);
 
         if (type === 'other') {
+            // Logic from original file to display name for custom items
             if (item.name && item.name !== 'other' && !CERTIFICATION_LABELS[item.name]) {
                 return item.name;
             }
@@ -125,6 +136,8 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
         }
     }, [currentItem, onDirtyChange]);
 
+    const currentType = deriveType(currentItem);
+
     return (
         <div className="max-w-4xl mx-auto text-center" dir="rtl">
             <h2 className="text-3xl font-bold text-gray-900 mb-3">הסמכות מקצועיות ורישיונות</h2>
@@ -132,17 +145,47 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
 
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <PillSelect
-                        name="name"
-                        placeholder="בחר הסמכה"
-                        value={deriveType(currentItem) || ''}
-                        onValueChange={handleTypeChange}>
-                        <SelectItem value="cpa">{CERTIFICATION_LABELS.cpa}</SelectItem>
-                        <SelectItem value="pmp">{CERTIFICATION_LABELS.pmp}</SelectItem>
-                        <SelectItem value="aws_architect">{CERTIFICATION_LABELS.aws_architect}</SelectItem>
-                        <SelectItem value="google_analytics">{CERTIFICATION_LABELS.google_analytics}</SelectItem>
-                        <SelectItem value="other">{CERTIFICATION_LABELS.other}</SelectItem>
-                    </PillSelect>
+                    <Popover open={open} onOpenChange={setOpen}>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={open}
+                                className="w-full justify-between h-12 bg-white border-gray-200 rounded-full px-6 text-right shadow-sm hover:bg-white text-gray-700 font-normal"
+                            >
+                                {currentType
+                                    ? CERTIFICATION_LABELS[currentType]
+                                    : "בחר הסמכה..."}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[400px] p-0" align="start" dir="rtl">
+                            <Command>
+                                <CommandInput placeholder="חפש הסמכה..." className="text-right" />
+                                <CommandList>
+                                    <CommandEmpty>לא נמצאה הסמכה.</CommandEmpty>
+                                    <CommandGroup className="max-h-[300px] overflow-y-auto">
+                                        {certificationsList.map((cert) => (
+                                            <CommandItem
+                                                key={cert.id}
+                                                value={cert.label} // Filtering is usually done on value and keywords.
+                                                onSelect={() => handleTypeSelect(cert.id)}
+                                                className="text-right flex justify-between cursor-pointer"
+                                            >
+                                                <Check
+                                                    className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        currentType === cert.id ? "opacity-100" : "opacity-0"
+                                                    )}
+                                                />
+                                                {cert.label}
+                                            </CommandItem>
+                                        ))}
+                                    </CommandGroup>
+                                </CommandList>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
                 </div>
                 <Textarea
                     name="notes"
