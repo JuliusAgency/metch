@@ -11,12 +11,13 @@ import Step1Details from '@/components/job_creation/Step1Details';
 import Step2Screening from '@/components/job_creation/Step2Screening';
 import Step3Company from '@/components/job_creation/Step3Company';
 import Step4Packages from '@/components/job_creation/Step4Packages';
+// Removed Step4Packages import
 import Step5Preview from '@/components/job_creation/Step5Preview';
 import Success from '@/components/job_creation/Success';
 import { EmployerAnalytics } from "@/components/EmployerAnalytics"; // Added EmployerAnalytics import
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 
-const STEPS = ["פרטי המשרה", "פרטי החברה", "שאלון סינון", "חבילות", "תצוגה מקדימה"];
+const STEPS = ["פרטי המשרה", "פרטי החברה", "שאלון סינון", "תצוגה מקדימה"]; // Removed "חבילות"
 
 const initialJobData = {
   title: "",
@@ -179,8 +180,7 @@ export default function CreateJob() {
       case 1: return <Step1Details jobData={jobData} setJobData={setJobData} />;
       case 2: return <Step3Company jobData={jobData} setJobData={setJobData} />;
       case 3: return <Step2Screening jobData={jobData} setJobData={setJobData} onSave={() => setIsScreeningSaved(true)} />;
-      case 4: return <Step4Packages />;
-      case 5: return <Step5Preview jobData={jobData} setJobData={setJobData} />;
+      case 4: return <Step5Preview jobData={jobData} setJobData={setJobData} />;
       default: return <Step1Details jobData={jobData} setJobData={setJobData} />;
     }
   };
