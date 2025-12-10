@@ -19,8 +19,25 @@ import {
   AlertTriangle,
   LogOut,
   Lock,
-  Users
+  Users,
+  Check,
+  ChevronsUpDown
 } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import locationsList from "../../locations.json";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -45,6 +62,7 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [openLocation, setOpenLocation] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const { signOut } = useUser();
@@ -378,15 +396,50 @@ export default function Settings() {
                     {/* Place of Residence */}
                     <div className="space-y-1">
                       <div className="relative">
-                        <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <Input
-                          placeholder="מקום מגורים"
-                          value={formData.place_of_residence}
-                          onChange={(e) => handleInputChange('place_of_residence', e.target.value)}
-                          required
-                          className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                          dir="rtl"
-                        />
+                        <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
+                        <Popover open={openLocation} onOpenChange={setOpenLocation}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={openLocation}
+                              className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400 justify-between font-normal hover:bg-white text-base"
+                              dir="rtl"
+                            >
+                              {formData.place_of_residence || "מקום מגורים"}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50 absolute left-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[300px] md:w-[400px] p-0" align="start" dir="rtl">
+                            <Command>
+                              <CommandInput placeholder="חפש עיר..." className="text-right gap-2" />
+                              <CommandList>
+                                <CommandEmpty>לא נמצאה עיר.</CommandEmpty>
+                                <CommandGroup className="max-h-[300px] overflow-y-auto">
+                                  {locationsList.map((loc) => (
+                                    <CommandItem
+                                      key={loc}
+                                      value={loc}
+                                      onSelect={(currentValue) => {
+                                        handleInputChange('place_of_residence', currentValue);
+                                        setOpenLocation(false);
+                                      }}
+                                      className="text-right flex justify-between cursor-pointer"
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "h-4 w-4 ml-2",
+                                          formData.place_of_residence === loc ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {loc}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       {errors.place_of_residence && (
                         <p className="text-red-500 text-sm text-right">{errors.place_of_residence}</p>

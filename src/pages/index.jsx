@@ -62,8 +62,6 @@ import EmailConfirmed from "./EmailConfirmed";
 import UserTypeSelection from "./UserTypeSelection";
 
 import Statistics from "./Statistics";
-
-
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
@@ -129,6 +127,7 @@ const PAGES = {
     UserTypeSelection: UserTypeSelection,
 
     Statistics: Statistics,
+
 
 }
 

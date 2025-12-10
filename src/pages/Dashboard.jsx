@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { Job, JobView, Notification, UserProfile, CandidateView } from "@/api/entities";
@@ -32,6 +32,7 @@ import EmployerStatsCard from "@/components/employer/EmployerStatsCard";
 import EmployerActivityFeed from "@/components/employer/EmployerActivityFeed";
 import JobSeekerGuide from "@/components/guides/JobSeekerGuide";
 import EmployerGuide from "@/components/guides/EmployerGuide";
+import CareerStageModal from "@/components/dashboard/CareerStageModal";
 import { calculate_match_score } from "@/utils/matchScore";
 
 // --- JOB SEEKER DASHBOARD COMPONENT (New) ---
@@ -45,6 +46,8 @@ const JobSeekerDashboard = ({ user }) => {
   const [showGuide, setShowGuide] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [userStats, setUserStats] = useState(null);
+  const [showCareerModal, setShowCareerModal] = useState(false);
+  const navigate = useNavigate();
 
   // Check if user needs onboarding guide
   useEffect(() => {
@@ -59,6 +62,19 @@ const JobSeekerDashboard = ({ user }) => {
     if (user?.email) {
       localStorage.setItem(`jobseeker_guide_${user.email}`, 'completed');
     }
+    // Check if user has already selected a career stage/preference to determine if we show the modal
+    // For now we assume we always show it if the guide was just completed or skipped
+    // But since the requirement is to show it after onboarding, we trigger it here.
+
+    // We only show if they haven't set it yet. 
+    if (!user.career_stage) {
+      setShowCareerModal(true);
+    }
+  };
+
+  const handleCareerStageComplete = () => {
+    setShowCareerModal(false);
+    navigate('/CVGenerator');
   };
 
   const handleGuideSkip = () => {
@@ -312,6 +328,11 @@ const JobSeekerDashboard = ({ user }) => {
         isActive={showGuide}
         onComplete={handleGuideComplete}
         onSkip={handleGuideSkip}
+      />
+
+      <CareerStageModal
+        isOpen={showCareerModal}
+        onComplete={handleCareerStageComplete}
       />
     </>
   );

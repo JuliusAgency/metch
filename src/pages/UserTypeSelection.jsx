@@ -50,7 +50,7 @@ const UserTypeSelection = () => {
 
       // Navigate based on user type
       if (userType === 'job_seeker') {
-        navigate('/CVGenerator');
+        navigate('/Dashboard');
       } else {
         navigate('/CompanyProfileCompletion');
       }
@@ -102,8 +102,8 @@ const UserTypeSelection = () => {
                   onClick={() => handleTypeSelection('job_seeker')}
                   disabled={loading}
                   className={`bg-[#2987cd] border-[1.227px] border-solid border-white box-border flex gap-[12px] h-[65px] items-center justify-center p-[17px] relative rounded-[74px] w-full transition-all duration-200 ${selectedType === 'job_seeker'
-                      ? 'bg-[#2987cd]'
-                      : 'bg-[#2987cd] hover:bg-[#1f6ba8]'
+                    ? 'bg-[#2987cd]'
+                    : 'bg-[#2987cd] hover:bg-[#1f6ba8]'
                     } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <p className="font-['Rubik:Bold',_sans-serif] font-bold leading-[normal] text-[26px] text-center text-white">
@@ -114,8 +114,8 @@ const UserTypeSelection = () => {
                   onClick={() => handleTypeSelection('employer')}
                   disabled={loading}
                   className={`bg-white border-[1.227px] border-[#d9d9d9] border-solid box-border flex gap-[12px] h-[65px] items-center justify-center p-[17px] relative rounded-[74px] w-full transition-all duration-200 ${selectedType === 'employer'
-                      ? 'bg-[#2987cd] border-white'
-                      : 'bg-white border-[#d9d9d9] hover:bg-[#f5f5f5]'
+                    ? 'bg-[#2987cd] border-white'
+                    : 'bg-white border-[#d9d9d9] hover:bg-[#f5f5f5]'
                     } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <p className={`font-['Rubik:Regular',_sans-serif] font-normal leading-[normal] text-[26px] text-center ${selectedType === 'employer' ? 'text-white' : 'text-[#162b6b]'
@@ -234,8 +234,8 @@ const UserTypeSelection = () => {
             onClick={() => handleTypeSelection('job_seeker')}
             disabled={loading}
             className={`border border-solid border-white box-border flex gap-[10px] sm:gap-[11px] h-[53px] sm:h-[60px] items-center justify-center p-[14px] sm:p-[16px] relative rounded-[60px] sm:rounded-[68px] w-full transition-all duration-200 ${selectedType === 'job_seeker'
-                ? 'bg-[#2987cd]'
-                : 'bg-[#2987cd] hover:bg-[#1f6ba8]'
+              ? 'bg-[#2987cd]'
+              : 'bg-[#2987cd] hover:bg-[#1f6ba8]'
               } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           >
             <p className="font-bold text-[22px] sm:text-[25px] text-center text-white">
@@ -246,8 +246,8 @@ const UserTypeSelection = () => {
             onClick={() => handleTypeSelection('employer')}
             disabled={loading}
             className={`border border-[#d9d9d9] border-solid box-border flex gap-[10px] sm:gap-[11px] h-[53px] sm:h-[60px] items-center justify-center p-[14px] sm:p-[16px] relative rounded-[60px] sm:rounded-[68px] w-full transition-all duration-200 ${selectedType === 'employer'
-                ? 'bg-[#2987cd] border-white'
-                : 'bg-white border-[#d9d9d9] hover:bg-[#f5f5f5]'
+              ? 'bg-[#2987cd] border-white'
+              : 'bg-white border-[#d9d9d9] hover:bg-[#f5f5f5]'
               } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           >
             <p className={`font-normal text-[22px] sm:text-[25px] text-center ${selectedType === 'employer' ? 'text-white' : 'text-[#162b6b]'
