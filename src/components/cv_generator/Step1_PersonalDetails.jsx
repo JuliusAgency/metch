@@ -2,6 +2,22 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Check, ChevronsUpDown } from 'lucide-react';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import locationsList from '../../../locations.json';
 
 const PillInput = ({ name, placeholder, value, onChange, type = "text", ...props }) => (
   <Input
@@ -53,6 +69,8 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     gender: ''
   });
 
+  const [openLocation, setOpenLocation] = useState(false);
+
   const notifyValidity = useCallback((formState) => {
     onValidityChange(isFormComplete(formState));
   }, [onValidityChange]);
@@ -64,11 +82,14 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
 
+    const savedAddress = data?.address || user?.preferred_location || '';
+    const isValidAddress = locationsList.includes(savedAddress);
+
     const initialState = {
       firstName: firstName,
       lastName: lastName,
       phone: data?.phone || user?.phone || '',
-      address: data?.address || user?.preferred_location || '',
+      address: isValidAddress ? savedAddress : '',
       birthDate: getBirthDateValue(data) || '',
       gender: data?.gender || '',
     };
@@ -101,6 +122,15 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     setLocalData(prev => {
       const updatedLocal = { ...prev, [name]: nextValue };
       updateParentData(name, nextValue, updatedLocal);
+      notifyValidity(updatedLocal);
+      return updatedLocal;
+    });
+  };
+
+  const handleLocationChange = (value) => {
+    setLocalData(prev => {
+      const updatedLocal = { ...prev, address: value };
+      updateParentData('address', value, updatedLocal);
       notifyValidity(updatedLocal);
       return updatedLocal;
     });
@@ -146,7 +176,50 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
           <SelectItem value="female">נקבה</SelectItem>
           <SelectItem value="other">אחר</SelectItem>
         </PillSelect>
-        <PillInput name="address" placeholder="מקום מגורים" value={localData.address} onChange={handleInputChange} />
+
+        <Popover open={openLocation} onOpenChange={setOpenLocation}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={openLocation}
+              className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400 justify-between font-normal hover:bg-white"
+            >
+              {localData.address || "מקום מגורים"}
+              <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50 absolute left-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[300px] p-0" align="start" dir="rtl">
+            <Command>
+              <CommandInput placeholder="חפש עיר..." className="text-right gap-2" />
+              <CommandList>
+                <CommandEmpty>לא נמצאה עיר.</CommandEmpty>
+                <CommandGroup className="max-h-[300px] overflow-y-auto">
+                  {locationsList.map((loc) => (
+                    <CommandItem
+                      key={loc}
+                      value={loc}
+                      onSelect={(currentValue) => {
+                        handleLocationChange(currentValue);
+                        setOpenLocation(false);
+                      }}
+                      className="text-right flex justify-between cursor-pointer"
+                    >
+                      <Check
+                        className={cn(
+                          "h-4 w-4",
+                          localData.address === loc ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {loc}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+
         <PillInput
           name="birthDate"
           placeholder="תאריך לידה"

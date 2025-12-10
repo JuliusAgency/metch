@@ -2,8 +2,23 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Check, ChevronsUpDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import locationsList from '../../../locations.json';
 
 const PillInput = ({ name, placeholder, value, onChange, type = "text", onFocus, onBlur, ...rest }) =>
   <Input
@@ -71,6 +86,12 @@ export default function Step2_WorkExperience({ data, setData, onDirtyChange }) {
     }
   };
 
+  const [openLocation, setOpenLocation] = useState(false);
+
+  const handleLocationChange = (value) => {
+    setCurrentItem((prev) => ({ ...prev, location: value }));
+  };
+
   const checkDirty = (item) => {
     return !!(item.title || item.company || item.location || item.start_date || item.end_date || item.description);
   };
@@ -90,7 +111,49 @@ export default function Step2_WorkExperience({ data, setData, onDirtyChange }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <PillInput name="title" placeholder="תפקיד" value={currentItem.title} onChange={handleInputChange} />
           <PillInput name="company" placeholder="שם חברה" value={currentItem.company} onChange={handleInputChange} />
-          <PillInput name="location" placeholder="מיקום" value={currentItem.location} onChange={handleInputChange} />
+
+          <Popover open={openLocation} onOpenChange={setOpenLocation}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={openLocation}
+                className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400 justify-between font-normal hover:bg-white"
+              >
+                {currentItem.location || "מיקום"}
+                <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50 absolute left-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[300px] p-0" align="start" dir="rtl">
+              <Command>
+                <CommandInput placeholder="חפש עיר..." className="text-right gap-2" />
+                <CommandList>
+                  <CommandEmpty>לא נמצאה עיר.</CommandEmpty>
+                  <CommandGroup className="max-h-[300px] overflow-y-auto">
+                    {locationsList.map((loc) => (
+                      <CommandItem
+                        key={loc}
+                        value={loc}
+                        onSelect={(currentValue) => {
+                          handleLocationChange(currentValue);
+                          setOpenLocation(false);
+                        }}
+                        className="text-right flex justify-between cursor-pointer"
+                      >
+                        <Check
+                          className={cn(
+                            "h-4 w-4",
+                            currentItem.location === loc ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {loc}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <PillInput type="text" name="start_date" placeholder="תאריך התחלה" value={currentItem.start_date} onChange={handleInputChange} onFocus={(e) => e.target.type = 'date'} onBlur={(e) => e.target.type = 'text'} min={minDate} max={today} />
