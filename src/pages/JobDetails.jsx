@@ -8,7 +8,7 @@ import { User } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Edit, StopCircle, PlayCircle, Users, Eye, ArrowRight, Save, X, RotateCcw, Copy, Share2, ClipboardList, Clock, MapPin, DollarSign, Calendar as CalendarIcon, Play, FileText, ChevronLeft } from "lucide-react";
+import { Trash2, Edit, StopCircle, PlayCircle, Users, Eye, ArrowRight, Save, X, RotateCcw, Copy, Share2, ClipboardList, Clock, MapPin, DollarSign, Calendar as CalendarIcon, Play, FileText, ChevronLeft, Building2, Pause, BarChart3 } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
@@ -119,12 +119,6 @@ export default function JobDetails() {
           <div className="relative">
             <JobHeader />
             <CardContent className="p-4 sm:p-6 md:p-8 -mt-6 relative z-10">
-              <Link
-                to={createPageUrl("JobManagement")}
-                className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-10"
-              >
-                <ChevronLeft className="w-6 h-6 text-gray-800 rotate-180" />
-              </Link>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
