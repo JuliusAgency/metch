@@ -12,6 +12,7 @@ import Step6Summary from '@/components/cv_generator/Step6_Summary';
 import Step7Preview from '@/components/cv_generator/Step7_Preview';
 import UploadCV from '@/components/cv_generator/UploadCV';
 import { Button } from '@/components/ui/button';
+import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft, ArrowRight, Loader2, Sparkles, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -216,6 +217,8 @@ export default function CVGenerator() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty]);
 
+  const { toast } = useToast();
+
   const handleNext = async () => {
     if (step === 0) {
       if (choice === 'upload') {
@@ -242,7 +245,11 @@ export default function CVGenerator() {
 
       if (!userEmail) {
         console.error("Cannot save CV: user email is not available");
-        alert("Unable to save CV. Please refresh the page and try again.");
+        toast({
+          title: "שגיאה בשמירה",
+          description: "לא ניתן לשמור את קורות החיים: אימייל משתמש חסר. נא לרענן את הדף.",
+          variant: "destructive"
+        });
         setSaving(false);
         return;
       }
@@ -255,21 +262,39 @@ export default function CVGenerator() {
         setCvId(savedCv.id);
       }
       console.log("Saved CV data:", savedCv);
+
+      // If this is the last step, navigate to Profile
+      if (step === STEPS.length) {
+        toast({
+          title: "קורות החיים נשמרו בהצלחה",
+          description: "הועברת לדף הפרופיל שלך לצפייה ועריכה."
+        });
+
+        if (userEmail) {
+          localStorage.removeItem(`cv_draft_${userEmail}`);
+        }
+
+        // Small delay to let the toast be seen/state update
+        setTimeout(() => {
+          navigate('/Profile');
+        }, 500);
+        return;
+      }
+
+      // If not last step, just save and move fast
+      if (step < STEPS.length) {
+        setStep((prev) => prev + 1);
+      }
+
     } catch (error) {
       console.error("Error saving CV:", error);
+      toast({
+        title: "שגיאה בשמירה",
+        description: "אירעה שגיאה בעת שמירת השינויים. אנא נסה שוב.",
+        variant: "destructive"
+      });
     } finally {
       setSaving(false);
-    }
-
-    if (step < STEPS.length) {
-      setStep((prev) => prev + 1);
-    } else {
-      // Clear draft on completion
-      if (userEmail) {
-        localStorage.removeItem(`cv_draft_${userEmail}`);
-      }
-      // Last step, navigate to profile or dashboard
-      navigate(createPageUrl('Profile'));
     }
   };
 

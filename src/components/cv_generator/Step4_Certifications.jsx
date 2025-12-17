@@ -49,14 +49,15 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
     };
 
     const handleTypeSelect = (currentValue) => {
-        const value = currentValue; // The value from CommandItem should be the ID
+        const value = currentValue; // The value from CommandItem should be the ID/Label key
+
+        // Find label if possible
+        const label = CERTIFICATION_LABELS[value] || value;
 
         setCurrentItem(prev => ({
             ...prev,
             type: value,
-            name: value === 'other'
-                ? (prev.type === 'other' ? prev.name : '')
-                : value
+            name: value === 'other' ? '' : label
         }));
         setOpen(false);
     };
@@ -64,20 +65,26 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
     const handleSave = () => {
         const selectedType = deriveType(currentItem);
 
-        if (!selectedType) return;
+        // Basic validation
+        if (!selectedType && !currentItem.name && !currentItem.notes) return;
 
-        const isOther = selectedType === 'other';
+        // If "Other" is selected, we might want the name to be "Other" or blank, 
+        // but the preview uses "name". 
+        // If the user typed notes but not a name (for "Other"), we can use notes as name or "Certification"
+
+        let finalName = currentItem.name;
+        if (selectedType === 'other' || !finalName) {
+            finalName = currentItem.name || "הסמכה נוספת";
+        }
+
+        // Ensure we save the notes!
         const trimmedNotes = currentItem.notes?.trim() || '';
-
-        // Verification logic for 'other' - description/notes is required?
-        // User requested: "Don't change logic in case user chooses other and then what he enters in description is what appears at the end"
-        // In existing logic: if (isOther && !trimmedNotes) return;
-        if (isOther && !trimmedNotes) return;
 
         const itemToSave = {
             ...currentItem,
-            type: selectedType,
-            name: isOther ? trimmedNotes : selectedType
+            type: selectedType || 'other',
+            name: finalName,
+            notes: trimmedNotes
         };
 
         const existingItemIndex = (data || []).findIndex(item => item.id === currentItem.id);
