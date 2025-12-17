@@ -20,7 +20,7 @@ function genId() {
 
 const toastTimeouts = new Map();
 
-const addToRemoveQueue = (toastId) => {
+const addToRemoveQueue = (toastId, delay = TOAST_REMOVE_DELAY) => {
   if (toastTimeouts.has(toastId)) {
     return;
   }
@@ -31,7 +31,7 @@ const addToRemoveQueue = (toastId) => {
       type: actionTypes.REMOVE_TOAST,
       toastId,
     });
-  }, TOAST_REMOVE_DELAY);
+  }, delay);
 
   toastTimeouts.set(toastId, timeout);
 };
@@ -66,18 +66,13 @@ export const reducer = (state, action) => {
       // ! Side effects ! - This could be extracted into a dismissToast() action,
       // but I'll keep it here for simplicity
       if (toastId) {
-        // Clear any existing timeout for this toast
-        clearFromRemoveQueue(toastId);
         // Add to remove queue after animation completes
         setTimeout(() => {
-          addToRemoveQueue(toastId);
+          addToRemoveQueue(toastId, 0);
         }, 300); // Give time for animation
       } else {
         state.toasts.forEach((toast) => {
-          clearFromRemoveQueue(toast.id);
-          setTimeout(() => {
-            addToRemoveQueue(toast.id);
-          }, 300);
+          addToRemoveQueue(toast.id, 0);
         });
       }
 
@@ -86,9 +81,9 @@ export const reducer = (state, action) => {
         toasts: state.toasts.map((t) =>
           t.id === toastId || toastId === undefined
             ? {
-                ...t,
-                open: false,
-              }
+              ...t,
+              open: false,
+            }
             : t
         ),
       };
@@ -129,6 +124,12 @@ function toast({ ...props }) {
 
   const dismiss = () =>
     dispatch({ type: actionTypes.DISMISS_TOAST, toastId: id });
+
+  // Auto-dismiss logic
+  const duration = props.duration || 5000;
+  setTimeout(() => {
+    dismiss();
+  }, duration);
 
   dispatch({
     type: actionTypes.ADD_TOAST,

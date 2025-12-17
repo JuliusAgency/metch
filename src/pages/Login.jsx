@@ -202,7 +202,7 @@ const Login = () => {
           {/* Register Link */}
           <div className="text-center" data-node-id="418:1585">
             <p className="text-[#32343d] text-base" dir="auto">
-              <span className="font-['Rubik:Regular',_sans-serif]">כבר רשומים? </span>
+              <span className="font-['Rubik:Regular',_sans-serif]">אין לכם חשבון? </span>
               <Link to="/Register" className="font-['Rubik:Bold',_sans-serif] font-bold text-[#2987cd] hover:underline">
                 הרשמו
               </Link>
