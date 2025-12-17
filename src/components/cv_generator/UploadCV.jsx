@@ -48,7 +48,7 @@ export default function UploadCV({ user, onUploadComplete }) {
             const cvMetadata = {
                 user_email: userEmail,
                 file_name: file.name,
-                file_size_kb: Math.round(file.size / 1024),
+                file_size_kb: String(Math.round(file.size / 1024)),
                 last_modified: new Date().toISOString(),
             };
 

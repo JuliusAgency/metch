@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2, LogOut } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { CV } from '@/api/entities';
@@ -15,6 +16,7 @@ import { useRequireUserType } from '@/hooks/use-require-user-type';
 
 export default function Profile() {
   useRequireUserType(); // Ensure user has selected a user type
+  const { toast } = useToast();
   const [cvData, setCvData] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -63,18 +65,68 @@ export default function Profile() {
     }
   };
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
-    if (file) {
-      console.log("File selected:", file.name);
-      // In a real scenario, you'd upload the file and then save its metadata.
-      // For now, we simulate this by updating the state.
-      setCvData({
-        ...cvData,
+    if (!file) return;
+
+    setLoading(true);
+    try {
+      // 1. Upload file
+      // Sanitize filename to avoid "Invalid key" errors with special characters
+      const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const { publicUrl, file_url } = await import('@/api/integrations').then(m => m.UploadFile({
+        file,
+        bucket: 'public-files',
+        path: `${Date.now()}-${cleanFileName}`
+      }));
+
+      const resumeUrl = publicUrl || file_url;
+
+      // 2. Update User entity
+      await UserEntity.updateMyUserData({ resume_url: resumeUrl });
+
+      // 3. Update CV entity
+      const existingCvs = await CV.filter({ user_email: user.email });
+      const cvMetadata = {
+        user_email: user.email,
         file_name: file.name,
+        file_size_kb: String(Math.round(file.size / 1024)),
         last_modified: new Date().toISOString(),
+      };
+
+      let updatedCv;
+      if (existingCvs.length > 0) {
+        updatedCv = await CV.update(existingCvs[0].id, cvMetadata);
+      } else {
+        updatedCv = await CV.create(cvMetadata);
+      }
+
+      // 4. Update local state
+      setCvData({
+        ...updatedCv,
+        file_name: file.name,
         file_size_kb: Math.round(file.size / 1024),
+        last_modified: new Date().toISOString(),
       });
+
+      toast({
+        title: "קובץ הועלה בהצלחה",
+        description: "קורות החיים שלך עודכנו במערכת",
+      });
+
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast({
+        title: "שגיאה בהעלאת הקובץ",
+        description: error.message.includes("Bucket not found")
+          ? "שגיאת מערכת: באקט האחסון לא קיים. אנא פנה לתמיכה."
+          : error.message.includes("row-level security policy")
+            ? "שגיאת הרשאה: אין לך הרשאה להעלות קבצים. אנא וודא שהוגדרה מדיניות (Policy) מתאימה ב-Supabase Storage."
+            : "אירעה שגיאה בעת העלאת הקובץ. אנא נסה שנית.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -123,7 +175,7 @@ export default function Profile() {
           <Link to={createPageUrl('CVGenerator')} className="flex items-center gap-1 text-gray-600 hover:text-blue-600">
             <Edit className="w-4 h-4" /> ערוך קובץ
           </Link>
-          <button onClick={() => navigate(createPageUrl('CVGenerator'))} className="flex items-center gap-1 text-gray-600 hover:text-blue-600">
+          <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1 text-gray-600 hover:text-blue-600">
             <Replace className="w-4 h-4" /> החלף קובץ
           </button>
         </div>

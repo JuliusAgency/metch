@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
-import { User } from "@/api/entities";
+import { User, CV } from "@/api/entities";
 import { UploadFile } from "@/api/integrations";
 import { supabase } from "@/api/supabaseClient";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,7 +21,9 @@ import {
   Lock,
   Users,
   Check,
-  ChevronsUpDown
+  ChevronsUpDown,
+  FileText, // Added
+  UploadCloud // Added
 } from "lucide-react";
 import {
   Command,
@@ -43,9 +45,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useUser } from "@/contexts/UserContext";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function Settings() {
   useRequireUserType(); // Ensure user has selected a user type
+  const { toast } = useToast();
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     full_name: "",
@@ -63,7 +67,9 @@ export default function Settings() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [openLocation, setOpenLocation] = useState(false);
+  const [cvUploading, setCvUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const cvFileInputRef = useRef(null);
   const navigate = useNavigate();
   const { signOut } = useUser();
 
@@ -147,8 +153,12 @@ export default function Settings() {
       setInitialFormData({ ...formData, password: "" });
       setFormData(prev => ({ ...prev, password: "" }));
       setErrors({});
-      // Show success feedback (you could add a toast here)
-      console.log("Profile updated successfully");
+      setErrors({});
+      // Show success feedback
+      toast({
+        title: "פרופיל עודכן בהצלחה",
+        description: "הפרטים של עודכנו במערכת",
+      });
     } catch (error) {
       console.error("Error saving profile:", error);
     } finally {
@@ -179,6 +189,65 @@ export default function Settings() {
 
     } catch (error) {
       console.error("Error uploading file:", error);
+    }
+  };
+
+  const handleCVUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setCvUploading(true);
+    try {
+      // Upload file
+      // Sanitize filename to avoid "Invalid key" errors with special characters
+      const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const { publicUrl, file_url } = await UploadFile({
+        file,
+        bucket: 'public-files', // Use public-files to match other CV uploads
+        path: `${Date.now()}-${cleanFileName}`
+      });
+
+      const fileUrl = publicUrl || file_url;
+      if (!fileUrl) throw new Error("Failed to get file URL");
+
+      // Update user profile with new resume URL
+      await User.updateMyUserData({ resume_url: fileUrl });
+
+      // Update CV entity metadata
+      const userEmail = user.email;
+      const existingCvs = await CV.filter({ user_email: userEmail });
+      const cvMetadata = {
+        user_email: userEmail,
+        file_name: file.name,
+        file_size_kb: String(Math.round(file.size / 1024)),
+        last_modified: new Date().toISOString(),
+      };
+
+      if (existingCvs.length > 0) {
+        await CV.update(existingCvs[0].id, cvMetadata);
+      } else {
+        await CV.create(cvMetadata);
+      }
+
+      // Update local state
+      setUser(prev => ({ ...prev, resume_url: fileUrl }));
+      toast({
+        title: "קובץ הועלה בהצלחה",
+        description: "קורות החיים שלך עודכנו במערכת",
+      });
+    } catch (error) {
+      console.error("Error uploading CV:", error);
+      toast({
+        title: "שגיאה בהעלאת הקובץ",
+        description: error.message.includes("Bucket not found")
+          ? "שגיאת מערכת: באקט האחסון לא קיים. אנא פנה לתמיכה."
+          : error.message.includes("row-level security policy")
+            ? "שגיאת הרשאה: אין לך הרשאה להעלות קבצים. אנא וודא שהוגדרה מדיניות (Policy) מתאימה ב-Supabase Storage."
+            : "אירעה שגיאה בעת העלאת הקובץ. אנא נסה שנית.",
+        variant: "destructive",
+      });
+    } finally {
+      setCvUploading(false);
     }
   };
 
@@ -445,6 +514,54 @@ export default function Settings() {
                         <p className="text-red-500 text-sm text-right">{errors.place_of_residence}</p>
                       )}
                     </div>
+
+                    {/* CV Upload Section - Only for Job Seekers */}
+                    {user?.user_type === 'job_seeker' && (
+                      <div className="col-span-1 md:col-span-2 space-y-2 pt-2">
+                        <label className="text-sm font-medium text-gray-700 block text-right">קובץ קורות חיים</label>
+                        <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => cvFileInputRef.current?.click()}
+                            disabled={cvUploading}
+                            className="gap-2 shrink-0"
+                          >
+                            {cvUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4 ml-2" />}
+                            {user.resume_url ? 'החלף קובץ' : 'העלה קובץ'}
+                          </Button>
+
+                          <div className="flex-1 text-right overflow-hidden">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {user.resume_url ? 'קובץ קורות חיים מעודכן' : 'לא צורף קובץ'}
+                            </p>
+                            {user.resume_url && (
+                              <a
+                                href={user.resume_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center justify-end gap-1"
+                              >
+                                צפה בקובץ הנוכחי
+                                <FileText className="w-3 h-3" />
+                              </a>
+                            )}
+                          </div>
+
+                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+                            <FileText className="w-5 h-5 text-blue-600" />
+                          </div>
+
+                          <input
+                            ref={cvFileInputRef}
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            className="hidden"
+                            onChange={handleCVUpload}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Action Buttons */}
