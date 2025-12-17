@@ -442,7 +442,7 @@ export default function Settings() {
                 {/* Header Section */}
                 <div className="flex flex-col items-center text-center space-y-4">
                   <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                    {isEmployer ? "הגדרות" : "הגדרות פרופיל משתמש"}
+                    {isEmployer ? "הגדרות" : "הפרטים שלי"}
                   </h1>
 
                   {/* Profile Picture with Edit Button */}

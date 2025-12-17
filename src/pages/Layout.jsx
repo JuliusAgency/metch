@@ -18,7 +18,8 @@ import {
   HelpCircle,
   BarChart2, // Added
   Menu, // Added
-  X // Added
+  X, // Added
+  FileText // Added
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { User as UserEntity } from "@/api/entities";
@@ -195,7 +196,7 @@ export default function Layout({ children, currentPageName }) {
                 <>
                   <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
                     <Link to={createPageUrl("Profile")}>
-                      <User className="w-7 h-7 text-gray-700" />
+                      <FileText className="w-7 h-7 text-gray-700" />
                     </Link>
                   </Button>
                   <div className="h-6 w-px bg-white/50 mx-1"></div>

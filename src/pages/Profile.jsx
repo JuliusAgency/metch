@@ -208,7 +208,9 @@ export default function Profile() {
               transition={{ duration: 0.5 }}
               className="max-w-4xl mx-auto space-y-12"
             >
-              <h1 className="text-center text-3xl font-bold text-gray-900">ניהול הפרטים שלי</h1>
+              <h1 className="text-center text-3xl font-bold text-gray-900">
+                {(contextUser?.user_type === 'job_seeker' || !contextUser?.user_type) ? "הקו״ח שלי" : "ניהול הפרטים שלי"}
+              </h1>
 
               <input
                 type="file"
