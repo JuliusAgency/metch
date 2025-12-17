@@ -87,7 +87,7 @@ export default function Settings() {
         phone: userData.phone || "",
         gender: userData.gender || "",
         date_of_birth: userData.date_of_birth || "",
-        place_of_residence: userData.place_of_residence || "",
+        place_of_residence: userData.preferred_location || userData.place_of_residence || "",
         password: ""
       });
       setInitialFormData({
@@ -96,7 +96,7 @@ export default function Settings() {
         phone: userData.phone || "",
         gender: userData.gender || "",
         date_of_birth: userData.date_of_birth || "",
-        place_of_residence: userData.place_of_residence || "",
+        place_of_residence: userData.preferred_location || userData.place_of_residence || "",
         password: ""
       });
       setErrors({});
@@ -109,7 +109,19 @@ export default function Settings() {
 
   const validateField = (field, value) => {
     const trimmedValue = typeof value === 'string' ? value.trim() : value;
-    const errorMessage = trimmedValue ? "" : "שדה חובה";
+    let errorMessage = "";
+
+    if (!trimmedValue) {
+      if (field !== 'email' && field !== 'password') {
+        errorMessage = "שדה חובה";
+      }
+    } else if (field === 'phone') {
+      const phoneRegex = /^05\d{8}$/;
+      if (!phoneRegex.test(trimmedValue)) {
+        errorMessage = "מספר נייד לא תקין (10 ספרות שמתחילות ב-05)";
+      }
+    }
+
     setErrors(prev => ({ ...prev, [field]: errorMessage }));
     return !errorMessage;
   };
@@ -123,8 +135,14 @@ export default function Settings() {
     const newErrors = {};
     Object.entries(formData).forEach(([field, value]) => {
       const trimmedValue = typeof value === 'string' ? value.trim() : value;
+
       if (!trimmedValue && field !== 'email' && field !== 'password') {
         newErrors[field] = "שדה חובה";
+      } else if (field === 'phone' && trimmedValue) {
+        const phoneRegex = /^05\d{8}$/;
+        if (!phoneRegex.test(trimmedValue)) {
+          newErrors[field] = "מספר נייד לא תקין (10 ספרות שמתחילות ב-05)";
+        }
       }
     });
     setErrors(prev => ({ ...prev, ...newErrors }));
@@ -145,15 +163,31 @@ export default function Settings() {
       }
 
       // Update profile data
-      const profileData = { ...formData };
-      delete profileData.password; // Don't save password to profile table
+      // Explicitly construct the payload to ensure we map fields correctly 
+      // and do not send invalid columns (like place_of_residence or password)
+      const profileData = {
+        full_name: formData.full_name,
+        email: formData.email,
+        phone: formData.phone,
+        gender: formData.gender,
+        date_of_birth: formData.date_of_birth || null,
+        preferred_location: formData.place_of_residence,
+      };
 
       await User.updateMyUserData(profileData);
-      setUser(prev => ({ ...prev, ...profileData }));
+
+      // Update local state with the saved data
+      setUser(prev => ({
+        ...prev,
+        ...profileData,
+        // derived/mapped fields for local state
+        place_of_residence: formData.place_of_residence
+      }));
+
       setInitialFormData({ ...formData, password: "" });
       setFormData(prev => ({ ...prev, password: "" }));
       setErrors({});
-      setErrors({});
+
       // Show success feedback
       toast({
         title: "פרופיל עודכן בהצלחה",
@@ -161,6 +195,11 @@ export default function Settings() {
       });
     } catch (error) {
       console.error("Error saving profile:", error);
+      toast({
+        title: "שגיאה בשמירת הפרופיל",
+        description: "אירעה שגיאה בעת שמירת השינויים. אנא נסה שנית.",
+        variant: "destructive",
+      });
     } finally {
       setSaving(false);
     }
