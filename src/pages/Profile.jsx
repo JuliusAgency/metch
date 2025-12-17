@@ -132,7 +132,7 @@ export default function Profile() {
 
   const handleDeleteFile = () => {
     // Here you would handle the delete logic (e.g., call CV.delete)
-    console.log("Deleting file");
+
     setCvData(null);
   };
 

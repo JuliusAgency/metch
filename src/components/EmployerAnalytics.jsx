@@ -49,7 +49,7 @@ export class EmployerAnalytics {
       // Update employer stats
       await this.updateEmployerStats(employerEmail, actionType, actionData);
 
-      console.log(`Tracked ${actionType} for employer ${employerEmail}`, actionData);
+
     } catch (error) {
       console.error('Error tracking employer action:', error);
     }

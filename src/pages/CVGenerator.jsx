@@ -261,7 +261,7 @@ export default function CVGenerator() {
         savedCv = await CV.create({ ...cvData, user_email: userEmail });
         setCvId(savedCv.id);
       }
-      console.log("Saved CV data:", savedCv);
+
 
       // If this is the last step, navigate to Profile
       if (step === STEPS.length) {

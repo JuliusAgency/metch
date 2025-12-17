@@ -59,7 +59,7 @@ export default function JobDetailsSeeker() {
               });
               setHasExistingApplication(existingApps.length > 0);
             } catch (error) {
-              console.log("Failed to track job view for " + userData.email);
+
             }
           }
         } else {
@@ -122,7 +122,7 @@ export default function JobDetailsSeeker() {
         await UserAnalytics.trackJobApplication(user.email, job);
       }
     } catch (error) {
-      console.log("Failed to track job application:", error);
+
     }
 
     if (Array.isArray(job.screening_questions) && job.screening_questions.length > 0) {

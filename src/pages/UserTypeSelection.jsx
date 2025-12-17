@@ -28,7 +28,7 @@ const UserTypeSelection = () => {
   // Redirect to dashboard if user already has a user_type
   useEffect(() => {
     if (!userLoading && user && user.user_type) {
-      console.log('User already has user_type, redirecting to Dashboard');
+
       navigate('/Dashboard');
     }
   }, [user, userLoading, navigate]);

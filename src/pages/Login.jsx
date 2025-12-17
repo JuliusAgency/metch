@@ -20,18 +20,18 @@ const Login = () => {
 
   // Redirect if user is already authenticated
   useEffect(() => {
-    console.log('Login useEffect - authLoading:', authLoading, 'user:', user);
+
     if (!authLoading && user) {
       // Check if user has a complete profile
       const userProfile = user.profile || user.user_metadata;
-      console.log('User profile in Login:', userProfile);
+
 
       // If profile is null or doesn't have user_type, redirect to EmailConfirmed
       if (!userProfile || !userProfile.user_type) {
-        console.log('Redirecting to EmailConfirmed - no complete profile');
+
         navigate('/EmailConfirmed');
       } else {
-        console.log('Redirecting to Dashboard - complete profile');
+
         navigate('/Dashboard');
       }
     }

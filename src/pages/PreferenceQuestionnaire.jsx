@@ -48,7 +48,7 @@ export default function PreferenceQuestionnaire() {
         preference_traits: preferences.traits, // Assuming the backend can handle array or we might need to join().
       });
 
-      console.log("Preferences saved:", preferences);
+
       navigate(createPageUrl('Profile'));
     } catch (error) {
       console.error("Failed to save preferences:", error);

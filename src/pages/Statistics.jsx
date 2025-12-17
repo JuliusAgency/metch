@@ -53,7 +53,7 @@ export default function Statistics() {
         }
     };
 
-    const activeStatuses = ['active', 'paused', 'draft'];
+    const activeStatuses = ['active', 'paused'];
     const expiredStatuses = ['closed', 'filled', 'filled_via_metch'];
 
     const filteredJobs = jobs.filter(job => {

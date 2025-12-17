@@ -15,8 +15,8 @@ export function Toaster() {
     <ToastProvider>
       {toasts.map(function ({ id, title, description, action, onOpenChange, ...props }) {
         return (
-          <Toast 
-            key={id} 
+          <Toast
+            key={id}
             {...props}
             onOpenChange={(open) => {
               if (!open) {
@@ -32,11 +32,11 @@ export function Toaster() {
               )}
             </div>
             {action}
-            <ToastClose 
+            <ToastClose
               onClick={() => {
-                console.log('Toast close clicked for id:', id);
+
                 dismiss(id);
-              }} 
+              }}
             />
           </Toast>
         );

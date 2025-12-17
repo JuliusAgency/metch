@@ -48,7 +48,7 @@ export class UserAnalytics {
       // Update user stats
       await this.updateUserStats(userEmail, actionType, actionData);
 
-      console.log(`Tracked ${actionType} for user ${userEmail}`, actionData);
+
     } catch (error) {
       console.error('Error tracking user action:', error);
     }
@@ -159,7 +159,7 @@ export class UserAnalytics {
         details: error.details,
         hint: error.hint
       });
-      console.log('Input data:', { userEmail, jobId: job?.id });
+
     }
   }
 

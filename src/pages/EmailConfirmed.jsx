@@ -40,35 +40,35 @@ const EmailConfirmed = () => {
         }
 
         // Check if user email is confirmed - use email_confirmed_at instead of confirmed_at
-        console.log('currentUser', user);
+
         const isEmailConfirmed = user.email_confirmed_at !== null || user.confirmed_at !== null;
 
         const profile = await loadUserProfile(user.id);
 
         // If profile exists and has a user_type, go to dashboard
         if (profile && profile.user_type) {
-          console.log('Profile exists with user_type, redirecting to Dashboard');
+
           redirectInitiatedRef.current = true;
           navigate('/Dashboard');
           return;
         }
-        
+
         // If profile exists but no user_type, go to UserTypeSelection
         if (profile && !profile.user_type) {
-          console.log('Profile exists without user_type, redirecting to UserTypeSelection');
+
           redirectInitiatedRef.current = true;
           navigate('/UserTypeSelection');
           return;
         }
 
-        if (isEmailConfirmed ) {
+        if (isEmailConfirmed) {
           // Create user profile with no user_type
           try {
-            console.log('Attempting to create profile for user:', user.id);
+
             const profile = await createUserProfile(user.id);
-            
+
             if (profile) {
-              console.log('Profile created successfully:', profile);
+
               // Show toast only when creating initial profile
               if (!toastShownRef.current) {
                 toast({
@@ -77,7 +77,7 @@ const EmailConfirmed = () => {
                 });
                 toastShownRef.current = true;
               }
-              
+
               // Always redirect to user type selection page
               redirectInitiatedRef.current = true;
               navigate('/UserTypeSelection');

@@ -39,6 +39,7 @@ export default function JobDetails() {
       const params = new URLSearchParams(location.search);
       const jobId = params.get('id');
 
+
       if (jobId) {
         const jobResults = await Job.filter({ id: jobId });
         if (jobResults.length > 0) {
