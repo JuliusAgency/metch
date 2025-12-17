@@ -60,6 +60,7 @@ import EmailConfirmation from "./EmailConfirmation";
 import EmailConfirmed from "./EmailConfirmed";
 
 import UserTypeSelection from "./UserTypeSelection";
+import ForgotPassword from "./ForgotPassword";
 
 import Statistics from "./Statistics";
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
@@ -126,6 +127,8 @@ const PAGES = {
 
     UserTypeSelection: UserTypeSelection,
 
+    ForgotPassword: ForgotPassword,
+
     Statistics: Statistics,
 
 
@@ -160,6 +163,7 @@ function PagesContent() {
                 <Route path="/EmailConfirmation" element={<EmailConfirmation />} />
                 <Route path="/EmailConfirmed" element={<EmailConfirmed />} />
                 <Route path="/UserTypeSelection" element={<UserTypeSelection />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
 
                 {/* Protected routes - authentication required */}
                 <Route path="/Dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />

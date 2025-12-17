@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 // Figma design assets
-const imgHugeiconsAiMagic = "http://localhost:3845/assets/289919713a3bb46a7fa4929734053736f1a07e8a.svg";
-const imgGoogleFrame = "http://localhost:3845/assets/0f1d434e137c102686b8bcfec0eb15d9b43e8a2a.svg";
+const imgHugeiconsAiMagic = "https://www.svgrepo.com/show/530438/magic-wand.svg"; // Also fixing the other broken asset potentially
+const imgGoogleFrame = "https://www.svgrepo.com/show/475656/google-color.svg";
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -25,7 +25,7 @@ const Login = () => {
       // Check if user has a complete profile
       const userProfile = user.profile || user.user_metadata;
       console.log('User profile in Login:', userProfile);
-      
+
       // If profile is null or doesn't have user_type, redirect to EmailConfirmed
       if (!userProfile || !userProfile.user_type) {
         console.log('Redirecting to EmailConfirmed - no complete profile');
@@ -52,10 +52,10 @@ const Login = () => {
 
     try {
       const result = await signIn({ email, password });
-      
+
       // Check if user has a profile
       const userProfile = result.user?.profile || result.user?.user_metadata;
-      
+
       if (!userProfile || !userProfile.user_type) {
         // User doesn't have a complete profile, redirect to EmailConfirmed for profile setup
         navigate('/EmailConfirmed');
@@ -83,7 +83,7 @@ const Login = () => {
 
       {/* Main Content */}
       <div className="relative z-10 w-full max-w-md mx-auto" data-node-id="678:3119">
-        
+
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <div className="backdrop-blur-[43px] backdrop-filter bg-[rgba(204,229,248,0.3)] border border-solid border-white rounded-full p-4" data-name="menu מחפש עבודה" data-node-id="678:3120">
@@ -98,7 +98,7 @@ const Login = () => {
 
         {/* Form Content */}
         <div className="space-y-8" data-node-id="597:1949">
-          
+
           {/* Title */}
           <div className="text-center" data-name="Title" data-node-id="418:1550">
             <h1 className="font-['Rubik:Bold',_sans-serif] font-bold text-3xl md:text-4xl text-[#32343d]" dir="auto" data-node-id="418:1551">
@@ -108,7 +108,7 @@ const Login = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6" data-name="Fields" data-node-id="418:1553">
-            
+
             {/* Email Field */}
             <div className="relative" data-name="Field" data-node-id="418:1554">
               <div className="absolute bottom-0 left-0 right-0 h-px bg-[#6a6a6a]" data-name="Line" data-node-id="I418:1554;1122:1826"></div>
@@ -154,22 +154,22 @@ const Login = () => {
 
           {/* Login Button */}
           <div className="pt-4" data-name="Inform" data-node-id="418:1565">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               onClick={handleSubmit}
               disabled={loading}
               className="w-full bg-[#2987cd] hover:bg-[#2987cd]/90 text-white rounded-full h-12 text-lg font-bold"
-              data-name="Button" 
+              data-name="Button"
               data-node-id="418:1566"
             >
-                <div className="flex items-center space-x-3" data-name="Inside" data-node-id="418:1567">
-                  <span className="font-['Rubik:Bold',_sans-serif] font-bold text-lg" dir="auto" data-node-id="418:1570">
-                    התחברות
-                  </span>
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
+              <div className="flex items-center space-x-3" data-name="Inside" data-node-id="418:1567">
+                <span className="font-['Rubik:Bold',_sans-serif] font-bold text-lg" dir="auto" data-node-id="418:1570">
+                  התחברות
+                </span>
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
             </Button>
           </div>
 
@@ -182,12 +182,12 @@ const Login = () => {
               </span>
               <div className="flex-1 h-px bg-[#6a6a6a]"></div>
             </div>
-            <Button 
+            <Button
               type="button"
               disabled={loading}
               variant="outline"
               className="w-full bg-white border-[#e3e3ea] hover:bg-gray-50 rounded-full h-12 text-lg"
-              data-name="Button" 
+              data-name="Button"
               data-node-id="418:1577"
             >
               <div className="flex items-center space-x-3">
