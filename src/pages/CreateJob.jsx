@@ -201,8 +201,13 @@ export default function CreateJob() {
         jobData.title &&
         jobData.category &&
         jobData.start_date &&
-        jobData.employment_type
+        jobData.employment_type &&
+        jobData.description
       );
+    }
+    if (step === 2) {
+      // Step 2 is Step3Company, requires exactly 3 success factors
+      return jobData.success_factors && jobData.success_factors.length === 3;
     }
     return true;
   };
@@ -220,7 +225,7 @@ export default function CreateJob() {
 
   const isNextDisabled = () => {
     if (isSubmitting) return true;
-    if (step === 1 && !isStepValid()) return true;
+    if (!isStepValid()) return true;
     if (step === 3 && jobData.screening_questions?.length > 0 && !isScreeningSaved) return true;
     return false;
   };
