@@ -6,6 +6,7 @@ import { Calendar } from "lucide-react";
 import DynamicRequirementInput from './DynamicRequirementInput';
 import jobCategoryList from '../../../jobs_category.json';
 import jobTitles from '../../../jobs.json';
+import locations from '../../../locations.json';
 import CategorySelect from './CategorySelect';
 
 import jobTaxonomy from '../../job_taxonomy.json';
@@ -83,7 +84,7 @@ export default function Step1Details({ jobData, setJobData }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Select
             value={jobData.employment_type || ''}
             onValueChange={(value) => handleSelectChange('employment_type', value)}
@@ -97,6 +98,13 @@ export default function Step1Details({ jobData, setJobData }) {
               ))}
             </SelectContent>
           </Select>
+          <CategorySelect
+            value={jobData.location || ''}
+            onChange={(value) => handleSelectChange('location', value)}
+            options={locations}
+            placeholder="מיקום המשרה"
+            searchPlaceholder="חפש מיקום..."
+          />
           <Textarea
             name="description"
             placeholder="תיאור התפקיד"

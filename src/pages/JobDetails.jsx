@@ -8,21 +8,8 @@ import { User } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ChevronLeft, 
-  MapPin, 
-  DollarSign, 
-  Clock, 
-  Building2, 
-  Users, 
-  Eye,
-  Edit,
-  Play,
-  Pause,
-  Copy,
-  BarChart3,
-  ClipboardList // Added ClipboardList icon for screening questionnaire
-} from "lucide-react";
+import { Trash2, Edit, StopCircle, PlayCircle, Users, Eye, ArrowRight, Save, X, RotateCcw, Copy, Share2, ClipboardList, Clock, MapPin, DollarSign, Calendar as CalendarIcon, Play, FileText } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { createPageUrl } from "@/utils";
@@ -51,19 +38,19 @@ export default function JobDetails() {
 
       const params = new URLSearchParams(location.search);
       const jobId = params.get('id');
-      
+
       if (jobId) {
         const jobResults = await Job.filter({ id: jobId });
         if (jobResults.length > 0) {
           setJob(jobResults[0]);
-          
+
           const appResults = await JobApplication.filter({ job_id: jobId });
           setApplications(appResults);
-          
+
           // Load view count for this job
           const views = await JobView.filter({ job_id: jobId });
           setViewsCount(views.length);
-          
+
           // Calculate matches count - applications with match_score >= 70
           const matches = appResults.filter(app => app.match_score && app.match_score >= 70);
           setMatchesCount(matches.length);
@@ -85,7 +72,7 @@ export default function JobDetails() {
       const oldStatus = job.status;
       await Job.update(job.id, { status: newStatus });
       setJob(prev => ({ ...prev, status: newStatus }));
-      
+
       if (user) {
         await EmployerAnalytics.trackJobStatusChange(user.email, job, oldStatus, newStatus);
       }
@@ -100,7 +87,7 @@ export default function JobDetails() {
         await EmployerAnalytics.trackJobView(user.email, job);
       }
     };
-    
+
     if (job && user) {
       trackJobView();
     }
@@ -132,8 +119,8 @@ export default function JobDetails() {
           <div className="relative">
             <JobHeader />
             <CardContent className="p-4 sm:p-6 md:p-8 -mt-6 relative z-10">
-              <Link 
-                to={createPageUrl("JobManagement")} 
+              <Link
+                to={createPageUrl("JobManagement")}
                 className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-10"
               >
                 <ChevronLeft className="w-6 h-6 text-gray-800 rotate-180" />
@@ -143,15 +130,8 @@ export default function JobDetails() {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-8"
               >
-                <JobTitle
-                  title={job.title}
-                  company={job.company}
-                  statusConfig={statusConfig}
-                  status={job.status}
-                />
-                
                 {/* Job Header */}
-                <div className="text-center space-y-4">
+                <div className="text-center space-y-4 pt-4">
                   <div className="w-16 h-16 bg-blue-200 rounded-full flex items-center justify-center mx-auto">
                     <Building2 className="w-8 h-8 text-blue-600" />
                   </div>
@@ -191,11 +171,23 @@ export default function JobDetails() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-right">
                     <div className="space-y-2">
                       <div className="flex items-center justify-end gap-2">
-                        <span>{job.location}</span>
+                        <span>{job.location || "לא צוין מיקום"}</span>
                         <MapPin className="w-4 h-4 text-gray-500" />
                       </div>
                       <div className="flex items-center justify-end gap-2">
-                        <span>{job.employment_type?.replace('_', ' ')}</span>
+                        <span>
+                          {(() => {
+                            const typeMap = {
+                              full_time: "משרה מלאה",
+                              part_time: "משרה חלקית",
+                              contract: "חוזה",
+                              freelance: "פרילנס",
+                              internship: "התמחות",
+                              hourly: "שעתי"
+                            };
+                            return typeMap[job.employment_type] || job.employment_type?.replace('_', ' ');
+                          })()}
+                        </span>
                         <Clock className="w-4 h-4 text-gray-500" />
                       </div>
                     </div>
@@ -203,9 +195,9 @@ export default function JobDetails() {
                       {(job.salary_min || job.salary_max) && (
                         <div className="flex items-center justify-end gap-2">
                           <span>
-                            {job.salary_min && job.salary_max 
+                            {job.salary_min && job.salary_max
                               ? `₪${job.salary_min.toLocaleString()} - ₪${job.salary_max.toLocaleString()}`
-                              : job.salary_min 
+                              : job.salary_min
                                 ? `מ-₪${job.salary_min.toLocaleString()}`
                                 : `עד ₪${job.salary_max?.toLocaleString()}`
                             }
@@ -219,18 +211,124 @@ export default function JobDetails() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="mt-6">
                     <h4 className="font-semibold mb-2">תיאור המשרה:</h4>
                     <p className="text-gray-700 leading-relaxed">{job.description}</p>
                   </div>
-                  
+
                   {job.requirements && (
                     <div className="mt-4">
                       <h4 className="font-semibold mb-2">דרישות:</h4>
                       <p className="text-gray-700 leading-relaxed">{job.requirements}</p>
                     </div>
                   )}
+
+                  {/* Attachments Gallery */}
+                  {(() => {
+                    let attachments = job.attachments;
+
+                    // Handle Postgres Bytea Hex format (starts with \x)
+                    if (typeof attachments === 'string' && attachments.startsWith('\\x')) {
+                      try {
+                        const hex = attachments.slice(2);
+                        let str = '';
+                        for (let i = 0; i < hex.length; i += 2) {
+                          str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+                        }
+                        attachments = str;
+                      } catch (e) {
+                        console.warn("Failed to decode hex attachment string", e);
+                      }
+                    }
+
+                    // Safely parse if it's a string
+                    if (typeof attachments === 'string') {
+                      try {
+                        attachments = JSON.parse(attachments);
+                      } catch (e) {
+                        // Try double parse or fail safely
+                        try {
+                          const cleaned = JSON.parse(JSON.stringify(attachments));
+                          attachments = JSON.parse(cleaned);
+                        } catch (e2) {
+                          attachments = [];
+                        }
+                      }
+                    }
+
+                    if (!Array.isArray(attachments) || attachments.length === 0) return null;
+
+                    return (
+                      <div className="mt-8">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {attachments.map((file, index) => {
+                            if (!file) return null;
+
+                            const fileUrl = file.url || file;
+                            // Ensure URL is valid string
+                            const finalUrl = (typeof fileUrl === 'string') ? fileUrl : '';
+                            const fileType = file.type || 'image/png'; // Default to assuming image if unknown for now, or check extension
+
+                            const isImage = fileType.startsWith("image/") || finalUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null || !fileType;
+
+                            if (isImage) {
+                              return (
+                                <Dialog key={index}>
+                                  <DialogTrigger asChild>
+                                    <div className="relative group aspect-video rounded-xl overflow-hidden shadow-sm border border-gray-100 bg-white cursor-pointer">
+                                      <img
+                                        src={finalUrl}
+                                        alt={`Attachment ${index + 1}`}
+                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                      />
+                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                        <Eye className="text-white opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8 drop-shadow-md" />
+                                      </div>
+                                    </div>
+                                  </DialogTrigger>
+                                  <DialogContent
+                                    hideCloseButton
+                                    className="max-w-[90vw] max-h-[95vh] p-0 bg-transparent border-0 shadow-none flex flex-col items-center justify-center outline-none"
+                                  >
+                                    <div className="w-full flex justify-end mb-2 px-2">
+                                      <DialogClose className="p-2 bg-white hover:bg-gray-100 rounded-full text-gray-800 shadow-lg transition-all outline-none focus:ring-0 ring-offset-0">
+                                        <X className="w-5 h-5" />
+                                        <span className="sr-only">Close</span>
+                                      </DialogClose>
+                                    </div>
+                                    <img
+                                      src={finalUrl}
+                                      alt={`Full size attachment ${index + 1}`}
+                                      className="w-auto h-auto max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+                                    />
+                                  </DialogContent>
+                                </Dialog>
+                              );
+                            }
+
+                            // Fallback for non-images
+                            return (
+                              <a
+                                key={index}
+                                href={finalUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex flex-col items-center justify-center aspect-video bg-white border border-gray-200 rounded-xl hover:border-blue-400 hover:shadow-sm transition-all p-4 text-center group"
+                              >
+                                <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-2 group-hover:bg-blue-100 transition-colors">
+                                  {fileType.includes('pdf') ? <ClipboardList className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
+                                </div>
+                                <span className="text-xs font-medium text-gray-600 truncate w-full px-2">
+                                  {file.name || "מסמך מצורף"}
+                                </span>
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Action Buttons */}
@@ -242,8 +340,8 @@ export default function JobDetails() {
                     </Button>
                   </Link>
                   {job.status === 'active' ? (
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="border-yellow-300 hover:bg-yellow-100"
                       onClick={() => handleStatusChange('paused')}
                     >
@@ -251,8 +349,8 @@ export default function JobDetails() {
                       השהה משרה
                     </Button>
                   ) : (
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="border-green-300 hover:bg-green-100"
                       onClick={() => handleStatusChange('active')}
                     >
@@ -260,8 +358,8 @@ export default function JobDetails() {
                       פעל משרה
                     </Button>
                   )}
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="border-blue-300 hover:bg-blue-100"
                   >
                     <Copy className="w-4 h-4 ml-2" />
@@ -281,11 +379,11 @@ export default function JobDetails() {
                     </Button>
                   </Link>
                 </div>
-                </motion.div>
-              </CardContent>
-            </div>
-          </Card>
-        </div>
+              </motion.div>
+            </CardContent>
+          </div>
+        </Card>
       </div>
+    </div>
   );
 }

@@ -176,9 +176,7 @@ export default function JobDetailsSeeker() {
   }
 
   const isUnavailable = ['filled', 'filled_via_metch', 'closed', 'paused'].includes(job.status);
-  const imageAttachments = Array.isArray(job.attachments)
-    ? job.attachments.filter(att => att.type?.startsWith('image/'))
-    : [];
+  const attachments = job.attachments;
   const normalizedReturnPage = fromParam || 'Dashboard';
   const baseReturnPath = createPageUrl(normalizedReturnPage);
   const jobAnchorId = job?.id || jobIdParam;
@@ -196,7 +194,7 @@ export default function JobDetailsSeeker() {
             <SeekerJobTitle job={job} employmentTypeText={employmentTypeText} />
             <SeekerJobPerks perks={job.company_perks} />
             <SeekerJobInfo job={job} />
-            <SeekerJobImages images={imageAttachments} />
+            <SeekerJobImages images={attachments} />
             <SeekerJobActions
               handleApply={handleApply}
               applying={applying}

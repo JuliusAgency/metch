@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-export default function CategorySelect({ value = "", onChange, options = [], placeholder = "בחרו תחום" }) {
+export default function CategorySelect({ value = "", onChange, options = [], placeholder = "בחרו תחום", searchPlaceholder = "חיפוש תחום..." }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -39,11 +39,11 @@ export default function CategorySelect({ value = "", onChange, options = [], pla
         style={{ width: "var(--radix-popover-trigger-width)" }}
       >
         <Command dir="rtl">
-          <CommandInput placeholder="חיפוש תחום..." className="text-right" />
+          <CommandInput placeholder={searchPlaceholder} className="text-right" />
           <CommandList>
             <CommandEmpty>לא נמצאות תוצאות</CommandEmpty>
             <CommandGroup>
-              {options.map((option,i) => (
+              {options.map((option, i) => (
                 <CommandItem
                   key={i}
                   value={option}

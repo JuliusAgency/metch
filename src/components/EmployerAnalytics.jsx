@@ -33,7 +33,7 @@ export class EmployerAnalytics {
 
     try {
       const sessionId = this.initSession();
-      
+
       // Record the action
       const actionRecord = {
         employer_email: employerEmail,
@@ -239,8 +239,8 @@ export class EmployerAnalytics {
   static async getEmployerActivity(employerEmail, limit = 50) {
     try {
       const actions = await EmployerAction.filter(
-        { employer_email: employerEmail }, 
-        "-created_date", 
+        { employer_email: employerEmail },
+        "-created_date",
         limit
       );
       return actions;
@@ -266,7 +266,7 @@ export class EmployerAnalytics {
 
       // Filter applications for this employer's jobs
       const jobIds = activeJobs.map(job => job.id);
-      const employerApplications = applications.filter(app => 
+      const employerApplications = applications.filter(app =>
         jobIds.includes(app.job_id)
       );
 

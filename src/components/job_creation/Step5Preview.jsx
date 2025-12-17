@@ -35,11 +35,29 @@ export default function Step5Preview({ jobData, setJobData }) {
   const handleFileUpload = async (files) => {
     setUploading(true);
     try {
-      const uploadPromises = Array.from(files).map(async (file) => {
-        const result = await UploadFile({ file });
+      // Validate and filter files
+      const validFiles = Array.from(files).filter(file => {
+        if (file.size > 5 * 1024 * 1024) {
+          // You might want to import useToast to show this error, but for now console.warn
+          console.warn(`File ${file.name} is too large (max 5MB)`);
+          return false;
+        }
+        return true;
+      });
+
+      const uploadPromises = validFiles.map(async (file) => {
+        // Sanitize filename
+        const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+
+        const result = await UploadFile({
+          file,
+          bucket: 'public-files', // Ensure correct bucket
+          path: `job-attachments/${Date.now()}-${cleanFileName}` // Add path structure
+        });
+
         return {
-          name: file.name,
-          url: result.file_url,
+          name: file.name, // Keep original name for display
+          url: result.file_url || result.publicUrl,
           type: file.type,
           size: file.size,
         };
@@ -196,9 +214,8 @@ export default function Step5Preview({ jobData, setJobData }) {
                   return (
                     <Badge
                       key={index}
-                      className={`${
-                        colors[index % colors.length]
-                      } border-0 px-4 py-2`}
+                      className={`${colors[index % colors.length]
+                        } border-0 px-4 py-2`}
                     >
                       {perk}
                     </Badge>
@@ -232,7 +249,7 @@ export default function Step5Preview({ jobData, setJobData }) {
               </h3>
               <div className="space-y-2 text-gray-700">
                 {jobData.structured_education &&
-                jobData.structured_education.length > 0 ? (
+                  jobData.structured_education.length > 0 ? (
                   jobData.structured_education.map((edu, index) => (
                     <p key={index} className="text-sm">
                       • {edu.value}
@@ -263,7 +280,7 @@ export default function Step5Preview({ jobData, setJobData }) {
               <h3 className="font-bold text-lg mb-4 text-gray-900">דרישות</h3>
               <div className="space-y-2 text-gray-700">
                 {jobData.structured_requirements &&
-                jobData.structured_requirements.length > 0 ? (
+                  jobData.structured_requirements.length > 0 ? (
                   jobData.structured_requirements.map((req, index) => (
                     <p key={index} className="text-sm">
                       • {req.value}
