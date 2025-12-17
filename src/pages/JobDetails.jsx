@@ -8,7 +8,7 @@ import { User } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Edit, StopCircle, PlayCircle, Users, Eye, ArrowRight, Save, X, RotateCcw, Copy, Share2, ClipboardList, Clock, MapPin, DollarSign, Calendar as CalendarIcon, Play, FileText } from "lucide-react";
+import { Trash2, Edit, StopCircle, PlayCircle, Users, Eye, ArrowRight, Save, X, RotateCcw, Copy, Share2, ClipboardList, Clock, MapPin, DollarSign, Calendar as CalendarIcon, Play, FileText, ChevronLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
