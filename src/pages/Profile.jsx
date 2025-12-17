@@ -244,6 +244,8 @@ export default function Profile() {
                 </>
               )}
 
+              {/* Logout and Delete options removed as per request */
+              /*
               <div className="flex flex-col items-center space-y-4 pt-8 pb-4">
                 <Button
                   asChild
@@ -264,6 +266,7 @@ export default function Profile() {
                   התנתק
                 </Button>
               </div>
+              */}
 
             </motion.div>
           </CardContent>
