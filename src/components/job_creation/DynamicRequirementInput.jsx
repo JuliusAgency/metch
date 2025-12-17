@@ -5,13 +5,16 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function DynamicRequirementInput({ label, placeholder, items, setItems }) {
+export default function DynamicRequirementInput({ label, placeholder, items = [], setItems }) {
   const [inputValue, setInputValue] = useState("");
   const [currentType, setCurrentType] = useState("required");
 
+  // Ensure items is always an array
+  const safeItems = Array.isArray(items) ? items : [];
+
   const handleAddItem = () => {
     if (inputValue.trim() !== "") {
-      const newItems = [...items.filter(item => item.value.trim() !== ""), { value: inputValue.trim(), type: currentType }];
+      const newItems = [...safeItems.filter(item => item.value.trim() !== ""), { value: inputValue.trim(), type: currentType }];
       setItems(newItems);
       setInputValue("");
     }
@@ -25,17 +28,17 @@ export default function DynamicRequirementInput({ label, placeholder, items, set
   };
 
   const handleRemoveItem = (index) => {
-    const newItems = items.filter((_, i) => i !== index);
+    const newItems = safeItems.filter((_, i) => i !== index);
     setItems(newItems);
   };
-  
+
   // Clean up empty items
   React.useEffect(() => {
-      const cleanedItems = items.filter(item => item.value && item.value.trim() !== "");
-      if(cleanedItems.length !== items.length){
-          setItems(cleanedItems);
-      }
-  }, [items, setItems]);
+    const cleanedItems = safeItems.filter(item => item.value && item.value.trim() !== "");
+    if (cleanedItems.length !== safeItems.length) {
+      setItems(cleanedItems);
+    }
+  }, [items, setItems]); // Keep dependency on items to react to prop changes
 
   return (
     <div className="space-y-4">
@@ -45,18 +48,16 @@ export default function DynamicRequirementInput({ label, placeholder, items, set
             <Button
               type="button"
               onClick={() => setCurrentType("required")}
-              className={`px-4 h-9 rounded-full text-sm font-semibold transition-colors ${
-                currentType === 'required' ? 'bg-blue-600 text-white shadow' : 'bg-transparent text-gray-600'
-              }`}
+              className={`px-4 h-9 rounded-full text-sm font-semibold transition-colors ${currentType === 'required' ? 'bg-blue-600 text-white shadow' : 'bg-transparent text-gray-600'
+                }`}
             >
               חובה
             </Button>
             <Button
               type="button"
               onClick={() => setCurrentType("advantage")}
-              className={`px-4 h-9 rounded-full text-sm font-semibold transition-colors ${
-                currentType === 'advantage' ? 'bg-blue-600 text-white shadow' : 'bg-transparent text-gray-600'
-              }`}
+              className={`px-4 h-9 rounded-full text-sm font-semibold transition-colors ${currentType === 'advantage' ? 'bg-blue-600 text-white shadow' : 'bg-transparent text-gray-600'
+                }`}
             >
               יתרון
             </Button>
@@ -80,10 +81,10 @@ export default function DynamicRequirementInput({ label, placeholder, items, set
         + הוסף {label}
       </button>
 
-      {items && items.length > 0 && (
+      {safeItems.length > 0 && (
         <div className="flex flex-wrap gap-2 pt-2">
           <AnimatePresence>
-            {items.map((item, index) => (
+            {safeItems.map((item, index) => (
               item.value && (
                 <motion.div
                   key={index}
