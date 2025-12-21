@@ -7,7 +7,7 @@ import Step1PersonalDetails from '@/components/cv_generator/Step1_PersonalDetail
 import Step2WorkExperience from '@/components/cv_generator/Step2_WorkExperience';
 import Step3Education from '@/components/cv_generator/Step3_Education';
 import Step4Certifications from '@/components/cv_generator/Step4_Certifications';
-import Step5Skills from '@/components/cv_generator/Step5_Skills';
+
 import Step6Summary from '@/components/cv_generator/Step6_Summary';
 import Step7Preview from '@/components/cv_generator/Step7_Preview';
 import UploadCV from '@/components/cv_generator/UploadCV';
@@ -19,7 +19,7 @@ import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { useRequireUserType } from '@/hooks/use-require-user-type';
 
-const STEPS = ["פרטים אישיים", "ניסיון תעסוקתי", "השכלה", "הסמכות", "כישורים", "תמצית", "תצוגה מקדימה"];
+const STEPS = ["פרטים אישיים", "ניסיון תעסוקתי", "השכלה", "הסמכות", "תמצית", "תצוגה מקדימה"];
 
 const ensureArray = (value) => {
   if (Array.isArray(value)) {
@@ -376,9 +376,8 @@ export default function CVGenerator() {
       case 2: return <Step2WorkExperience data={cvData.work_experience || []} setData={(updater) => setCvData((prev) => ({ ...prev, work_experience: updater(prev.work_experience || []) }))} onDirtyChange={handleDirtyChange} />;
       case 3: return <Step3Education data={cvData.education || []} setData={(updater) => setCvData((prev) => ({ ...prev, education: updater(prev.education || []) }))} onDirtyChange={handleDirtyChange} />;
       case 4: return <Step4Certifications data={cvData.certifications || []} setData={(updater) => setCvData((prev) => ({ ...prev, certifications: updater(prev.certifications || []) }))} onDirtyChange={handleDirtyChange} />;
-      case 5: return <Step5Skills data={cvData.skills || []} setData={(d) => setCvData((prev) => ({ ...prev, skills: d }))} />;
-      case 6: return <Step6Summary data={cvData.summary || ''} setData={(d) => setCvData((prev) => ({ ...prev, summary: d }))} />;
-      case 7: return <Step7Preview cvData={cvData} setData={(d) => setCvData(prev => ({ ...prev, ...d }))} onEdit={handleEdit} />;
+      case 5: return <Step6Summary data={cvData.summary || ''} setData={(d) => setCvData((prev) => ({ ...prev, summary: d }))} />;
+      case 6: return <Step7Preview cvData={cvData} setData={(d) => setCvData(prev => ({ ...prev, ...d }))} onEdit={handleEdit} />;
       default: return null;
     }
   };

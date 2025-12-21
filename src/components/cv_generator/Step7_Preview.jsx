@@ -166,17 +166,7 @@ const CVContent = ({ cvData }) => {
                 </div>
             </div>}
 
-            {/* Skills */}
-            {skills?.length > 0 && <div className="mb-4 text-center">
-                <h2 className="text-base font-bold border-b-2 border-blue-500 pb-1 mb-2 text-center">כישורים</h2>
-                <div className="flex flex-wrap gap-2 justify-center">
-                    {skills.map((skill, index) => (
-                        <span key={index} className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-medium">
-                            {typeof skill === 'string' ? skill : skill.name}
-                        </span>
-                    ))}
-                </div>
-            </div>}
+
         </div>
     );
 };

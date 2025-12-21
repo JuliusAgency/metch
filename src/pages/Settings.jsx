@@ -372,12 +372,16 @@ export default function Settings() {
   const handleDeleteAccount = async () => {
     setDeleteLoading(true);
     try {
-      // In a real implementation, you would call an API to delete the account
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await supabase.auth.updateUser({ data: { is_deleted: true } });
       await signOut();
       navigate(createPageUrl('Login'));
     } catch (error) {
       console.error("Error deleting account:", error);
+      toast({
+        title: "שגיאה במחיקת חשבון",
+        description: "אירעה שגיאה בעת ניסיון מחיקת החשבון.",
+        variant: "destructive"
+      });
     } finally {
       setDeleteLoading(false);
       setShowDeleteConfirm(false);

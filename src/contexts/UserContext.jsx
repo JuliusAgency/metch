@@ -121,6 +121,14 @@ export const UserProvider = ({ children }) => {
       }
 
       if (session?.user) {
+        if (session.user.user_metadata?.is_deleted) {
+          await supabase.auth.signOut();
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+
         setUser(session.user);
         const userProfile = await loadUserProfile(session.user.id);
         setProfile(userProfile);
@@ -176,6 +184,13 @@ export const UserProvider = ({ children }) => {
     });
 
     if (error) throw error;
+
+    if (error) throw error;
+
+    if (data.user?.user_metadata?.is_deleted) {
+      await supabase.auth.signOut();
+      throw new Error("המשתמש נמחק מהמערכת");
+    }
 
     setUser(data.user);
     const userProfile = await loadUserProfile(data.user.id);
