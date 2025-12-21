@@ -136,15 +136,13 @@ const CVContent = ({ cvData }) => {
                         const subtitle = [edu?.degree, getEducationTypeLabel(edu?.education_type)]
                             .filter(Boolean)
                             .join(' • ');
-                        const statusLabel = edu?.is_current ? 'סטטוס: לימודים פעילים' : 'סטטוס: הושלם';
                         return (
                             <div key={edu?.id || `education-${index}`} className="text-xs">
                                 <div className="flex justify-between items-baseline gap-3">
                                     <h3 className="font-semibold">{edu?.institution || 'מוסד לימודים'}</h3>
-                                    {dateRange && <p className="text-gray-500 flex-shrink-0">{dateRange}</p>}
                                 </div>
                                 {subtitle && <p className="font-medium text-gray-700">{subtitle}</p>}
-                                <p className="text-gray-500">{statusLabel}</p>
+                                {dateRange && <p className="text-gray-500">{dateRange}</p>}
                                 {edu?.description && <p className="mt-1 text-gray-600 whitespace-pre-wrap">{edu.description}</p>}
                             </div>
                         );
