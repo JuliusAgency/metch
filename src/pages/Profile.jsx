@@ -12,6 +12,7 @@ import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { useUser } from '@/contexts/UserContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useRequireUserType } from '@/hooks/use-require-user-type';
 
 export default function Profile() {
@@ -21,6 +22,8 @@ export default function Profile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isLookingForJob, setIsLookingForJob] = useState(true);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [statusModalStep, setStatusModalStep] = useState(1);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const { signOut, user: contextUser } = useUser();
@@ -54,15 +57,35 @@ export default function Profile() {
     fetchData();
   }, [contextUser]);
 
-  const handleToggleLookingForJob = async (checked) => {
-    if (!user) return;
+  const performStatusUpdate = async (checked, reason = null) => {
     setIsLookingForJob(checked);
     try {
+      // In the future, we can send 'reason' to the backend if supported
+      // console.log('Status update reason:', reason);
       await UserEntity.updateMyUserData({ available_for_work: checked });
     } catch (error) {
       console.error("Error updating user status:", error);
       setIsLookingForJob(!checked);
+      toast({
+        title: "שגיאה בעדכון סטטוס",
+        description: "אירעה שגיאה בעת עדכון הסטטוס. אנא נסה שנית.",
+        variant: "destructive",
+      });
     }
+  };
+
+  const handleToggleLookingForJob = async (checked) => {
+    if (!user) return;
+
+    if (!checked) {
+      // User is turning OFF the switch - show modal
+      setStatusModalStep(1);
+      setIsStatusModalOpen(true);
+      return;
+    }
+
+    // User is turning ON the switch - proceed directly
+    performStatusUpdate(checked);
   };
 
   const handleFileUpload = async (event) => {
@@ -272,6 +295,61 @@ export default function Profile() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={isStatusModalOpen} onOpenChange={setIsStatusModalOpen}>
+        <DialogContent className="sm:max-w-md text-center bg-white" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-bold text-center mb-6 text-slate-900">עדכון סטטוס</DialogTitle>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-4 py-2 px-4">
+            {statusModalStep === 1 ? (
+              <>
+                <Button
+                  variant="outline"
+                  className="w-full text-lg h-14 border border-blue-800 text-blue-900 hover:bg-blue-50 rounded-full transition-all"
+                  onClick={() => setStatusModalStep(2)}
+                >
+                  <span className="font-medium">מצאתי עבודה</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full text-lg h-14 border border-blue-800 text-blue-900 hover:bg-blue-50 rounded-full transition-all"
+                  onClick={() => {
+                    performStatusUpdate(false, 'stopped_looking');
+                    setIsStatusModalOpen(false);
+                  }}
+                >
+                  <span className="font-medium">הפסקתי לחפש</span>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  className="w-full text-lg h-14 border border-blue-800 text-blue-900 hover:bg-blue-50 rounded-full transition-all"
+                  onClick={() => {
+                    performStatusUpdate(false, 'found_via_match');
+                    setIsStatusModalOpen(false);
+                  }}
+                >
+                  <span className="font-medium">מצאתי דרך מאצ׳</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full text-lg h-14 border border-blue-800 text-blue-900 hover:bg-blue-50 rounded-full transition-all"
+                  onClick={() => {
+                    performStatusUpdate(false, 'found_via_other');
+                    setIsStatusModalOpen(false);
+                  }}
+                >
+                  <span className="font-medium">מצאתי דרך מקום אחר</span>
+                </Button>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
