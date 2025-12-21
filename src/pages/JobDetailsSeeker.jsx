@@ -16,6 +16,7 @@ import SeekerJobImages from "@/components/seeker/SeekerJobImages";
 import SeekerJobActions from "@/components/seeker/SeekerJobActions";
 import ApplicationSuccessModal from "@/components/jobs/ApplicationSuccessModal";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+import { calculate_match_score } from "@/utils/matchScore";
 
 export default function JobDetailsSeeker() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -45,6 +46,19 @@ export default function JobDetailsSeeker() {
         const jobResults = await Job.filter({ id: jobId });
         if (jobResults.length > 0) {
           const fetchedJob = jobResults[0];
+
+          // Calculate match score client-side for accuracy
+          if (userData) {
+            try {
+              const score = await calculate_match_score(userData, fetchedJob);
+              if (score !== null) {
+                fetchedJob.match_score = Math.round(score * 100);
+              }
+            } catch (e) {
+              console.error("Error calculating match score:", e);
+            }
+          }
+
           setJob(fetchedJob);
 
           // Check for existing application
