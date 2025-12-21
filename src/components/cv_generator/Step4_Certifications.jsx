@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, X, Check, ChevronsUpDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -62,11 +63,24 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
         setOpen(false);
     };
 
+    const { toast } = useToast();
+
     const handleSave = () => {
         const selectedType = deriveType(currentItem);
+        const trimmedNotes = currentItem.notes?.trim() || '';
 
-        // Basic validation
-        if (!selectedType && !currentItem.name && !currentItem.notes) return;
+        // Validation: Must have a type/name AND notes (if user requested "all fields")
+        // If Type is 'other', name must also be checked (though Step 4 UI doesn't explicitly show a Name input for Other, it infers it)
+        // Since UI only shows Combobox and Textarea, we validate those.
+
+        if (!selectedType || !trimmedNotes) {
+            toast({
+                title: "שגיאה בשמירה",
+                description: "יש לבחור הסמכה ולמלא הערות לפני השמירה.",
+                variant: "destructive"
+            });
+            return;
+        }
 
         // If "Other" is selected, we might want the name to be "Other" or blank, 
         // but the preview uses "name". 
@@ -76,9 +90,6 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
         if (selectedType === 'other' || !finalName) {
             finalName = currentItem.name || "הסמכה נוספת";
         }
-
-        // Ensure we save the notes!
-        const trimmedNotes = currentItem.notes?.trim() || '';
 
         const itemToSave = {
             ...currentItem,

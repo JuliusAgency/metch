@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, X, Check, ChevronsUpDown } from "lucide-react";
@@ -55,8 +56,26 @@ export default function Step2_WorkExperience({ data, setData, onDirtyChange }) {
     setCurrentItem((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
+  const { toast } = useToast();
+
   const handleSave = () => {
-    if (!currentItem.title && !currentItem.company) return; // Don't save empty items
+    // Validation
+    const isValid =
+      currentItem.title?.trim() &&
+      currentItem.company?.trim() &&
+      currentItem.location?.trim() &&
+      currentItem.start_date &&
+      (currentItem.is_current || currentItem.end_date) &&
+      currentItem.description?.trim();
+
+    if (!isValid) {
+      toast({
+        title: "שגיאה בשמירה",
+        description: "יש למלא את כל השדות (כולל תיאור) לפני השמירה.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     const existingItemIndex = data.findIndex((item) => item.id === currentItem.id);
 
