@@ -153,10 +153,30 @@ export default function Profile() {
     }
   };
 
-  const handleDeleteFile = () => {
-    // Here you would handle the delete logic (e.g., call CV.delete)
+  const handleDeleteFile = async () => {
+    if (!cvData?.id) return;
 
-    setCvData(null);
+    setLoading(true);
+    try {
+      await CV.delete(cvData.id);
+      await UserEntity.updateMyUserData({ resume_url: null });
+
+      setCvData(null);
+
+      toast({
+        title: "קובץ נמחק בהצלחה",
+        description: "קורות החיים הוסרו מהמערכת",
+      });
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      toast({
+        title: "שגיאה במחיקת הקובץ",
+        description: "אירעה שגיאה בעת מחיקת הקובץ. אנא נסה שנית.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogout = async () => {
