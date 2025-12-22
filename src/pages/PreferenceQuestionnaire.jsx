@@ -8,6 +8,7 @@ import { useRequireUserType } from '@/hooks/use-require-user-type';
 import Step1 from '@/components/preference-questionnaire/Step1';
 import Step2 from '@/components/preference-questionnaire/Step2';
 import ProgressBar from '@/components/preference-questionnaire/ProgressBar';
+import { Info } from 'lucide-react';
 
 export default function PreferenceQuestionnaire() {
   useRequireUserType();
@@ -88,6 +89,14 @@ export default function PreferenceQuestionnaire() {
                 saving={saving}
               />
             )}
+
+
+            <div className="mt-auto pt-10 w-full flex items-center justify-center gap-3 border-t border-gray-50">
+              <Info className="w-5 h-5 text-blue-400 shrink-0" />
+              <span className="text-gray-500 text-sm">
+                ההתאמה נעשית בהתבסס על קורות החיים, גם אם שאלון ההעדפה לא מדוייק
+              </span>
+            </div>
 
           </CardContent>
         </Card>

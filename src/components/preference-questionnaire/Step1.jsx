@@ -19,7 +19,7 @@ import jobsList from '../../../jobs.json';
 import locationsList from '../../../locations.json';
 
 // Option constants
-const FIELDS = ["מכירות", "שירות לקוחות", "תמיכה טכנית", "ניהול משרד"];
+// Option constants
 const JOB_TYPES = ["משמרות", "חלקית", "מלאה", "גמישה"];
 const AVAILABILITIES = ["חודש עד חודשיים", "שבוע עד שבועיים", "מיידי", "גמישה"];
 
@@ -60,21 +60,6 @@ export default function Step1({
 
     return (
         <div className="flex flex-col items-center text-center space-y-10 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-
-            {/* Field Section */}
-            <div className="w-full space-y-6">
-                <h2 className="text-3xl font-bold text-gray-900">באיזה תחום?</h2>
-                <div className="flex flex-wrap justify-center gap-4">
-                    {FIELDS.map(field => (
-                        <PillButton
-                            key={field}
-                            label={field}
-                            isSelected={preferences.field === field}
-                            onClick={() => handleSelection('field', field)}
-                        />
-                    ))}
-                </div>
-            </div>
 
             {/* Dropdowns Section */}
             <div className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -205,7 +190,8 @@ export default function Step1({
             <div className="pt-8">
                 <Button
                     onClick={onNext}
-                    className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-12 py-6 text-lg font-bold flex items-center gap-2 shadow-lg shadow-blue-200"
+                    disabled={!preferences.location || !preferences.profession_search || !preferences.job_type || !preferences.availability}
+                    className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-12 py-6 text-lg font-bold flex items-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     המשך
                     <ArrowLeft className="w-5 h-5" />

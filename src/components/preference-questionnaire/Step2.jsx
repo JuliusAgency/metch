@@ -3,15 +3,16 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 
 const TRAITS = [
-    "התמדה",
-    "ראש גדול/יוזמה אישית",
+    "מוטיבציה",
     "אחריות אישית",
-    "סדר וארגון",
-    "אדיבות ושירותיות",
-    "דייקנות והקפדה",
-    "יכולת למידה מהירה",
-    "תקשורת בינאישית מעולה",
-    "גמישות" // Assuming this is the 9th
+    "ראש גדול",
+    "תקשורת בין-אישית מעולה",
+    "עבודת צוות",
+    "יכולת למידה עצמית",
+    "גמישות",
+    "יצירתיות",
+    "חשיבה ביקורתית",
+    "ניהול זמן"
 ];
 
 const PillButton = ({ label, isSelected, onClick, disabled, className }) => (
@@ -60,7 +61,7 @@ export default function Step2({ preferences, setPreferences, onSave, onBack, sav
                 <p className="text-gray-500 text-sm">מידע זה פנימי על מנת שנמצא את המאץ' המושלם בלי לרמות</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-y-6 gap-x-4 w-fit mx-auto px-4 md:px-0">
+            <div className="flex flex-wrap justify-center gap-3 md:gap-4 w-full max-w-xl mx-auto px-4">
                 {TRAITS.map((trait, index) => {
                     const isSelected = selectedTraits.includes(trait);
                     const isMaxSelected = selectedTraits.length >= 3;
@@ -72,7 +73,7 @@ export default function Step2({ preferences, setPreferences, onSave, onBack, sav
                             isSelected={isSelected}
                             onClick={() => handleTraitToggle(trait)}
                             disabled={!isSelected && isMaxSelected} // Disable if not selected and max reached
-                            className="w-full md:w-auto min-w-[140px]"
+                            className="w-auto px-6 py-2 md:py-3 text-sm md:text-base"
                         />
                     );
                 })}
