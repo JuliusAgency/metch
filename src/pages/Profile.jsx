@@ -189,13 +189,26 @@ export default function Profile() {
   };
 
   const NoCvView = () => (
-    <div
-      className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-gray-50 transition-colors"
-      onClick={() => fileInputRef.current?.click()}
-    >
-      <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
-      <h3 className="mt-4 text-lg font-medium text-gray-900">העלה קורות חיים</h3>
-      <p className="mt-1 text-sm text-gray-500">גרור קובץ או לחץ כאן כדי לבחור (PDF, DOCX)</p>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div
+        className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-gray-50 transition-colors flex flex-col items-center justify-center min-h-[200px]"
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <UploadCloud className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900">העלה קורות חיים</h3>
+        <p className="mt-1 text-sm text-gray-500">גרור קובץ או לחץ כדי לבחור (PDF, DOCX)</p>
+      </div>
+
+      <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center flex flex-col items-center justify-center min-h-[200px] hover:border-blue-500 hover:bg-gray-50 transition-colors">
+        <FileText className="mx-auto h-12 w-12 text-blue-500 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900">אין לך קורות חיים?</h3>
+        <p className="mt-1 text-sm text-gray-500 mb-4">צור קורות חיים מקצועיים בקלות</p>
+        <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white rounded-full">
+          <Link to={createPageUrl('CVGenerator')}>
+            צור קורות חיים
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 
