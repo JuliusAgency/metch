@@ -27,8 +27,23 @@ const EmailConfirmed = () => {
           return;
         }
 
+        // Check if there is an access token hash but user is not loaded yet
+        if (!user && (window.location.hash.includes('access_token') || window.location.hash.includes('type=recovery') || window.location.hash.includes('error='))) {
+          // Let Supabase process the hash
+          return;
+        }
+
         // Check if user exists from UserContext (which uses Supabase session)
         if (!user) {
+          // Double check if we truly don't have a session
+          const { data: { session } } = await import('@/api/supabaseClient').then(m => m.supabase.auth.getSession());
+
+          if (session?.user) {
+            // We have a user, wait for context to update or proceed with this user
+            // Context update should trigger re-run
+            return;
+          }
+
           redirectInitiatedRef.current = true;
           toast({
             title: "משתמש לא נמצא",

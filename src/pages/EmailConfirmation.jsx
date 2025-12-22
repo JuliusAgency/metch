@@ -25,11 +25,14 @@ const EmailConfirmation = () => {
     setLoading(true);
 
     try {
+      const emailRedirectTo = `${window.location.origin}/EmailConfirmed`;
+      console.log('Resending email to:', email, 'Redirecting to:', emailRedirectTo);
+
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: email,
         options: {
-          emailRedirectTo: `${window.location.origin}/EmailConfirmed`
+          emailRedirectTo: emailRedirectTo
         }
       });
 
