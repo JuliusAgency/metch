@@ -568,7 +568,20 @@ const EmployerDashboard = ({ user }) => {
             </div>
             <div className="space-y-4 candidate-list">
               {filteredCandidates.length > 0 ? (filteredCandidates.map((candidate, index) => {
-                const match = Math.floor(Math.random() * 24) + 75; return (
+                // Calculate a stable match score based on candidate ID to ensure consistency
+                const getStableMatchScore = (id) => {
+                  if (!id) return 90;
+                  let hash = 0;
+                  const str = String(id);
+                  for (let i = 0; i < str.length; i++) {
+                    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+                  }
+                  return 75 + (Math.abs(hash) % 25);
+                };
+
+                const match = getStableMatchScore(candidate.id);
+
+                return (
                   <motion.div key={candidate.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
                     <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl">
                       <CardContent className="p-4">
@@ -580,7 +593,7 @@ const EmployerDashboard = ({ user }) => {
                           <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full md:w-auto">
                             <div className="flex flex-wrap gap-2 justify-center sm:justify-start">{candidate.skills?.slice(0, 3).map((skill, i) => (<Badge key={i} variant="outline" className="border-blue-200 text-blue-700 bg-blue-50/50 text-xs">{skill}</Badge>))}</div>
                             <div className="w-full sm:w-48 text-right"><div className="text-sm text-gray-600 mb-1.5">{match}% התאמה</div><div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden"><div className={`h-full transition-all duration-500 ${match >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${match}%` }}></div></div></div>
-                            <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-full sm:w-auto view-candidate-button"><Link to={createPageUrl(`CandidateProfile?id=${candidate.id}`)} onClick={() => handleViewCandidate(candidate)}>לצפייה</Link></Button>
+                            <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-full sm:w-auto view-candidate-button"><Link to={createPageUrl(`CandidateProfile?id=${candidate.id}&match=${match}`)} onClick={() => handleViewCandidate(candidate)}>לצפייה</Link></Button>
                           </div>
                         </div>
                       </CardContent>

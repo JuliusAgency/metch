@@ -269,7 +269,21 @@ export default function CandidateProfile() {
     return <div className="text-center py-12">Candidate not found.</div>;
   }
 
-  const matchScore = 90;
+  // Calculate a stable match score based on candidate ID to ensure consistency
+  // Use same logic as Dashboard to ensure match works if navigating directly
+  const getStableMatchScore = (id) => {
+    if (!id) return 90;
+    let hash = 0;
+    const str = String(id);
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return 75 + (Math.abs(hash) % 25);
+  };
+
+  const params = new URLSearchParams(location.search);
+  const matchFromUrl = params.get("match");
+  const matchScore = matchFromUrl ? parseInt(matchFromUrl, 10) : (candidate ? getStableMatchScore(candidate.id) : 90);
 
   const availabilityText = {
     immediate: "מיידי",
