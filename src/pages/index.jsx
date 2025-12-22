@@ -62,6 +62,8 @@ import EmailConfirmed from "./EmailConfirmed";
 import UserTypeSelection from "./UserTypeSelection";
 import ForgotPassword from "./ForgotPassword";
 
+import Payments from "./Payments";
+
 import Statistics from "./Statistics";
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -131,6 +133,8 @@ const PAGES = {
 
     Statistics: Statistics,
 
+    Payments: Payments,
+
 
 }
 
@@ -190,6 +194,7 @@ function PagesContent() {
                 <Route path="/CVGenerator" element={<AuthGuard><CVGenerator /></AuthGuard>} />
                 <Route path="/PreferenceQuestionnaire" element={<AuthGuard><PreferenceQuestionnaire /></AuthGuard>} />
                 <Route path="/Statistics" element={<AuthGuard><Statistics /></AuthGuard>} />
+                <Route path="/Payments" element={<AuthGuard><Payments /></AuthGuard>} />
 
                 {/* Catch-all route */}
                 <Route path="*" element={<NotFound />} />

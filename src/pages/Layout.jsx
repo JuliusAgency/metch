@@ -66,7 +66,7 @@ export default function Layout({ children, currentPageName }) {
     { page: "Statistics", icon: BarChart2, text: "סטטיסטיקות", employer: true }, // Added
     { page: "Profile", icon: User, text: "פרופיל", seeker: true },
     { page: "Notifications", icon: Bell, text: "התראות", both: true },
-    { page: "CreditCard", icon: CreditCard, text: "תשלומים", both: true, isPlaceholder: true },
+    { page: "Payments", icon: CreditCard, text: "תשלומים", both: true },
     { page: "Settings", icon: Settings, text: "הגדרות", both: true },
     { page: isJobSeeker ? "MessagesSeeker" : "Messages", icon: MessageSquareText, text: "הודעות", both: true },
     { page: "Contact", icon: Headphones, text: "צור קשר", both: true },
@@ -211,8 +211,10 @@ export default function Layout({ children, currentPageName }) {
               </Button>
               <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-              <Button variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
-                <CreditCard className="w-7 h-7 text-gray-700" />
+              <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
+                <Link to={createPageUrl("Payments")}>
+                  <CreditCard className="w-7 h-7 text-gray-700" />
+                </Link>
               </Button>
               <div className="h-6 w-px bg-white/50 mx-1"></div>
 
