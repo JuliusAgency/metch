@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/api/supabaseClient';
 
 // Figma design assets
 const imgHugeiconsAiMagic = "http://localhost:3845/assets/289919713a3bb46a7fa4929734053736f1a07e8a.svg";
@@ -8,22 +9,41 @@ const imgHugeiconsAiMagic = "http://localhost:3845/assets/289919713a3bb46a7fa492
 const EmailConfirmation = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const location = useLocation();
+  const email = location.state?.email;
 
   const handleResendEmail = async () => {
+    if (!email) {
+      toast({
+        title: "שגיאה",
+        description: "כתובת המייל לא נמצאה. אנא נסו להירשם שוב.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
-    
+
     try {
-      // Simulate resending email
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/EmailConfirmed`
+        }
+      });
+
+      if (error) throw error;
+
       toast({
         title: "קוד נשלח שוב!",
         description: "בדקו את תיבת המייל שלכם",
       });
     } catch (error) {
+      console.error('Error resending email:', error);
       toast({
         title: "שגיאה בשליחת קוד",
-        description: "אירעה שגיאה בעת שליחת הקוד",
+        description: error.message || "אירעה שגיאה בעת שליחת הקוד",
         variant: "destructive",
       });
     } finally {
@@ -41,7 +61,7 @@ const EmailConfirmation = () => {
 
       {/* Main Content */}
       <div className="relative z-10 w-full max-w-md mx-auto" data-node-id="678:3187">
-        
+
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <div className="backdrop-blur-[43px] backdrop-filter bg-[rgba(204,229,248,0.3)] border border-solid border-white rounded-full p-4" data-name="menu מחפש עבודה" data-node-id="678:3188">
@@ -56,7 +76,7 @@ const EmailConfirmation = () => {
 
         {/* Form Content */}
         <div className="space-y-8" data-node-id="597:1981">
-          
+
           {/* Title */}
           <div className="text-center" data-name="Title" data-node-id="418:1620">
             <h1 className="font-['Rubik:Bold',_sans-serif] font-bold text-3xl md:text-4xl text-[#32343d]" dir="auto" data-node-id="418:1621">
@@ -73,7 +93,7 @@ const EmailConfirmation = () => {
 
           {/* Resend Email Button */}
           <div className="text-center" data-node-id="418:1671">
-            <button 
+            <button
               onClick={handleResendEmail}
               disabled={loading}
               className="font-['Assistant:Bold',_sans-serif] font-bold text-[14px] text-[#2987cd] hover:underline disabled:opacity-50"

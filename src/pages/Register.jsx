@@ -54,7 +54,7 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -69,13 +69,13 @@ const Register = () => {
         password: signUpData.password,
         created_at: new Date().toISOString()
       });
-      
+
       toast({
         title: "הרשמה הושלמה בהצלחה!",
         description: "החשבון נוצר בהצלחה. בדקו את המייל שלכם לאימות",
       });
-      
-      navigate('/EmailConfirmation');
+
+      navigate('/EmailConfirmation', { state: { email: signUpData.email } });
     } catch (error) {
       // Check if user already exists - Supabase returns specific error messages
       if (error.message && (
@@ -115,7 +115,7 @@ const Register = () => {
 
       {/* Main Content */}
       <div className="relative z-10 w-full max-w-md mx-auto" data-node-id="648:3063">
-        
+
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <div className="backdrop-blur-[43px] backdrop-filter bg-[rgba(204,229,248,0.3)] border border-solid border-white rounded-full p-4" data-name="menu מחפש עבודה" data-node-id="646:2599">
@@ -130,7 +130,7 @@ const Register = () => {
 
         {/* Form Fields */}
         <div className="space-y-8" data-name="Fields" data-node-id="418:1501">
-          
+
           {/* Title */}
           <div className="text-center" data-name="Title" data-node-id="418:1502">
             <h1 className="font-['Rubik:Bold',_sans-serif] font-bold text-3xl md:text-4xl text-[#32343d] mb-2" dir="auto" data-node-id="418:1503">
@@ -143,7 +143,7 @@ const Register = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6" data-name="Fields" data-node-id="418:1505">
-            
+
             {/* Email Field */}
             <div className="relative" data-name="Field" data-node-id="418:1506">
               <div className="absolute bottom-0 left-0 right-0 h-px bg-[#6a6a6a]" data-name="Line" data-node-id="I418:1506;1122:1826"></div>
@@ -220,22 +220,22 @@ const Register = () => {
 
           {/* Register Button */}
           <div className="pt-4" data-name="Inform" data-node-id="418:1480">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               onClick={handleSubmit}
               disabled={loading}
               className="w-full bg-[#2987cd] hover:bg-[#2987cd]/90 text-white rounded-full h-12 text-lg font-bold"
-              data-name="Button" 
+              data-name="Button"
               data-node-id="418:1481"
             >
-                <div className="flex items-center space-x-3" data-name="Inside" data-node-id="418:1482">
-                  <span className="font-['Rubik:Bold',_sans-serif] font-bold text-lg" dir="auto" data-node-id="418:1485">
-                    הרשמה
-                  </span>
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
+              <div className="flex items-center space-x-3" data-name="Inside" data-node-id="418:1482">
+                <span className="font-['Rubik:Bold',_sans-serif] font-bold text-lg" dir="auto" data-node-id="418:1485">
+                  הרשמה
+                </span>
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
             </Button>
           </div>
 
@@ -248,12 +248,12 @@ const Register = () => {
               </span>
               <div className="flex-1 h-px bg-[#6a6a6a]"></div>
             </div>
-            <Button 
+            <Button
               type="button"
               disabled={loading}
               variant="outline"
               className="w-full bg-white border-[#e3e3ea] hover:bg-gray-50 rounded-full h-12 text-lg"
-              data-name="Button" 
+              data-name="Button"
               data-node-id="418:1492"
             >
               <div className="flex items-center space-x-3">
