@@ -17,12 +17,13 @@ export default function Step6_Summary({ data, setData }) {
         setIsImproving(true);
         try {
             const response = await Core.InvokeLLM({
-                prompt: `Improve the following professional summary for a CV. Make it professional, concise, and impressive. Keep the same language as the input (Hebrew).
+                prompt: `Improve the following professional summary for a CV. Make it professional, concise, and impressive. 
+                You must output the result in Hebrew language only, regardless of the input language.
                 
                 Input text:
                 "${data}"
                 
-                Output only the improved text, nothing else.`,
+                Output only the improved text in Hebrew, nothing else.`,
                 temperature: 0.7
             });
 
