@@ -202,7 +202,7 @@ export default function Step5Preview({ jobData, setJobData }) {
 
             {/* Company Perks Badges */}
             <div className="flex justify-center gap-2 mb-8 flex-wrap">
-              {jobData.company_perks && jobData.company_perks.length > 0 ? (
+              {Array.isArray(jobData.company_perks) && jobData.company_perks.length > 0 ? (
                 jobData.company_perks.slice(0, 4).map((perk, index) => {
                   const colors = [
                     "bg-green-100 text-green-800",
@@ -248,7 +248,7 @@ export default function Step5Preview({ jobData, setJobData }) {
                 חומרי אימון
               </h3>
               <div className="space-y-2 text-gray-700">
-                {jobData.structured_education &&
+                {Array.isArray(jobData.structured_education) &&
                   jobData.structured_education.length > 0 ? (
                   jobData.structured_education.map((edu, index) => (
                     <p key={index} className="text-sm">
@@ -279,7 +279,7 @@ export default function Step5Preview({ jobData, setJobData }) {
             <div className="text-right">
               <h3 className="font-bold text-lg mb-4 text-gray-900">דרישות</h3>
               <div className="space-y-2 text-gray-700">
-                {jobData.structured_requirements &&
+                {Array.isArray(jobData.structured_requirements) &&
                   jobData.structured_requirements.length > 0 ? (
                   jobData.structured_requirements.map((req, index) => (
                     <p key={index} className="text-sm">

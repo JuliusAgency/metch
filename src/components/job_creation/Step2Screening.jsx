@@ -53,6 +53,7 @@ const HelpTooltip = ({ isOpen, onClose }) => {
 
 const DynamicQuestionInput = ({ type, placeholder, questions, onAdd, onRemove }) => {
   const [inputValue, setInputValue] = useState("");
+  const safeQuestions = Array.isArray(questions) ? questions : [];
 
   const handleAddItem = () => {
     if (inputValue.trim() !== "") {
@@ -91,10 +92,10 @@ const DynamicQuestionInput = ({ type, placeholder, questions, onAdd, onRemove })
           + הוסף שאלה
         </Button>
       </div>
-      {questions.filter((q) => q.type === type).length > 0 &&
+      {safeQuestions.filter((q) => q.type === type).length > 0 &&
         <div className="flex flex-wrap gap-2 pt-2">
           <AnimatePresence>
-            {questions.filter((q) => q.type === type).map((item, index) =>
+            {safeQuestions.filter((q) => q.type === type).map((item, index) =>
               <motion.div
                 key={`${type}-${index}`}
                 layout
@@ -114,7 +115,6 @@ const DynamicQuestionInput = ({ type, placeholder, questions, onAdd, onRemove })
         </div>
       }
     </div>);
-
 };
 
 export default function Step2Screening({ jobData, setJobData, onSave }) {
@@ -123,14 +123,14 @@ export default function Step2Screening({ jobData, setJobData, onSave }) {
   const handleAddQuestion = (question) => {
     setJobData((prev) => ({
       ...prev,
-      screening_questions: [...(prev.screening_questions || []), question]
+      screening_questions: [...(Array.isArray(prev.screening_questions) ? prev.screening_questions : []), question]
     }));
   };
 
   const handleRemoveQuestion = (questionToRemove) => {
     setJobData((prev) => ({
       ...prev,
-      screening_questions: (prev.screening_questions || []).filter((q) => q.text !== questionToRemove.text || q.type !== questionToRemove.type)
+      screening_questions: (Array.isArray(prev.screening_questions) ? prev.screening_questions : []).filter((q) => q.text !== questionToRemove.text || q.type !== questionToRemove.type)
     }));
   };
 
@@ -152,7 +152,7 @@ export default function Step2Screening({ jobData, setJobData, onSave }) {
         <DynamicQuestionInput
           type="text"
           placeholder="שאלה"
-          questions={jobData.screening_questions || []}
+          questions={Array.isArray(jobData.screening_questions) ? jobData.screening_questions : []}
           onAdd={handleAddQuestion}
           onRemove={handleRemoveQuestion} />
 
@@ -160,7 +160,7 @@ export default function Step2Screening({ jobData, setJobData, onSave }) {
         <DynamicQuestionInput
           type="yes_no"
           placeholder="שאלת כן/לא"
-          questions={jobData.screening_questions || []}
+          questions={Array.isArray(jobData.screening_questions) ? jobData.screening_questions : []}
           onAdd={handleAddQuestion}
           onRemove={handleRemoveQuestion} />
 

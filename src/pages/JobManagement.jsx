@@ -37,7 +37,15 @@ export default function JobManagement() {
 
       // Load jobs created by the current user
       const jobsData = await Job.filter({ created_by: userData.email }, "-created_date", 50);
-      setJobs(jobsData);
+
+      // Sort in memory to ensure most recently updated/created jobs are first
+      const sortedJobs = jobsData.sort((a, b) => {
+        const dateA = new Date(a.updated_date || a.created_date);
+        const dateB = new Date(b.updated_date || b.created_date);
+        return dateB - dateA;
+      });
+
+      setJobs(sortedJobs);
 
       // Removed applications loading as per outline
     } catch (error) {

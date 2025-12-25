@@ -129,7 +129,8 @@ export default function CreateJob() {
         // For new jobs, always set created_by fields and created_date
         const newJobData = {
           ...jobDataToSave,
-          created_date: now
+          created_date: now,
+          updated_date: now
         };
         createdOrUpdatedJob = await Job.create(newJobData);
 
