@@ -111,7 +111,7 @@ const CareerStageModal = ({ isOpen, onComplete }) => {
                         </button>
 
                         <p className="mt-6 text-[#003566] text-xs md:text-sm font-['Rubik:Regular',_sans-serif] opacity-80 text-center">
-                            אל דאגה, ניתן לשנות את הבחירה בעמוד הפרופיל האישי בכל עת.
+                            אל דאגה, ניתן לשנות את הבחירה בעמוד הקו״ח שלי בכל עת.
                         </p>
                     </div>
                 </motion.div>

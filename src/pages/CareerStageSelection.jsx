@@ -121,7 +121,7 @@ const CareerStageSelection = () => {
                 </button>
 
                 <p className="mt-8 text-[#003566] text-sm md:text-base font-['Rubik:Regular',_sans-serif] opacity-80 text-center">
-                    אל דאגה, ניתן לשנות את הבחירה בעמוד הפרופיל האישי בכל עת.
+                    אל דאגה, ניתן לשנות את הבחירה בעמוד הקו״ח שלי בכל עת.
                 </p>
             </div>
         </div>

@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2, LogOut } from 'lucide-react';
+import { FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2, LogOut, Compass } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { useUser } from '@/contexts/UserContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useRequireUserType } from '@/hooks/use-require-user-type';
+import CareerStageModal from '@/components/dashboard/CareerStageModal';
 
 export default function Profile() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -23,6 +24,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [isLookingForJob, setIsLookingForJob] = useState(true);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isCareerStageModalOpen, setIsCareerStageModalOpen] = useState(false);
   const [statusModalStep, setStatusModalStep] = useState(1);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -282,12 +284,23 @@ export default function Profile() {
                   {cvData ? <FileManagementCard /> : <NoCvView />}
 
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-4">
-                    <Button asChild variant="outline" className="w-full sm:w-auto h-12 rounded-lg border-gray-300 text-gray-800 font-semibold text-base justify-between px-5">
-                      <Link to={createPageUrl('PreferenceQuestionnaire')}>
-                        ניהול שאלון העדפה
-                        <ChevronLeft className="w-5 h-5" />
-                      </Link>
-                    </Button>
+                    <div className="flex gap-4 w-full sm:w-auto">
+                      <Button asChild variant="outline" className="w-full sm:w-auto h-12 rounded-lg border-gray-300 text-gray-800 font-semibold text-base justify-between px-5">
+                        <Link to={createPageUrl('PreferenceQuestionnaire')}>
+                          ניהול שאלון העדפה
+                          <ChevronLeft className="w-5 h-5" />
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full sm:w-auto h-12 rounded-lg border-gray-300 text-gray-800 font-semibold text-base justify-between px-5"
+                        onClick={() => setIsCareerStageModalOpen(true)}
+                      >
+                        שלב קריירה
+                        <Compass className="w-5 h-5 ml-2" />
+                      </Button>
+                    </div>
+
                     <div className="flex items-center gap-3">
                       <Switch
                         checked={isLookingForJob}
@@ -383,6 +396,10 @@ export default function Profile() {
           </div>
         </DialogContent>
       </Dialog>
+      <CareerStageModal
+        isOpen={isCareerStageModalOpen}
+        onComplete={() => setIsCareerStageModalOpen(false)}
+      />
     </div>
   );
 }
