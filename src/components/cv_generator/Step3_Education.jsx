@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,7 +56,25 @@ export default function Step3_Education({ data, setData, onDirtyChange }) {
   };
 
   const handleSave = () => {
-    if (!currentItem.institution && !currentItem.degree) return;
+    const requiredFields = [
+      { key: 'institution', label: 'שם מוסד' },
+      { key: 'education_type', label: 'סוג השכלה' },
+      { key: 'degree', label: 'תחום השכלה' },
+      { key: 'start_date', label: 'תאריך התחלה' }
+    ];
+
+    const missingFields = requiredFields
+      .filter(field => !currentItem[field.key])
+      .map(field => field.label);
+
+    if (!currentItem.is_current && !currentItem.end_date) {
+      missingFields.push('תאריך סיום');
+    }
+
+    if (missingFields.length > 0) {
+      toast.error(`נא למלא שדות חובה: ${missingFields.join(', ')}`);
+      return;
+    }
 
     const existingItemIndex = data.findIndex((item) => item.id === currentItem.id);
 
