@@ -1,6 +1,8 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Eye, Download, LogOut } from 'lucide-react';
+import { Eye, Download, LogOut, Package } from 'lucide-react';
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 export default function Payments() {
     // Mock data for transactions based on the screenshot
@@ -23,9 +25,17 @@ export default function Payments() {
                     <p className="font-medium text-gray-600 text-sm" dir="ltr">xxxx 6655</p>
                 </div>
                 {/* Left Side: Button */}
-                <Button className="bg-[#0F172A] hover:bg-[#1e293b] text-white rounded-full px-6 py-2 h-auto text-sm font-medium">
-                    שינוי אמצעי תשלום
-                </Button>
+                <div className="flex gap-3">
+                    <Link to={createPageUrl("Packages")}>
+                        <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2 h-auto text-sm font-medium">
+                            <Package className="w-4 h-4 ml-2" />
+                            רכישת חבילות
+                        </Button>
+                    </Link>
+                    <Button className="bg-[#0F172A] hover:bg-[#1e293b] text-white rounded-full px-6 py-2 h-auto text-sm font-medium">
+                        שינוי אמצעי תשלום
+                    </Button>
+                </div>
             </div>
 
             {/* Recent Transactions Title */}

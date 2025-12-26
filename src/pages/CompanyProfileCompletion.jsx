@@ -100,11 +100,11 @@ export default function CompanyProfileCompletion() {
   };
 
   const renderStepContent = () => {
-    switch(step) {
+    switch (step) {
       case 1:
         return <CompanyDetailsStep companyData={companyData} setCompanyData={setCompanyData} />;
       case 2:
-        return <PackageSelectionStep packageData={packageData} setPackageData={setPackageData} />;
+        return <PackageSelectionStep packageData={packageData} setPackageData={setPackageData} onBack={prevStep} />;
       case 3:
         return <PaymentStep paymentData={paymentData} setPaymentData={setPaymentData} />;
       case 4:
@@ -123,7 +123,7 @@ export default function CompanyProfileCompletion() {
       <div className="w-[85vw] mx-auto">
         <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden p-8">
           <div className="max-w-4xl mx-auto">
-            
+
 
             <div className="my-10 min-h-[300px]">
               {renderStepContent()}
