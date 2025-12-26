@@ -6,7 +6,6 @@ import { createPageUrl } from '@/utils';
 
 export default function JobStatsItem({ job, viewsCount }) {
     const navigate = useNavigate();
-    const isActive = job.status === 'active';
 
     return (
         <div
@@ -17,7 +16,12 @@ export default function JobStatsItem({ job, viewsCount }) {
 
                 {/* Status & Title */}
                 <div className="flex items-center gap-3 min-w-[200px] flex-1">
-                    <div className={`w-3 h-3 rounded-full ${isActive ? 'bg-[#39FF14] shadow-[0_0_8px_rgba(57,255,20,0.6)]' : 'bg-gray-300'}`} />
+                    <div className={`w-3 h-3 rounded-full ${job.status === 'active'
+                        ? 'bg-[#39FF14] shadow-[0_0_8px_rgba(57,255,20,0.6)]'
+                        : job.status === 'paused'
+                            ? 'bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.4)]'
+                            : 'bg-gray-300'
+                        }`} />
                     <h3 className="font-semibold text-blue-500 text-lg truncate text-right">{job.title}</h3>
                 </div>
 
@@ -26,7 +30,7 @@ export default function JobStatsItem({ job, viewsCount }) {
 
                 {/* Date */}
                 <div className="text-gray-900 font-medium w-32 text-center">
-                    {job.start_date ? format(new Date(job.start_date), 'dd.MM.yy') : (job.created_date ? format(new Date(job.created_date), 'dd.MM.yy') : '-')}
+                    {job.created_date ? format(new Date(job.created_date), 'dd.MM.yy') : '-'}
                 </div>
 
                 {/* Resumes Count */}

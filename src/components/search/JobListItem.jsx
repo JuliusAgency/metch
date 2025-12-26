@@ -2,11 +2,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  MapPin,
-  Clock,
-  Briefcase,
-  Heart,
-  Eye
+    MapPin,
+    Clock,
+    Briefcase,
+    Heart,
+    Eye
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -54,10 +54,9 @@ const JobListItem = ({ job, index, savedJobs, toggleSaveJob, user }) => (
                             <div className="text-sm text-gray-600 mb-2">{job.match_score}% התאמה</div>
                             <div dir="ltr" className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
                                 <div
-                                    className={`h-full transition-all duration-500 ${
-                                        job.match_score >= 85 ? 'bg-green-400' :
-                                        job.match_score >= 70 ? 'bg-yellow-400' : 'bg-orange-400'
-                                    }`}
+                                    className={`h-full transition-all duration-500 ${job.match_score >= 85 ? 'bg-green-400' :
+                                            job.match_score >= 70 ? 'bg-yellow-400' : 'bg-orange-400'
+                                        }`}
                                     style={{ width: `${job.match_score}%` }}
                                 ></div>
                             </div>
@@ -70,15 +69,15 @@ const JobListItem = ({ job, index, savedJobs, toggleSaveJob, user }) => (
 
                         <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
                             <span className="flex items-center gap-1">
-                                <MapPin className="w-4 h-4"/>
+                                <MapPin className="w-4 h-4" />
                                 {job.location}
                             </span>
                             <span className="flex items-center gap-1">
-                                <Briefcase className="w-4 h-4"/>
+                                <Briefcase className="w-4 h-4" />
                                 {job.employment_type}
                             </span>
                             <span className="flex items-center gap-1">
-                                <Clock className="w-4 h-4"/>
+                                <Clock className="w-4 h-4" />
                                 {job.start_date}
                             </span>
                         </div>

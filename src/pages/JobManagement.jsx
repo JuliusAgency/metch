@@ -40,8 +40,8 @@ export default function JobManagement() {
 
       // Sort in memory to ensure most recently updated/created jobs are first
       const sortedJobs = jobsData.sort((a, b) => {
-        const dateA = new Date(a.updated_date || a.created_date);
-        const dateB = new Date(b.updated_date || b.created_date);
+        const dateA = new Date(a.created_date);
+        const dateB = new Date(b.created_date);
         return dateB - dateA;
       });
 

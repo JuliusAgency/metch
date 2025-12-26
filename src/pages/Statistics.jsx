@@ -27,7 +27,14 @@ export default function Statistics() {
 
             // Fetch all jobs for the user
             const userJobs = await Job.filter({ created_by: userData.email }, "-created_date", 100);
-            setJobs(userJobs);
+
+            // Sort in memory to ensure newest jobs are first
+            const sortedJobs = userJobs.sort((a, b) => {
+                const dateA = new Date(a.created_date);
+                const dateB = new Date(b.created_date);
+                return dateB - dateA;
+            });
+            setJobs(sortedJobs);
 
             // Fetch view counts for these jobs
             // Since we don't have a direct aggregation, we might need to fetch counts individually or all views

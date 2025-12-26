@@ -25,7 +25,13 @@ export default function JobSearch() {
   const loadJobs = async () => {
     try {
       const jobsData = await Job.filter({});
-      setJobs(jobsData);
+      // Sort chronologically (newest first)
+      const sortedJobs = jobsData.sort((a, b) => {
+        const dateA = new Date(a.created_date);
+        const dateB = new Date(b.created_date);
+        return dateB - dateA;
+      });
+      setJobs(sortedJobs);
     } catch (error) {
       console.error("Error loading jobs:", error);
     }
@@ -43,9 +49,9 @@ export default function JobSearch() {
   const toggleSaveJob = async (jobId) => {
     const job = jobs.find(j => j.id === jobId);
     const wasLiked = savedJobs.includes(jobId);
-    
-    setSavedJobs(prev => 
-      wasLiked 
+
+    setSavedJobs(prev =>
+      wasLiked
         ? prev.filter(id => id !== jobId)
         : [...prev, jobId]
     );
@@ -70,7 +76,7 @@ export default function JobSearch() {
   };
 
   const filteredJobs = jobs.filter(job =>
-    job.title.includes(searchTerm) || 
+    job.title.includes(searchTerm) ||
     job.company.includes(searchTerm) ||
     job.tags?.some(tag => tag.includes(searchTerm)) ||
     job.description.includes(searchTerm)
