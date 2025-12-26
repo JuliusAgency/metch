@@ -39,6 +39,9 @@ const PillButton = ({ label, isSelected, onClick }) => (
     </button>
 );
 
+const uniqueLocations = [...new Set(locationsList)];
+const uniqueJobs = [...new Set(jobsList)];
+
 export default function Step1({
     preferences,
     setPreferences,
@@ -84,12 +87,12 @@ export default function Step1({
                             <CommandList>
                                 <CommandEmpty>לא נמצא מיקום.</CommandEmpty>
                                 <CommandGroup className="max-h-[300px] overflow-y-auto">
-                                    {locationsList.map((loc) => (
+                                    {uniqueLocations.map((loc) => (
                                         <CommandItem
                                             key={loc}
                                             value={loc}
-                                            onSelect={(currentValue) => {
-                                                handleChange('location', currentValue);
+                                            onSelect={() => {
+                                                handleChange('location', loc);
                                                 setOpenLocation(false);
                                             }}
                                             className="text-right flex justify-between cursor-pointer"
@@ -130,12 +133,12 @@ export default function Step1({
                             <CommandList>
                                 <CommandEmpty>לא נמצא מקצוע.</CommandEmpty>
                                 <CommandGroup className="max-h-[300px] overflow-y-auto">
-                                    {jobsList.map((job) => (
+                                    {uniqueJobs.map((job) => (
                                         <CommandItem
                                             key={job}
                                             value={job}
-                                            onSelect={(currentValue) => {
-                                                handleChange('profession_search', currentValue);
+                                            onSelect={() => {
+                                                handleChange('profession_search', job);
                                                 setOpenProfession(false);
                                             }}
                                             className="text-right flex justify-between cursor-pointer"

@@ -10,6 +10,29 @@ import Step2 from '@/components/preference-questionnaire/Step2';
 import ProgressBar from '@/components/preference-questionnaire/ProgressBar';
 import { Info } from 'lucide-react';
 
+const AVAILABILITY_MAPPING = {
+  'immediate': 'מיידי',
+  'two_weeks': 'שבוע עד שבועיים',
+  'one_month': 'חודש עד חודשיים',
+  'negotiable': 'גמישה'
+};
+
+const REVERSE_AVAILABILITY_MAPPING = Object.fromEntries(
+  Object.entries(AVAILABILITY_MAPPING).map(([k, v]) => [v, k])
+);
+
+// Based on matchScore.js expecting 'full_time', 'part_time'
+const JOB_TYPE_MAPPING = {
+  'full_time': 'מלאה',
+  'part_time': 'חלקית',
+  'shifts': 'משמרות',
+  'flexible': 'גמישה'
+};
+
+const REVERSE_JOB_TYPE_MAPPING = Object.fromEntries(
+  Object.entries(JOB_TYPE_MAPPING).map(([k, v]) => [v, k])
+);
+
 export default function PreferenceQuestionnaire() {
   useRequireUserType();
 
@@ -26,9 +49,53 @@ export default function PreferenceQuestionnaire() {
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    const loadPreferences = async () => {
+      try {
+        const user = await User.me();
+
+        // Traits
+        let traits = [];
+        if (Array.isArray(user.character_traits)) {
+          traits = user.character_traits;
+        } else if (typeof user.character_traits === 'string') {
+          try {
+            const parsed = JSON.parse(user.character_traits);
+            traits = Array.isArray(parsed) ? parsed : [];
+          } catch (e) {
+            console.error("Failed to parse character_traits:", e);
+            traits = [];
+          }
+        }
+
+        // Job Type (Handle Array or String & Map to Hebrew)
+        let loadedJobType = '';
+        const dbJobType = Array.isArray(user.preferred_job_types) && user.preferred_job_types.length > 0
+          ? user.preferred_job_types[0]
+          : (typeof user.preferred_job_types === 'string' ? user.preferred_job_types : '');
+
+        loadedJobType = JOB_TYPE_MAPPING[dbJobType] || dbJobType || '';
+
+        // Availability (Map to Hebrew)
+        const loadedAvailability = AVAILABILITY_MAPPING[user.availability] || user.availability || '';
+
+        setPreferences({
+          field: user.specialization || '',
+          profession_search: user.profession || '',
+          location: user.preferred_location || '',
+          job_type: loadedJobType,
+          availability: loadedAvailability,
+          traits: traits
+        });
+      } catch (error) {
+        console.error("Failed to load user preferences:", error);
+      }
+    };
+    loadPreferences();
+  }, []);
+
   const handleNext = () => {
     setStep(2);
-    // Scroll to top?
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -40,20 +107,27 @@ export default function PreferenceQuestionnaire() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await User.updateMyUserData({
-        preference_field: preferences.field,
-        preference_job_type: preferences.job_type,
-        preference_availability: preferences.availability,
-        preference_location: preferences.location,
-        preference_profession: preferences.profession_search,
-        preference_traits: preferences.traits, // Assuming the backend can handle array or we might need to join().
-      });
+      // Prepare data for DB
+      const dbAvailability = REVERSE_AVAILABILITY_MAPPING[preferences.availability] || preferences.availability;
 
+      const dbJobType = REVERSE_JOB_TYPE_MAPPING[preferences.job_type] || preferences.job_type;
+      const dbJobTypesArray = dbJobType ? [dbJobType] : [];
 
+      const updateData = {
+        profession: preferences.profession_search,
+        preferred_location: preferences.location,
+        preferred_job_types: dbJobTypesArray,
+        availability: dbAvailability,
+        character_traits: preferences.traits,
+        specialization: preferences.field,
+      };
+
+      await User.updateMyUserData(updateData);
       navigate(createPageUrl('Profile'));
     } catch (error) {
       console.error("Failed to save preferences:", error);
-      navigate(createPageUrl('Profile'));
+      // In case of error (e.g. schema mismatch), we might still want to navigate or show distinct error
+      // navigate(createPageUrl('Profile')); // Uncomment to force navigate on error if needed
     } finally {
       setSaving(false);
     }
