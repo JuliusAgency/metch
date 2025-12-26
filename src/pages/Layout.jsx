@@ -64,10 +64,10 @@ export default function Layout({ children, currentPageName }) {
     { page: "Insights", icon: TrendingUp, text: "תובנות", seeker: true },
     { page: "JobManagement", icon: Briefcase, text: "משרות", employer: true },
     { page: "Statistics", icon: BarChart2, text: "סטטיסטיקות", employer: true }, // Added
-    { page: "Profile", icon: User, text: "פרופיל", seeker: true },
+    { page: "Profile", icon: FileText, text: "פרופיל", seeker: true },
     { page: "Notifications", icon: Bell, text: "התראות", both: true },
     { page: "Payments", icon: CreditCard, text: "תשלומים", both: true },
-    { page: "Settings", icon: Settings, text: "הגדרות", both: true },
+    { page: "Settings", icon: isJobSeeker ? User : Settings, text: "הגדרות", both: true },
     { page: isJobSeeker ? "MessagesSeeker" : "Messages", icon: MessageSquareText, text: "הודעות", both: true },
     { page: "Contact", icon: Headphones, text: "צור קשר", both: true },
     { page: "FAQ", icon: HelpCircle, text: "שאלות", seeker: true }
@@ -220,7 +220,7 @@ export default function Layout({ children, currentPageName }) {
 
               <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
                 <Link to={createPageUrl("Settings")}>
-                  <Settings className="w-7 h-7 text-gray-700" />
+                  {isJobSeeker ? <User className="w-7 h-7 text-gray-700" /> : <Settings className="w-7 h-7 text-gray-700" />}
                 </Link>
               </Button>
               <div className="h-6 w-px bg-white/50 mx-1"></div>
