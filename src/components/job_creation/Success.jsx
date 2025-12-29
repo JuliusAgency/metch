@@ -1,12 +1,15 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Check } from 'lucide-react';
+import { Check, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import Lottie from 'lottie-react';
+import { useNavigate } from 'react-router-dom';
 import confettiAnimation from '../../../Confetti banner.json';
 
 export default function Success({ onReset, onDuplicate }) {
+  const navigate = useNavigate();
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -37,7 +40,15 @@ export default function Success({ onReset, onDuplicate }) {
         תחילת פרסום באפליקטיביט {format(new Date(), 'dd.MM.yy')}
       </p>
 
-      <div className="flex justify-center gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+        <Button
+          onClick={() => navigate('/Dashboard')}
+          variant="outline"
+          className="px-8 py-3 h-auto text-lg rounded-full border-blue-600 text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+        >
+          <Home className="w-5 h-5" />
+          סיום / לדף הבית
+        </Button>
         <Button
           onClick={onReset}
           className="px-8 py-3 h-auto text-lg rounded-full bg-blue-600 hover:bg-blue-700 text-white"
