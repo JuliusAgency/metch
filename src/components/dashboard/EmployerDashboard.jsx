@@ -10,9 +10,6 @@ import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
   Plus,
-  Eye,
-  Users,
-  TrendingUp,
   ChevronLeft,
   ChevronRight,
   Search,
@@ -26,6 +23,14 @@ import { EmployerAnalytics } from "@/components/EmployerAnalytics";
 import EmployerStatsCard from "@/components/employer/EmployerStatsCard";
 import EmployerActivityFeed from "@/components/employer/EmployerActivityFeed";
 import EmployerGuide from "@/components/guides/EmployerGuide";
+import iconViews from "@/assets/icon_views.png";
+import iconActiveJobs from "@/assets/icon_active_jobs.png";
+import iconApplications from "@/assets/icon_applications.png";
+
+// Icon components
+const ViewsIcon = ({ className }) => <img src={iconViews} className={`${className} object-contain`} alt="Views" />;
+const ApplicationsIcon = ({ className }) => <img src={iconApplications} className={`${className} object-contain`} alt="Applications" />;
+const ActiveJobsIcon = ({ className }) => <img src={iconActiveJobs} className={`${className} object-contain`} alt="Active Jobs" />;
 
 // Allowed notification types for Employer users
 const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message'];
@@ -167,24 +172,6 @@ const EmployerDashboard = ({ user }) => {
           <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
             {/* Enhanced Stats Grid with Real Analytics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 employer-stats">
-              <EmployerStatsCard
-                icon={Eye}
-                title="צפיות במשרות"
-                value={employerStats?.total_job_views || 10}
-                color="bg-blue-50 text-blue-600"
-              />
-              <EmployerStatsCard
-                icon={Users}
-                title="מועמדויות שהתקבלו"
-                value={employerStats?.total_applications_received || 3}
-                color="bg-green-50 text-green-600"
-              />
-              <EmployerStatsCard
-                icon={TrendingUp}
-                title="משרות פעילות"
-                value={employerStats?.total_jobs_published || 6}
-                color="bg-purple-50 text-purple-600"
-              />
               <Card className="relative col-span-2 sm:col-span-1 bg-[#84CC9E] text-white border-0 shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl create-job-card">
                 <Link to={createPageUrl("CreateJob")}>
                   <CardContent className="p-4 sm:p-6 text-center flex flex-col items-center justify-center h-full">
@@ -203,6 +190,25 @@ const EmployerDashboard = ({ user }) => {
                   </motion.div>
                 )}
               </Card>
+              <EmployerStatsCard
+                icon={ViewsIcon}
+                title="צפיות במשרות"
+                value={employerStats?.total_job_views || 10}
+                color="bg-blue-50 text-blue-600"
+              />
+              <EmployerStatsCard
+                icon={ApplicationsIcon}
+                title="מועמדויות שהתקבלו"
+                value={employerStats?.total_applications_received || 3}
+                color="bg-green-50 text-green-600"
+              />
+              <EmployerStatsCard
+                icon={ActiveJobsIcon}
+                title="משרות פעילות"
+                value={employerStats?.total_jobs_published || 6}
+                color="bg-purple-50 text-purple-600"
+              />
+
             </div>
 
 
