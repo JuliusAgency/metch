@@ -48,6 +48,7 @@ export default function CreateJob() {
   const [loadingJob, setLoadingJob] = useState(true);
 
   const [isScreeningSaved, setIsScreeningSaved] = useState(false);
+  const [isRequirementsDirty, setIsRequirementsDirty] = useState(false);
 
   useEffect(() => {
     setIsScreeningSaved(false);
@@ -178,7 +179,7 @@ export default function CreateJob() {
     }
 
     switch (step) {
-      case 1: return <Step1Details jobData={jobData} setJobData={setJobData} />;
+      case 1: return <Step1Details jobData={jobData} setJobData={setJobData} onRequirementsDirtyChange={setIsRequirementsDirty} />;
       case 2: return <Step3Company jobData={jobData} setJobData={setJobData} />;
       case 3: return <Step2Screening jobData={jobData} setJobData={setJobData} onSave={() => setIsScreeningSaved(true)} />;
       case 4: return <Step5Preview jobData={jobData} setJobData={setJobData} />;
@@ -203,7 +204,9 @@ export default function CreateJob() {
         jobData.category &&
         jobData.start_date &&
         jobData.employment_type &&
-        jobData.description
+        jobData.description &&
+        jobData.structured_requirements &&
+        jobData.structured_requirements.length > 0
       );
     }
     if (step === 2) {
@@ -228,6 +231,7 @@ export default function CreateJob() {
     if (isSubmitting) return true;
     if (!isStepValid()) return true;
     if (step === 3 && jobData.screening_questions?.length > 0 && !isScreeningSaved) return true;
+    if (step === 1 && isRequirementsDirty) return true;
     return false;
   };
 

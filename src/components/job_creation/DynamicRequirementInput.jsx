@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function DynamicRequirementInput({ label, placeholder, items = [], setItems }) {
+export default function DynamicRequirementInput({ label, placeholder, items = [], setItems, onDirtyChange }) {
   const [inputValue, setInputValue] = useState("");
   const [currentType, setCurrentType] = useState("required");
 
@@ -17,6 +17,7 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
       const newItems = [...safeItems.filter(item => item.value.trim() !== ""), { value: inputValue.trim(), type: currentType }];
       setItems(newItems);
       setInputValue("");
+      if (onDirtyChange) onDirtyChange(false);
     }
   };
 
@@ -66,7 +67,11 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
             type="text"
             placeholder={placeholder}
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => {
+              const newValue = e.target.value;
+              setInputValue(newValue);
+              if (onDirtyChange) onDirtyChange(newValue.trim() !== "");
+            }}
             onKeyDown={handleKeyDown}
             className="h-11 rounded-full border-gray-300 text-right"
             dir="rtl"

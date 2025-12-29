@@ -11,7 +11,7 @@ import CategorySelect from './CategorySelect';
 
 import jobTaxonomy from '../../job_taxonomy.json';
 
-export default function Step1Details({ jobData, setJobData }) {
+export default function Step1Details({ jobData, setJobData, onRequirementsDirtyChange }) {
   const today = new Date().toISOString().split('T')[0];
 
   const handleInputChange = (e) => {
@@ -121,6 +121,7 @@ export default function Step1Details({ jobData, setJobData }) {
             placeholder="דרישות"
             items={jobData.structured_requirements}
             setItems={(items) => handleDynamicChange('structured_requirements', items)}
+            onDirtyChange={onRequirementsDirtyChange}
           />
           <DynamicRequirementInput
             label="השכלה"
