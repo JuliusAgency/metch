@@ -37,6 +37,16 @@ import CareerStageModal from "@/components/dashboard/CareerStageModal";
 import { calculate_match_score } from "@/utils/matchScore";
 
 // --- JOB SEEKER DASHBOARD COMPONENT (New) ---
+import iconJsRelevantJobs from "@/assets/icon_js_relevant_jobs.png";
+import iconJsApplications from "@/assets/icon_js_applications.png";
+import iconJsCv from "@/assets/icon_js_cv.png";
+import iconJsProfileViews from "@/assets/icon_js_profile_views.png";
+
+const JsRelevantJobsIcon = ({ className }) => <img src={iconJsRelevantJobs} className={`${className} object-contain`} alt="Relevant Jobs" />;
+const JsApplicationsIcon = ({ className }) => <img src={iconJsApplications} className={`${className} object-contain`} alt="Applications" />;
+const JsCvIcon = ({ className }) => <img src={iconJsCv} className={`${className} object-contain`} alt="CVs" />;
+const JsProfileViewsIcon = ({ className }) => <img src={iconJsProfileViews} className={`${className} object-contain`} alt="Profile Views" />;
+
 const JobSeekerDashboard = ({ user }) => {
   const [jobFilter, setJobFilter] = useState('new');
   const [searchTerm, setSearchTerm] = useState('');
@@ -152,14 +162,14 @@ const JobSeekerDashboard = ({ user }) => {
     loadData();
   }, [user]);
 
-  const StatCard = ({ icon: Icon, title, value, color = "bg-blue-50" }) => (
-    <Card className="bg-white border-gray-200/80 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
-      <CardContent className="p-6 text-center">
-        <div className={`w-12 h-12 ${color} rounded-full flex items-center justify-center mx-auto mb-3`}>
-          <Icon className="w-6 h-6 text-blue-600" />
+  const StatCard = ({ icon: Icon, title, value }) => (
+    <Card className="bg-white border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] rounded-2xl h-full">
+      <CardContent className="p-6 text-center flex flex-col items-center justify-center h-full">
+        <div className="w-16 h-16 rounded-full border border-blue-200 flex items-center justify-center mb-4">
+          <Icon className="w-8 h-8 object-contain" />
         </div>
-        <div className="text-2xl font-bold text-gray-900 mb-2">{value}</div>
-        <p className="text-gray-600 font-medium text-sm">{title}</p>
+        <p className="text-blue-900 font-bold text-base mb-2">{title}</p>
+        <div className="text-3xl text-gray-500 font-normal">{value}</div>
       </CardContent>
     </Card>
   );
@@ -210,15 +220,7 @@ const JobSeekerDashboard = ({ user }) => {
           <div className="flex justify-between items-center px-2">
             <h1 className="text-xl font-bold text-gray-900 mb-2">👋 היי {user.full_name?.split(' ')[0] || 'דניאל'}!</h1>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowGuide(true)}
-                className="rounded-full px-3 py-1 text-xs"
-              >
-                מדריך
-                <HelpCircle className="w-3 h-3 mr-1" />
-              </Button>
+
               <span className="text-sm text-gray-600">התראות חדשות</span>
               <Bell className="w-5 h-5 text-yellow-500" />
             </div>
@@ -227,10 +229,10 @@ const JobSeekerDashboard = ({ user }) => {
           <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
             {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stats-grid">
-              <StatCard icon={Briefcase} title="משרות רלוונטיות" value={allJobs.length} />
-              <StatCard icon={Eye} title="צפו בקורות חיים שלי" value={userStats?.resume_views || userStats?.profile_views || 0} />
-              <StatCard icon={FileText} title="מועמדויות שהגשתי" value={userStats?.total_applications || 0} />
-              <StatCard icon={UserIcon} title="צפו בכרטיס שלך" value={userStats?.profile_views || 0} />
+              <StatCard icon={JsRelevantJobsIcon} title="משרות רלוונטיות" value={allJobs.length} />
+              <StatCard icon={JsCvIcon} title="קו״ח שהגשת" value={userStats?.resume_views || userStats?.profile_views || 0} />
+              <StatCard icon={JsApplicationsIcon} title="מועמדויות שהגשתי" value={userStats?.total_applications || 0} />
+              <StatCard icon={JsProfileViewsIcon} title="צפו בכרטיס שלך" value={userStats?.profile_views || 0} />
             </div>
 
             {/* Notification Carousel */}
@@ -346,6 +348,15 @@ const JobSeekerDashboard = ({ user }) => {
 };
 
 // --- EMPLOYER DASHBOARD COMPONENT ---
+import iconViews from "@/assets/icon_views.png";
+import iconActiveJobs from "@/assets/icon_active_jobs.png";
+import iconApplications from "@/assets/icon_applications.png";
+
+// Icon components
+const ViewsIcon = ({ className }) => <img src={iconViews} className={`${className} object-contain`} alt="Views" />;
+const ApplicationsIcon = ({ className }) => <img src={iconApplications} className={`${className} object-contain`} alt="Applications" />;
+const ActiveJobsIcon = ({ className }) => <img src={iconActiveJobs} className={`${className} object-contain`} alt="Active Jobs" />;
+
 const EmployerDashboard = ({ user }) => {
   const [viewedCandidates, setViewedCandidates] = useState([]);
   const [candidates, setCandidates] = useState([]);
@@ -491,33 +502,25 @@ const EmployerDashboard = ({ user }) => {
         <div className="max-w-7xl mx-auto space-y-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-right px-2 flex justify-between items-center">
             <h1 className="text-xl font-bold text-gray-900 mb-2">👋 היי {user.full_name?.split(' ')[0] || 'רפאל'}!</h1>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowGuide(true)}
-              className="rounded-full px-3 py-1 text-xs"
-            >
-              מדריך
-              <HelpCircle className="w-3 h-3 mr-1" />
-            </Button>
+
           </motion.div>
           <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
             {/* Enhanced Stats Grid with Real Analytics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 employer-stats">
               <EmployerStatsCard
-                icon={Eye}
+                icon={ViewsIcon}
                 title="צפיות במשרות"
                 value={employerStats?.total_job_views || 0}
                 color="bg-blue-50 text-blue-600"
               />
               <EmployerStatsCard
-                icon={Users}
+                icon={ApplicationsIcon}
                 title="מועמדויות שהתקבלו"
                 value={employerStats?.total_applications_received || 0}
                 color="bg-green-50 text-green-600"
               />
               <EmployerStatsCard
-                icon={TrendingUp}
+                icon={ActiveJobsIcon}
                 title="משרות פעילות"
                 value={employerStats?.total_jobs_published || 0}
                 color="bg-purple-50 text-purple-600"
