@@ -283,9 +283,3 @@ export default function CreateJob() {
     </div>
   );
 }
-
-        </Card >
-      </div >
-    </div >
-  );
-}

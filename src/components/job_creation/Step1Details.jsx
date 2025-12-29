@@ -139,6 +139,3 @@ export default function Step1Details({ jobData, setJobData }) {
     </div>
   );
 }
-    </div >
-  );
-}

@@ -108,6 +108,3 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
     </div>
   );
 }
-    </div >
-  );
-}
