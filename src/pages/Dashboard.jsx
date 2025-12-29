@@ -220,15 +220,7 @@ const JobSeekerDashboard = ({ user }) => {
           <div className="flex justify-between items-center px-2">
             <h1 className="text-xl font-bold text-gray-900 mb-2">👋 היי {user.full_name?.split(' ')[0] || 'דניאל'}!</h1>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowGuide(true)}
-                className="rounded-full px-3 py-1 text-xs"
-              >
-                מדריך
-                <HelpCircle className="w-3 h-3 mr-1" />
-              </Button>
+
               <span className="text-sm text-gray-600">התראות חדשות</span>
               <Bell className="w-5 h-5 text-yellow-500" />
             </div>
@@ -510,15 +502,7 @@ const EmployerDashboard = ({ user }) => {
         <div className="max-w-7xl mx-auto space-y-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-right px-2 flex justify-between items-center">
             <h1 className="text-xl font-bold text-gray-900 mb-2">👋 היי {user.full_name?.split(' ')[0] || 'רפאל'}!</h1>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowGuide(true)}
-              className="rounded-full px-3 py-1 text-xs"
-            >
-              מדריך
-              <HelpCircle className="w-3 h-3 mr-1" />
-            </Button>
+
           </motion.div>
           <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
             {/* Enhanced Stats Grid with Real Analytics */}
