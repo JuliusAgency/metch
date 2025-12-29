@@ -71,8 +71,9 @@ const Register = () => {
       });
 
       toast({
-        title: "הרשמה הושלמה בהצלחה!",
-        description: "החשבון נוצר בהצלחה. בדקו את המייל שלכם לאימות",
+        variant: "success",
+        title: "הרכישה בוצעה בהצלחה",
+        description: "פריט הוכנסה למערכת הרכישות הראשית",
       });
 
       navigate('/EmailConfirmation', { state: { email: signUpData.email } });
@@ -85,9 +86,9 @@ const Register = () => {
         error.message.includes('duplicate key value')
       )) {
         toast({
+          variant: "warning",
           title: "משתמש כבר קיים",
           description: "כתובת המייל כבר רשומה במערכת. אנא התחברו במקום",
-          variant: "destructive",
           action: (
             <Link to="/Login" className="text-white underline">
               התחברות
@@ -96,9 +97,9 @@ const Register = () => {
         });
       } else {
         toast({
+          variant: "warning",
           title: "שגיאה בהרשמה",
           description: error.message || "אירעה שגיאה בעת ההרשמה",
-          variant: "destructive",
         });
       }
     } finally {

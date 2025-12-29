@@ -69,9 +69,9 @@ export default function Profile() {
       console.error("Error updating user status:", error);
       setIsLookingForJob(!checked);
       toast({
+        variant: "warning",
         title: "שגיאה בעדכון סטטוס",
         description: "אירעה שגיאה בעת עדכון הסטטוס. אנא נסה שנית.",
-        variant: "destructive",
       });
     }
   };
@@ -135,20 +135,21 @@ export default function Profile() {
       });
 
       toast({
-        title: "קובץ הועלה בהצלחה",
-        description: "קורות החיים שלך עודכנו במערכת",
+        variant: "success",
+        title: "הפרופיל הושלם בהצלחה",
+        description: "פרטים אישיים נשמרו בהצלחה לקריאה",
       });
 
     } catch (error) {
       console.error("Error uploading file:", error);
       toast({
+        variant: "warning",
         title: "שגיאה בהעלאת הקובץ",
         description: error.message.includes("Bucket not found")
           ? "שגיאת מערכת: באקט האחסון לא קיים. אנא פנה לתמיכה."
           : error.message.includes("row-level security policy")
             ? "שגיאת הרשאה: אין לך הרשאה להעלות קבצים. אנא וודא שהוגדרה מדיניות (Policy) מתאימה ב-Supabase Storage."
             : "אירעה שגיאה בעת העלאת הקובץ. אנא נסה שנית.",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -166,15 +167,16 @@ export default function Profile() {
       setCvData(null);
 
       toast({
-        title: "קובץ נמחק בהצלחה",
-        description: "קורות החיים הוסרו מהמערכת",
+        variant: "success",
+        title: "הפרופיל עודכן",
+        description: "פרטים אישיים נשמרו בהצלחה לקריאה",
       });
     } catch (error) {
       console.error("Error deleting file:", error);
       toast({
+        variant: "warning",
         title: "שגיאה במחיקת הקובץ",
         description: "אירעה שגיאה בעת מחיקת הקובץ. אנא נסה שנית.",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);

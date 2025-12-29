@@ -52,7 +52,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useUser } from "@/contexts/UserContext";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+
 import { useToast } from "@/components/ui/use-toast";
+import { UnsavedChangesDialog } from "@/components/dialogs/UnsavedChangesDialog";
+import { ProfileUpdatedDialog } from "@/components/dialogs/ProfileUpdatedDialog";
 
 export default function Settings() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -87,6 +90,10 @@ export default function Settings() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [openLocation, setOpenLocation] = useState(false);
   const [cvUploading, setCvUploading] = useState(false);
+
+  const [showIncompleteDialog, setShowIncompleteDialog] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [successDialogContent, setSuccessDialogContent] = useState({ title: "", description: "" });
   const fileInputRef = useRef(null);
   const cvFileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -213,16 +220,27 @@ export default function Settings() {
   };
 
   const handleSave = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) {
+    e?.preventDefault();
+
+    // If not triggered by dialog confirmation and form is incomplete
+    if (e && !isFormComplete) {
+      setShowIncompleteDialog(true);
       return;
     }
+
     setSaving(true);
     try {
       // Update password if provided
       if (formData.password) {
         const { error } = await supabase.auth.updateUser({ password: formData.password });
-        if (error) throw error;
+        if (error) {
+          // If error is "New password should be different from the old password", ignore it
+          if (error.message && error.message.includes("New password should be different from the old password")) {
+            console.log("Password unchanged, skipping update");
+          } else {
+            throw error;
+          }
+        }
       }
 
       let profileData = {};
@@ -233,7 +251,7 @@ export default function Settings() {
           phone: formData.phone,
           company_name: formData.company_name,
           main_address: formData.main_address,
-          company_type: formData.company_type,
+          company_type: formData.company_type || null,
           field_of_activity: formData.field_of_activity,
           cv_reception_email: formData.cv_reception_email,
           bio: formData.bio,
@@ -250,7 +268,7 @@ export default function Settings() {
           full_name: formData.full_name,
           // email is usually not updated via public table if auth email is source of truth, but we keep it
           phone: formData.phone,
-          gender: formData.gender,
+          gender: formData.gender || null,
           date_of_birth: formData.date_of_birth || null,
           preferred_location: formData.place_of_residence,
         };
@@ -270,10 +288,22 @@ export default function Settings() {
       setFormData(prev => ({ ...prev, password: "" }));
       setErrors({});
 
-      toast({
-        title: "פרופיל עודכן בהצלחה",
-        description: "הפרטים של עודכנו במערכת",
-      });
+      setErrors({});
+
+      if (isFormComplete) {
+        setSuccessDialogContent({
+          title: "הפרופיל הושלם בהצלחה",
+          description: "פרטים אישיים נשמרו בהצלחה לקריאה"
+        });
+        setShowSuccessDialog(true);
+      } else {
+        // Show success dialog for partial update
+        setSuccessDialogContent({
+          title: "הפרופיל עודכן!",
+          description: "עדכון קטן - קפיצה גדולה לקריירה"
+        });
+        setShowSuccessDialog(true);
+      }
     } catch (error) {
       console.error("Error saving profile:", error);
       toast({
@@ -353,10 +383,10 @@ export default function Settings() {
       const cvMetadata = { user_email: userEmail, file_name: file.name, file_size_kb: String(Math.round(file.size / 1024)), last_modified: new Date().toISOString() };
       if (existingCvs.length > 0) { await CV.update(existingCvs[0].id, cvMetadata); } else { await CV.create(cvMetadata); }
       setUser(prev => ({ ...prev, resume_url: fileUrl }));
-      toast({ title: "קובץ הועלה בהצלחה", description: "קורות החיים שלך עודכנו במערכת" });
+      toast({ variant: "success", title: "הפרופיל הושלם בהצלחה", description: "פרטים אישיים נשמרו בהצלחה לקריאה" });
     } catch (error) {
       console.error("Error uploading CV:", error);
-      toast({ title: "שגיאה בהעלאת הקובץ", description: "אירעה שגיאה בעת העלאת הקובץ.", variant: "destructive" });
+      toast({ variant: "warning", title: "שגיאה בהעלאת הקובץ", description: "אירעה שגיאה בעת העלאת הקובץ." });
     } finally { setCvUploading(false); }
   };
 
@@ -403,7 +433,7 @@ export default function Settings() {
     Object.keys(formData).some(key => formData[key] !== initialFormData[key])
   ) : false;
 
-  const isSubmitDisabled = saving || !isFormComplete || !hasChanges;
+  const isSubmitDisabled = saving || !hasChanges;
 
   if (loading) {
     return (
@@ -994,6 +1024,24 @@ export default function Settings() {
             </motion.div>
           </div>
         )}
+
+
+        <UnsavedChangesDialog
+          open={showIncompleteDialog}
+          onOpenChange={setShowIncompleteDialog}
+          onConfirm={() => setShowIncompleteDialog(false)}
+          onCancel={() => {
+            setShowIncompleteDialog(false);
+            handleSave(null); // Proceed with save (pass null event to bypass check)
+          }}
+        />
+
+        <ProfileUpdatedDialog
+          open={showSuccessDialog}
+          onOpenChange={setShowSuccessDialog}
+          title={successDialogContent.title}
+          description={successDialogContent.description}
+        />
       </div>
     </div>
   );
