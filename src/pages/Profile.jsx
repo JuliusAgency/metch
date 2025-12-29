@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2, LogOut, Compass } from 'lucide-react';
+import { FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2, Compass, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -215,28 +215,55 @@ export default function Profile() {
   );
 
   const FileManagementCard = () => (
-    <div className="border-2 border-dashed border-gray-300 rounded-xl p-6">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-4 text-right">
-          <FileText className="w-10 h-10 text-red-500 flex-shrink-0" />
-          <div>
-            <p className="font-medium text-gray-800 truncate" title={cvData.file_name}>{cvData.file_name}</p>
-            <p className="text-sm text-gray-500">
-              {format(new Date(cvData.last_modified), 'dd.MM.yyyy HH:mm')} &bull; {cvData.file_size_kb} Kb
+    <div className="w-full">
+      {/* Dashed File Info Card */}
+      <div className="bg-[#f8fafd] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 mb-4">
+        <div className="flex items-center gap-6">
+          <div className="flex-shrink-0">
+            <img src="/pdf_icon.png" alt="PDF" className="w-12 h-auto" />
+          </div>
+          <div className="text-right flex-1">
+            <p className="font-semibold text-gray-900 text-lg" title={cvData.file_name}>
+              {cvData.file_name}
+            </p>
+            <p className="text-sm text-gray-400 mt-1">
+              {format(new Date(cvData.last_modified), 'dd.MM.yyyy HH:mm')}
+              <span className="mx-2">|</span>
+              {cvData.file_size_kb} KB
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-4 text-sm font-medium">
-          <button onClick={handleDeleteFile} className="flex items-center gap-1 text-red-500 hover:text-red-700">
-            <Trash2 className="w-4 h-4" /> מחק קובץ
-          </button>
-          <Link to={createPageUrl('CVGenerator')} className="flex items-center gap-1 text-gray-600 hover:text-blue-600">
-            <Edit className="w-4 h-4" /> ערוך קובץ
-          </Link>
-          <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1 text-gray-600 hover:text-blue-600">
-            <Replace className="w-4 h-4" /> החלף קובץ
-          </button>
-        </div>
+      </div>
+
+      {/* Action Buttons Row - Aligned Left (justify-end in RTL) */}
+      <div className="flex items-center justify-end gap-6 text-sm font-medium px-2">
+        <button
+          onClick={handleDeleteFile}
+          className="flex items-center gap-2 text-[#FF4D4D] hover:text-red-700 transition-colors"
+        >
+          <Trash2 className="w-4 h-4" />
+          מחק קובץ
+        </button>
+
+        <div className="w-px h-4 bg-gray-300"></div>
+
+        <Link
+          to={createPageUrl('CVGenerator')}
+          className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
+        >
+          <img src="/edit_icon.png" alt="Edit" className="w-4 h-4" />
+          ערוך קובץ
+        </Link>
+
+        <div className="w-px h-4 bg-gray-300"></div>
+
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
+        >
+          <img src="/replace_icon.png" alt="Replace" className="w-4 h-4" />
+          החלף קובץ
+        </button>
       </div>
     </div>
   );
@@ -248,18 +275,20 @@ export default function Profile() {
   return (
     <div className="p-4 md:p-6" dir="rtl">
       <div className="w-[85vw] mx-auto">
-        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
-          <div className="relative h-24 overflow-hidden -m-px">
+        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden min-h-[85vh]">
+          <div className="relative h-32 overflow-hidden -m-px">
             <div
               className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
               style={{
-                backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/ca93821b0_image.png)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center top'
+                backgroundImage:
+                  "url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
               }}
             />
           </div>
-          <CardContent className="p-4 sm:p-6 md:p-8 -mt-12 relative z-10">
+          <CardContent className="p-4 sm:p-6 md:p-8 -mt-6 relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -278,65 +307,39 @@ export default function Profile() {
                 onChange={handleFileUpload}
               />
 
-              {/* CV Section - Only for job seekers */}
+              {/* CV Section */}
               {(contextUser?.user_type === 'job_seeker' || !contextUser?.user_type) && (
                 <>
-                  {cvData ? <FileManagementCard /> : <NoCvView />}
+                  <div className="mb-8">
+                    {cvData ? <FileManagementCard /> : <NoCvView />}
+                  </div>
 
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-4">
-                    <div className="flex gap-4 w-full sm:w-auto">
-                      <Button asChild variant="outline" className="w-full sm:w-auto h-12 rounded-lg border-gray-300 text-gray-800 font-semibold text-base justify-between px-5">
-                        <Link to={createPageUrl('PreferenceQuestionnaire')}>
-                          ניהול שאלון העדפה
-                          <ChevronLeft className="w-5 h-5" />
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full sm:w-auto h-12 rounded-lg border-gray-300 text-gray-800 font-semibold text-base justify-between px-5"
-                        onClick={() => setIsCareerStageModalOpen(true)}
-                      >
-                        שלב קריירה
-                        <Compass className="w-5 h-5 ml-2" />
-                      </Button>
-                    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                    {/* Preference Questionnaire Link - NOW ON RIGHT (First in RTL Grid) */}
+                    <Link to={createPageUrl('PreferenceQuestionnaire')}>
+                      <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center justify-between h-[72px] hover:border-blue-200 transition-colors cursor-pointer group">
+                        <span className="font-semibold text-gray-700 text-base">ניהול שאלון העדפה</span>
+                        <ChevronLeft className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
+                      </div>
+                    </Link>
 
-                    <div className="flex items-center gap-3">
-                      <Switch
-                        checked={isLookingForJob}
-                        onCheckedChange={handleToggleLookingForJob}
-                        id="looking-for-job"
-                      />
-                      <label htmlFor="looking-for-job" className="font-semibold text-gray-800 text-base">אני מחפש עבודה</label>
+                    {/* Looking for Job Switch - NOW ON LEFT (Second in RTL Grid) */}
+                    <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center justify-between h-[72px]">
+                      <div className="flex items-center gap-3 w-full justify-between">
+                        <label htmlFor="looking-for-job" className="font-semibold text-gray-700 text-base cursor-pointer select-none">
+                          אני מחפש עבודה
+                        </label>
+                        <Switch
+                          checked={isLookingForJob}
+                          onCheckedChange={handleToggleLookingForJob}
+                          id="looking-for-job"
+                          className="data-[state=checked]:bg-green-400"
+                        />
+                      </div>
                     </div>
                   </div>
                 </>
               )}
-
-              {/* Logout and Delete options removed as per request */
-              /*
-              <div className="flex flex-col items-center space-y-4 pt-8 pb-4">
-                <Button
-                  asChild
-                  variant="link"
-                  className="text-red-500 hover:text-red-600 font-medium"
-                >
-                  <Link to={createPageUrl('Settings')}>
-                    מחק חשבון
-                  </Link>
-                </Button>
-
-                <Button
-                  onClick={handleLogout}
-                  variant="outline"
-                  className="w-full sm:w-auto h-12 rounded-lg border-2 border-red-400 bg-white text-red-600 hover:bg-red-50 hover:border-red-500 font-semibold text-base px-6 shadow-sm"
-                >
-                  <LogOut className="w-5 h-5 ml-2" />
-                  התנתק
-                </Button>
-              </div>
-              */}
-
             </motion.div>
           </CardContent>
         </Card>
