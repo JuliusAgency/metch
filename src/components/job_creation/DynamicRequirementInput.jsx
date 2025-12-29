@@ -1,12 +1,11 @@
 
-
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function DynamicRequirementInput({ label, placeholder, items = [], setItems, onPendingChange }) {
+export default function DynamicRequirementInput({ label, placeholder, items = [], setItems }) {
   const [inputValue, setInputValue] = useState("");
   const [currentType, setCurrentType] = useState("required");
 
@@ -18,7 +17,6 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
       const newItems = [...safeItems.filter(item => item.value.trim() !== ""), { value: inputValue.trim(), type: currentType }];
       setItems(newItems);
       setInputValue("");
-      if (onPendingChange) onPendingChange("");
     }
   };
 
@@ -32,12 +30,6 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
   const handleRemoveItem = (index) => {
     const newItems = safeItems.filter((_, i) => i !== index);
     setItems(newItems);
-  };
-
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    setInputValue(value);
-    if (onPendingChange) onPendingChange(value);
   };
 
   // Clean up empty items
@@ -74,7 +66,7 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
             type="text"
             placeholder={placeholder}
             value={inputValue}
-            onChange={handleInputChange}
+            onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             className="h-11 rounded-full border-gray-300 text-right"
             dir="rtl"
@@ -114,5 +106,8 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
         </div>
       )}
     </div>
+  );
+}
+    </div >
   );
 }

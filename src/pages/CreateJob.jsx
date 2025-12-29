@@ -48,7 +48,6 @@ export default function CreateJob() {
   const [loadingJob, setLoadingJob] = useState(true);
 
   const [isScreeningSaved, setIsScreeningSaved] = useState(false);
-  const [isRequirementsDirty, setIsRequirementsDirty] = useState(false);
 
   useEffect(() => {
     setIsScreeningSaved(false);
@@ -179,7 +178,7 @@ export default function CreateJob() {
     }
 
     switch (step) {
-      case 1: return <Step1Details jobData={jobData} setJobData={setJobData} onRequirementsDirtyChange={setIsRequirementsDirty} />;
+      case 1: return <Step1Details jobData={jobData} setJobData={setJobData} />;
       case 2: return <Step3Company jobData={jobData} setJobData={setJobData} />;
       case 3: return <Step2Screening jobData={jobData} setJobData={setJobData} onSave={() => setIsScreeningSaved(true)} />;
       case 4: return <Step5Preview jobData={jobData} setJobData={setJobData} />;
@@ -198,21 +197,13 @@ export default function CreateJob() {
   }
 
   const isStepValid = () => {
-
     if (step === 1) {
-      // Check if any dynamic inputs have unsaved text
-      const hasPendingInput =
-        jobData.pending_structured_requirements ||
-        jobData.pending_structured_education ||
-        jobData.pending_structured_certifications;
-
       return (
         jobData.title &&
         jobData.category &&
         jobData.start_date &&
         jobData.employment_type &&
-        jobData.description &&
-        !hasPendingInput
+        jobData.description
       );
     }
     if (step === 2) {
@@ -237,7 +228,6 @@ export default function CreateJob() {
     if (isSubmitting) return true;
     if (!isStepValid()) return true;
     if (step === 3 && jobData.screening_questions?.length > 0 && !isScreeningSaved) return true;
-    if (step === 1 && isRequirementsDirty) return true;
     return false;
   };
 
@@ -291,5 +281,11 @@ export default function CreateJob() {
         </Card>
       </div>
     </div>
+  );
+}
+
+        </Card >
+      </div >
+    </div >
   );
 }

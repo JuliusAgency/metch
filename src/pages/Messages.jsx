@@ -65,7 +65,7 @@ export default function Messages() {
         try {
             const userData = await User.me();
             setUser(userData);
-            
+
             // Load conversations for employer from database
             try {
                 const conversationsData = await Conversation.filter(
@@ -73,13 +73,13 @@ export default function Messages() {
                     "-last_message_time",
                     100
                 );
-                
+
                 // Fetch candidate information and job status for each conversation
                 const mappedConversations = await Promise.all(conversationsData.map(async (conv) => {
                     let candidateName = conv.candidate_name || "מועמד לא ידוע";
                     let profileImage = "";
                     let jobStatus = "active";
-                    
+
                     // Try to fetch candidate info from UserProfile
                     try {
                         const candidateResults = await UserProfile.filter({ email: conv.candidate_email });
@@ -90,7 +90,7 @@ export default function Messages() {
                     } catch (error) {
                         console.error("Error fetching candidate info:", error);
                     }
-                    
+
                     // Try to fetch job status if job_id exists
                     if (conv.job_id) {
                         try {
@@ -102,7 +102,7 @@ export default function Messages() {
                             console.error("Error fetching job status:", error);
                         }
                     }
-                    
+
                     return {
                         id: conv.id,
                         candidate_name: candidateName,
@@ -115,7 +115,7 @@ export default function Messages() {
                         job_id: conv.job_id
                     };
                 }));
-                
+
                 setConversations(mappedConversations);
             } catch (error) {
                 console.error("Error loading conversations:", error);
@@ -158,13 +158,13 @@ export default function Messages() {
                 "created_date",
                 100
             );
-            
+
             // Ensure created_date is set for all messages
             const mappedMessages = messagesData.map(msg => ({
                 ...msg,
                 created_date: msg.created_date || msg.created_at || new Date().toISOString()
             }));
-            
+
             setMessages(mappedMessages);
         } catch (error) {
             console.error("Error loading messages:", error);
@@ -279,7 +279,7 @@ export default function Messages() {
                 return;
             }
             const currentDate = new Date().toISOString();
-            
+
             // Create message in database with explicit created_date
             const createdMessage = await Message.create({
                 conversation_id: selectedConversation.id,
@@ -307,7 +307,7 @@ export default function Messages() {
             setNewMessage("");
 
             // Update conversation in list
-            setConversations(prev => prev.map(conv => 
+            setConversations(prev => prev.map(conv =>
                 conv.id === selectedConversation.id
                     ? { ...conv, last_message: newMessage.trim(), last_message_time: currentDate }
                     : conv
@@ -341,7 +341,7 @@ export default function Messages() {
                                         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                                     </div>
                                 )}
-                                
+
                                 {/* Job Status Message if job is closed/filled */}
                                 {!loadingMessages && selectedConversation.job_status && ['filled', 'filled_via_metch', 'closed'].includes(selectedConversation.job_status) && (
                                     <div className="bg-gray-100 rounded-lg p-4 text-center">
@@ -364,15 +364,13 @@ export default function Messages() {
                                                 transition={{ duration: 0.3, delay: index * 0.1 }}
                                                 className={`flex ${isMyMessage ? 'justify-start' : 'justify-end'}`}
                                             >
-                                                <div className={`max-w-xs lg:max-w-md px-6 py-3 rounded-2xl ${
-                                                    isMyMessage
+                                                <div className={`max-w-xs lg:max-w-md px-6 py-3 rounded-2xl ${isMyMessage
                                                         ? 'bg-blue-600 text-white'
                                                         : 'bg-gray-100 text-gray-900'
-                                                }`}>
-                                                    <p className="text-base">{message.content}</p>
-                                                    <div className={`flex items-center justify-start gap-1 mt-2 text-xs ${
-                                                        isMyMessage ? 'text-blue-100' : 'text-gray-500'
                                                     }`}>
+                                                    <p className="text-base">{message.content}</p>
+                                                    <div className={`flex items-center justify-start gap-1 mt-2 text-xs ${isMyMessage ? 'text-blue-100' : 'text-gray-500'
+                                                        }`}>
                                                         {isMyMessage && (
                                                             <CheckCheck className="w-3 h-3" />
                                                         )}
@@ -451,18 +449,16 @@ export default function Messages() {
                                         onClick={() => handleConversationSelect(conversation)}
                                     >
                                         <div className="flex items-center gap-4">
-                                             <div className="space-y-1 text-right">
-                                                <span className={`font-medium ${
-                                                    ['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'text-gray-500' : 'text-gray-800'
-                                                }`}>
+                                            <div className="space-y-1 text-right">
+                                                <span className={`font-medium ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'text-gray-500' : 'text-gray-800'
+                                                    }`}>
                                                     {conversation.candidate_name}
                                                 </span>
                                                 <div className="text-xs text-gray-500">{conversation.job_title}</div>
                                                 <ConversationStatusIndicator jobStatus={conversation.job_status} className="text-xs" />
                                             </div>
-                                            <div className={`w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 ${
-                                                ['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'grayscale opacity-75' : ''
-                                            }`}>
+                                            <div className={`w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'grayscale opacity-75' : ''
+                                                }`}>
                                                 {conversation.profileImage && conversation.profileImage !== "" ? (
                                                     <img
                                                         src={conversation.profileImage}

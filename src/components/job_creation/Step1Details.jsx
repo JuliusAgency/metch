@@ -11,7 +11,7 @@ import CategorySelect from './CategorySelect';
 
 import jobTaxonomy from '../../job_taxonomy.json';
 
-export default function Step1Details({ jobData, setJobData, onRequirementsDirtyChange }) {
+export default function Step1Details({ jobData, setJobData }) {
   const today = new Date().toISOString().split('T')[0];
 
   const handleInputChange = (e) => {
@@ -115,31 +115,30 @@ export default function Step1Details({ jobData, setJobData, onRequirementsDirtyC
           />
         </div>
 
-
         <div className="space-y-6">
           <DynamicRequirementInput
             label="דרישה"
             placeholder="דרישות"
             items={jobData.structured_requirements}
             setItems={(items) => handleDynamicChange('structured_requirements', items)}
-            onPendingChange={(val) => setJobData(prev => ({ ...prev, pending_structured_requirements: val }))}
           />
           <DynamicRequirementInput
             label="השכלה"
             placeholder="השכלה"
             items={jobData.structured_education}
             setItems={(items) => handleDynamicChange('structured_education', items)}
-            onPendingChange={(val) => setJobData(prev => ({ ...prev, pending_structured_education: val }))}
           />
           <DynamicRequirementInput
             label="הסמכה"
             placeholder="הסמכות"
             items={jobData.structured_certifications}
             setItems={(items) => handleDynamicChange('structured_certifications', items)}
-            onPendingChange={(val) => setJobData(prev => ({ ...prev, pending_structured_certifications: val }))}
           />
         </div>
       </div>
     </div>
+  );
+}
+    </div >
   );
 }

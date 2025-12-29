@@ -132,6 +132,14 @@ export const UserProvider = ({ children }) => {
         setUser(session.user);
         const userProfile = await loadUserProfile(session.user.id);
         setProfile(userProfile);
+
+        // Update last login date
+        if (userProfile) {
+          await supabase
+            .from('UserProfile')
+            .update({ last_login_date: new Date().toISOString() })
+            .eq('id', session.user.id);
+        }
       }
     } catch (error) {
       // Silently handle errors during initialization
@@ -167,6 +175,7 @@ export const UserProvider = ({ children }) => {
           role: 'user',
           full_name: '',
           user_type: null, // No user type selected initially - user will select after email confirmation
+          last_login_date: new Date().toISOString(),
           ...metadata
         });
     }
@@ -195,6 +204,14 @@ export const UserProvider = ({ children }) => {
     setUser(data.user);
     const userProfile = await loadUserProfile(data.user.id);
     setProfile(userProfile);
+
+    // Update last login date
+    if (userProfile) {
+      await supabase
+        .from('UserProfile')
+        .update({ last_login_date: new Date().toISOString() })
+        .eq('id', data.user.id);
+    }
 
     return data;
   };
