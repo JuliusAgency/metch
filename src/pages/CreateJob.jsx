@@ -198,15 +198,21 @@ export default function CreateJob() {
   }
 
   const isStepValid = () => {
+
     if (step === 1) {
+      // Check if any dynamic inputs have unsaved text
+      const hasPendingInput =
+        jobData.pending_structured_requirements ||
+        jobData.pending_structured_education ||
+        jobData.pending_structured_certifications;
+
       return (
         jobData.title &&
         jobData.category &&
         jobData.start_date &&
         jobData.employment_type &&
         jobData.description &&
-        jobData.structured_requirements &&
-        jobData.structured_requirements.length > 0
+        !hasPendingInput
       );
     }
     if (step === 2) {
