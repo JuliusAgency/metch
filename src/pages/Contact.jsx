@@ -100,17 +100,28 @@ export default function Contact() {
 
                 {/* Social Media Links */}
                 <div className="space-y-4">
-                    <p className="text-gray-600 font-medium">עקבו אחרינו ברשתות</p>
-                    <div className="flex items-center gap-4">
-                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"><Facebook className="w-6 h-6 text-blue-600" /></a>
-                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"><Instagram className="w-6 h-6 text-pink-600" /></a>
-                        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"><Linkedin className="w-6 h-6 text-sky-700" /></a>
-                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"><Twitter className="w-6 h-6 text-sky-500" /></a>
-                    </div>
+                  <p className="text-gray-600 font-medium">עקבו אחרינו ברשתות</p>
+                  <div className="flex items-center gap-4">
+                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"><Facebook className="w-6 h-6 text-blue-600" /></a>
+                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"><Instagram className="w-6 h-6 text-pink-600" /></a>
+                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"><Linkedin className="w-6 h-6 text-sky-700" /></a>
+                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"><Twitter className="w-6 h-6 text-sky-500" /></a>
+                  </div>
                 </div>
 
                 {/* Email Display */}
                 <p className="text-gray-700 font-semibold pt-6">{SUPPORT_EMAIL}</p>
+
+                {/* Legal Links */}
+                <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
+                  <a href="https://metch.co.il/%d7%9e%d7%93%d7%99%d7%a0%d7%99%d7%95%d7%aa-%d7%94%d7%a4%d7%a8%d7%98%d7%99%d7%95%d7%aa/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors underline md:no-underline">
+                    מדיניות פרטיות
+                  </a>
+                  <span className="text-gray-300">•</span>
+                  <a href="https://metch.co.il/%d7%aa%d7%a0%d7%90%d7%99-%d7%a9%d7%99%d7%9e%d7%95%d7%a9/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors underline md:no-underline">
+                    תנאי שימוש
+                  </a>
+                </div>
               </motion.div>
             </CardContent>
           </div>
