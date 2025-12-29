@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
+import ToggleSwitch from "@/components/dashboard/ToggleSwitch";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { Job, JobView, Notification, UserProfile, CandidateView } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
@@ -257,9 +258,15 @@ const JobSeekerDashboard = ({ user }) => {
                 />
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               </div>
-              <div className="flex gap-2 bg-gray-100 p-1 rounded-full w-full md:w-auto job-filter-buttons">
-                <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${jobFilter === 'viewed' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-transparent text-gray-700'}`} onClick={() => setJobFilter('viewed')}>משרות שצפיתי</Button>
-                <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${jobFilter === 'new' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-transparent text-gray-700'}`} onClick={() => setJobFilter('new')}>משרות חדשות</Button>
+              <div className="flex justify-end w-full md:w-auto job-filter-buttons">
+                <ToggleSwitch
+                  options={[
+                    { value: 'viewed', label: 'משרות שצפית' },
+                    { value: 'new', label: 'משרות חדשות' },
+                  ]}
+                  value={jobFilter}
+                  onChange={setJobFilter}
+                />
               </div>
             </div>
 
@@ -561,9 +568,15 @@ const EmployerDashboard = ({ user }) => {
                 />
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               </div>
-              <div className="flex gap-2 w-full md:w-auto">
-                <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${candidateFilter === 'watched' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`} onClick={() => setCandidateFilter('watched')}>מועמדים שצפיתי</Button>
-                <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${candidateFilter === 'new' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`} onClick={() => setCandidateFilter('new')}>מועמדים חדשים</Button>
+              <div className="flex justify-end w-full md:w-auto">
+                <ToggleSwitch
+                  options={[
+                    { value: 'watched', label: 'מועמדים שצפית' },
+                    { value: 'new', label: 'מועמדים חדשים' },
+                  ]}
+                  value={candidateFilter}
+                  onChange={setCandidateFilter}
+                />
               </div>
             </div>
             <div className="space-y-4 candidate-list">
