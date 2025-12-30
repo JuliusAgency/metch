@@ -128,8 +128,12 @@ const UserTypeSelection = () => {
     setLoading(true);
 
     try {
-      // Update user profile with selected type
-      await updateProfile({ user_type: userType });
+      // Update user profile with selected type AND reset career_stage to ensure onboarding modals show
+      // This is crucial for users who might be restarting the flow or reusing accounts
+      await updateProfile({
+        user_type: userType,
+        career_stage: null // Force reset this field
+      });
 
       toast({
         title: "סוג משתמש נבחר בהצלחה!",
