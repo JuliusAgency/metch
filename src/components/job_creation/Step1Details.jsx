@@ -1,8 +1,8 @@
 import React from 'react';
-import { Input } from "@/components/ui/input";
+
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "lucide-react";
+
 import DynamicRequirementInput from './DynamicRequirementInput';
 import jobCategoryList from '../../../jobs_category.json';
 import jobTitles from '../../../jobs.json';
@@ -12,7 +12,7 @@ import CategorySelect from './CategorySelect';
 import jobTaxonomy from '../../job_taxonomy.json';
 
 export default function Step1Details({ jobData, setJobData }) {
-  const today = new Date().toISOString().split('T')[0];
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -68,20 +68,20 @@ export default function Step1Details({ jobData, setJobData }) {
             options={titleOptions}
             placeholder="תפקיד"
           />
-          <div className="relative">
-            <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <Input
-              type="text"
-              name="start_date"
-              placeholder="תחילת עבודה"
-              onFocus={(e) => e.target.type = 'date'}
-              onBlur={(e) => e.target.type = 'text'}
-              value={jobData.start_date || ''}
-              onChange={handleInputChange}
-              min={today}
-              className="h-12 rounded-full border-gray-300 text-right pr-12"
-            />
-          </div>
+          <Select
+            value={jobData.start_date || ''}
+            onValueChange={(value) => handleSelectChange('start_date', value)}
+          >
+            <SelectTrigger className="h-12 rounded-full border-gray-300 text-right flex flex-row-reverse">
+              <SelectValue placeholder="תחילת עבודה" />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="flexible" className="justify-end">גמיש</SelectItem>
+              <SelectItem value="immediate" className="justify-end">מיידית</SelectItem>
+              <SelectItem value="1_2_weeks" className="justify-end">שבוע עד שבועיים</SelectItem>
+              <SelectItem value="1_2_months" className="justify-end">חודש עד חודשיים</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

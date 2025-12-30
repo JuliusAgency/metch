@@ -172,6 +172,11 @@ export default function Profile() {
       await CV.delete(cvData.id);
       await UserEntity.updateMyUserData({ resume_url: null });
 
+      // Clear the local storage draft so next generation starts fresh
+      if (user?.email) {
+        localStorage.removeItem(`cv_draft_${user.email}`);
+      }
+
       setCvData(null);
 
       toast({

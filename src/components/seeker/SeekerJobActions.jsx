@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 
-const SeekerJobActions = ({ handleApply, applying, isUnavailable, hasExistingApplication, handleReject }) => {
+const SeekerJobActions = ({ handleApply, applying, isUnavailable, hasExistingApplication, handleReject, hasScreeningQuestions }) => {
     const getButtonText = () => {
         if (hasExistingApplication) return 'מועמדות הוגשה כבר';
         if (isUnavailable) return 'משרה לא זמינה';
         if (applying) return 'שולח...';
+        if (hasScreeningQuestions) return 'המשך לשאלון סינון';
         return 'הגשת מועמדות';
     };
 
@@ -15,11 +16,10 @@ const SeekerJobActions = ({ handleApply, applying, isUnavailable, hasExistingApp
             <Button
                 onClick={handleApply}
                 disabled={isDisabled}
-                className={`w-full sm:w-auto px-12 py-3 rounded-full font-bold text-lg h-auto ${
-                    isDisabled
+                className={`w-full sm:w-auto px-12 py-3 rounded-full font-bold text-lg h-auto ${isDisabled
                         ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                         : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
+                    }`}
             >
                 {getButtonText()}
             </Button>

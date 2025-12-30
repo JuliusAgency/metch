@@ -8,44 +8,46 @@ const ProfileActions = ({
     creatingConversation,
     handleExportToEmail,
     exportingResume,
+    questionnaireResponse
 }) => (
-    <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 sm:gap-4 pt-8 w-full">
-        <Button
-            size="lg"
-            className="w-full sm:flex-1 px-6 sm:px-10 h-12 rounded-full bg-blue-600 hover:bg-blue-700 font-bold text-sm sm:text-base"
-            onClick={handleStartConversation}
-            disabled={creatingConversation}
-            aria-busy={creatingConversation}
-            aria-label="שלח הודעה למועמד"
-        >
-            {creatingConversation ? (
-                <Loader2 className="w-4 h-4 animate-spin ml-2" />
-            ) : null}
-            שלח הודעה למועמד
-        </Button>
+    <div className="flex flex-col-reverse sm:flex-row items-center justify-center gap-6 w-full pt-2 pb-2">
+        {/* Actions in RTL: First child is Right, Last child is Left */}
+
+        {/* Right Button: Questionnaire (if exists) or Export (if Questionnaire doesn't exist) */}
+        {questionnaireResponse && (
+            <Link to={createPageUrl(`ViewQuestionnaire?id=${questionnaireResponse.id}`)} className="w-auto">
+                <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-auto px-8 h-12 rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
+                >
+                    צפה בשאלון סינון
+                </Button>
+            </Link>
+        )}
+
+        {/* Right/Center Button: Export */}
         <Button
             size="lg"
             variant="outline"
-            className="w-full sm:flex-1 px-6 sm:px-10 h-12 rounded-full border-gray-300 hover:bg-gray-100 font-bold text-sm sm:text-base"
+            className="w-auto px-10 h-12 rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
             onClick={handleExportToEmail}
             disabled={exportingResume}
-            aria-busy={exportingResume}
-            aria-label="ייצוא למייל"
         >
-            {exportingResume ? (
-                <Loader2 className="w-4 h-4 animate-spin ml-2" />
-            ) : null}
+            {exportingResume && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
             ייצוא למייל
         </Button>
-        <Link to={createPageUrl("ViewQuestionnaire?id=mock_response_1")} className="w-full sm:flex-1">
-            <Button
-                size="lg"
-                variant="outline"
-                className="w-full px-6 sm:px-10 h-12 rounded-full border-gray-300 hover:bg-gray-100 font-bold text-sm sm:text-base"
-            >
-                צפה בשאלון סינון
-            </Button>
-        </Link>
+
+        {/* Left Button: Send Message */}
+        <Button
+            size="lg"
+            className="w-auto px-10 h-12 rounded-full bg-[#2987cd] hover:bg-[#1f6ba8] text-white font-bold shadow-md shadow-blue-200"
+            onClick={handleStartConversation}
+            disabled={creatingConversation}
+        >
+            {creatingConversation && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
+            שלח הודעה למועמד
+        </Button>
     </div>
 );
 

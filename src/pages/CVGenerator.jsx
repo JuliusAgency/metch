@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { CV } from '@/api/entities';
 import { User } from '@/api/entities';
-import { UploadFile } from '@/api/integrations';
 import CVStepper from '@/components/cv_generator/CVStepper';
 import Step1PersonalDetails from '@/components/cv_generator/Step1_PersonalDetails';
 import Step2WorkExperience from '@/components/cv_generator/Step2_WorkExperience';
@@ -13,11 +12,13 @@ import Step7Preview from '@/components/cv_generator/Step7_Preview';
 import UploadCV from '@/components/cv_generator/UploadCV';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/components/ui/use-toast";
-import { ArrowLeft, ArrowRight, Loader2, Sparkles, FileText } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { useRequireUserType } from '@/hooks/use-require-user-type';
+import cvCreateIcon from '@/assets/cv_create_icon.png';
+import cvExistsIcon from '@/assets/cv_exists_icon.png';
 
 const STEPS = ["פרטים אישיים", "ניסיון תעסוקתי", "השכלה", "הסמכות", "תמצית", "תצוגה מקדימה"];
 
@@ -60,19 +61,19 @@ const normalizeCvRecord = (record = {}) => ({
   skills: ensureArray(record.skills)
 });
 
-const ChoiceCard = ({ title, description, icon: Icon, onClick, isSelected }) => (
+const ChoiceCard = ({ title, description, imageSrc, onClick, isSelected }) => (
   <motion.div
-    whileHover={{ scale: 1.03 }}
+    whileHover={{ scale: 1.02 }}
     onClick={onClick}
-    className={`cursor-pointer bg-white rounded-2xl p-6 text-right border-2 transition-all duration-200 ${isSelected ? 'border-blue-500 shadow-lg' : 'border-gray-200 hover:border-gray-300'}`}>
+    className={`cursor-pointer bg-white rounded-3xl p-8 text-right border-2 transition-all duration-300 h-full shadow-sm hover:shadow-xl ${isSelected ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-50'}`}>
 
-    <div className="flex justify-between items-start">
-      <div>
-        <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
-        <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
+    <div className="flex justify-between items-center gap-6">
+      <div className="flex-1">
+        <h3 className="text-2xl font-bold text-blue-900 mb-3">{title}</h3>
+        <p className="text-gray-500 text-base leading-relaxed">{description}</p>
       </div>
-      <div className="w-12 h-12 bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
-        <Icon className="w-6 h-6 text-white" />
+      <div className="flex-shrink-0">
+        <img src={imageSrc} alt={title} className="w-24 h-24 object-contain" />
       </div>
     </div>
   </motion.div>
@@ -281,6 +282,20 @@ export default function CVGenerator() {
         return;
       }
 
+      // Sync personal details to UserProfile whenever we save
+      if (cvData.personal_details) {
+        try {
+          const { full_name, phone, address } = cvData.personal_details;
+          await User.updateMyUserData({
+            ...(full_name && { full_name }),
+            ...(phone && { phone }),
+            ...(address && { preferred_location: address }),
+          });
+        } catch (err) {
+          console.error("Failed to update user profile with CV details", err);
+        }
+      }
+
       // If not last step, just save and move fast
       if (step < STEPS.length) {
         setStep((prev) => prev + 1);
@@ -350,22 +365,24 @@ export default function CVGenerator() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}>
 
-            <h1 className="text-3xl font-bold text-gray-900">נרשמת בהצלחה</h1>
-            <h2 className="text-4xl font-extrabold text-blue-600 mb-4">המאצ' המושלם מחכה לך</h2>
-            <p className="text-gray-600 mb-12">רק עוד כמה צעדים ונמצא בשבילך את העבודה שהכי מתאימה לדרישות שלך</p>
+            <div className="mb-12">
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">נרשמת בהצלחה</h1>
+              <h2 className="text-4xl font-extrabold text-blue-500 mb-6">המאצ' המושלם מחכה לך</h2>
+              <p className="text-gray-500 text-lg">רק עוד כמה צעדים ואנחנו נמצא בשבילך את העבודה<br />שהכי מתאימה לדרישות שלך</p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 px-4">
               <ChoiceCard
                 title="צרו לי קורות חיים"
                 description="אל דאגה, נבנה יחד איתך קורות חיים שיעזרו לך למצוא את מאצ' מדויק - בעזרת הבינה המלאכותית שלנו ובחינם לגמרי."
-                icon={Sparkles}
+                imageSrc={cvCreateIcon}
                 onClick={() => setChoice('create')}
                 isSelected={choice === 'create'} />
 
               <ChoiceCard
                 title="יש לי קורות חיים"
                 description="זה אומר שתוכל להעלות את הקובץ ולקבל הצעות עבודה מדויקות כבר עכשיו!"
-                icon={FileText}
+                imageSrc={cvExistsIcon}
                 onClick={() => setChoice('upload')}
                 isSelected={choice === 'upload'} />
 
@@ -389,8 +406,8 @@ export default function CVGenerator() {
   const isNextDisabled = saving || (step === 0 && !choice) || (step === 1 && !isStep1Valid);
 
   return (
-    <div className="p-4 md:p-8" dir="rtl">
-      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-10">
+    <div className="p-4 md:p-8 min-h-screen" dir="rtl">
+      <div className="max-w-6xl mx-auto bg-gradient-to-b from-[#E0F3FF] via-white to-white rounded-[2rem] shadow-xl p-8 md:p-14">
         {step > 0 && (
           <CVStepper
             currentStep={step - 1}
@@ -400,13 +417,13 @@ export default function CVGenerator() {
           />
         )}
 
-        <div className="my-10 min-h-[400px]">
+        <div className="my-10 min-h-[400px] flex flex-col justify-center">
           {renderStep()}
         </div>
 
-        <div className={`flex ${step === 0 ? 'justify-center' : 'justify-between'} items-center`}>
+        <div className={`flex ${step === 0 ? 'justify-center' : 'justify-between'} items-center mt-auto`}>
           {(step > 1 || step === -1 || step === 1) && (
-            <Button variant="outline" onClick={handleBack} disabled={saving} className="px-8 py-3 rounded-full font-semibold text-lg h-auto">
+            <Button variant="outline" onClick={handleBack} disabled={saving} className="px-8 py-3 rounded-full font-semibold text-lg h-auto border-2 hover:bg-gray-50">
               <ArrowRight className="w-5 h-5 ml-2" />
               חזור
             </Button>
@@ -415,7 +432,7 @@ export default function CVGenerator() {
             <Button
               onClick={handleNext}
               disabled={isNextDisabled}
-              className="px-10 py-4 rounded-full font-bold text-lg h-auto bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:bg-gray-300"
+              className="px-16 py-3 rounded-full font-bold text-lg h-auto bg-[#2589D8] hover:bg-[#1e7bc4] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all"
             >
               {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : (step === 0 ? 'המשך' : (step === STEPS.length ? 'שמור וסיים' : 'הבא'))}
               {!saving && step !== 0 && <ArrowLeft className="w-5 h-5 mr-2" />}

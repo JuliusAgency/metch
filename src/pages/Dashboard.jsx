@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 import ToggleSwitch from "@/components/dashboard/ToggleSwitch";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
@@ -218,7 +218,9 @@ const JobSeekerDashboard = ({ user }) => {
       <div className="p-4 md:p-6" dir="rtl">
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex justify-between items-center px-2">
-            <h1 className="text-xl font-bold text-gray-900 mb-2">👋 היי {user.full_name?.split(' ')[0] || 'דניאל'}!</h1>
+            <h1 className="text-xl font-bold text-gray-900 mb-2">
+              {user.full_name?.trim() ? `👋 היי ${user.full_name}!` : '👋 היי!'}
+            </h1>
             <div className="flex items-center gap-2">
 
               <span className="text-sm text-gray-600">התראות חדשות</span>
@@ -362,12 +364,28 @@ const EmployerDashboard = ({ user }) => {
   const [candidates, setCandidates] = useState([]);
   const [currentNotificationIndex, setCurrentNotificationIndex] = useState(0);
   const [notifications, setNotifications] = useState([]);
-  const [candidateFilter, setCandidateFilter] = useState('new');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [candidateFilter, setCandidateFilter] = useState(searchParams.get('filter') || 'new');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showOnboardingHint, setShowOnboardingHint] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    const filterParam = searchParams.get('filter');
+    if (filterParam && filterParam !== candidateFilter) {
+      setCandidateFilter(filterParam);
+    }
+  }, [searchParams]);
+
+  const handleFilterChange = (val) => {
+    setCandidateFilter(val);
+    setSearchParams(prev => {
+      prev.set('filter', val);
+      return prev;
+    });
+  };
 
   // New state for employer analytics
   const [employerStats, setEmployerStats] = useState(null);
@@ -501,7 +519,9 @@ const EmployerDashboard = ({ user }) => {
       <div className="p-4 md:p-6" dir="rtl">
         <div className="max-w-7xl mx-auto space-y-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-right px-2 flex justify-between items-center">
-            <h1 className="text-xl font-bold text-gray-900 mb-2">👋 היי {user.full_name?.split(' ')[0] || 'רפאל'}!</h1>
+            <h1 className="text-xl font-bold text-gray-900 mb-2">
+              {user.company_name?.trim() ? `👋 היי ${user.company_name}!` : '👋 היי!'}
+            </h1>
 
           </motion.div>
           <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
@@ -578,7 +598,7 @@ const EmployerDashboard = ({ user }) => {
                     { value: 'new', label: 'מועמדים חדשים' },
                   ]}
                   value={candidateFilter}
-                  onChange={setCandidateFilter}
+                  onChange={handleFilterChange}
                 />
               </div>
             </div>
@@ -604,12 +624,29 @@ const EmployerDashboard = ({ user }) => {
                         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                           <div className="flex items-center gap-4 self-start md:self-center">
                             <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0"><div className="w-full h-full bg-blue-200 flex items-center justify-center"><UserIcon className="w-8 h-8 text-blue-500" /></div></div>
-                            <div className="text-right"><h3 className="font-bold text-lg text-gray-900">{candidate.full_name}</h3><p className="text-gray-600">{candidate.experience_level?.replace('_', ' ')}</p></div>
+                            <div className="text-right">
+                              <h3 className="font-bold text-lg text-gray-900">
+                                {(() => {
+                                  if (candidate.full_name && candidate.full_name.trim().length > 0) return candidate.full_name;
+                                  if (candidate.email) return candidate.email;
+                                  return 'מועמד ללא שם';
+                                })()}
+                              </h3>
+                              <p className="text-gray-600">{candidate.experience_level?.replace('_', ' ')}</p>
+                            </div>
                           </div>
                           <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full md:w-auto">
                             <div className="flex flex-wrap gap-2 justify-center sm:justify-start">{candidate.skills?.slice(0, 3).map((skill, i) => (<Badge key={i} variant="outline" className="border-blue-200 text-blue-700 bg-blue-50/50 text-xs">{skill}</Badge>))}</div>
                             <div className="w-full sm:w-48 text-right"><div className="text-sm text-gray-600 mb-1.5">{match}% התאמה</div><div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden"><div className={`h-full transition-all duration-500 ${match >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${match}%` }}></div></div></div>
-                            <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-full sm:w-auto view-candidate-button"><Link to={createPageUrl(`CandidateProfile?id=${candidate.id}&match=${match}`)} onClick={() => handleViewCandidate(candidate)}>לצפייה</Link></Button>
+                            <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-full sm:w-auto view-candidate-button">
+                              <Link
+                                to={createPageUrl(`CandidateProfile?id=${candidate.id}&match=${match}`)}
+                                state={{ from: `${location.pathname}?filter=${candidateFilter}` }}
+                                onClick={() => handleViewCandidate(candidate)}
+                              >
+                                לצפייה
+                              </Link>
+                            </Button>
                           </div>
                         </div>
                       </CardContent>
