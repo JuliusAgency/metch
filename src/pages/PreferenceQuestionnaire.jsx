@@ -33,8 +33,11 @@ const REVERSE_JOB_TYPE_MAPPING = Object.fromEntries(
   Object.entries(JOB_TYPE_MAPPING).map(([k, v]) => [v, k])
 );
 
+import { useUser } from '@/contexts/UserContext';
+
 export default function PreferenceQuestionnaire() {
   useRequireUserType();
+  const { updateProfile } = useUser();
 
   const [step, setStep] = useState(1);
   const [preferences, setPreferences] = useState({
@@ -122,7 +125,10 @@ export default function PreferenceQuestionnaire() {
         specialization: preferences.field,
       };
 
-      await User.updateMyUserData(updateData);
+      // Use context updateProfile to ensure global state is updated immediately
+      // This prevents the Dashboard from seeing stale data (missing specialization)
+      await updateProfile(updateData);
+
       navigate(createPageUrl('Dashboard'));
     } catch (error) {
       console.error("Failed to save preferences:", error);
