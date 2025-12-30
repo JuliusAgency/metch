@@ -27,7 +27,7 @@ import Insights from "./Insights";
 
 import CompanyProfileCompletion from "./CompanyProfileCompletion";
 
-import JobSearch from "./JobSearch";
+
 
 import Settings from "./Settings";
 
@@ -96,7 +96,7 @@ const PAGES = {
 
     CompanyProfileCompletion: CompanyProfileCompletion,
 
-    JobSearch: JobSearch,
+
 
     Settings: Settings,
 
@@ -186,7 +186,7 @@ function PagesContent() {
                 <Route path="/Contact" element={<AuthGuard><Contact /></AuthGuard>} />
                 <Route path="/Insights" element={<AuthGuard><Insights /></AuthGuard>} />
                 <Route path="/CompanyProfileCompletion" element={<AuthGuard><CompanyProfileCompletion /></AuthGuard>} />
-                <Route path="/JobSearch" element={<AuthGuard><JobSearch /></AuthGuard>} />
+
                 <Route path="/Settings" element={<AuthGuard><Settings /></AuthGuard>} />
                 <Route path="/AnswerQuestionnaire" element={<AuthGuard><AnswerQuestionnaire /></AuthGuard>} />
                 <Route path="/ScreeningQuestionnaire" element={<AuthGuard><ScreeningQuestionnaire /></AuthGuard>} />

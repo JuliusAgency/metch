@@ -63,7 +63,7 @@ export default function Layout({ children, currentPageName }) {
     // 1-7 Order for Job Seeker specified by user
     navLinks = [
       { page: "Dashboard", icon: Home, text: "דף הבית" },
-      { page: "JobSearch", icon: Search, text: "חיפוש" }, // Job Search added
+
       { page: "Settings", icon: User, text: "פרטים אישיים" }, // My Details
       { page: "Profile", icon: FileText, text: "קו״ח" }, // My CV
       { page: "Insights", icon: Sparkles, text: "תובנות" }, // Insights (Icon changed to Sparkles)
@@ -165,15 +165,6 @@ export default function Layout({ children, currentPageName }) {
               {/* Job Seeker Navigation (Strict 1-7 Order) */}
               {isJobSeeker && (
                 <>
-                  {/* Job Search */}
-                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                    <Link to={createPageUrl("JobSearch")} className="flex items-center gap-2">
-                      <Search className="w-7 h-7 text-gray-700" />
-                      {currentPageName === 'JobSearch' && <span className="font-medium text-gray-700">חיפוש</span>}
-                    </Link>
-                  </Button>
-                  <div className="h-6 w-px bg-white/50 mx-1"></div>
-
                   {/* 2. My Details (Settings) */}
                   <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
                     <Link to={createPageUrl("Settings")} title="ניהול הפרטים שלי">
