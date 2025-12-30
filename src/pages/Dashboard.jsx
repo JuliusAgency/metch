@@ -218,7 +218,9 @@ const JobSeekerDashboard = ({ user }) => {
       <div className="p-4 md:p-6" dir="rtl">
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex justify-between items-center px-2">
-            <h1 className="text-xl font-bold text-gray-900 mb-2">👋 היי {user.full_name?.split(' ')[0] || 'דניאל'}!</h1>
+            <h1 className="text-xl font-bold text-gray-900 mb-2">
+              {user.full_name?.trim() ? `👋 היי ${user.full_name}!` : '👋 היי!'}
+            </h1>
             <div className="flex items-center gap-2">
 
               <span className="text-sm text-gray-600">התראות חדשות</span>
@@ -517,7 +519,9 @@ const EmployerDashboard = ({ user }) => {
       <div className="p-4 md:p-6" dir="rtl">
         <div className="max-w-7xl mx-auto space-y-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-right px-2 flex justify-between items-center">
-            <h1 className="text-xl font-bold text-gray-900 mb-2">👋 היי {user.full_name?.split(' ')[0] || 'רפאל'}!</h1>
+            <h1 className="text-xl font-bold text-gray-900 mb-2">
+              {user.company_name?.trim() ? `👋 היי ${user.company_name}!` : '👋 היי!'}
+            </h1>
 
           </motion.div>
           <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
