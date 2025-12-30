@@ -65,14 +65,7 @@ export default function Profile() {
   const performStatusUpdate = async (checked, reason = null) => {
     setIsLookingForJob(checked);
     try {
-      // In the future, we can send 'reason' to the backend if supported
-      // console.log('Status update reason:', reason);
       await UserEntity.updateMyUserData({ available_for_work: checked });
-
-      if (reason === 'found_via_match') {
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 5000); // Hide after 5 seconds
-      }
     } catch (error) {
       console.error("Error updating user status:", error);
       setIsLookingForJob(!checked);
@@ -82,6 +75,18 @@ export default function Profile() {
         description: "אירעה שגיאה בעת עדכון הסטטוס. אנא נסה שנית.",
       });
     }
+  };
+
+  const handleFoundViaMatch = async () => {
+    setShowConfetti(true);
+    // Update status immediately in background
+    performStatusUpdate(false, 'found_via_match');
+
+    // Wait 1.5s before closing
+    setTimeout(() => {
+      setShowConfetti(false);
+      setIsStatusModalOpen(false);
+    }, 1500);
   };
 
   const handleToggleLookingForJob = async (checked) => {
@@ -289,15 +294,7 @@ export default function Profile() {
 
   return (
     <div className="p-4 md:p-6" dir="rtl">
-      {showConfetti && (
-        <div className="fixed inset-0 pointer-events-none z-[100] flex justify-center">
-          <Lottie
-            animationData={confettiAnimation}
-            loop={false}
-            style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
-          />
-        </div>
-      )}
+
       <div className="w-[85vw] mx-auto">
         <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden min-h-[85vh]">
           <div className="relative h-32 overflow-hidden -m-px">
@@ -400,13 +397,19 @@ export default function Profile() {
               <>
                 <Button
                   variant="outline"
-                  className="w-full text-lg h-14 border border-blue-800 text-blue-900 hover:bg-blue-50 rounded-full transition-all"
-                  onClick={() => {
-                    performStatusUpdate(false, 'found_via_match');
-                    setIsStatusModalOpen(false);
-                  }}
+                  className="w-full text-lg h-14 border border-blue-800 text-blue-900 hover:bg-blue-50 rounded-full transition-all relative overflow-hidden"
+                  onClick={handleFoundViaMatch}
                 >
-                  <span className="font-medium">מצאתי דרך מאצ׳</span>
+                  <span className="font-medium relative z-10">מצאתי דרך מאצ׳</span>
+                  {showConfetti && (
+                    <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
+                      <Lottie
+                        animationData={confettiAnimation}
+                        loop={false}
+                        style={{ width: '300px', height: '150px' }} // Adjusted size to fit/overflow slightly
+                      />
+                    </div>
+                  )}
                 </Button>
                 <Button
                   variant="outline"
