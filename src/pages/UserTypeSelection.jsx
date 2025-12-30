@@ -128,12 +128,18 @@ const UserTypeSelection = () => {
     setLoading(true);
 
     try {
-      // Update user profile with selected type AND reset career_stage to ensure onboarding modals show
-      // This is crucial for users who might be restarting the flow or reusing accounts
-      await updateProfile({
-        user_type: userType,
-        career_stage: null // Force reset this field
-      });
+      // Update user profile with selected type
+      // We do this first and await it as it is critical
+      await updateProfile({ user_type: userType });
+
+      // Best-effort reset of career_stage to null
+      // This allows re-onboarding even if the user manually cleared user_type in DB but kept career_stage
+      // We catch errors here so it doesn't block the flow if it fails (e.g. schema issues)
+      try {
+        await updateProfile({ career_stage: null });
+      } catch (resetError) {
+        console.warn("Failed to reset career_stage, proceeding anyway:", resetError);
+      }
 
       toast({
         title: "סוג משתמש נבחר בהצלחה!",
