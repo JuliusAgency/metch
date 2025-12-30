@@ -72,17 +72,18 @@ export default function JobManagement() {
       // Get current user data to set created_by fields
       const userData = await User.me();
 
+      const now = new Date().toISOString();
       const duplicatedJob = {
         ...job,
         title: `${job.title} (עותק)`,
         status: 'draft',
         applications_count: 0,
         created_by: userData.email,
-        created_by_id: userData.id
+        created_by_id: userData.id,
+        created_date: now,
+        updated_date: now
       };
       delete duplicatedJob.id;
-      delete duplicatedJob.created_date;
-      delete duplicatedJob.updated_date;
 
       await Job.create(duplicatedJob);
       loadData(); // Reload data

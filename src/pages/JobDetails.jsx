@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Job } from "@/api/entities";
 import { JobApplication } from "@/api/entities";
 import { JobView } from "@/api/entities";
@@ -30,6 +30,7 @@ export default function JobDetails() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const loadData = useCallback(async () => {
     try {
@@ -79,6 +80,30 @@ export default function JobDetails() {
       }
     } catch (error) {
       console.error("Error updating job status:", error);
+    }
+  };
+
+  const handleDuplicateJob = async () => {
+    try {
+      const userData = await User.me();
+      const now = new Date().toISOString();
+
+      const duplicatedJob = {
+        ...job,
+        title: `${job.title} (עותק)`,
+        status: 'draft',
+        applications_count: 0,
+        created_by: userData.email,
+        created_by_id: userData.id,
+        created_date: now,
+        updated_date: now
+      };
+      delete duplicatedJob.id;
+
+      await Job.create(duplicatedJob);
+      navigate(createPageUrl("JobManagement"));
+    } catch (error) {
+      console.error("Error duplicating job:", error);
     }
   };
 
@@ -356,6 +381,7 @@ export default function JobDetails() {
                   <Button
                     variant="outline"
                     className="border-blue-300 hover:bg-blue-100"
+                    onClick={handleDuplicateJob}
                   >
                     <Copy className="w-4 h-4 ml-2" />
                     שכפל משרה
