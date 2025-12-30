@@ -59,11 +59,12 @@ const JobSeekerDashboard = ({ user }) => {
   const [notifications, setNotifications] = useState([]);
   const [userStats, setUserStats] = useState(null);
   const [showCareerModal, setShowCareerModal] = useState(false);
+  const [hasCV, setHasCV] = useState(true); // Default to true to avoid flickers
   const navigate = useNavigate();
 
   // Check for onboarding triggers
   useEffect(() => {
-    if (loading || !user) return;
+    if (loading || !user || !hasCV) return;
 
     // 1. First priority: Career Stage
     if (!user.career_stage) {
@@ -76,7 +77,7 @@ const JobSeekerDashboard = ({ user }) => {
     if (!hasSeenGuide) {
       setShowGuide(true);
     }
-  }, [user, loading]);
+  }, [user, loading, hasCV]);
 
   const handleGuideComplete = () => {
     setShowGuide(false);
@@ -138,15 +139,11 @@ const JobSeekerDashboard = ({ user }) => {
           })
         );
 
-        setAllJobs(jobsWithScores);
-        setViewedJobIds(new Set(jobViewsData.map(view => view.job_id)));
-        setNotifications(notificationsData);
-
         // Enhance stats with profile views data
         const enhancedStats = statsData ? {
           ...statsData,
           profile_views: profileViewsData.length,
-          resume_views: profileViewsData.length // Resume views same as profile views for now
+          resume_views: profileViewsData.length
         } : {
           profile_views: profileViewsData.length,
           resume_views: profileViewsData.length,
@@ -154,6 +151,22 @@ const JobSeekerDashboard = ({ user }) => {
         };
 
         setUserStats(enhancedStats);
+        setAllJobs(jobsWithScores);
+        setViewedJobIds(new Set(jobViewsData.map(view => view.job_id)));
+        setNotifications(notificationsData);
+
+        // Navigation guards for Job Seekers
+        const cvs = await CV.filter({ user_email: user.email });
+        if (cvs.length === 0) {
+          setHasCV(false);
+          navigate('/CVGenerator');
+          return;
+        }
+
+        if (!userProfile?.specialization) {
+          navigate('/PreferenceQuestionnaire');
+          return;
+        }
 
       } catch (error) {
         console.error("Error loading jobs for seeker:", error);
@@ -166,7 +179,7 @@ const JobSeekerDashboard = ({ user }) => {
       }
     };
     loadData();
-  }, [user]);
+  }, [user, navigate]);
 
   const StatCard = ({ icon: Icon, title, value }) => (
     <Card className="bg-white border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] rounded-2xl h-full">

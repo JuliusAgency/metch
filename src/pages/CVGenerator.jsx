@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { CV } from '@/api/entities';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { User } from '@/api/entities';
 import CVStepper from '@/components/cv_generator/CVStepper';
 import Step1PersonalDetails from '@/components/cv_generator/Step1_PersonalDetails';
@@ -13,7 +14,6 @@ import UploadCV from '@/components/cv_generator/UploadCV';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { useRequireUserType } from '@/hooks/use-require-user-type';
@@ -92,6 +92,7 @@ export default function CVGenerator() {
   const [choice, setChoice] = useState(null); // 'upload' or 'create'
   const [isStep1Valid, setIsStep1Valid] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const handleStep1ValidityChange = useCallback((isValid) => {
     setIsStep1Valid(isValid);
@@ -192,7 +193,17 @@ export default function CVGenerator() {
       }
     };
     loadInitialData();
-  }, []);
+
+    // Handle search param choice
+    const choiceParam = searchParams.get('choice');
+    if (choiceParam === 'upload') {
+      setChoice('upload');
+      setStep(-1);
+    } else if (choiceParam === 'create') {
+      setChoice('create');
+      setStep(1);
+    }
+  }, [searchParams]);
 
   const [isDirty, setIsDirty] = useState(false);
 
@@ -326,9 +337,14 @@ export default function CVGenerator() {
 
     if (step > 1) {
       setStep((prev) => prev - 1);
-    } else if (step === 1 || step === -1) {
-      setStep(0); // Go back to choice
-      setChoice(null);
+    } else if (step === 1 || step === -1 || step === 0) {
+      // If we have a choice param, go back to selection page
+      if (searchParams.get('choice')) {
+        navigate('/UserTypeSelection');
+      } else {
+        setStep(0); // Regular fallback
+        setChoice(null);
+      }
     }
   };
 

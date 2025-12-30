@@ -16,11 +16,89 @@ const imgVector3Mobile = "http://localhost:3845/assets/8b213c7f4e44a5d8cc6e0ab22
 const imgVector4Mobile = "http://localhost:3845/assets/72e4b24edacb5c8e832962169ccbbc66a7638120.svg";
 const imgVector5Mobile = "http://localhost:3845/assets/d5a77e346df785c2e61c9d8ebc59ab003a8facc8.svg";
 const imgVector6Mobile = "http://localhost:3845/assets/38437995b6d423593af0f3de968f7aa2dae9470d.svg";
-const imgEllipse480Mobile = "http://localhost:3845/assets/89b89e723ec104e845beb68e4661ff10ed044c2b.svg";
+import { motion, AnimatePresence } from 'framer-motion';
+import cvCreateIcon from '@/assets/cv_create_icon.png';
+import cvExistsIcon from '@/assets/cv_exists_icon.png';
+
+const imgHugeiconsAiMagic = "http://localhost:3845/assets/289919713a3bb46a7fa4929734053736f1a07e8a.svg";
+
+const CVChoiceModal = ({ isOpen, onSelect, loading }) => {
+  const options = [
+    {
+      id: 'create',
+      title: 'צרו לי קורות חיים',
+      subtitle: 'אל דאגה, נבנה יחד איתך קורות חיים שיעזרו לך למצוא את מאצ\' מדויק - בעזרת הבינה המלאכותית שלנו ובחינם לגמרי.',
+      imageSrc: cvCreateIcon
+    },
+    {
+      id: 'upload',
+      title: 'יש לי קורות חיים',
+      subtitle: 'זה אומר שתוכל להעלות את הקובץ ולקבל הצעות עבודה מדויקות כבר עכשיו!',
+      imageSrc: cvExistsIcon
+    }
+  ];
+
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          className="bg-white rounded-[40px] shadow-2xl w-full max-w-4xl p-8 md:p-12 relative overflow-hidden"
+          dir="rtl"
+        >
+          <div className="flex flex-col items-center w-full">
+            {/* Header with Logo */}
+            <div className="flex items-center gap-2 mb-6">
+              <img alt="" className="w-8 h-8" src={imgHugeiconsAiMagic} />
+              <p className="font-['Poppins:Regular',_sans-serif] text-2xl text-black font-medium">Metch</p>
+            </div>
+
+            <h1 className="text-[#003566] text-2xl md:text-3xl font-['Rubik:Bold',_sans-serif] font-bold mb-3 text-center">
+              איך תרצה להוסיף את קורות החיים שלך?
+            </h1>
+            <p className="text-[#003566] text-base md:text-lg font-['Rubik:Regular',_sans-serif] text-center mb-10 opacity-90 max-w-2xl">
+              המענה שלך יעזור לנו למקד עבורך את ההצעות הרלוונטיות ביותר
+            </p>
+
+            <div className="flex flex-col md:flex-row gap-6 w-full justify-center items-stretch mb-10">
+              {options.map((opt) => (
+                <div
+                  key={opt.id}
+                  onClick={() => !loading && onSelect(opt.id)}
+                  className={`
+                    cursor-pointer rounded-[30px] p-6 flex flex-col items-center justify-center text-center gap-4 transition-all duration-300 w-full md:w-[320px] bg-white text-[#003566] shadow-lg hover:shadow-xl hover:-translate-y-2 border border-gray-100
+                    ${loading ? 'opacity-50 cursor-not-allowed' : ''}
+                  `}
+                >
+                  <img src={opt.imageSrc} alt={opt.title} className="w-16 h-16 object-contain mb-2" />
+                  <h3 className="text-xl font-['Rubik:Bold',_sans-serif] font-bold leading-tight">
+                    {opt.title}
+                  </h3>
+                  <p className="text-sm font-['Rubik:Regular',_sans-serif] leading-relaxed px-2 text-[#003566]/80">
+                    {opt.subtitle}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <p className="mt-4 text-[#003566] text-xs md:text-sm font-['Rubik:Regular',_sans-serif] opacity-80 text-center">
+              אל דאגה, ניתן לשנות את הבחירה בכל עת.
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+};
 
 const UserTypeSelection = () => {
   const [selectedType, setSelectedType] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showCVChoiceModal, setShowCVChoiceModal] = useState(false);
   const { user, updateProfile, loading: userLoading } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -49,7 +127,7 @@ const UserTypeSelection = () => {
 
       // Navigate based on user type
       if (userType === 'job_seeker') {
-        navigate('/CVGenerator');
+        setShowCVChoiceModal(true);
       } else {
         navigate('/CompanyProfileCompletion');
       }
@@ -282,6 +360,15 @@ const UserTypeSelection = () => {
           </div>
         </div>
       )}
+
+      {/* CV Choice Modal */}
+      <CVChoiceModal
+        isOpen={showCVChoiceModal}
+        loading={loading}
+        onSelect={(choice) => {
+          navigate(`/CVGenerator?choice=${choice}`);
+        }}
+      />
     </div>
   );
 };
