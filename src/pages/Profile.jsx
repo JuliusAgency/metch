@@ -293,77 +293,74 @@ export default function Profile() {
   }
 
   return (
-    <div className="p-4 md:p-6" dir="rtl">
+    <div className="h-full relative" dir="rtl">
+      <div className="relative">
+        <div className="relative h-32 overflow-hidden w-full">
+          <div
+            className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
+            style={{
+              backgroundImage:
+                "url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+          />
+        </div>
+        <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-full max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-4xl mx-auto space-y-12"
+          >
+            <h1 className="text-center text-3xl font-bold text-gray-900">
+              {(contextUser?.user_type === 'job_seeker' || !contextUser?.user_type) ? "הקו״ח שלי" : "ניהול הפרטים שלי"}
+            </h1>
 
-      <div className="w-[85vw] mx-auto">
-        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden min-h-[85vh]">
-          <div className="relative h-32 overflow-hidden -m-px">
-            <div
-              className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
-              style={{
-                backgroundImage:
-                  "url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat",
-              }}
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept=".pdf,.doc,.docx"
+              onChange={handleFileUpload}
             />
-          </div>
-          <CardContent className="p-4 sm:p-6 md:p-8 -mt-6 relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="max-w-4xl mx-auto space-y-12"
-            >
-              <h1 className="text-center text-3xl font-bold text-gray-900">
-                {(contextUser?.user_type === 'job_seeker' || !contextUser?.user_type) ? "הקו״ח שלי" : "ניהול הפרטים שלי"}
-              </h1>
 
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                accept=".pdf,.doc,.docx"
-                onChange={handleFileUpload}
-              />
+            {/* CV Section */}
+            {(contextUser?.user_type === 'job_seeker' || !contextUser?.user_type) && (
+              <>
+                <div className="mb-8">
+                  {cvData ? <FileManagementCard /> : <NoCvView />}
+                </div>
 
-              {/* CV Section */}
-              {(contextUser?.user_type === 'job_seeker' || !contextUser?.user_type) && (
-                <>
-                  <div className="mb-8">
-                    {cvData ? <FileManagementCard /> : <NoCvView />}
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                  {/* Preference Questionnaire Link - NOW ON RIGHT (First in RTL Grid) */}
+                  <Link to={createPageUrl('PreferenceQuestionnaire')}>
+                    <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center justify-between h-[72px] hover:border-blue-200 transition-colors cursor-pointer group">
+                      <span className="font-semibold text-gray-700 text-base">ניהול שאלון העדפה</span>
+                      <ChevronLeft className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
+                    </div>
+                  </Link>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                    {/* Preference Questionnaire Link - NOW ON RIGHT (First in RTL Grid) */}
-                    <Link to={createPageUrl('PreferenceQuestionnaire')}>
-                      <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center justify-between h-[72px] hover:border-blue-200 transition-colors cursor-pointer group">
-                        <span className="font-semibold text-gray-700 text-base">ניהול שאלון העדפה</span>
-                        <ChevronLeft className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
-                      </div>
-                    </Link>
-
-                    {/* Looking for Job Switch - NOW ON LEFT (Second in RTL Grid) */}
-                    <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center justify-between h-[72px]">
-                      <div className="flex items-center gap-3 w-full justify-between">
-                        <label htmlFor="looking-for-job" className="font-semibold text-gray-700 text-base cursor-pointer select-none">
-                          אני מחפש עבודה
-                        </label>
-                        <Switch
-                          checked={isLookingForJob}
-                          onCheckedChange={handleToggleLookingForJob}
-                          id="looking-for-job"
-                          className="data-[state=checked]:bg-green-400"
-                        />
-                      </div>
+                  {/* Looking for Job Switch - NOW ON LEFT (Second in RTL Grid) */}
+                  <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center justify-between h-[72px]">
+                    <div className="flex items-center gap-3 w-full justify-between">
+                      <label htmlFor="looking-for-job" className="font-semibold text-gray-700 text-base cursor-pointer select-none">
+                        אני מחפש עבודה
+                      </label>
+                      <Switch
+                        checked={isLookingForJob}
+                        onCheckedChange={handleToggleLookingForJob}
+                        id="looking-for-job"
+                        className="data-[state=checked]:bg-green-400"
+                      />
                     </div>
                   </div>
-                </>
-              )}
-            </motion.div>
-          </CardContent>
-        </Card>
+                </div>
+              </>
+            )}
+          </motion.div>
+        </div>
       </div>
 
       <Dialog open={isStatusModalOpen} onOpenChange={setIsStatusModalOpen}>

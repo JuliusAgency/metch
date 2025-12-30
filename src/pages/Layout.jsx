@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Card } from "@/components/ui/card";
 import { createPageUrl } from "@/utils";
 import {
   User,
@@ -339,8 +340,12 @@ export default function Layout({ children, currentPageName }) {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className="flex-1">
-        {children}
+      <main className="flex-1 flex justify-center w-full mt-2 mb-4 px-2">
+        <Card className="w-full max-w-[99%] bg-white/90 shadow-xl border border-gray-100 rounded-[50px] min-h-[92vh] overflow-hidden relative backdrop-blur-sm">
+          <div className="h-full">
+            {children}
+          </div>
+        </Card>
       </main>
     </div>
   );

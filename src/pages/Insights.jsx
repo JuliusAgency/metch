@@ -285,44 +285,40 @@ export default function Insights() {
     : 0;
 
   return (
-    <div className="p-4 md:p-6" dir="rtl">
-      <div className="w-[85vw] mx-auto">
-        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
-          <div className="relative">
-            <InsightsHeader />
-            <CardContent className="p-4 sm:p-6 md:p-8 -mt-6 relative z-10">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="space-y-8"
-              >
-                <div className="text-center flex items-center justify-center gap-2">
-                  <Sparkles className="w-6 h-6 text-yellow-500" />
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900">המלצות מאצ'</h1>
-                  <Sparkles className="w-6 h-6 text-yellow-500" />
-                </div>
-                {loading ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-600">טוען נתונים ומנתח המלצות...</p>
-                  </div>
-                ) : (
-                  <>
-                    <InsightsContent
-                      totalApplications={insightsData.totalApplications}
-                      responses={insightsData.responses}
-                      conversionRate={insightsData.conversionRate}
-                      avgCvOpeningTime={insightsData.avgCvOpeningTime}
-                      profileViews={insightsData.profileViews}
-                      insights={insightsData.insights}
-                      aiRecommendations={insightsData.aiRecommendations}
-                    />
-                  </>
-                )}
-              </motion.div>
-            </CardContent>
-          </div>
-        </Card>
+    <div className="h-full relative" dir="rtl">
+      <div className="relative">
+        <InsightsHeader />
+        <div className="p-4 sm:p-6 md:p-8 -mt-6 relative z-10 w-full max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="space-y-8"
+          >
+            <div className="text-center flex items-center justify-center gap-2">
+              <Sparkles className="w-6 h-6 text-yellow-500" />
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">המלצות מאצ'</h1>
+              <Sparkles className="w-6 h-6 text-yellow-500" />
+            </div>
+            {loading ? (
+              <div className="text-center py-8">
+                <p className="text-gray-600">טוען נתונים ומנתח המלצות...</p>
+              </div>
+            ) : (
+              <>
+                <InsightsContent
+                  totalApplications={insightsData.totalApplications}
+                  responses={insightsData.responses}
+                  conversionRate={insightsData.conversionRate}
+                  avgCvOpeningTime={insightsData.avgCvOpeningTime}
+                  profileViews={insightsData.profileViews}
+                  insights={insightsData.insights}
+                  aiRecommendations={insightsData.aiRecommendations}
+                />
+              </>
+            )}
+          </motion.div>
+        </div>
       </div>
     </div>
   );

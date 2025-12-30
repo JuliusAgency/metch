@@ -260,131 +260,125 @@ export default function MessagesSeeker() {
 
     if (selectedConversation) {
         return (
-            <div className="p-4 md:p-6" dir="rtl">
-                <div className="w-[85vw] mx-auto">
-                    <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden h-[80vh]">
-                        <div className="relative h-full flex flex-col">
-                            <SeekerChatHeader
-                                setSelectedConversation={setSelectedConversation}
-                                selectedConversation={selectedConversation}
-                            />
-                            <div className="flex-1 p-6 overflow-y-auto space-y-4">
-                                {loadingMessages && (
-                                    <div className="flex justify-center items-center py-8">
-                                        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                    </div>
-                                )}
-                                <AnimatePresence>
-                                    {!loadingMessages && messages.map((message, index) => (
-                                        <SeekerMessageItem
-                                            key={message.id}
-                                            message={message}
-                                            index={index}
-                                            user={user}
-                                        />
-                                    ))}
-                                </AnimatePresence>
-
-                                {selectedConversation.is_support && (
-                                    <div className="flex justify-start">
-                                        <div className="bg-gray-100 px-4 py-3 rounded-2xl">
-                                            <div className="flex gap-1">
-                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                            </div>
-                                            <div className="text-xs text-gray-500 mt-1 text-right">הקלד/ת...</div>
-                                        </div>
-                                    </div>
-                                )}
+            <div className="h-full relative flex flex-col" dir="rtl">
+                <div className="relative h-full flex flex-col w-full max-w-7xl mx-auto">
+                    <SeekerChatHeader
+                        setSelectedConversation={setSelectedConversation}
+                        selectedConversation={selectedConversation}
+                    />
+                    <div className="flex-1 p-6 overflow-y-auto space-y-4">
+                        {loadingMessages && (
+                            <div className="flex justify-center items-center py-8">
+                                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                             </div>
-                            <SeekerMessageInput
-                                newMessage={newMessage}
-                                setNewMessage={setNewMessage}
-                                sendMessage={sendMessage}
-                                sendingMessage={sendingMessage}
-                            />
-                        </div>
-                    </Card>
+                        )}
+                        <AnimatePresence>
+                            {!loadingMessages && messages.map((message, index) => (
+                                <SeekerMessageItem
+                                    key={message.id}
+                                    message={message}
+                                    index={index}
+                                    user={user}
+                                />
+                            ))}
+                        </AnimatePresence>
+
+                        {selectedConversation.is_support && (
+                            <div className="flex justify-start">
+                                <div className="bg-gray-100 px-4 py-3 rounded-2xl">
+                                    <div className="flex gap-1">
+                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-1 text-right">הקלד/ת...</div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    <SeekerMessageInput
+                        newMessage={newMessage}
+                        setNewMessage={setNewMessage}
+                        sendMessage={sendMessage}
+                        sendingMessage={sendingMessage}
+                    />
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="p-4 md:p-6" dir="rtl">
-            <div className="w-[85vw] mx-auto">
-                <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
-                    <div className="relative h-24 overflow-hidden -m-px">
-                        <div
-                            className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
-                            style={{
-                                backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                backgroundRepeat: 'no-repeat'
-                            }}
+        <div className="h-full relative" dir="rtl">
+            <div className="relative">
+                <div className="relative h-32 overflow-hidden w-full">
+                    <div
+                        className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
+                        style={{
+                            backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
+                        }}
+                    />
+                </div>
+
+                <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-full max-w-7xl mx-auto">
+                    <div className="text-center pb-8">
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">הודעות</h1>
+                    </div>
+
+                    <div className="relative mb-8">
+                        <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <Input
+                            placeholder="חיפוש בהודעות"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pr-12 pl-4 py-3 border-gray-300 focus:border-blue-400 rounded-full h-12 text-right"
+                            dir="rtl"
                         />
                     </div>
 
-                    <CardContent className="p-4 sm:p-6 md:p-8 -mt-6 relative z-10">
-                        <div className="text-center pb-8">
-                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">הודעות</h1>
-                        </div>
-
-                        <div className="relative mb-8">
-                            <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                            <Input
-                                placeholder="חיפוש בהודעות"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pr-12 pl-4 py-3 border-gray-300 focus:border-blue-400 rounded-full h-12 text-right"
-                                dir="rtl"
-                            />
-                        </div>
-
-                        <div className="mb-6">
-                            <Button
-                                onClick={handleSupportContact}
-                                className="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 rounded-xl h-16 flex items-center justify-between px-6"
-                                variant="outline"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-                                        <Headphones className="w-6 h-6 text-white" />
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="font-bold text-blue-800">צור קשר עם התמיכה</p>
-                                        <p className="text-sm text-blue-600">יש לך שאלה? אנחנו כאן לעזור</p>
-                                    </div>
+                    <div className="mb-6">
+                        <Button
+                            onClick={handleSupportContact}
+                            className="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 rounded-xl h-16 flex items-center justify-between px-6"
+                            variant="outline"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                                    <Headphones className="w-6 h-6 text-white" />
                                 </div>
-                                <ChevronLeft className="w-5 h-5 text-blue-500" />
-                            </Button>
+                                <div className="text-right">
+                                    <p className="font-bold text-blue-800">צור קשר עם התמיכה</p>
+                                    <p className="text-sm text-blue-600">יש לך שאלה? אנחנו כאן לעזור</p>
+                                </div>
+                            </div>
+                            <ChevronLeft className="w-5 h-5 text-blue-500" />
+                        </Button>
+                    </div>
+
+                    {loading ? (
+                        <div className="flex justify-center items-center py-12">
+                            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                         </div>
-
-                        {loading ? (
-                            <div className="flex justify-center items-center py-12">
-                                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                            </div>
-                        ) : paginatedConversations.length === 0 ? (
-                            <div className="text-center py-12 text-gray-500">
-                                <p>אין הודעות כרגע</p>
-                            </div>
-                        ) : (
-                            <SeekerConversationList
-                                conversations={paginatedConversations}
-                                handleConversationSelect={handleConversationSelect}
-                            />
-                        )}
-
-                        <SeekerPagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            goToPage={goToPage}
-                            pageNumbers={pageNumbers}
+                    ) : paginatedConversations.length === 0 ? (
+                        <div className="text-center py-12 text-gray-500">
+                            <p>אין הודעות כרגע</p>
+                        </div>
+                    ) : (
+                        <SeekerConversationList
+                            conversations={paginatedConversations}
+                            handleConversationSelect={handleConversationSelect}
                         />
-                    </CardContent>
-                </Card>
+                    )}
+
+                    <SeekerPagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        goToPage={goToPage}
+                        pageNumbers={pageNumbers}
+                    />
+                </div>
             </div>
         </div>
     );

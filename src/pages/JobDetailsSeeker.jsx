@@ -237,28 +237,26 @@ export default function JobDetailsSeeker() {
   const returnUrl = jobAnchorId ? `${baseReturnPath}#job-${jobAnchorId}` : baseReturnPath;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#dbedf3] via-white to-white" dir="rtl">
-      <div className="max-w-5xl mx-auto p-4 md:p-6">
-        <Card className="bg-white rounded-3xl shadow-lg overflow-hidden relative">
-          <CardContent className="relative z-10 px-4 sm:px-8 py-12">
-            <SeekerHeader job={job} returnUrl={returnUrl} />
-            {isUnavailable && (
-              <JobStatusBanner status={job.status} className="mb-6" />
-            )}
-            <SeekerJobTitle job={job} employmentTypeText={employmentTypeText} />
-            <SeekerJobPerks perks={job.company_perks} />
-            <SeekerJobInfo job={job} />
-            <SeekerJobImages images={attachments} />
-            <SeekerJobActions
-              handleApply={handleApply}
-              applying={applying}
-              isUnavailable={isUnavailable}
-              hasExistingApplication={hasExistingApplication}
-              handleReject={handleReject}
-              hasScreeningQuestions={Array.isArray(job.screening_questions) && job.screening_questions.length > 0}
-            />
-          </CardContent>
-        </Card>
+    <div className="h-full relative" dir="rtl">
+      <div className="relative h-full overflow-y-auto">
+        <div className="p-4 sm:p-6 md:p-8 w-full max-w-7xl mx-auto">
+          <SeekerHeader job={job} returnUrl={returnUrl} />
+          {isUnavailable && (
+            <JobStatusBanner status={job.status} className="mb-6" />
+          )}
+          <SeekerJobTitle job={job} employmentTypeText={employmentTypeText} />
+          <SeekerJobPerks perks={job.company_perks} />
+          <SeekerJobInfo job={job} />
+          <SeekerJobImages images={attachments} />
+          <SeekerJobActions
+            handleApply={handleApply}
+            applying={applying}
+            isUnavailable={isUnavailable}
+            hasExistingApplication={hasExistingApplication}
+            handleReject={handleReject}
+            hasScreeningQuestions={Array.isArray(job.screening_questions) && job.screening_questions.length > 0}
+          />
+        </div>
       </div>
 
       <ApplicationSuccessModal

@@ -140,46 +140,44 @@ export default function PreferenceQuestionnaire() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-4 md:p-6" dir="rtl">
+    <div className="h-full relative" dir="rtl">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-4xl mx-auto"
+        className="h-full relative overflow-y-auto"
       >
-        <Card className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden min-h-[80vh]">
-          <CardContent className="p-8 md:p-12 flex flex-col items-center">
+        <div className="p-8 md:p-12 flex flex-col items-center w-full max-w-4xl mx-auto">
 
-            <ProgressBar currentStep={step} />
+          <ProgressBar currentStep={step} />
 
-            {step === 1 && (
-              <Step1
-                preferences={preferences}
-                setPreferences={setPreferences}
-                onNext={handleNext}
-              />
-            )}
+          {step === 1 && (
+            <Step1
+              preferences={preferences}
+              setPreferences={setPreferences}
+              onNext={handleNext}
+            />
+          )}
 
-            {step === 2 && (
-              <Step2
-                preferences={preferences}
-                setPreferences={setPreferences}
-                onSave={handleSave}
-                onBack={handleBack}
-                saving={saving}
-              />
-            )}
+          {step === 2 && (
+            <Step2
+              preferences={preferences}
+              setPreferences={setPreferences}
+              onSave={handleSave}
+              onBack={handleBack}
+              saving={saving}
+            />
+          )}
 
 
-            <div className="mt-auto pt-10 w-full flex items-center justify-center gap-3 border-t border-gray-50">
-              <Info className="w-5 h-5 text-blue-400 shrink-0" />
-              <span className="text-gray-500 text-sm">
-                ההתאמה נעשית בהתבסס על קורות החיים, גם אם שאלון ההעדפה לא מדוייק
-              </span>
-            </div>
+          <div className="mt-auto pt-10 w-full flex items-center justify-center gap-3 border-t border-gray-50">
+            <Info className="w-5 h-5 text-blue-400 shrink-0" />
+            <span className="text-gray-500 text-sm">
+              ההתאמה נעשית בהתבסס על קורות החיים, גם אם שאלון ההעדפה לא מדוייק
+            </span>
+          </div>
 
-          </CardContent>
-        </Card>
+        </div>
       </motion.div>
     </div>
   );

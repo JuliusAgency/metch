@@ -326,170 +326,164 @@ export default function Messages() {
 
     if (selectedConversation) {
         return (
-            <div className="p-4 md:p-6" dir="rtl">
-                <div className="w-[85vw] mx-auto">
-                    <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden h-[80vh]">
-                        <div className="relative h-full flex flex-col">
-                            <ChatHeader
-                                setSelectedConversation={setSelectedConversation}
-                                selectedConversation={selectedConversation}
-                                ConversationStatusIndicator={ConversationStatusIndicator}
-                            />
-                            <div className="flex-1 p-6 overflow-y-auto space-y-4">
-                                {loadingMessages && (
-                                    <div className="flex justify-center items-center py-8">
-                                        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                    </div>
-                                )}
-
-                                {/* Job Status Message if job is closed/filled */}
-                                {!loadingMessages && selectedConversation.job_status && ['filled', 'filled_via_metch', 'closed'].includes(selectedConversation.job_status) && (
-                                    <div className="bg-gray-100 rounded-lg p-4 text-center">
-                                        <p className="text-sm text-gray-600">
-                                            {selectedConversation.job_status === 'filled' && "המשרה הזו כבר אוישה"}
-                                            {selectedConversation.job_status === 'filled_via_metch' && "המשרה הזו אוישה דרך המערכת"}
-                                            {selectedConversation.job_status === 'closed' && "המשרה הזו נסגרה על ידי המעסיק"}
-                                        </p>
-                                    </div>
-                                )}
-
-                                <AnimatePresence>
-                                    {!loadingMessages && messages.map((message, index) => {
-                                        const isMyMessage = message.sender_email === user?.email;
-                                        return (
-                                            <motion.div
-                                                key={message.id}
-                                                initial={{ opacity: 0, y: 20 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ duration: 0.3, delay: index * 0.1 }}
-                                                className={`flex ${isMyMessage ? 'justify-start' : 'justify-end'}`}
-                                            >
-                                                <div className={`max-w-xs lg:max-w-md px-6 py-3 rounded-2xl ${isMyMessage
-                                                        ? 'bg-blue-600 text-white'
-                                                        : 'bg-gray-100 text-gray-900'
-                                                    }`}>
-                                                    <p className="text-base">{message.content}</p>
-                                                    <div className={`flex items-center justify-start gap-1 mt-2 text-xs ${isMyMessage ? 'text-blue-100' : 'text-gray-500'
-                                                        }`}>
-                                                        {isMyMessage && (
-                                                            <CheckCheck className="w-3 h-3" />
-                                                        )}
-                                                        <span>{safeFormatDate(message.created_date || message.created_at, "HH:mm", "--:--")}</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        );
-                                    })}
-                                </AnimatePresence>
+            <div className="h-full relative flex flex-col" dir="rtl">
+                <div className="relative h-full flex flex-col w-full max-w-7xl mx-auto">
+                    <ChatHeader
+                        setSelectedConversation={setSelectedConversation}
+                        selectedConversation={selectedConversation}
+                        ConversationStatusIndicator={ConversationStatusIndicator}
+                    />
+                    <div className="flex-1 p-6 overflow-y-auto space-y-4">
+                        {loadingMessages && (
+                            <div className="flex justify-center items-center py-8">
+                                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                             </div>
-                            <MessageInput
-                                newMessage={newMessage}
-                                setNewMessage={setNewMessage}
-                                sendMessage={sendMessage}
-                                sendingMessage={sendingMessage}
-                                selectedConversation={selectedConversation}
-                            />
-                        </div>
-                    </Card>
+                        )}
+
+                        {/* Job Status Message if job is closed/filled */}
+                        {!loadingMessages && selectedConversation.job_status && ['filled', 'filled_via_metch', 'closed'].includes(selectedConversation.job_status) && (
+                            <div className="bg-gray-100 rounded-lg p-4 text-center">
+                                <p className="text-sm text-gray-600">
+                                    {selectedConversation.job_status === 'filled' && "המשרה הזו כבר אוישה"}
+                                    {selectedConversation.job_status === 'filled_via_metch' && "המשרה הזו אוישה דרך המערכת"}
+                                    {selectedConversation.job_status === 'closed' && "המשרה הזו נסגרה על ידי המעסיק"}
+                                </p>
+                            </div>
+                        )}
+
+                        <AnimatePresence>
+                            {!loadingMessages && messages.map((message, index) => {
+                                const isMyMessage = message.sender_email === user?.email;
+                                return (
+                                    <motion.div
+                                        key={message.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                                        className={`flex ${isMyMessage ? 'justify-start' : 'justify-end'}`}
+                                    >
+                                        <div className={`max-w-xs lg:max-w-md px-6 py-3 rounded-2xl ${isMyMessage
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-100 text-gray-900'
+                                            }`}>
+                                            <p className="text-base">{message.content}</p>
+                                            <div className={`flex items-center justify-start gap-1 mt-2 text-xs ${isMyMessage ? 'text-blue-100' : 'text-gray-500'
+                                                }`}>
+                                                {isMyMessage && (
+                                                    <CheckCheck className="w-3 h-3" />
+                                                )}
+                                                <span>{safeFormatDate(message.created_date || message.created_at, "HH:mm", "--:--")}</span>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
+                        </AnimatePresence>
+                    </div>
+                    <MessageInput
+                        newMessage={newMessage}
+                        setNewMessage={setNewMessage}
+                        sendMessage={sendMessage}
+                        sendingMessage={sendingMessage}
+                        selectedConversation={selectedConversation}
+                    />
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="p-4 md:p-6" dir="rtl">
-            <div className="w-[85vw] mx-auto">
-                <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
-                    <div className="relative h-24 overflow-hidden -m-px">
-                        <div
-                            className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
-                            style={{
-                                backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                backgroundRepeat: 'no-repeat'
-                            }}
-                        />
+        <div className="h-full relative" dir="rtl">
+            <div className="relative">
+                <div className="relative h-32 overflow-hidden w-full">
+                    <div
+                        className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
+                        style={{
+                            backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
+                        }}
+                    />
+                </div>
+
+                <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-full max-w-7xl mx-auto">
+                    <div className="text-center pb-8">
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">הודעות</h1>
                     </div>
 
-                    <CardContent className="p-4 sm:p-6 md:p-8 -mt-6 relative z-10">
-                        <div className="text-center pb-8">
-                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">הודעות</h1>
-                        </div>
-
-                        <div className="relative mb-8">
-                            <Input
-                                placeholder="חיפוש בהודעות"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-12 pr-4 py-3 border-gray-300 focus:border-blue-400 rounded-full h-12 text-right"
-                                dir="rtl"
-                            />
-                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        </div>
-
-                        {/* Conversations List */}
-                        <div className="space-y-4 mb-8">
-                            {loading ? (
-                                <div className="flex justify-center items-center py-12">
-                                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                </div>
-                            ) : paginatedConversations.length === 0 ? (
-                                <div className="text-center py-12 text-gray-500">
-                                    <p>אין הודעות כרגע</p>
-                                </div>
-                            ) : (
-                                paginatedConversations.map((conversation, index) => (
-                                    <motion.div
-                                        key={conversation.id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.3, delay: index * 0.1 }}
-                                        className="flex items-center justify-between p-4 hover:bg-gray-50/80 rounded-xl cursor-pointer transition-colors"
-                                        onClick={() => handleConversationSelect(conversation)}
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="space-y-1 text-right">
-                                                <span className={`font-medium ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'text-gray-500' : 'text-gray-800'
-                                                    }`}>
-                                                    {conversation.candidate_name}
-                                                </span>
-                                                <div className="text-xs text-gray-500">{conversation.job_title}</div>
-                                                <ConversationStatusIndicator jobStatus={conversation.job_status} className="text-xs" />
-                                            </div>
-                                            <div className={`w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'grayscale opacity-75' : ''
-                                                }`}>
-                                                {conversation.profileImage && conversation.profileImage !== "" ? (
-                                                    <img
-                                                        src={conversation.profileImage}
-                                                        alt={conversation.candidate_name}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
-                                                        <span className="text-xs font-bold text-gray-600">
-                                                            {conversation.candidate_name.slice(0, 2)}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <span className="text-gray-500 text-sm whitespace-nowrap">
-                                            {safeFormatDate(conversation.last_message_time, "dd.MM.yy", "--")}
-                                        </span>
-                                    </motion.div>
-                                ))
-                            )}
-                        </div>
-
-                        <Pagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            goToPage={goToPage}
-                            pageNumbers={pageNumbers}
+                    <div className="relative mb-8">
+                        <Input
+                            placeholder="חיפוש בהודעות"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-12 pr-4 py-3 border-gray-300 focus:border-blue-400 rounded-full h-12 text-right"
+                            dir="rtl"
                         />
-                    </CardContent>
-                </Card>
+                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    </div>
+
+                    {/* Conversations List */}
+                    <div className="space-y-4 mb-8">
+                        {loading ? (
+                            <div className="flex justify-center items-center py-12">
+                                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                        ) : paginatedConversations.length === 0 ? (
+                            <div className="text-center py-12 text-gray-500">
+                                <p>אין הודעות כרגע</p>
+                            </div>
+                        ) : (
+                            paginatedConversations.map((conversation, index) => (
+                                <motion.div
+                                    key={conversation.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                                    className="flex items-center justify-between p-4 hover:bg-gray-50/80 rounded-xl cursor-pointer transition-colors"
+                                    onClick={() => handleConversationSelect(conversation)}
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="space-y-1 text-right">
+                                            <span className={`font-medium ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'text-gray-500' : 'text-gray-800'
+                                                }`}>
+                                                {conversation.candidate_name}
+                                            </span>
+                                            <div className="text-xs text-gray-500">{conversation.job_title}</div>
+                                            <ConversationStatusIndicator jobStatus={conversation.job_status} className="text-xs" />
+                                        </div>
+                                        <div className={`w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'grayscale opacity-75' : ''
+                                            }`}>
+                                            {conversation.profileImage && conversation.profileImage !== "" ? (
+                                                <img
+                                                    src={conversation.profileImage}
+                                                    alt={conversation.candidate_name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
+                                                    <span className="text-xs font-bold text-gray-600">
+                                                        {conversation.candidate_name.slice(0, 2)}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <span className="text-gray-500 text-sm whitespace-nowrap">
+                                        {safeFormatDate(conversation.last_message_time, "dd.MM.yy", "--")}
+                                    </span>
+                                </motion.div>
+                            ))
+                        )}
+                    </div>
+
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        goToPage={goToPage}
+                        pageNumbers={pageNumbers}
+                    />
+                </div>
             </div>
         </div>
     );

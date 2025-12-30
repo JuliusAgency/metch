@@ -111,46 +111,42 @@ export default function AnswerQuestionnaire() {
         return <div className="text-center py-12">לא נמצאו שאלות לשאלון זה.</div>;
     }
 
-    return (
-        <div className="p-4 md:p-6" dir="rtl">
-            <div className="w-[85vw] mx-auto">
-                <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
-                    <QuestionnaireHeader jobId={job.id} />
-                    <CardContent className="p-4 sm:p-6 md:p-8 -mt-10 relative z-10">
-                        <div className="text-center mb-10">
-                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">שאלון סינון</h1>
-                            <p className="text-gray-600 mt-2">עבור המשרה: {job.title}</p>
-                        </div>
+    <div className="h-full relative" dir="rtl">
+        <div className="relative h-full overflow-y-auto">
+            <div className="p-4 sm:p-6 md:p-8 w-full max-w-7xl mx-auto">
+                <QuestionnaireHeader jobId={job.id} />
+                <div className="text-center mb-10 pt-6">
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900">שאלון סינון</h1>
+                    <p className="text-gray-600 mt-2">עבור המשרה: {job.title}</p>
+                </div>
 
-                        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
-                            <div className="space-y-6 mb-8">
-                                {job.screening_questions.map((question, index) => (
-                                    <Question
-                                        key={index}
-                                        index={index}
-                                        text={question.text}
-                                        type={question.type}
-                                        value={answers[index]}
-                                        onAnswer={(val) => handleAnswerChange(index, val)}
-                                    />
-                                ))}
-                            </div>
+                <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
+                    <div className="space-y-6 mb-8">
+                        {job.screening_questions.map((question, index) => (
+                            <Question
+                                key={index}
+                                index={index}
+                                text={question.text}
+                                type={question.type}
+                                value={answers[index]}
+                                onAnswer={(val) => handleAnswerChange(index, val)}
+                            />
+                        ))}
+                    </div>
 
-                            <div className="flex justify-center">
-                                <Button
-                                    type="submit"
-                                    disabled={submitting}
-                                    size="lg"
-                                    className="px-12 h-14 rounded-full font-bold text-lg bg-blue-600 hover:bg-blue-700"
-                                >
-                                    {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : "שלחו קורות חיים"}
-                                </Button>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
+                    <div className="flex justify-center">
+                        <Button
+                            type="submit"
+                            disabled={submitting}
+                            size="lg"
+                            className="px-12 h-14 rounded-full font-bold text-lg bg-blue-600 hover:bg-blue-700"
+                        >
+                            {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : "שלחו קורות חיים"}
+                        </Button>
+                    </div>
+                </form>
             </div>
         </div>
-    );
+    </div>
 
 }

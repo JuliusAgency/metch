@@ -72,94 +72,90 @@ export default function Statistics() {
     });
 
     return (
-        <div className="p-4 md:p-6 min-h-screen bg-gray-50/50" dir="rtl">
-            <div className="w-[85vw] mx-auto">
-                <Card className="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden min-h-[80vh]">
-                    <div className="relative">
-                        {/* Header Background */}
-                        <div className="relative h-32 overflow-hidden">
-                            <div
-                                className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
-                                style={{
-                                    backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center',
-                                    backgroundRepeat: 'no-repeat'
-                                }}
-                            />
+        <div className="h-full relative" dir="rtl">
+            <div className="relative">
+                {/* Header Background */}
+                <div className="relative h-32 overflow-hidden w-full">
+                    <div
+                        className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
+                        style={{
+                            backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
+                        }}
+                    />
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="absolute top-8 right-8 p-2 bg-white/80 rounded-full hover:bg-white transition-colors z-20"
+                    >
+                        <ChevronRight className="w-6 h-6 text-gray-600" />
+                    </button>
+                </div>
+
+                <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-full max-w-7xl mx-auto">
+                    {/* Title */}
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl font-bold text-[#1a237e]">הסטטיסטיקות שלי</h1>
+                    </div>
+
+                    {/* Toggle */}
+                    <div className="flex justify-center mb-12">
+                        <div className="flex bg-white border border-blue-200 rounded-full p-1 shadow-sm">
                             <button
-                                onClick={() => navigate(-1)}
-                                className="absolute top-8 right-8 p-2 bg-white/80 rounded-full hover:bg-white transition-colors z-20"
+                                onClick={() => setActiveView('active')}
+                                className={`px-8 py-2 rounded-full text-sm font-medium transition-all duration-200 ${activeView === 'active'
+                                    ? 'bg-[#2d7ec8] text-white shadow-md'
+                                    : 'text-gray-500 hover:bg-gray-50'
+                                    }`}
                             >
-                                <ChevronRight className="w-6 h-6 text-gray-600" />
+                                משרות פעילות
+                            </button>
+                            <button
+                                onClick={() => setActiveView('expired')}
+                                className={`px-8 py-2 rounded-full text-sm font-medium transition-all duration-200 ${activeView === 'expired'
+                                    ? 'bg-[#2d7ec8] text-white shadow-md'
+                                    : 'text-gray-500 hover:bg-gray-50'
+                                    }`}
+                            >
+                                משרות שהסתיימו
                             </button>
                         </div>
-
-                        <CardContent className="p-4 sm:p-6 md:p-8 -mt-8 relative z-10">
-                            {/* Title */}
-                            <div className="text-center mb-8">
-                                <h1 className="text-3xl font-bold text-[#1a237e]">הסטטיסטיקות שלי</h1>
-                            </div>
-
-                            {/* Toggle */}
-                            <div className="flex justify-center mb-12">
-                                <div className="flex bg-white border border-blue-200 rounded-full p-1 shadow-sm">
-                                    <button
-                                        onClick={() => setActiveView('active')}
-                                        className={`px-8 py-2 rounded-full text-sm font-medium transition-all duration-200 ${activeView === 'active'
-                                            ? 'bg-[#2d7ec8] text-white shadow-md'
-                                            : 'text-gray-500 hover:bg-gray-50'
-                                            }`}
-                                    >
-                                        משרות פעילות
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveView('expired')}
-                                        className={`px-8 py-2 rounded-full text-sm font-medium transition-all duration-200 ${activeView === 'expired'
-                                            ? 'bg-[#2d7ec8] text-white shadow-md'
-                                            : 'text-gray-500 hover:bg-gray-50'
-                                            }`}
-                                    >
-                                        משרות שהסתיימו
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Table Headers */}
-                            <div className="flex items-center gap-12 px-4 mb-4 text-gray-600 text-sm font-medium">
-                                <div className="flex-1 text-right pr-4">משרה</div>
-                                <div className="w-32 text-right">מיקום</div>
-                                <div className="w-32 text-center">תאריך</div>
-                                <div className="w-24 text-center">קו"ח שהוגשו</div>
-                                <div className="w-24 text-center">צפיות</div>
-                            </div>
-
-                            {/* List */}
-                            <div className="space-y-2">
-                                {loading ? (
-                                    <div className="space-y-4">
-                                        {[1, 2, 3].map(i => (
-                                            <div key={i} className="h-20 bg-gray-100 rounded-2xl animate-pulse" />
-                                        ))}
-                                    </div>
-                                ) : filteredJobs.length > 0 ? (
-                                    filteredJobs.map(job => (
-                                        <JobStatsItem
-                                            key={job.id}
-                                            job={job}
-                                            viewsCount={jobViews[job.id] || 0}
-                                        />
-                                    ))
-                                ) : (
-                                    <div className="text-center py-12 text-gray-500">
-                                        לא נמצאו משרות {activeView === 'active' ? 'פעילות' : 'שהסתיימו'}
-                                    </div>
-                                )}
-                            </div>
-
-                        </CardContent>
                     </div>
-                </Card>
+
+                    {/* Table Headers */}
+                    <div className="flex items-center gap-12 px-4 mb-4 text-gray-600 text-sm font-medium">
+                        <div className="flex-1 text-right pr-4">משרה</div>
+                        <div className="w-32 text-right">מיקום</div>
+                        <div className="w-32 text-center">תאריך</div>
+                        <div className="w-24 text-center">קו"ח שהוגשו</div>
+                        <div className="w-24 text-center">צפיות</div>
+                    </div>
+
+                    {/* List */}
+                    <div className="space-y-2">
+                        {loading ? (
+                            <div className="space-y-4">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="h-20 bg-gray-100 rounded-2xl animate-pulse" />
+                                ))}
+                            </div>
+                        ) : filteredJobs.length > 0 ? (
+                            filteredJobs.map(job => (
+                                <JobStatsItem
+                                    key={job.id}
+                                    job={job}
+                                    viewsCount={jobViews[job.id] || 0}
+                                />
+                            ))
+                        ) : (
+                            <div className="text-center py-12 text-gray-500">
+                                לא נמצאו משרות {activeView === 'active' ? 'פעילות' : 'שהסתיימו'}
+                            </div>
+                        )}
+                    </div>
+
+                </div>
             </div>
         </div>
     );
