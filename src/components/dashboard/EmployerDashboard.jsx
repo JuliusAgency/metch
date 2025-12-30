@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
   Plus,
@@ -40,7 +40,11 @@ const EmployerDashboard = ({ user }) => {
   const [candidates, setCandidates] = useState([]);
   const [currentNotificationIndex, setCurrentNotificationIndex] = useState(0);
   const [notifications, setNotifications] = useState([]);
-  const [candidateFilter, setCandidateFilter] = useState('new');
+
+  // Sync filter with URL
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [candidateFilter, setCandidateFilter] = useState(searchParams.get('filter') || 'new');
+
   const [loading, setLoading] = useState(true);
   const [showOnboardingHint, setShowOnboardingHint] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
@@ -49,6 +53,13 @@ const EmployerDashboard = ({ user }) => {
   // New state for employer analytics
   const [employerStats, setEmployerStats] = useState(null);
   const [employerActivity, setEmployerActivity] = useState([]);
+
+  useEffect(() => {
+    const filterParam = searchParams.get('filter');
+    if (filterParam && filterParam !== candidateFilter) {
+      setCandidateFilter(filterParam);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -146,6 +157,14 @@ const EmployerDashboard = ({ user }) => {
   const handlePrevNotification = () => setCurrentNotificationIndex(prev => prev > 0 ? prev - 1 : (notifications.length - 1 || 0));
   const handleNextNotification = () => setCurrentNotificationIndex(prev => prev < (notifications.length - 1) ? prev + 1 : 0);
 
+  const handleFilterChange = (filter) => {
+    setCandidateFilter(filter);
+    setSearchParams(prev => {
+      prev.set('filter', filter);
+      return prev;
+    });
+  };
+
   const filteredCandidates = candidates.filter(c => {
     const isViewed = viewedCandidates.some(vc => vc.candidate_name === c.full_name);
     return candidateFilter === 'new' ? !isViewed : isViewed;
@@ -241,8 +260,8 @@ const EmployerDashboard = ({ user }) => {
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               </div>
               <div className="flex gap-2 w-full md:w-auto">
-                <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${candidateFilter === 'watched' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`} onClick={() => setCandidateFilter('watched')}>מועמדים שצפיתי</Button>
-                <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${candidateFilter === 'new' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`} onClick={() => setCandidateFilter('new')}>מועמדים חדשים</Button>
+                <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${candidateFilter === 'watched' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`} onClick={() => handleFilterChange('watched')}>מועמדים שצפיתי</Button>
+                <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${candidateFilter === 'new' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`} onClick={() => handleFilterChange('new')}>מועמדים חדשים</Button>
               </div>
             </div>
             <div className="space-y-4 candidate-list">
@@ -268,7 +287,15 @@ const EmployerDashboard = ({ user }) => {
                           <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full md:w-auto">
                             <div className="flex flex-wrap gap-2 justify-center sm:justify-start">{candidate.skills?.slice(0, 3).map((skill, i) => (<Badge key={i} variant="outline" className="border-blue-200 text-blue-700 bg-blue-50/50 text-xs">{skill}</Badge>))}</div>
                             <div className="w-full sm:w-48 text-right"><div className="text-sm text-gray-600 mb-1.5">{match}% התאמה</div><div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden"><div className={`h-full transition-all duration-500 ${match >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${match}%` }}></div></div></div>
-                            <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-full sm:w-auto view-candidate-button"><Link to={createPageUrl(`CandidateProfile?id=${candidate.id}`)} onClick={() => handleViewCandidate(candidate)}>לצפייה</Link></Button>
+                            <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-full sm:w-auto view-candidate-button">
+                              <Link
+                                to={createPageUrl(`CandidateProfile?id=${candidate.id}`)}
+                                state={{ from: `${location.pathname}?filter=${candidateFilter}` }}
+                                onClick={() => handleViewCandidate(candidate)}
+                              >
+                                לצפייה
+                              </Link>
+                            </Button>
                           </div>
                         </div>
                       </CardContent>
