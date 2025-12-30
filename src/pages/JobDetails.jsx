@@ -361,12 +361,37 @@ export default function JobDetails() {
                     שכפל משרה
                   </Button>
                   {/* New button for Screening Questionnaire */}
-                  <Link to={createPageUrl(`ScreeningQuestionnaire?id=${job.id}`)}>
-                    <Button variant="outline" className="border-purple-300 hover:bg-purple-100">
-                      <ClipboardList className="w-4 h-4 ml-2" />
-                      שאלון סינון
-                    </Button>
-                  </Link>
+                  {(() => {
+                    let questionsData = job.screening_questions;
+                    if (!questionsData) return null;
+
+                    if (typeof questionsData === 'string') {
+                      try {
+                        if (questionsData.startsWith('\\x')) {
+                          const hex = questionsData.slice(2);
+                          let str = '';
+                          for (let i = 0; i < hex.length; i += 2) {
+                            str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+                          }
+                          questionsData = str;
+                        }
+                        questionsData = JSON.parse(questionsData);
+                      } catch (e) {
+                        return null; // Don't show if parsing fails
+                      }
+                    }
+
+                    if (!Array.isArray(questionsData) || questionsData.length === 0) return null;
+
+                    return (
+                      <Link to={createPageUrl(`ScreeningQuestionnaire?id=${job.id}`)}>
+                        <Button variant="outline" className="border-purple-300 hover:bg-purple-100">
+                          <ClipboardList className="w-4 h-4 ml-2" />
+                          שאלון סינון
+                        </Button>
+                      </Link>
+                    );
+                  })()}
                   <Link to={createPageUrl(`JobApplications?job_id=${job.id}`)}>
                     <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                       <Users className="w-4 h-4 ml-2" />
