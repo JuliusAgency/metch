@@ -63,6 +63,8 @@ export default function Settings() {
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     full_name: "",
+    first_name: "",
+    last_name: "",
     email: "",
     phone: "",
     gender: "",
@@ -108,8 +110,15 @@ export default function Settings() {
       const userData = await User.me();
       setUser(userData);
 
+      const fullName = userData.full_name || "";
+      const nameParts = fullName.trim().split(/\s+/);
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+
       const loadedData = {
-        full_name: userData.full_name || "",
+        full_name: fullName,
+        first_name: firstName,
+        last_name: lastName,
         email: userData.email || "",
         phone: userData.phone || "",
         gender: userData.gender || "",
@@ -160,7 +169,7 @@ export default function Settings() {
     // Job Seeker specific validation
     else {
       if (!trimmedValue && field !== 'email' && field !== 'password' &&
-        ['full_name', 'phone', 'gender', 'date_of_birth', 'place_of_residence'].includes(field)) {
+        ['first_name', 'last_name', 'phone', 'gender', 'date_of_birth', 'place_of_residence'].includes(field)) {
         errorMessage = "שדה חובה";
       }
     }
@@ -201,7 +210,7 @@ export default function Settings() {
       } else {
         // Job Seeker validation
         if (!trimmedValue && field !== 'email' && field !== 'password' &&
-          ['full_name', 'phone', 'gender', 'date_of_birth', 'place_of_residence'].includes(field)) {
+          ['first_name', 'last_name', 'phone', 'gender', 'date_of_birth', 'place_of_residence'].includes(field)) {
           newErrors[field] = "שדה חובה";
         }
       }
@@ -264,8 +273,9 @@ export default function Settings() {
       } else {
         // Job Seeker Payload
         // Explicitly construct fields
+        const combinedFullName = `${formData.first_name.trim()} ${formData.last_name.trim()}`;
         profileData = {
-          full_name: formData.full_name,
+          full_name: combinedFullName,
           // email is usually not updated via public table if auth email is source of truth, but we keep it
           phone: formData.phone,
           gender: formData.gender || null,
@@ -421,7 +431,7 @@ export default function Settings() {
   // Determine if form is valid based on user type
   const isEmployer = user?.user_type === 'employer';
   const employerFields = ['company_name', 'company_type', 'full_name', 'phone'];
-  const jobSeekerFields = ['full_name', 'phone', 'gender', 'date_of_birth', 'place_of_residence'];
+  const jobSeekerFields = ['first_name', 'last_name', 'phone', 'gender', 'date_of_birth', 'place_of_residence'];
 
   const formFieldsToCheck = isEmployer ? employerFields : jobSeekerFields;
   const isFormComplete = formFieldsToCheck.every((field) => {
@@ -732,22 +742,43 @@ export default function Settings() {
                   {/* ==================== JOB SEEKER LAYOUT (EXISTING) ==================== */}
                   {!isEmployer && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Full Name */}
-                      <div className="space-y-1">
-                        <div className="relative">
-                          <UserIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <Input
-                            placeholder="שם מלא"
-                            value={formData.full_name}
-                            onChange={(e) => handleInputChange('full_name', e.target.value)}
-                            required
-                            className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                            dir="rtl"
-                          />
+                      {/* First Name & Last Name (Split) */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium text-gray-700">שם פרטי</label>
+                          <div className="relative">
+                            <UserIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <Input
+                              placeholder="שם פרטי"
+                              value={formData.first_name}
+                              onChange={(e) => handleInputChange('first_name', e.target.value)}
+                              required
+                              className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                              dir="rtl"
+                            />
+                          </div>
+                          {errors.first_name && (
+                            <p className="text-red-500 text-sm">{errors.first_name}</p>
+                          )}
                         </div>
-                        {errors.full_name && (
-                          <p className="text-red-500 text-sm text-right">{errors.full_name}</p>
-                        )}
+
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium text-gray-700">שם משפחה</label>
+                          <div className="relative">
+                            <UserIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <Input
+                              placeholder="שם משפחה"
+                              value={formData.last_name}
+                              onChange={(e) => handleInputChange('last_name', e.target.value)}
+                              required
+                              className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                              dir="rtl"
+                            />
+                          </div>
+                          {errors.last_name && (
+                            <p className="text-red-500 text-sm">{errors.last_name}</p>
+                          )}
+                        </div>
                       </div>
 
                       {/* Email */}
