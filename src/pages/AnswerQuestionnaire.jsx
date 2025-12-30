@@ -28,10 +28,27 @@ export default function AnswerQuestionnaire() {
 
             const params = new URLSearchParams(location.search);
             const jobId = params.get('job_id');
-            
+
             if (jobId) {
                 const jobResults = await Job.filter({ id: jobId });
                 if (jobResults.length > 0) {
+                    if (jobResults[0].screening_questions && typeof jobResults[0].screening_questions === 'string') {
+                        try {
+                            let jsonStr = jobResults[0].screening_questions;
+                            if (jsonStr.startsWith('\\x')) {
+                                const hex = jsonStr.slice(2);
+                                let str = '';
+                                for (let i = 0; i < hex.length; i += 2) {
+                                    str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+                                }
+                                jsonStr = str;
+                            }
+                            jobResults[0].screening_questions = JSON.parse(jsonStr);
+                        } catch (e) {
+                            console.warn("Failed to parse screening_questions", e);
+                            jobResults[0].screening_questions = [];
+                        }
+                    }
                     setJob(jobResults[0]);
                 }
             }
@@ -46,18 +63,18 @@ export default function AnswerQuestionnaire() {
         loadData();
     }, [loadData]);
 
-    const handleAnswerChange = (question, answer) => {
-        setAnswers(prev => ({ ...prev, [question]: answer }));
+    const handleAnswerChange = (index, answer) => {
+        setAnswers(prev => ({ ...prev, [index]: answer }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
-        
+
         try {
-            const formattedResponses = job.screening_questions.map(q => ({
+            const formattedResponses = job.screening_questions.map((q, index) => ({
                 question: q.text,
-                answer: answers[q.text] || 'לא נמסרה תשובה'
+                answer: answers[index] || 'לא נמסרה תשובה'
             }));
 
             await QuestionnaireResponse.create({
@@ -74,7 +91,7 @@ export default function AnswerQuestionnaire() {
             });
 
             navigate(createPageUrl("Dashboard"));
-            
+
         } catch (error) {
             console.error("Error submitting application:", error);
         } finally {
@@ -112,12 +129,13 @@ export default function AnswerQuestionnaire() {
                                         key={index}
                                         index={index}
                                         text={question.text}
-                                        value={answers[question.text]}
-                                        onChange={handleAnswerChange}
+                                        type={question.type}
+                                        value={answers[index]}
+                                        onAnswer={(val) => handleAnswerChange(index, val)}
                                     />
                                 ))}
                             </div>
-                            
+
                             <div className="flex justify-center">
                                 <Button
                                     type="submit"
@@ -125,7 +143,7 @@ export default function AnswerQuestionnaire() {
                                     size="lg"
                                     className="px-12 h-14 rounded-full font-bold text-lg bg-blue-600 hover:bg-blue-700"
                                 >
-                                    {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : "הגש מועמדות"}
+                                    {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : "שלחו קורות חיים"}
                                 </Button>
                             </div>
                         </form>
@@ -134,4 +152,5 @@ export default function AnswerQuestionnaire() {
             </div>
         </div>
     );
+
 }

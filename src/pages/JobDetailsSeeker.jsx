@@ -59,6 +59,46 @@ export default function JobDetailsSeeker() {
             }
           }
 
+          // Parse screening_questions if needed
+          if (fetchedJob.screening_questions && typeof fetchedJob.screening_questions === 'string') {
+            try {
+              let jsonStr = fetchedJob.screening_questions;
+              // Handle Postgres Bytea Hex format
+              if (jsonStr.startsWith('\\x')) {
+                const hex = jsonStr.slice(2);
+                let str = '';
+                for (let i = 0; i < hex.length; i += 2) {
+                  str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+                }
+                jsonStr = str;
+              }
+              fetchedJob.screening_questions = JSON.parse(jsonStr);
+            } catch (e) {
+              console.warn("Failed to parse screening_questions", e);
+              fetchedJob.screening_questions = [];
+            }
+          }
+
+          // Parse attachments if needed
+          if (fetchedJob.attachments && typeof fetchedJob.attachments === 'string') {
+            try {
+              let jsonStr = fetchedJob.attachments;
+              // Handle Postgres Bytea Hex format
+              if (jsonStr.startsWith('\\x')) {
+                const hex = jsonStr.slice(2);
+                let str = '';
+                for (let i = 0; i < hex.length; i += 2) {
+                  str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+                }
+                jsonStr = str;
+              }
+              fetchedJob.attachments = JSON.parse(jsonStr);
+            } catch (e) {
+              console.warn("Failed to parse attachments", e);
+              fetchedJob.attachments = [];
+            }
+          }
+
           setJob(fetchedJob);
 
           // Check for existing application
@@ -215,6 +255,7 @@ export default function JobDetailsSeeker() {
               isUnavailable={isUnavailable}
               hasExistingApplication={hasExistingApplication}
               handleReject={handleReject}
+              hasScreeningQuestions={Array.isArray(job.screening_questions) && job.screening_questions.length > 0}
             />
           </CardContent>
         </Card>
