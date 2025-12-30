@@ -604,7 +604,16 @@ const EmployerDashboard = ({ user }) => {
                         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                           <div className="flex items-center gap-4 self-start md:self-center">
                             <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0"><div className="w-full h-full bg-blue-200 flex items-center justify-center"><UserIcon className="w-8 h-8 text-blue-500" /></div></div>
-                            <div className="text-right"><h3 className="font-bold text-lg text-gray-900">{candidate.full_name}</h3><p className="text-gray-600">{candidate.experience_level?.replace('_', ' ')}</p></div>
+                            <div className="text-right">
+                              <h3 className="font-bold text-lg text-gray-900">
+                                {(() => {
+                                  if (candidate.full_name && candidate.full_name.trim().length > 0) return candidate.full_name;
+                                  if (candidate.email) return candidate.email;
+                                  return 'מועמד ללא שם';
+                                })()}
+                              </h3>
+                              <p className="text-gray-600">{candidate.experience_level?.replace('_', ' ')}</p>
+                            </div>
                           </div>
                           <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full md:w-auto">
                             <div className="flex flex-wrap gap-2 justify-center sm:justify-start">{candidate.skills?.slice(0, 3).map((skill, i) => (<Badge key={i} variant="outline" className="border-blue-200 text-blue-700 bg-blue-50/50 text-xs">{skill}</Badge>))}</div>

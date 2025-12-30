@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { User } from "@/api/entities";
 import { UserProfile } from "@/api/entities";
-import { Conversation } from "@/api/entities";
-import { Card, CardContent } from "@/components/ui/card";
+import { QuestionnaireResponse } from "@/api/entities";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { User as UserIcon, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
@@ -36,6 +36,7 @@ export default function CandidateProfile() {
   const [user, setUser] = useState(null);
   const [creatingConversation, setCreatingConversation] = useState(false);
   const [exportingResume, setExportingResume] = useState(false);
+  const [questionnaireResponse, setQuestionnaireResponse] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -50,6 +51,22 @@ export default function CandidateProfile() {
     }
     loadUser();
   }, [location.search]);
+
+  useEffect(() => {
+    const fetchQuestionnaire = async () => {
+      if (candidate?.email) {
+        try {
+          const responses = await QuestionnaireResponse.filter({ candidate_email: candidate.email });
+          if (responses && responses.length > 0) {
+            setQuestionnaireResponse(responses[0]);
+          }
+        } catch (error) {
+          console.error("Error fetching questionnaire response:", error);
+        }
+      }
+    };
+    fetchQuestionnaire();
+  }, [candidate]);
 
   const loadUser = async () => {
     try {
@@ -127,6 +144,7 @@ export default function CandidateProfile() {
         title: "שגיאה בפתיחת שיחה",
         description: "לא הצלחנו לפתוח את הצ'אט עם המועמד. נסה שוב.",
         variant: "destructive",
+        duration: 3000,
       });
       await EmployerAnalytics.trackAction(
         user.email,
@@ -302,23 +320,35 @@ export default function CandidateProfile() {
 
   return (
     <div className="p-4 md:p-6" dir="rtl">
-      <div className="max-w-4xl mx-auto">
-        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
+      <div className="w-[95%] md:w-[80%] mx-auto">
+        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden min-h-[85vh] flex flex-col">
+          {/* Header Background */}
           <ProfileHeader />
-          <CardContent className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10">
+
+          <CardContent className="p-4 sm:p-6 md:p-8 -mt-20 relative z-10 flex-grow">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="flex flex-col items-center text-center space-y-4"
+              className="flex flex-col items-center text-center space-y-6"
             >
-              <div className="w-24 h-24 bg-blue-200 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-                <UserIcon className="w-12 h-12 text-blue-600" />
+              {/* Avatar - Centered & Overlapping */}
+              <div className="relative">
+                <div className="w-24 h-24 md:w-28 md:h-28 bg-[#72C0E8] rounded-full flex items-center justify-center border-[5px] border-white shadow-xl">
+                  <UserIcon className="w-10 h-10 md:w-12 md:h-12 text-white" />
+                </div>
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                {candidate.full_name}
+
+              {/* Name */}
+              <h1 className="text-3xl md:text-4xl font-bold text-[#003566]">
+                {(() => {
+                  if (candidate.full_name && candidate.full_name.trim().length > 0) return candidate.full_name;
+                  if (candidate.email) return candidate.email;
+                  return 'מועמד ללא שם';
+                })()}
               </h1>
 
+              {/* Badges */}
               <ProfileBadges
                 jobTypeText={jobTypeText}
                 preferred_job_types={candidate.preferred_job_types}
@@ -327,33 +357,40 @@ export default function CandidateProfile() {
                 availability={candidate.availability}
               />
 
+              {/* Match Score */}
               <ProfileMatchScore matchScore={matchScore} />
 
+              {/* Info Cards */}
               <ProfileInfo
                 looking_for_summary={candidate.looking_for_summary}
                 bio={candidate.bio}
               />
 
+              {/* Resume */}
               <ProfileResume
                 resume_url={candidate.resume_url}
                 full_name={candidate.full_name}
               />
 
+              {/* Socials */}
               <ProfileSocials
                 facebook_url={candidate.facebook_url}
                 instagram_url={candidate.instagram_url}
                 linkedin_url={candidate.linkedin_url}
                 twitter_url={candidate.twitter_url}
               />
-
-              <ProfileActions
-                handleStartConversation={handleStartConversation}
-                creatingConversation={creatingConversation}
-                handleExportToEmail={handleExportToEmail}
-                exportingResume={exportingResume}
-              />
             </motion.div>
           </CardContent>
+          <CardFooter className="p-6 md:p-8">
+            {/* Actions */}
+            <ProfileActions
+              handleStartConversation={handleStartConversation}
+              creatingConversation={creatingConversation}
+              handleExportToEmail={handleExportToEmail}
+              exportingResume={exportingResume}
+              questionnaireResponse={questionnaireResponse}
+            />
+          </CardFooter>
         </Card>
       </div>
     </div>

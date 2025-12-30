@@ -281,6 +281,20 @@ export default function CVGenerator() {
         return;
       }
 
+      // Sync personal details to UserProfile whenever we save
+      if (cvData.personal_details) {
+        try {
+          const { full_name, phone, address } = cvData.personal_details;
+          await User.updateMyUserData({
+            ...(full_name && { full_name }),
+            ...(phone && { phone }),
+            ...(address && { preferred_location: address }),
+          });
+        } catch (err) {
+          console.error("Failed to update user profile with CV details", err);
+        }
+      }
+
       // If not last step, just save and move fast
       if (step < STEPS.length) {
         setStep((prev) => prev + 1);
