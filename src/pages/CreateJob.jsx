@@ -203,7 +203,8 @@ export default function CreateJob() {
         jobData.category &&
         jobData.start_date &&
         jobData.employment_type &&
-        jobData.description
+        jobData.description &&
+        jobData.structured_requirements?.some(req => req.value && req.value.trim() !== "")
       );
     }
     if (step === 2) {

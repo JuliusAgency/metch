@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Check } from 'lucide-react';
+import { Check, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import Lottie from 'lottie-react';
@@ -50,6 +50,14 @@ export default function Success({ onReset, onDuplicate }) {
           className="px-8 py-3 h-auto text-lg rounded-full border-gray-300 text-gray-700 hover:bg-gray-50"
         >
           שכפול משרה
+        </Button>
+        <Button
+          onClick={() => window.location.href = '/Dashboard'}
+          variant="outline"
+          className="px-8 py-3 h-auto text-lg rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+        >
+          <Home className="w-5 h-5" />
+          סיום / לדף הבית
         </Button>
       </div>
     </motion.div>

@@ -15,6 +15,8 @@ import { useUser } from '@/contexts/UserContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useRequireUserType } from '@/hooks/use-require-user-type';
 import CareerStageModal from '@/components/dashboard/CareerStageModal';
+import Lottie from 'lottie-react';
+import confettiAnimation from '../../Confetti banner.json';
 
 export default function Profile() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -26,6 +28,7 @@ export default function Profile() {
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isCareerStageModalOpen, setIsCareerStageModalOpen] = useState(false);
   const [statusModalStep, setStatusModalStep] = useState(1);
+  const [showConfetti, setShowConfetti] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const { signOut, user: contextUser } = useUser();
@@ -65,6 +68,11 @@ export default function Profile() {
       // In the future, we can send 'reason' to the backend if supported
       // console.log('Status update reason:', reason);
       await UserEntity.updateMyUserData({ available_for_work: checked });
+
+      if (reason === 'found_via_match') {
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 5000); // Hide after 5 seconds
+      }
     } catch (error) {
       console.error("Error updating user status:", error);
       setIsLookingForJob(!checked);
@@ -276,6 +284,15 @@ export default function Profile() {
 
   return (
     <div className="p-4 md:p-6" dir="rtl">
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-[100] flex justify-center">
+          <Lottie
+            animationData={confettiAnimation}
+            loop={false}
+            style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
+          />
+        </div>
+      )}
       <div className="w-[85vw] mx-auto">
         <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden min-h-[85vh]">
           <div className="relative h-32 overflow-hidden -m-px">
