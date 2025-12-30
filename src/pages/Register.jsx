@@ -108,7 +108,7 @@ const Register = () => {
   };
 
   return (
-    <div className="bg-gradient-to-b from-[#dbecf3] from-[12.35%] to-[#ffffff] via-[#ffffff] via-[32.336%] min-h-screen flex items-center justify-center p-4" data-name="הרשמה" data-node-id="418:1048">
+    <div className="bg-gradient-to-b from-[#dbedf3] from-[12.35%] to-[#ffffff] via-[#ffffff] via-[32.336%] min-h-screen flex items-center justify-center p-4" data-name="הרשמה" data-node-id="418:1048">
       {/* Background Card */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="bg-[rgba(255,255,255,0.5)] rounded-[40px] shadow-[0px_0px_17.611px_0px_rgba(0,0,0,0.2)] w-full max-w-4xl h-full max-h-[90vh]" data-node-id="418:1479" />

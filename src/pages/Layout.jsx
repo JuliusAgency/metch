@@ -125,7 +125,7 @@ export default function Layout({ children, currentPageName }) {
             --primary-blue: #007BFF;
             --success-green: #28A745;
             --warning-yellow: #FFC107;
-            --page-gradient: linear-gradient(180deg, #D4E5F4 0%, #ffffff 20%);
+            --page-gradient: linear-gradient(180deg, #dbedf3 0%, #ffffff 20%);
           }
 
           * {
@@ -300,7 +300,7 @@ export default function Layout({ children, currentPageName }) {
       </div>
 
       {/* Mobile Navbar */}
-      <div className="md:hidden pt-4 pb-2 px-4 sticky top-0 z-40 bg-[#DBECF3]/80 backdrop-blur-sm">
+      <div className="md:hidden pt-4 pb-2 px-4 sticky top-0 z-40 bg-[#dbedf3]/80 backdrop-blur-sm">
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(true)}>
             <Menu className="w-8 h-8 text-gray-700" />

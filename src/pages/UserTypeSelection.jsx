@@ -67,16 +67,14 @@ const UserTypeSelection = () => {
   };
 
   // Show loading while checking user data
-  if (userLoading) {
-    return (
-      <div className="bg-gradient-to-b from-[#dbecf3] from-[12.35%] to-[#ffffff] via-[#ffffff] via-[32.336%] h-screen w-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2987cd]"></div>
-      </div>
-    );
-  }
+  return (
+    <div className="bg-gradient-to-b from-[#dbedf3] from-[12.35%] to-[#ffffff] via-[#ffffff] via-[32.336%] h-screen w-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2987cd]"></div>
+    </div>
+  );
 
   return (
-    <div className="bg-gradient-to-b from-[#dbecf3] from-[12.35%] to-[#ffffff] via-[#ffffff] via-[32.336%] h-screen w-screen relative overflow-hidden">
+    <div className="bg-gradient-to-b from-[#dbedf3] from-[12.35%] to-[#ffffff] via-[#ffffff] via-[32.336%] h-screen w-screen relative overflow-hidden">
       {/* Desktop Design - Responsive Implementation */}
       <div className="hidden lg:block">
         {/* Main Content Container - Responsive */}
