@@ -123,7 +123,7 @@ export default function PreferenceQuestionnaire() {
       };
 
       await User.updateMyUserData(updateData);
-      navigate(createPageUrl('Profile'));
+      navigate(createPageUrl('Dashboard'));
     } catch (error) {
       console.error("Failed to save preferences:", error);
       // In case of error (e.g. schema mismatch), we might still want to navigate or show distinct error

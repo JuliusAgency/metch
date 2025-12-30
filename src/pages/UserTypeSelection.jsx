@@ -49,7 +49,7 @@ const UserTypeSelection = () => {
 
       // Navigate based on user type
       if (userType === 'job_seeker') {
-        navigate('/Dashboard');
+        navigate('/CVGenerator');
       } else {
         navigate('/CompanyProfileCompletion');
       }

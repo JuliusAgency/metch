@@ -273,7 +273,7 @@ export default function CVGenerator() {
 
         // Small delay to let the toast be seen/state update
         setTimeout(() => {
-          navigate('/Profile');
+          navigate('/PreferenceQuestionnaire');
         }, 500);
         return;
       }
@@ -342,7 +342,7 @@ export default function CVGenerator() {
       localStorage.removeItem(`cv_draft_${user.email}`);
     }
     // After upload, user is done with this flow, navigate to profile
-    navigate(createPageUrl('Profile'));
+    navigate(createPageUrl('PreferenceQuestionnaire'));
   };
 
   const renderStep = () => {

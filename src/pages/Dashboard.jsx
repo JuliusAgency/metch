@@ -61,32 +61,37 @@ const JobSeekerDashboard = ({ user }) => {
   const [showCareerModal, setShowCareerModal] = useState(false);
   const navigate = useNavigate();
 
-  // Check if user needs onboarding guide
+  // Check for onboarding triggers
   useEffect(() => {
+    if (loading || !user) return;
+
+    // 1. First priority: Career Stage
+    if (!user.career_stage) {
+      setShowCareerModal(true);
+      return; // Wait for career stage before showing guide
+    }
+
+    // 2. Second priority: Site Guide
     const hasSeenGuide = localStorage.getItem(`jobseeker_guide_${user?.email}`);
     if (!hasSeenGuide) {
       setShowGuide(true);
     }
-  }, [user]);
+  }, [user, loading]);
 
   const handleGuideComplete = () => {
     setShowGuide(false);
     if (user?.email) {
       localStorage.setItem(`jobseeker_guide_${user.email}`, 'completed');
     }
-    // Check if user has already selected a career stage/preference to determine if we show the modal
-    // For now we assume we always show it if the guide was just completed or skipped
-    // But since the requirement is to show it after onboarding, we trigger it here.
-
-    // We only show if they haven't set it yet. 
-    if (!user.career_stage) {
-      setShowCareerModal(true);
-    }
   };
 
   const handleCareerStageComplete = () => {
     setShowCareerModal(false);
-    navigate('/CVGenerator');
+    // After career stage, check if we need to show the guide
+    const hasSeenGuide = localStorage.getItem(`jobseeker_guide_${user?.email}`);
+    if (!hasSeenGuide) {
+      setShowGuide(true);
+    }
   };
 
   const handleGuideSkip = () => {
