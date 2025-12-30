@@ -35,10 +35,10 @@ const EmailConfirmed = () => {
 
         // Check if user exists from UserContext (which uses Supabase session)
         if (!user) {
-          // Double check if we truly don't have a session
-          const { data: { session } } = await import('@/api/supabaseClient').then(m => m.supabase.auth.getSession());
+          // Double check if we truly don't have a session with getUser() which is more reliable
+          const { data: { user: authUser }, error: authError } = await import('@/api/supabaseClient').then(m => m.supabase.auth.getUser());
 
-          if (session?.user) {
+          if (authUser) {
             // We have a user, wait for context to update or proceed with this user
             // Context update should trigger re-run
             return;
@@ -99,22 +99,32 @@ const EmailConfirmed = () => {
             } else {
               console.error('createUserProfile returned null/undefined');
               redirectInitiatedRef.current = true;
+
+              // Force sign out to clear stale session
+              const { supabase } = await import('@/api/supabaseClient');
+              await supabase.auth.signOut();
+
               toast({
                 title: "שגיאה ביצירת פרופיל",
-                description: "לא ניתן ליצור פרופיל משתמש. אנא נסו שוב או פנו לתמיכה.",
+                description: "לא ניתן ליצור פרופיל משתמש. ייתכן והחשבון נמחק או שהתפוגג. אנא נסו להירשם מחדש.",
                 variant: "destructive",
               });
-              navigate('/Login');
+              navigate('/Register');
             }
           } catch (profileError) {
             console.error('Error creating profile:', profileError);
             redirectInitiatedRef.current = true;
+
+            // Force sign out
+            const { supabase } = await import('@/api/supabaseClient');
+            await supabase.auth.signOut();
+
             toast({
               title: "שגיאה ביצירת פרופיל",
-              description: `אירעה שגיאה בעת יצירת הפרופיל: ${profileError.message || 'שגיאה לא ידועה'}`,
+              description: `אירעה שגיאה בעת יצירת הפרופיל: ${profileError.message || 'שגיאה לא ידועה'}. אנא נסו להירשם מחדש.`,
               variant: "destructive",
             });
-            navigate('/Login');
+            navigate('/Register');
           }
         } else {
           redirectInitiatedRef.current = true;

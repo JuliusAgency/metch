@@ -16,6 +16,7 @@ const imgVector3Mobile = "http://localhost:3845/assets/8b213c7f4e44a5d8cc6e0ab22
 const imgVector4Mobile = "http://localhost:3845/assets/72e4b24edacb5c8e832962169ccbbc66a7638120.svg";
 const imgVector5Mobile = "http://localhost:3845/assets/d5a77e346df785c2e61c9d8ebc59ab003a8facc8.svg";
 const imgVector6Mobile = "http://localhost:3845/assets/38437995b6d423593af0f3de968f7aa2dae9470d.svg";
+const imgEllipse480Mobile = "http://localhost:3845/assets/89b89e723ec104e845beb68e4661ff10ed044c2b.svg";
 import { motion, AnimatePresence } from 'framer-motion';
 import cvCreateIcon from '@/assets/cv_create_icon.png';
 import cvExistsIcon from '@/assets/cv_exists_icon.png';
