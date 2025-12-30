@@ -477,7 +477,7 @@ export default function Settings() {
   return (
     <div className="p-4 md:p-6" dir="rtl">
       <div className="w-[85vw] mx-auto">
-        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
+        <Card className="bg-white rounded-[50px] shadow-xl border border-gray-100 overflow-hidden">
           <div className="relative">
             {/* Header with curved background */}
             <div className="relative h-24 overflow-hidden -m-px">
@@ -558,7 +558,7 @@ export default function Settings() {
                                 placeholder="שם חברה"
                                 value={formData.company_name}
                                 onChange={(e) => handleInputChange('company_name', e.target.value)}
-                                className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                                className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                               />
                             </div>
                           </div>
@@ -571,7 +571,7 @@ export default function Settings() {
                                 placeholder="כתובת חברה"
                                 value={formData.main_address}
                                 onChange={(e) => handleInputChange('main_address', e.target.value)}
-                                className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                                className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                               />
                             </div>
                           </div>
@@ -583,7 +583,7 @@ export default function Settings() {
                               <select
                                 value={formData.company_type}
                                 onChange={(e) => handleInputChange('company_type', e.target.value)}
-                                className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400 appearance-none"
+                                className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400 appearance-none"
                               >
                                 <option value="" disabled>בחר סוג חברה</option>
                                 <option value="עמותה">עמותה</option>
@@ -602,7 +602,7 @@ export default function Settings() {
                                 placeholder="תחום פעילות"
                                 value={formData.field_of_activity}
                                 onChange={(e) => handleInputChange('field_of_activity', e.target.value)}
-                                className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                                className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                               />
                             </div>
                           </div>
@@ -615,7 +615,7 @@ export default function Settings() {
                                 placeholder="מייל חברה"
                                 value={formData.cv_reception_email}
                                 onChange={(e) => handleInputChange('cv_reception_email', e.target.value)}
-                                className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                                className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                                 dir="ltr"
                               />
                             </div>
@@ -635,7 +635,7 @@ export default function Settings() {
                                 placeholder="שם איש גיוס"
                                 value={formData.full_name}
                                 onChange={(e) => handleInputChange('full_name', e.target.value)}
-                                className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                                className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                               />
                             </div>
                           </div>
@@ -648,7 +648,7 @@ export default function Settings() {
                                 placeholder="מייל איש גיוס"
                                 value={formData.email}
                                 disabled
-                                className="w-full h-12 bg-gray-50 border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm"
+                                className="w-full h-12 bg-gray-50 border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm"
                                 dir="ltr"
                               />
                             </div>
@@ -662,7 +662,7 @@ export default function Settings() {
                                 placeholder="פלאפון"
                                 value={formData.phone}
                                 onChange={(e) => handleInputChange('phone', e.target.value)}
-                                className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                                className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                                 dir="ltr"
                               />
                             </div>
@@ -676,7 +676,7 @@ export default function Settings() {
                         <h3 className="text-lg font-bold text-gray-900 border-b pb-2">תיאור חברה</h3>
                         <div className="relative">
                           <textarea
-                            className="w-full min-h-[120px] p-4 rounded-lg border border-gray-200 focus:border-blue-400 focus:ring-0 resize-y text-right"
+                            className="w-full min-h-[120px] p-4 rounded-[50px] border border-gray-200 focus:border-blue-400 focus:ring-0 resize-y text-right"
                             placeholder="ספר קצת על החברה..."
                             value={formData.bio}
                             onChange={(e) => handleInputChange('bio', e.target.value)}
@@ -696,7 +696,7 @@ export default function Settings() {
                                 placeholder="https://company.com"
                                 value={formData.website}
                                 onChange={(e) => handleInputChange('website', e.target.value)}
-                                className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                                className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                                 dir="ltr"
                               />
                             </div>
@@ -709,7 +709,7 @@ export default function Settings() {
                                 placeholder="LinkedIn URL"
                                 value={formData.linkedin_url}
                                 onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
-                                className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                                className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                                 dir="ltr"
                               />
                             </div>
@@ -722,7 +722,7 @@ export default function Settings() {
                                 placeholder="Facebook URL"
                                 value={formData.facebook_url}
                                 onChange={(e) => handleInputChange('facebook_url', e.target.value)}
-                                className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                                className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                                 dir="ltr"
                               />
                             </div>
@@ -735,7 +735,7 @@ export default function Settings() {
                                 placeholder="Instagram URL"
                                 value={formData.instagram_url}
                                 onChange={(e) => handleInputChange('instagram_url', e.target.value)}
-                                className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                                className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                                 dir="ltr"
                               />
                             </div>
@@ -748,7 +748,7 @@ export default function Settings() {
                                 placeholder="Twitter URL"
                                 value={formData.twitter_url}
                                 onChange={(e) => handleInputChange('twitter_url', e.target.value)}
-                                className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                                className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                                 dir="ltr"
                               />
                             </div>
@@ -772,7 +772,7 @@ export default function Settings() {
                               value={formData.first_name}
                               onChange={(e) => handleInputChange('first_name', e.target.value)}
                               required
-                              className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                              className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                               dir="rtl"
                             />
                           </div>
@@ -790,7 +790,7 @@ export default function Settings() {
                               value={formData.last_name}
                               onChange={(e) => handleInputChange('last_name', e.target.value)}
                               required
-                              className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                              className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                               dir="rtl"
                             />
                           </div>
@@ -808,7 +808,7 @@ export default function Settings() {
                           value={formData.email}
                           onChange={(e) => handleInputChange('email', e.target.value)}
                           disabled
-                          className="w-full h-12 bg-gray-50 border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm"
+                          className="w-full h-12 bg-gray-50 border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm"
                           dir="rtl"
                         />
                       </div>
@@ -822,7 +822,7 @@ export default function Settings() {
                             value={formData.phone}
                             onChange={(e) => handleInputChange('phone', e.target.value)}
                             required
-                            className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                             dir="rtl"
                           />
                         </div>
@@ -839,7 +839,7 @@ export default function Settings() {
                             value={formData.gender}
                             onChange={(e) => handleInputChange('gender', e.target.value)}
                             required
-                            className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400 appearance-none"
+                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400 appearance-none"
                             dir="rtl"
                           >
                             <option value="" disabled>בחר מגדר</option>
@@ -863,7 +863,7 @@ export default function Settings() {
                             value={formData.date_of_birth}
                             onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
                             required
-                            className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                             dir="rtl"
                           />
                         </div>
@@ -882,7 +882,7 @@ export default function Settings() {
                                 variant="outline"
                                 role="combobox"
                                 aria-expanded={openLocation}
-                                className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400 justify-between font-normal hover:bg-white text-base"
+                                className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400 justify-between font-normal hover:bg-white text-base"
                                 dir="rtl"
                               >
                                 {formData.place_of_residence || "מקום מגורים"}
@@ -929,7 +929,7 @@ export default function Settings() {
                       {user?.user_type === 'job_seeker' && (
                         <div className="col-span-1 md:col-span-2 space-y-2 pt-2">
                           <label className="text-sm font-medium text-gray-700 block text-right">קובץ קורות חיים</label>
-                          <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-[50px] border border-gray-200">
                             <Button
                               type="button"
                               variant="outline"
@@ -988,7 +988,7 @@ export default function Settings() {
                           placeholder="סיסמא חדשה (השאר ריק אם אין שינוי)"
                           value={formData.password}
                           onChange={(e) => handleInputChange('password', e.target.value)}
-                          className="w-full h-12 bg-white border-gray-200 rounded-lg pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                           dir="rtl"
                         />
                       </div>
@@ -1022,7 +1022,7 @@ export default function Settings() {
                       type="button"
                       onClick={handleLogout}
                       variant="outline"
-                      className="w-full md:w-96 h-12 rounded-lg border-2 border-red-400 bg-white text-red-600 hover:bg-red-50 hover:border-red-500 font-semibold text-base px-6 shadow-sm"
+                      className="w-full md:w-96 h-12 rounded-[50px] border-2 border-red-400 bg-white text-red-600 hover:bg-red-50 hover:border-red-500 font-semibold text-base px-6 shadow-sm"
                     >
                       <LogOut className="w-5 h-5 ml-2" />
                       התנתק

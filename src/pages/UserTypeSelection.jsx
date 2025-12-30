@@ -105,15 +105,11 @@ const UserTypeSelection = () => {
   const navigate = useNavigate();
 
   // Redirect to dashboard if user already has a user_type
-  // Redirect to dashboard if user already has a user_type
   useEffect(() => {
     // Only redirect if we are not currently in the process of selecting a type (e.g. showing modal)
     // and if the user already had a type when loading (not just set now)
     if (!userLoading && user && user.user_type && !selectedType) {
       if (user.user_type === 'job_seeker') {
-        // If they are a job seeker but landed here, maybe they didn't finish onboarding?
-        // For now, let's respect the user request: if they have a type, they shouldn't be here USUALLY.
-        // But if we just set it, selectedType will be true.
         navigate('/Dashboard');
       } else {
         navigate('/CompanyProfileCompletion');
@@ -129,12 +125,9 @@ const UserTypeSelection = () => {
 
     try {
       // Update user profile with selected type
-      // We do this first and await it as it is critical
       await updateProfile({ user_type: userType });
 
       // Best-effort reset of career_stage to null
-      // This allows re-onboarding even if the user manually cleared user_type in DB but kept career_stage
-      // We catch errors here so it doesn't block the flow if it fails (e.g. schema issues)
       try {
         await updateProfile({ career_stage: null });
       } catch (resetError) {
@@ -148,8 +141,6 @@ const UserTypeSelection = () => {
 
       // Navigate based on user type
       if (userType === 'job_seeker') {
-        // Clear guide status to ensure it shows again for this "fresh" onboarding flow
-        // effectively treating this selection as a reset of the onboarding experience
         if (user?.email) {
           localStorage.removeItem(`jobseeker_guide_${user.email}`);
         }
@@ -387,6 +378,8 @@ const UserTypeSelection = () => {
         </div>
       )}
 
+
+
       {/* CV Choice Modal */}
       <CVChoiceModal
         isOpen={showCVChoiceModal}
@@ -398,5 +391,4 @@ const UserTypeSelection = () => {
     </div>
   );
 };
-
 export default UserTypeSelection;

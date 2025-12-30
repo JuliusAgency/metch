@@ -121,7 +121,7 @@ const JobSeekerDashboard = ({ user }) => {
         const results = await Promise.allSettled([
           Job.filter({ status: 'active' }, "-created_date", 50),
           JobView.filter({ user_email: user.email }),
-          Notification.filter({ is_read: false, user_email: user.email }, "-created_date", 5),
+          Notification.filter({ is_read: false, email: user.email }, "-created_date", 5),
           UserAnalytics.getUserStats(user.email),
           CandidateView.filter({ candidate_name: user.full_name }), // Get profile views for this job seeker
           UserProfile.filter({ email: user.email }).then(profiles => profiles[0] || null) // Get user profile

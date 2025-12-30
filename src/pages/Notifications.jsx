@@ -52,7 +52,7 @@ export default function Notifications() {
       setLoading(true);
       // Fetch all notifications for the user, ordered by created_date descending
       const allNotifications = await Notification.filter(
-        { user_email: user.email },
+        { email: user.email },
         "-created_date"
       );
 
