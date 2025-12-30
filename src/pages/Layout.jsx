@@ -1,5 +1,4 @@
 
-
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -12,27 +11,27 @@ import {
   Headphones,
   CreditCard,
   Briefcase,
-
   TrendingUp,
   Search,
   HelpCircle,
-  BarChart2, // Added
-  Menu, // Added
-  X, // Added
-  FileText // Added
+  BarChart2,
+  Menu,
+  X,
+  FileText,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { User as UserEntity } from "@/api/entities";
-import { motion, AnimatePresence } from "framer-motion"; // Added
+import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@/contexts/UserContext";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading } = useUser();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Added
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const closeMenu = () => setIsMobileMenuOpen(false); // Added
+  const closeMenu = () => setIsMobileMenuOpen(false);
 
   // Pages that should not show navbar (authentication pages)
   const authPages = ['Login', 'Register', 'Landing', 'EmailConfirmation', 'UserTypeSelection', 'CompanyProfileCompletion', 'ForgotPassword'];
@@ -58,20 +57,33 @@ export default function Layout({ children, currentPageName }) {
   const isJobSeeker = user?.user_type === 'job_seeker';
 
   // Define navLinks array for dynamic rendering in mobile menu
-  const navLinks = [
-    { page: "Dashboard", icon: Home, text: "דף הבית", both: true },
-    { page: "JobSearch", icon: Search, text: "חיפוש", seeker: true },
-    { page: "Insights", icon: TrendingUp, text: "תובנות", seeker: true },
-    { page: "JobManagement", icon: Briefcase, text: "משרות", employer: true },
-    { page: "Statistics", icon: BarChart2, text: "סטטיסטיקות", employer: true }, // Added
-    { page: "Profile", icon: FileText, text: "פרופיל", seeker: true },
-    { page: "Notifications", icon: Bell, text: "התראות", both: true },
-    { page: "Payments", icon: CreditCard, text: "תשלומים", both: true },
-    { page: "Settings", icon: isJobSeeker ? User : Settings, text: "הגדרות", both: true },
-    { page: isJobSeeker ? "MessagesSeeker" : "Messages", icon: MessageSquareText, text: "הודעות", both: true },
-    { page: "Contact", icon: Headphones, text: "צור קשר", both: true },
-    { page: "FAQ", icon: HelpCircle, text: "שאלות", seeker: true }
-  ];
+  let navLinks = [];
+
+  if (isJobSeeker) {
+    // 1-7 Order for Job Seeker specified by user
+    navLinks = [
+      { page: "Dashboard", icon: Home, text: "דף הבית" },
+      { page: "JobSearch", icon: Search, text: "חיפוש" }, // Job Search added
+      { page: "Settings", icon: User, text: "פרטים אישיים" }, // My Details
+      { page: "Profile", icon: FileText, text: "קו״ח" }, // My CV
+      { page: "Insights", icon: Sparkles, text: "תובנות" }, // Insights (Icon changed to Sparkles)
+      { page: "MessagesSeeker", icon: MessageSquareText, text: "הודעות" },
+      { page: "FAQ", icon: HelpCircle, text: "שאלות נפוצות" },
+      { page: "Contact", icon: Headphones, text: "יצירת קשר" }
+    ];
+  } else {
+    // Existing Employer Order
+    navLinks = [
+      { page: "Dashboard", icon: Home, text: "דף הבית" },
+      { page: "JobManagement", icon: Briefcase, text: "משרות" },
+      { page: "Statistics", icon: BarChart2, text: "סטטיסטיקות" },
+      { page: "Notifications", icon: Bell, text: "התראות" },
+      { page: "Payments", icon: CreditCard, text: "תשלומים" },
+      { page: "Settings", icon: Settings, text: "הגדרות" },
+      { page: "Messages", icon: MessageSquareText, text: "הודעות" },
+      { page: "Contact", icon: Headphones, text: "צור קשר" }
+    ];
+  }
 
   // MobileNavLink component to render individual links in the mobile menu
   const MobileNavLink = ({ page, icon: Icon, text, isPlaceholder }) => {
@@ -79,7 +91,7 @@ export default function Layout({ children, currentPageName }) {
     const isActive =
       (currentPageName === page) ||
       (page === "Profile" && currentPageName === "Profile") ||
-      (page === "MessagesSeeker" && currentPageName === "MessagesSeeker") || // Simplified for seeker vs employer messages
+      (page === "MessagesSeeker" && currentPageName === "MessagesSeeker") ||
       (page === "Messages" && currentPageName === "Messages");
 
     const linkClass = `flex items-center gap-4 p-3 rounded-lg text-lg font-medium transition-colors ${isActive ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`;
@@ -141,6 +153,7 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex items-center justify-between px-8 py-4">
             {/* Icons - Moved to be first for RTL rendering on the right */}
             <div className="flex items-center gap-1">
+              {/* 1. Home (Both) */}
               <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
                 <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2">
                   <Home className="w-7 h-7 text-gray-700" />
@@ -149,9 +162,10 @@ export default function Layout({ children, currentPageName }) {
               </Button>
               <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-              {/* Job Seeker Specific Navigation */}
+              {/* Job Seeker Navigation (Strict 1-7 Order) */}
               {isJobSeeker && (
                 <>
+                  {/* Job Search */}
                   <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
                     <Link to={createPageUrl("JobSearch")} className="flex items-center gap-2">
                       <Search className="w-7 h-7 text-gray-700" />
@@ -160,17 +174,60 @@ export default function Layout({ children, currentPageName }) {
                   </Button>
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
 
+                  {/* 2. My Details (Settings) */}
+                  <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
+                    <Link to={createPageUrl("Settings")} title="ניהול הפרטים שלי">
+                      <User className="w-7 h-7 text-gray-700" />
+                    </Link>
+                  </Button>
+                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+
+                  {/* 3. My CV (Profile) */}
+                  <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
+                    <Link to={createPageUrl("Profile")} title="קורות חיים">
+                      <FileText className="w-7 h-7 text-gray-700" />
+                    </Link>
+                  </Button>
+                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+
+                  {/* 4. Insights (Sparkles icon) */}
                   <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
                     <Link to={createPageUrl("Insights")} className="flex items-center gap-2">
-                      <TrendingUp className="w-7 h-7 text-gray-700" />
+                      <Sparkles className="w-7 h-7 text-gray-700" />
                       {currentPageName === 'Insights' && <span className="font-medium text-gray-700">תובנות</span>}
                     </Link>
                   </Button>
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
+
+                  {/* 5. Messages */}
+                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
+                    <Link to={createPageUrl("MessagesSeeker")} className="flex items-center gap-2">
+                      <MessageSquareText className="w-7 h-7 text-gray-700" />
+                      {currentPageName === 'MessagesSeeker' && <span className="font-medium text-gray-700">הודעות</span>}
+                    </Link>
+                  </Button>
+                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+
+                  {/* 6. FAQ */}
+                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
+                    <Link to={createPageUrl("FAQ")} className="flex items-center gap-2">
+                      <HelpCircle className="w-7 h-7 text-gray-700" />
+                      {currentPageName === 'FAQ' && <span className="font-medium text-gray-700">שאלות נפוצות</span>}
+                    </Link>
+                  </Button>
+                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+
+                  {/* 7. Contact */}
+                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
+                    <Link to={createPageUrl("Contact")} className="flex items-center gap-2">
+                      <Headphones className="w-7 h-7 text-gray-700" />
+                      {currentPageName === 'Contact' && <span className="font-medium text-gray-700">יצירת קשר</span>}
+                    </Link>
+                  </Button>
                 </>
               )}
 
-              {/* Employer Specific Navigation */}
+              {/* Employer Specific Navigation (Existing Logic Preserved) */}
               {!isJobSeeker && (
                 <>
                   <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
@@ -188,72 +245,37 @@ export default function Layout({ children, currentPageName }) {
                     </Link>
                   </Button>
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
-                </>
-              )}
 
-              {/* Profile link - ONLY for Job Seeker */}
-              {isJobSeeker && (
-                <>
+                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
+                    <Link to={createPageUrl("Notifications")} className="flex items-center gap-2">
+                      <Bell className="w-7 h-7 text-gray-700" />
+                      {currentPageName === 'Notifications' && <span className="font-medium text-gray-700">התראות</span>}
+                    </Link>
+                  </Button>
+                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+
                   <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
-                    <Link to={createPageUrl("Profile")}>
-                      <FileText className="w-7 h-7 text-gray-700" />
+                    <Link to={createPageUrl("Payments")}>
+                      <CreditCard className="w-7 h-7 text-gray-700" />
                     </Link>
                   </Button>
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
-                </>
-              )}
 
-              <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                <Link to={createPageUrl("Notifications")} className="flex items-center gap-2">
-                  <Bell className="w-7 h-7 text-gray-700" />
-                  {currentPageName === 'Notifications' && <span className="font-medium text-gray-700">התראות</span>}
-                </Link>
-              </Button>
-              <div className="h-6 w-px bg-white/50 mx-1"></div>
-
-              <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
-                <Link to={createPageUrl("Payments")}>
-                  <CreditCard className="w-7 h-7 text-gray-700" />
-                </Link>
-              </Button>
-              <div className="h-6 w-px bg-white/50 mx-1"></div>
-
-              <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
-                <Link to={createPageUrl("Settings")}>
-                  {isJobSeeker ? <User className="w-7 h-7 text-gray-700" /> : <Settings className="w-7 h-7 text-gray-700" />}
-                </Link>
-              </Button>
-              <div className="h-6 w-px bg-white/50 mx-1"></div>
-
-              <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                <Link to={createPageUrl(isJobSeeker ? "MessagesSeeker" : "Messages")} className="flex items-center gap-2">
-                  <MessageSquareText className="w-7 h-7 text-gray-700" />
-                  {(currentPageName === 'Messages' || currentPageName === 'MessagesSeeker') && <span className="font-medium text-gray-700">הודעות</span>}
-                </Link>
-              </Button>
-
-              {!isJobSeeker && (
-                <>
+                  <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
+                    <Link to={createPageUrl("Settings")}>
+                      <Settings className="w-7 h-7 text-gray-700" />
+                    </Link>
+                  </Button>
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
+
                   <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                    <Link to={createPageUrl("Contact")} className="flex items-center gap-2">
-                      <Headphones className="w-7 h-7 text-gray-700" />
-                      {currentPageName === 'Contact' && <span className="font-medium text-gray-700">קשר</span>}
+                    <Link to={createPageUrl("Messages")} className="flex items-center gap-2">
+                      <MessageSquareText className="w-7 h-7 text-gray-700" />
+                      {currentPageName === 'Messages' && <span className="font-medium text-gray-700">הודעות</span>}
                     </Link>
                   </Button>
-                </>
-              )}
+                  <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-              {isJobSeeker && (
-                <>
-                  <div className="h-6 w-px bg-white/50 mx-1"></div>
-                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                    <Link to={createPageUrl("FAQ")} className="flex items-center gap-2">
-                      <HelpCircle className="w-7 h-7 text-gray-700" />
-                      {currentPageName === 'FAQ' && <span className="font-medium text-gray-700">שאלות</span>}
-                    </Link>
-                  </Button>
-                  <div className="h-6 w-px bg-white/50 mx-1"></div>
                   <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
                     <Link to={createPageUrl("Contact")} className="flex items-center gap-2">
                       <Headphones className="w-7 h-7 text-gray-700" />
@@ -316,12 +338,9 @@ export default function Layout({ children, currentPageName }) {
                 </Button>
               </div>
               <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-                {navLinks.map((link) => {
-                  if (link.seeker && !isJobSeeker) return null;
-                  if (link.employer && isJobSeeker) return null;
-
-                  return <MobileNavLink key={link.page} {...link} />;
-                })}
+                {navLinks.map((link) => (
+                  <MobileNavLink key={link.page} {...link} />
+                ))}
               </nav>
             </motion.div>
           </>
@@ -335,4 +354,3 @@ export default function Layout({ children, currentPageName }) {
     </div>
   );
 }
-
