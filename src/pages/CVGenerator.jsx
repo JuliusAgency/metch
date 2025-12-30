@@ -231,10 +231,6 @@ export default function CVGenerator() {
       return;
     }
 
-    if (step === 1 && !isStep1Valid) {
-      return;
-    }
-
     // Check for unsaved changes before proceeding
     if (!confirmUnsavedChanges()) return;
     setIsDirty(false); // Reset dirty state if proceeding

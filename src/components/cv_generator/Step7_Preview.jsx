@@ -5,6 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Mail, Phone, MapPin, Linkedin, Link as LinkIcon, Edit, Download, Eye, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import certificationsList from '@/data/certifications.json';
+
+const CERTIFICATION_LABELS = certificationsList.reduce((acc, curr) => {
+    acc[curr.id] = curr.label;
+    return acc;
+}, {});
 
 const EDUCATION_TYPE_LABELS = {
     high_school: 'לימודי תיכון',
@@ -37,6 +43,27 @@ const sortEducationEntries = (entries = []) =>
     });
 
 const getEducationTypeLabel = (type) => EDUCATION_TYPE_LABELS[type] || type || '';
+
+const formatEnglishKey = (key) => {
+    if (!key) return '';
+    return key
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+};
+
+const getCertificationLabel = (cert) => {
+    // If we have a Hebrew label in our list, use it
+    if (CERTIFICATION_LABELS[cert.type]) return CERTIFICATION_LABELS[cert.type];
+    if (CERTIFICATION_LABELS[cert.name]) return CERTIFICATION_LABELS[cert.name];
+
+    // Otherwise, if the name looks like an English key, format it nicely
+    if (cert.name && /^[a-z_]+$/.test(cert.name)) {
+        return formatEnglishKey(cert.name);
+    }
+
+    return cert.name || '';
+};
 
 const CVContent = ({ cvData }) => {
     const {
@@ -158,7 +185,7 @@ const CVContent = ({ cvData }) => {
                 <div className="space-y-3">
                     {certifications.map((cert, index) => (
                         <div key={cert.id || `cert-${index}`} className="text-xs">
-                            <h3 className="font-semibold">{cert.name}</h3>
+                            <h3 className="font-semibold">{getCertificationLabel(cert)}</h3>
                             {cert.notes && <p className="mt-1 text-gray-600 whitespace-pre-wrap">{cert.notes}</p>}
                             {cert.description && <p className="mt-1 text-gray-600 whitespace-pre-wrap">{cert.description}</p>}
                         </div>

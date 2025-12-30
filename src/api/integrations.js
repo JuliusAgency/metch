@@ -8,8 +8,6 @@ export const Core = {
   SendEmail,
   UploadFile,
   GenerateImage,
-  ExtractDataFromUploadedFile,
-  CreateFileSignedUrl,
   UploadPrivateFile
 };
 

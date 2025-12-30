@@ -49,16 +49,14 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
         setCurrentItem(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleTypeSelect = (currentValue) => {
-        const value = currentValue; // The value from CommandItem should be the ID/Label key
-
-        // Find label if possible
-        const label = CERTIFICATION_LABELS[value] || value;
+    const handleTypeSelect = (id) => {
+        const cert = certificationsList.find(c => c.id === id);
+        const label = cert ? cert.label : id;
 
         setCurrentItem(prev => ({
             ...prev,
-            type: value,
-            name: value === 'other' ? '' : label
+            type: id,
+            name: id === 'other' ? '' : label
         }));
         setOpen(false);
     };
