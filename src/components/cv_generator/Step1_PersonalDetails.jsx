@@ -46,8 +46,8 @@ const getBirthDateValue = (source) => source?.birth_date || source?.birthDate ||
 const REQUIRED_FIELDS = ['firstName', 'lastName', 'phone', 'address', 'birthDate', 'gender'];
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
-const isFormComplete = (formData) => (
-  REQUIRED_FIELDS.every((field) => {
+const isFormComplete = (formData, isVerified) => (
+  isVerified && REQUIRED_FIELDS.every((field) => {
     const fieldValue = formData?.[field];
     if (field === 'birthDate') {
       return typeof fieldValue === 'string' && DATE_REGEX.test(fieldValue.trim());
@@ -70,10 +70,32 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
   });
 
   const [openLocation, setOpenLocation] = useState(false);
+  const [isCodeSent, setIsCodeSent] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isVerified, setIsVerified] = useState(false);
 
-  const notifyValidity = useCallback((formState) => {
-    onValidityChange(isFormComplete(formState));
+  const notifyValidity = useCallback((formState, verifiedStatus) => {
+    onValidityChange(isFormComplete(formState, verifiedStatus));
   }, [onValidityChange]);
+
+  const handleSendCode = () => {
+    if (localData.phone.length >= 9) {
+      setIsCodeSent(true);
+      // In a real app, this would trigger an SMS API
+      console.log("OTP sent to:", localData.phone);
+    }
+  };
+
+  const handleVerifyCode = (code) => {
+    setVerificationCode(code);
+    if (code === '1234') { // Mock verification code
+      setIsVerified(true);
+      notifyValidity(localData, true);
+    } else {
+      setIsVerified(false);
+      notifyValidity(localData, false);
+    }
+  };
 
   useEffect(() => {
     // Initialize local state from parent data or user data
@@ -95,8 +117,8 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     };
 
     setLocalData(initialState);
-    notifyValidity(initialState);
-  }, [data, user, notifyValidity]);
+    notifyValidity(initialState, isVerified);
+  }, [data, user, notifyValidity, isVerified]);
 
   const updateParentData = (key, value, currentLocalData) => {
     setData(parentData => {
@@ -122,7 +144,7 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     setLocalData(prev => {
       const updatedLocal = { ...prev, [name]: nextValue };
       updateParentData(name, nextValue, updatedLocal);
-      notifyValidity(updatedLocal);
+      notifyValidity(updatedLocal, isVerified);
       return updatedLocal;
     });
   };
@@ -131,7 +153,7 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     setLocalData(prev => {
       const updatedLocal = { ...prev, address: value };
       updateParentData('address', value, updatedLocal);
-      notifyValidity(updatedLocal);
+      notifyValidity(updatedLocal, isVerified);
       return updatedLocal;
     });
   };
@@ -151,7 +173,7 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     setLocalData(prev => {
       const updatedLocal = { ...prev, gender: value };
       updateParentData('gender', value, updatedLocal);
-      notifyValidity(updatedLocal);
+      notifyValidity(updatedLocal, isVerified);
       return updatedLocal;
     });
   };
@@ -165,10 +187,34 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
         <PillInput name="firstName" placeholder="שם פרטי" value={localData.firstName} onChange={handleInputChange} />
         <PillInput name="lastName" placeholder="שם משפחה" value={localData.lastName} onChange={handleInputChange} />
         <div className="relative">
-          <PillInput name="phone" placeholder="מספר טלפון" value={localData.phone} onChange={handleInputChange} />
-          <Button className="absolute left-2 top-1/3 -translate-y-1/2 h-8 rounded-full px-4 text-xs bg-blue-600 hover:bg-blue-700">שלח קוד</Button>
-          <p className="text-xs text-gray-500 mt-2 text-right mr-4">לא קיבלתי? <a href="#" className="text-blue-600 font-semibold">שלח שוב</a></p>
+          <PillInput name="phone" placeholder="מספר טלפון" value={localData.phone} onChange={handleInputChange} disabled={isVerified} />
+          {!isVerified && (
+            <Button
+              onClick={handleSendCode}
+              disabled={!localData.phone || localData.phone.length < 9}
+              className="absolute left-2 top-11 -translate-y-1/2 h-8 rounded-full px-4 text-xs bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300"
+            >
+              {isCodeSent ? 'שלח שוב' : 'שלח קוד'}
+            </Button>
+          )}
+          {isVerified && (
+            <div className="absolute left-4 top-11 -translate-y-1/2 flex items-center text-green-600 font-bold text-xs bg-green-50 px-3 py-1 rounded-full border border-green-200">
+              מאומת <Check className="w-3 h-3 mr-1" />
+            </div>
+          )}
         </div>
+
+        {isCodeSent && !isVerified && (
+          <div className="relative">
+            <PillInput
+              placeholder="הזן קוד (1234)"
+              value={verificationCode}
+              onChange={(e) => handleVerifyCode(e.target.value)}
+              maxLength={4}
+            />
+            <p className="text-xs text-gray-500 mt-2 text-right mr-4">הכנס את הקוד שקיבלת לנייד</p>
+          </div>
+        )}
 
         {/* Row 2 */}
         <PillSelect name="gender" placeholder="מגדר" value={localData.gender} onValueChange={handleSelectChange}>

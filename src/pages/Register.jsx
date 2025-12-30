@@ -72,8 +72,8 @@ const Register = () => {
 
       toast({
         variant: "success",
-        title: "הרכישה בוצעה בהצלחה",
-        description: "פריט הוכנסה למערכת הרכישות הראשית",
+        title: "נרשמת בהצלחה!",
+        description: "כמעט סיימנו, שלחנו לך קישור אימות למייל.",
       });
 
       navigate('/EmailConfirmation', { state: { email: signUpData.email } });
