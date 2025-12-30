@@ -138,6 +138,11 @@ const UserTypeSelection = () => {
 
       // Navigate based on user type
       if (userType === 'job_seeker') {
+        // Clear guide status to ensure it shows again for this "fresh" onboarding flow
+        // effectively treating this selection as a reset of the onboarding experience
+        if (user?.email) {
+          localStorage.removeItem(`jobseeker_guide_${user.email}`);
+        }
         setShowCVChoiceModal(true);
       } else {
         navigate('/CompanyProfileCompletion');
