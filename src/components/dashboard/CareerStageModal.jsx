@@ -26,15 +26,27 @@ const CareerStageModal = ({ isOpen, onComplete }) => {
     const handleSubmit = async () => {
         if (!selected) return;
 
-        // Per user request: Just close the modal, no server request for now.
-        // We can still try to update profile if possible, but we must ensure modal closes.
+        setLoading(true);
         try {
-            updateProfile({ career_stage: selected }).catch(console.error); // Fire and forget
-        } catch (e) {
-            console.error(e);
-        }
+            await updateProfile({ career_stage: selected });
 
-        onComplete();
+            toast({
+                title: "הבחירה נשמרה בהצלחה",
+                description: "המשך גלישה נעימה",
+            });
+
+            // Only close and trigger completion after successful save
+            onComplete();
+        } catch (e) {
+            console.error("Failed to save career stage:", e);
+            toast({
+                title: "שגיאה בשמירה",
+                description: "אירעה שגיאה בעת שמירת הבחירה, אנא נסו שוב",
+                variant: "destructive",
+            });
+        } finally {
+            setLoading(false);
+        }
     }
 
     if (!isOpen) return null;

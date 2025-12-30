@@ -105,11 +105,21 @@ const UserTypeSelection = () => {
   const navigate = useNavigate();
 
   // Redirect to dashboard if user already has a user_type
+  // Redirect to dashboard if user already has a user_type
   useEffect(() => {
-    if (!userLoading && user && user.user_type) {
-      navigate('/Dashboard');
+    // Only redirect if we are not currently in the process of selecting a type (e.g. showing modal)
+    // and if the user already had a type when loading (not just set now)
+    if (!userLoading && user && user.user_type && !selectedType) {
+      if (user.user_type === 'job_seeker') {
+        // If they are a job seeker but landed here, maybe they didn't finish onboarding?
+        // For now, let's respect the user request: if they have a type, they shouldn't be here USUALLY.
+        // But if we just set it, selectedType will be true.
+        navigate('/Dashboard');
+      } else {
+        navigate('/CompanyProfileCompletion');
+      }
     }
-  }, [user, userLoading, navigate]);
+  }, [user, userLoading, navigate, selectedType]);
 
   const handleTypeSelection = async (userType) => {
     if (loading) return;

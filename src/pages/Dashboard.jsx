@@ -62,9 +62,19 @@ const JobSeekerDashboard = ({ user }) => {
   const [hasCV, setHasCV] = useState(true); // Default to true to avoid flickers
   const navigate = useNavigate();
 
-  // Check for onboarding triggers
+  // Check for onboarding triggers - MOVED AFTER GUARDS CHECK
   useEffect(() => {
-    if (loading || !user || !hasCV) return;
+    // Wait for initial loading and User check
+    if (loading || !user) return;
+
+    // GUARD: If user doesn't have CV or Specialization, they shouldn't see these modals
+    // because they will be redirected by the other useEffect (or logic below) shortly.
+    // We check hasCV (state) and profile specialization.
+    if (!hasCV) return; // Will be redirected
+
+    // We access userProfile inside the effect or rely on 'user' object if it has merged profile data?
+    // 'user' from useUser() has merged profile data.
+    if (!user.specialization) return; // Will be redirected
 
     // 1. First priority: Career Stage
     if (!user.career_stage) {
