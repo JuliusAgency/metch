@@ -118,7 +118,7 @@ const JobSeekerDashboard = ({ user }) => {
       if (!user) return;
 
       try {
-        const [jobsData, jobViewsData, notificationsData, statsData, profileViewsData, userProfile] = await Promise.all([
+        const results = await Promise.allSettled([
           Job.filter({ status: 'active' }, "-created_date", 50),
           JobView.filter({ user_email: user.email }),
           Notification.filter({ is_read: false, user_email: user.email }, "-created_date", 5),
@@ -126,6 +126,17 @@ const JobSeekerDashboard = ({ user }) => {
           CandidateView.filter({ candidate_name: user.full_name }), // Get profile views for this job seeker
           UserProfile.filter({ email: user.email }).then(profiles => profiles[0] || null) // Get user profile
         ]);
+
+        const jobsData = results[0].status === 'fulfilled' ? results[0].value : [];
+        if (results[0].status === 'rejected') console.error("Jobs load failed", results[0].reason);
+
+        const jobViewsData = results[1].status === 'fulfilled' ? results[1].value : [];
+        const notificationsData = results[2].status === 'fulfilled' ? results[2].value : [];
+        if (results[2].status === 'rejected') console.warn("Notifications load failed (400?)", results[2].reason);
+
+        const statsData = results[3].status === 'fulfilled' ? results[3].value : null;
+        const profileViewsData = results[4].status === 'fulfilled' ? results[4].value : [];
+        const userProfile = results[5].status === 'fulfilled' ? results[5].value : null;
 
         // Calculate match scores for each job
         const jobsWithScores = await Promise.all(
