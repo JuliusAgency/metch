@@ -412,7 +412,26 @@ export default function Settings() {
   const handleDeleteAccount = async () => {
     setDeleteLoading(true);
     try {
+      // 1. Delete UserProfile explicitly to remove all app-specific data
+      // This effectively "resets" the user in our system, even if the Auth User remains active until admin deletion
+      if (user?.id) {
+        try {
+          await UserProfile.delete(user.id);
+        } catch (deleteError) {
+          console.error("Error deleting UserProfile:", deleteError);
+          // Proceed anyway to sign out
+        }
+      }
+
+      // 2. Mark as deleted in metadata (optional, but good for tracking)
       await supabase.auth.updateUser({ data: { is_deleted: true } });
+
+      // 3. Clear any local storage guides
+      if (user?.email) {
+        localStorage.removeItem(`jobseeker_guide_${user.email}`);
+        localStorage.removeItem(`employer_guide_${user.email}`);
+      }
+
       await signOut();
       navigate(createPageUrl('Login'));
     } catch (error) {
