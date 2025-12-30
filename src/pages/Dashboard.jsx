@@ -35,6 +35,7 @@ import JobSeekerGuide from "@/components/guides/JobSeekerGuide";
 import EmployerGuide from "@/components/guides/EmployerGuide";
 import CareerStageModal from "@/components/dashboard/CareerStageModal";
 import { calculate_match_score } from "@/utils/matchScore";
+const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message'];
 
 // --- JOB SEEKER DASHBOARD COMPONENT (New) ---
 import iconJsRelevantJobs from "@/assets/icon_js_relevant_jobs.png";
@@ -104,7 +105,7 @@ const JobSeekerDashboard = ({ user }) => {
         const [jobsData, jobViewsData, notificationsData, statsData, profileViewsData, userProfile] = await Promise.all([
           Job.filter({ status: 'active' }, "-created_date", 50),
           JobView.filter({ user_email: user.email }),
-          Notification.filter({ is_read: false }, "-created_date", 5),
+          Notification.filter({ is_read: false, user_email: user.email }, "-created_date", 5),
           UserAnalytics.getUserStats(user.email),
           CandidateView.filter({ candidate_name: user.full_name }), // Get profile views for this job seeker
           UserProfile.filter({ email: user.email }).then(profiles => profiles[0] || null) // Get user profile
@@ -428,12 +429,17 @@ const EmployerDashboard = ({ user }) => {
       setLoading(true);
       try {
         const [notificationsData, viewedCandidatesData, candidatesData, dashboardData, activeJobsData] = await Promise.all([
-          Notification.filter({ is_read: false }, "-created_date", 5),
+          Notification.filter({ is_read: false, user_email: user.email }, "-created_date", 5),
           CandidateView.filter({ viewer_email: user.email }, "-created_date", 50),
           UserProfile.filter({ user_type: 'job_seeker' }, "-created_at", 10),
           EmployerAnalytics.getDashboardData(user.email),
           Job.filter({ created_by: user.email, status: 'active' })
         ]);
+
+        // Filter notifications to only show allowed types for Employers
+        const filteredNotifications = notificationsData.filter(notif =>
+          EMPLOYER_ALLOWED_NOTIFICATION_TYPES.includes(notif.type)
+        );
 
         // Enhance stats with real-time data
         const enhancedStats = {
@@ -447,7 +453,7 @@ const EmployerDashboard = ({ user }) => {
 
         setEmployerStats(enhancedStats);
         setEmployerActivity(dashboardData.recentActivity);
-        setNotifications(notificationsData);
+        setNotifications(filteredNotifications);
         setViewedCandidates(viewedCandidatesData);
         setCandidates(candidatesData);
       } catch (error) {

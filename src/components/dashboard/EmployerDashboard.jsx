@@ -97,7 +97,7 @@ const EmployerDashboard = ({ user }) => {
     const loadData = async () => {
       try {
         const [notificationsData, viewedCandidatesData, candidatesData, dashboardData] = await Promise.all([
-          Notification.filter({ is_read: false }, "-created_date", 5),
+          Notification.filter({ is_read: false, user_email: user.email }, "-created_date", 5),
           CandidateView.filter({ viewer_email: user.email }, "-created_date", 50),
           UserProfile.filter({ user_type: 'job_seeker' }, "-created_at", 10),
           EmployerAnalytics.getDashboardData(user.email)
