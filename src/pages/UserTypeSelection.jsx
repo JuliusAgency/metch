@@ -71,7 +71,7 @@ const CVChoiceModal = ({ isOpen, onSelect, loading }) => {
                   key={opt.id}
                   onClick={() => !loading && onSelect(opt.id)}
                   className={`
-                    cursor-pointer rounded-[30px] p-6 flex flex-col items-center justify-center text-center gap-4 transition-all duration-300 w-full md:w-[320px] bg-white text-[#003566] shadow-lg hover:shadow-xl hover:-translate-y-2 border border-gray-100
+                    cursor-pointer rounded-[30px] p-6 flex flex-col items-center justify-center text-center gap-4 transition-all duration-300 w-full md:w-[260px] bg-white text-[#003566] shadow-lg hover:shadow-xl hover:-translate-y-2 border border-gray-100
                     ${loading ? 'opacity-50 cursor-not-allowed' : ''}
                   `}
                 >
