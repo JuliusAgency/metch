@@ -234,7 +234,7 @@ export default function JobDetailsSeeker() {
   const normalizedReturnPage = fromParam || 'Dashboard';
   const baseReturnPath = createPageUrl(normalizedReturnPage);
   const jobAnchorId = job?.id || jobIdParam;
-  const returnUrl = jobAnchorId ? `${baseReturnPath}#job-${jobAnchorId}` : baseReturnPath;
+  const returnUrl = jobAnchorId ? `${baseReturnPath}?filter=viewed#job-${jobAnchorId}` : `${baseReturnPath}?filter=viewed`;
 
   return (
     <div className="h-full relative" dir="rtl">

@@ -25,7 +25,7 @@ import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 4;
-const SUPPORT_EMAIL = "support@metch.co.il";
+const SUPPORT_EMAIL = "business@metch.co.il";
 
 // Helper function to safely format dates
 const safeFormatDate = (dateValue, formatString, fallback = "") => {

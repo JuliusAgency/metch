@@ -15,11 +15,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 
-const SUPPORT_EMAIL = "support@metch.co.il";
+
 
 export default function Contact() {
   const navigate = useNavigate();
   const { user } = useRequireUserType(); // Ensure user has selected a user type
+  const supportEmail = user?.user_type === "employer" ? "business@metch.co.il" : "support@metch.co.il";
   const [chatLoading, setChatLoading] = useState(false);
 
   const handleSupportChat = () => {
@@ -37,7 +38,7 @@ export default function Contact() {
   const handleEmailContact = () => {
     const subject = encodeURIComponent("פניה לתמיכה - Metch");
     const body = encodeURIComponent("שלום,\n\nאני מעוניין/ת לקבל תמיכה בנושא הבא:\n\n");
-    const emailUrl = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+    const emailUrl = `mailto:${supportEmail}?subject=${subject}&body=${body}`;
     window.location.href = emailUrl;
   };
 
@@ -113,7 +114,7 @@ export default function Contact() {
             </div>
 
             {/* Email Display */}
-            <p className="text-gray-700 font-semibold pt-6">{SUPPORT_EMAIL}</p>
+            <p className="text-gray-700 font-semibold pt-6">{supportEmail}</p>
 
             {/* Legal Links */}
             <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
