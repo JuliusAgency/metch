@@ -55,9 +55,9 @@ export default function CompletionStep() {
               פרסם משרה ראשונה
             </Button>
           </Link>
-          <Link to={createPageUrl("Dashboard")}>
+          <Link to={createPageUrl("Settings")}>
             <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-3 rounded-full font-bold text-lg w-full sm:w-auto">
-              לדף הבית
+              להשלמת פרטי חברה
             </Button>
           </Link>
         </div>
