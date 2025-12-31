@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
+import { NavButton } from "@/components/layout/NavButton";
 import { createPageUrl } from "@/utils";
 import {
   User,
@@ -155,125 +156,129 @@ export default function Layout({ children, currentPageName }) {
             {/* Icons - Moved to be first for RTL rendering on the right */}
             <div className="flex items-center gap-1">
               {/* 1. Home (Both) */}
-              <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2">
-                  <Home className="w-7 h-7 text-gray-700" />
-                  {currentPageName === 'Dashboard' && <span className="font-medium text-gray-700">דף הבית</span>}
-                </Link>
-              </Button>
+              <NavButton
+                to={createPageUrl("Dashboard")}
+                icon={Home}
+                text="דף הבית"
+                isActive={currentPageName === 'Dashboard'}
+              />
               <div className="h-6 w-px bg-white/50 mx-1"></div>
 
               {/* Job Seeker Navigation (Strict 1-7 Order) */}
               {isJobSeeker && (
                 <>
                   {/* 2. My Details (Settings) */}
-                  <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
-                    <Link to={createPageUrl("Settings")} title="ניהול הפרטים שלי">
-                      <User className="w-7 h-7 text-gray-700" />
-                    </Link>
-                  </Button>
+                  <NavButton
+                    to={createPageUrl("Settings")}
+                    icon={User}
+                    text="פרטים אישיים" // Was "ניהול הפרטים שלי" in title, simplified to text here to match prev
+                    isActive={currentPageName === 'Settings'}
+                  />
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
 
                   {/* 3. My CV (Profile) */}
-                  <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
-                    <Link to={createPageUrl("Profile")} title="קורות חיים">
-                      <FileText className="w-7 h-7 text-gray-700" />
-                    </Link>
-                  </Button>
+                  <NavButton
+                    to={createPageUrl("Profile")}
+                    icon={FileText}
+                    text="קו״ח"
+                    isActive={currentPageName === 'Profile'}
+                  />
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
 
                   {/* 4. Insights (Sparkles icon) */}
-                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                    <Link to={createPageUrl("Insights")} className="flex items-center gap-2">
-                      <Sparkles className="w-7 h-7 text-gray-700" />
-                      {currentPageName === 'Insights' && <span className="font-medium text-gray-700">תובנות</span>}
-                    </Link>
-                  </Button>
+                  <NavButton
+                    to={createPageUrl("Insights")}
+                    icon={Sparkles}
+                    text="תובנות"
+                    isActive={currentPageName === 'Insights'}
+                  />
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
 
                   {/* 5. Messages */}
-                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                    <Link to={createPageUrl("MessagesSeeker")} className="flex items-center gap-2">
-                      <MessageSquareText className="w-7 h-7 text-gray-700" />
-                      {currentPageName === 'MessagesSeeker' && <span className="font-medium text-gray-700">הודעות</span>}
-                    </Link>
-                  </Button>
+                  <NavButton
+                    to={createPageUrl("MessagesSeeker")}
+                    icon={MessageSquareText}
+                    text="הודעות"
+                    isActive={currentPageName === 'MessagesSeeker'}
+                  />
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
 
                   {/* 6. FAQ */}
-                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                    <Link to={createPageUrl("FAQ")} className="flex items-center gap-2">
-                      <HelpCircle className="w-7 h-7 text-gray-700" />
-                      {currentPageName === 'FAQ' && <span className="font-medium text-gray-700">שאלות נפוצות</span>}
-                    </Link>
-                  </Button>
+                  <NavButton
+                    to={createPageUrl("FAQ")}
+                    icon={HelpCircle}
+                    text="שאלות נפוצות"
+                    isActive={currentPageName === 'FAQ'}
+                  />
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
 
                   {/* 7. Contact */}
-                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                    <Link to={createPageUrl("Contact")} className="flex items-center gap-2">
-                      <Headphones className="w-7 h-7 text-gray-700" />
-                      {currentPageName === 'Contact' && <span className="font-medium text-gray-700">יצירת קשר</span>}
-                    </Link>
-                  </Button>
+                  <NavButton
+                    to={createPageUrl("Contact")}
+                    icon={Headphones}
+                    text="יצירת קשר"
+                    isActive={currentPageName === 'Contact'}
+                  />
                 </>
               )}
 
               {/* Employer Specific Navigation (Existing Logic Preserved) */}
               {!isJobSeeker && (
                 <>
-                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                    <Link to={createPageUrl("JobManagement")} className="flex items-center gap-2">
-                      <Briefcase className="w-7 h-7 text-gray-700" />
-                      {currentPageName === 'JobManagement' && <span className="font-medium text-gray-700">משרות</span>}
-                    </Link>
-                  </Button>
+                  <NavButton
+                    to={createPageUrl("JobManagement")}
+                    icon={Briefcase}
+                    text="משרות"
+                    isActive={currentPageName === 'JobManagement'}
+                  />
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                    <Link to={createPageUrl("Statistics")} className="flex items-center gap-2">
-                      <BarChart2 className="w-7 h-7 text-gray-700" />
-                      {currentPageName === 'Statistics' && <span className="font-medium text-gray-700">סטטיסטיקות</span>}
-                    </Link>
-                  </Button>
+                  <NavButton
+                    to={createPageUrl("Statistics")}
+                    icon={BarChart2}
+                    text="סטטיסטיקות"
+                    isActive={currentPageName === 'Statistics'}
+                  />
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                    <Link to={createPageUrl("Notifications")} className="flex items-center gap-2">
-                      <Bell className="w-7 h-7 text-gray-700" />
-                      {currentPageName === 'Notifications' && <span className="font-medium text-gray-700">התראות</span>}
-                    </Link>
-                  </Button>
+                  <NavButton
+                    to={createPageUrl("Notifications")}
+                    icon={Bell}
+                    text="התראות"
+                    isActive={currentPageName === 'Notifications'}
+                  />
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
-                    <Link to={createPageUrl("Payments")}>
-                      <CreditCard className="w-7 h-7 text-gray-700" />
-                    </Link>
-                  </Button>
+                  <NavButton
+                    to={createPageUrl("Payments")}
+                    icon={CreditCard}
+                    text="תשלומים"
+                    isActive={currentPageName === 'Payments'}
+                  />
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  <Button asChild variant="ghost" size="icon" className="hover:bg-white/20 rounded-full p-3">
-                    <Link to={createPageUrl("Settings")}>
-                      <Settings className="w-7 h-7 text-gray-700" />
-                    </Link>
-                  </Button>
+                  <NavButton
+                    to={createPageUrl("Settings")}
+                    icon={Settings}
+                    text="הגדרות"
+                    isActive={currentPageName === 'Settings'}
+                  />
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                    <Link to={createPageUrl("Messages")} className="flex items-center gap-2">
-                      <MessageSquareText className="w-7 h-7 text-gray-700" />
-                      {currentPageName === 'Messages' && <span className="font-medium text-gray-700">הודעות</span>}
-                    </Link>
-                  </Button>
+                  <NavButton
+                    to={createPageUrl("Messages")}
+                    icon={MessageSquareText}
+                    text="הודעות"
+                    isActive={currentPageName === 'Messages'}
+                  />
                   <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  <Button asChild variant="ghost" className="hover:bg-white/20 rounded-full px-3 py-3 text-base">
-                    <Link to={createPageUrl("Contact")} className="flex items-center gap-2">
-                      <Headphones className="w-7 h-7 text-gray-700" />
-                      {currentPageName === 'Contact' && <span className="font-medium text-gray-700">קשר</span>}
-                    </Link>
-                  </Button>
+                  <NavButton
+                    to={createPageUrl("Contact")}
+                    icon={Headphones}
+                    text="קשר"
+                    isActive={currentPageName === 'Contact'}
+                  />
                 </>
               )}
             </div>
