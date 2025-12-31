@@ -181,17 +181,17 @@ ET`;
 
                             {/* Quantity Selector - Delicate Pill Design */}
                             <div className="flex justify-center mb-8">
-                                <div className="bg-white border border-[#1E3A8A] rounded-full px-4 py-2 flex items-center justify-between w-[220px] shadow-sm">
+                                <div className="bg-white border border-gray-200 rounded-full px-4 py-2 flex items-center justify-between w-[220px] shadow-sm">
                                     <button
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                        className="w-8 h-8 rounded-full bg-[#E3F2F6] text-[#1E3A8A] flex items-center justify-center hover:bg-[#d0eef7] transition-colors text-xl font-medium"
+                                        className="w-8 h-8 rounded-full bg-[#f0f4f8] text-[#1E3A8A] flex items-center justify-center hover:bg-[#e1eaf0] transition-colors text-xl font-medium"
                                     >
                                         -
                                     </button>
                                     <span className="text-3xl font-bold text-[#1E3A8A] font-['Rubik']">{quantity}</span>
                                     <button
                                         onClick={() => setQuantity(quantity + 1)}
-                                        className="w-8 h-8 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center hover:bg-[#152a6d] transition-colors text-xl font-medium"
+                                        className="w-8 h-8 rounded-full bg-[#1e293b] text-white flex items-center justify-center hover:bg-[#0f172a] transition-colors text-xl font-medium"
                                     >
                                         +
                                     </button>
@@ -222,10 +222,10 @@ ET`;
                                     </div>
 
                                     {/* Divider for mobile */}
-                                    <div className="h-px w-full bg-gray-100 md:hidden"></div>
+                                    <div className="h-px w-full bg-gray-200 md:hidden"></div>
 
                                     {/* Vertical Divider for desktop */}
-                                    <div className="hidden md:block w-px h-40 bg-gray-100"></div>
+                                    <div className="hidden md:block w-px h-40 bg-gray-200"></div>
 
                                     {/* Left Side: Price */}
                                     <div className="text-center md:text-left space-y-2 flex-1 flex flex-col items-center md:items-end">
