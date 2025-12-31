@@ -139,8 +139,8 @@ export default function JobDetails() {
   const config = statusConfig[job.status] || statusConfig.active;
 
   return (
-    <div className="p-4 md:p-6" dir="rtl">
-      <div className="w-[85vw] mx-auto">
+    <div className="" dir="rtl">
+      <div className="w-full mx-auto">
         <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
           <div className="relative">
             <JobHeader />
