@@ -44,7 +44,7 @@ export default function ViewQuestionnaire() {
                 setLoading(false);
             }
         };
-        
+
         loadData();
     }, [location.search]);
 
@@ -84,12 +84,12 @@ export default function ViewQuestionnaire() {
                 <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
                     <div className="relative">
                         <div className="relative h-24 overflow-hidden -m-px">
-                            <div 
-                                className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
+                            <div
+                                className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_110%_at_50%_100%)]"
                                 style={{
-                                  backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
-                                  backgroundSize: 'cover',
-                                  backgroundPosition: 'center'
+                                    backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center'
                                 }}
                             />
                         </div>
@@ -99,13 +99,13 @@ export default function ViewQuestionnaire() {
                                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900">שאלון סינון</h1>
                             </div>
 
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 className="max-w-3xl mx-auto p-8 space-y-6 bg-gray-50/70 border border-gray-200/90 rounded-2xl"
                             >
                                 {response.responses.map((item, index) => (
-                                    <motion.div 
+                                    <motion.div
                                         key={index}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}

@@ -25,7 +25,7 @@ import { useRequireUserType } from "@/hooks/use-require-user-type";
 
 const actionTypeLabels = {
     job_match: "התאמת משרה",
-    job_view: "צפייה במשרה", 
+    job_view: "צפייה במשרה",
     job_apply: "הגשת מועמדות",
     job_reject: "דחיית משרה",
     job_save: "שמירת משרה",
@@ -118,13 +118,13 @@ export default function UserActivity() {
                     <div className="relative">
                         {/* Header */}
                         <div className="relative h-24 overflow-hidden -m-px">
-                            <div 
-                                className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
+                            <div
+                                className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_110%_at_50%_100%)]"
                                 style={{
-                                  backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
-                                  backgroundSize: 'cover',
-                                  backgroundPosition: 'center',
-                                  backgroundRepeat: 'no-repeat'
+                                    backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                    backgroundRepeat: 'no-repeat'
                                 }}
                             />
                             <Link to={createPageUrl("Dashboard")} className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-10">
@@ -170,29 +170,29 @@ export default function UserActivity() {
                                     <div className="space-y-6">
                                         {/* Stats Grid */}
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                            <StatCard 
-                                                title="התאמות משרה" 
-                                                value={stats.total_job_matches} 
-                                                icon={TrendingUp} 
-                                                color="bg-blue-50" 
+                                            <StatCard
+                                                title="התאמות משרה"
+                                                value={stats.total_job_matches}
+                                                icon={TrendingUp}
+                                                color="bg-blue-50"
                                             />
-                                            <StatCard 
-                                                title="צפיות במשרות" 
-                                                value={stats.total_job_views} 
-                                                icon={Eye} 
-                                                color="bg-green-50" 
+                                            <StatCard
+                                                title="צפיות במשרות"
+                                                value={stats.total_job_views}
+                                                icon={Eye}
+                                                color="bg-green-50"
                                             />
-                                            <StatCard 
-                                                title="מועמדויות" 
-                                                value={stats.total_applications} 
-                                                icon={FileText} 
-                                                color="bg-purple-50" 
+                                            <StatCard
+                                                title="מועמדויות"
+                                                value={stats.total_applications}
+                                                icon={FileText}
+                                                color="bg-purple-50"
                                             />
-                                            <StatCard 
-                                                title="משרות שנדחו" 
-                                                value={stats.total_rejections} 
-                                                icon={X} 
-                                                color="bg-red-50" 
+                                            <StatCard
+                                                title="משרות שנדחו"
+                                                value={stats.total_rejections}
+                                                icon={X}
+                                                color="bg-red-50"
                                             />
                                         </div>
 
@@ -209,13 +209,13 @@ export default function UserActivity() {
                                 {activeTab === 'activity' && (
                                     <div className="space-y-4">
                                         <h3 className="text-xl font-bold text-gray-900 text-center mb-6">פעילות אחרונה</h3>
-                                        
+
                                         {activity.length > 0 ? (
                                             <div className="space-y-3">
                                                 {activity.map((action, index) => {
                                                     const Icon = actionTypeIcons[action.action_type] || Activity;
                                                     const colorClass = actionTypeColors[action.action_type] || "bg-gray-100 text-gray-800";
-                                                    
+
                                                     return (
                                                         <motion.div
                                                             key={action.id}

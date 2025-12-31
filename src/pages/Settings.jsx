@@ -481,7 +481,7 @@ export default function Settings() {
         {/* Header with curved background */}
         <div className="relative h-32 overflow-hidden w-full">
           <div
-            className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_100%_at_50%_100%)]"
+            className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_110%_at_50%_100%)]"
             style={{
               backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
               backgroundSize: 'cover',
