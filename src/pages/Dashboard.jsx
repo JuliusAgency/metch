@@ -119,7 +119,7 @@ const JobSeekerDashboard = ({ user }) => {
 
       try {
         const results = await Promise.allSettled([
-          Job.filter({ status: 'active' }, "-created_date", 50),
+          Job.filter({ status: 'active' }, "-created_date", 200),
           JobView.filter({ user_email: user.email }),
           Notification.filter({ is_read: false, email: user.email }, "-created_date", 5),
           UserAnalytics.getUserStats(user.email),
@@ -173,7 +173,8 @@ const JobSeekerDashboard = ({ user }) => {
 
         setUserStats(enhancedStats);
         setAllJobs(jobsWithScores);
-        setViewedJobIds(new Set(jobViewsData.map(view => view.job_id)));
+        // Use String for ID sets to ensure consistent matching
+        setViewedJobIds(new Set(jobViewsData.map(view => String(view.job_id))));
         setNotifications(notificationsData);
 
         // Navigation guards for Job Seekers
@@ -231,10 +232,10 @@ const JobSeekerDashboard = ({ user }) => {
     }
 
     if (jobFilter === 'new') {
-      return !viewedJobIds.has(job.id);
+      return !viewedJobIds.has(String(job.id));
     }
     if (jobFilter === 'viewed') {
-      return viewedJobIds.has(job.id);
+      return viewedJobIds.has(String(job.id));
     }
     return true; // Should not happen with 'new'/'viewed' filters
   });
@@ -347,17 +348,18 @@ const JobSeekerDashboard = ({ user }) => {
                           </div>
                         </div>
                       )}
-                      <Button asChild className={`${viewedJobIds.has(job.id) ? 'bg-gray-400 hover:bg-gray-500' : 'bg-[#84CC9E] hover:bg-green-500'} text-white px-5 py-2 rounded-full font-bold w-28 view-job-button`}>
+                      <Button asChild className={`${viewedJobIds.has(String(job.id)) ? 'bg-gray-400 hover:bg-gray-500' : 'bg-[#84CC9E] hover:bg-green-500'} text-white px-5 py-2 rounded-full font-bold w-28 view-job-button`}>
                         <Link
                           to={createPageUrl(`JobDetailsSeeker?id=${job.id}&from=Dashboard`)}
                           onClick={() => {
                             // Track job view when user clicks to view details
                             if (user?.email) {
                               UserAnalytics.trackJobView(user.email, job);
+                              setViewedJobIds(prev => new Set(prev).add(String(job.id)));
                             }
                           }}
                         >
-                          {viewedJobIds.has(job.id) ? "נצפה" : "צפייה"}
+                          {viewedJobIds.has(String(job.id)) ? "נצפה" : "צפייה"}
                         </Link>
                       </Button>
                     </div>
@@ -464,13 +466,22 @@ const EmployerDashboard = ({ user }) => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const [notificationsData, viewedCandidatesData, candidatesData, dashboardData, activeJobsData] = await Promise.all([
-          Notification.filter({ is_read: false, user_email: user.email }, "-created_date", 5),
-          CandidateView.filter({ viewer_email: user.email }, "-created_date", 50),
-          UserProfile.filter({ user_type: 'job_seeker' }, "-created_at", 10),
+        const [viewedCandidatesData, candidatesData, dashboardData, activeJobsData] = await Promise.all([
+          CandidateView.filter({ viewer_email: user.email }, "-viewed_at", 1000),
+          UserProfile.filter({ user_type: 'job_seeker' }, null, 100),
           EmployerAnalytics.getDashboardData(user.email),
           Job.filter({ created_by: user.email, status: 'active' })
         ]);
+
+        let notificationsData = [];
+        try {
+          notificationsData = await Notification.filter({ is_read: false, user_id: user.id }, "-created_date", 5);
+        } catch (err) {
+          console.warn("Retrying notifications with email...", err);
+          try {
+            notificationsData = await Notification.filter({ is_read: false, email: user.email }, "-created_date", 5);
+          } catch (err2) { console.error("Notification fetch failed", err2); }
+        }
 
         // Filter notifications to only show allowed types for Employers
         const filteredNotifications = notificationsData.filter(notif =>
@@ -507,22 +518,29 @@ const EmployerDashboard = ({ user }) => {
   }, [user]);
 
   const handleViewCandidate = async (candidate) => {
+    // 1. Track Analytics (Non-blocking)
     try {
-      // Track candidate profile view
       if (user?.email) {
         await UserAnalytics.trackAction(user.email, 'profile_view', {
           candidate_name: candidate.full_name,
           candidate_email: candidate.email
         });
       }
+    } catch (analyticsError) {
+      console.warn("Analytics tracking failed (non-critical):", analyticsError);
+    }
 
+    // 2. Create Candidate View Record (Critical)
+    try {
       await CandidateView.create({
         candidate_name: candidate.full_name,
         candidate_role: candidate.experience_level || 'N/A',
         viewer_email: user.email,
         viewed_at: new Date().toISOString()
       });
-      const updatedViewed = await CandidateView.filter({ viewer_email: user.email }, "-created_date", 50);
+
+      // Update local state immediately
+      const updatedViewed = await CandidateView.filter({ viewer_email: user.email }, "-viewed_at", 1000);
       setViewedCandidates(updatedViewed);
     } catch (error) {
       console.error("Error recording candidate view:", error);
@@ -531,6 +549,18 @@ const EmployerDashboard = ({ user }) => {
 
   const handlePrevNotification = () => setCurrentNotificationIndex(prev => prev > 0 ? prev - 1 : (notifications.length - 1 || 0));
   const handleNextNotification = () => setCurrentNotificationIndex(prev => prev < (notifications.length - 1) ? prev + 1 : 0);
+
+  const navigate = useNavigate();
+
+  const handleCandidateClick = async (candidate, match) => {
+    // Show loading state if desired, or just wait
+    await handleViewCandidate(candidate);
+
+    const targetUrl = createPageUrl(`CandidateProfile?id=${candidate.id}&match=${match}`);
+    navigate(targetUrl, {
+      state: { from: `${location.pathname}?filter=${candidateFilter}` }
+    });
+  };
 
   const filteredCandidates = candidates.filter(c => {
     // Text search filter
@@ -544,7 +574,12 @@ const EmployerDashboard = ({ user }) => {
       if (!matchesSearch) return false;
     }
 
-    const isViewed = viewedCandidates.some(vc => vc.candidate_name === c.full_name);
+    const isViewed = viewedCandidates.some(vc => {
+      const match = vc.candidate_name?.trim().toLowerCase() === c.full_name?.trim().toLowerCase();
+      return match;
+    });
+
+    // console.log(`Candidate ${c.full_name} isViewed: ${isViewed}, filter: ${candidateFilter}`);
     return candidateFilter === 'new' ? !isViewed : isViewed;
   });
 
@@ -680,14 +715,11 @@ const EmployerDashboard = ({ user }) => {
                         <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full md:w-auto">
                           <div className="flex flex-wrap gap-2 justify-center sm:justify-start">{candidate.skills?.slice(0, 3).map((skill, i) => (<Badge key={i} variant="outline" className="border-blue-200 text-blue-700 bg-blue-50/50 text-xs">{skill}</Badge>))}</div>
                           <div className="w-full sm:w-48 text-right"><div className="text-sm text-gray-600 mb-1.5">{match}% התאמה</div><div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden"><div className={`h-full transition-all duration-500 ${match >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${match}%` }}></div></div></div>
-                          <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-full sm:w-auto view-candidate-button">
-                            <Link
-                              to={createPageUrl(`CandidateProfile?id=${candidate.id}&match=${match}`)}
-                              state={{ from: `${location.pathname}?filter=${candidateFilter}` }}
-                              onClick={() => handleViewCandidate(candidate)}
-                            >
-                              לצפייה
-                            </Link>
+                          <Button
+                            className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-full sm:w-auto view-candidate-button"
+                            onClick={() => handleCandidateClick(candidate, match)}
+                          >
+                            לצפייה
                           </Button>
                         </div>
                       </div>
