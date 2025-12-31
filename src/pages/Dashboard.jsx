@@ -409,14 +409,22 @@ const EmployerDashboard = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [showOnboardingHint, setShowOnboardingHint] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const filterParam = searchParams.get('filter');
     if (filterParam && filterParam !== candidateFilter) {
       setCandidateFilter(filterParam);
+      setCurrentPage(1);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, candidateFilter]);
 
   const handleFilterChange = (val) => {
     setCandidateFilter(val);
@@ -454,6 +462,13 @@ const EmployerDashboard = ({ user }) => {
       localStorage.setItem(`employer_guide_${user.email}`, 'completed');
     }
   };
+
+  // Redirect to onboarding if company profile is incomplete
+  useEffect(() => {
+    if (!loading && user && user.user_type === 'employer' && (!user.company_name || !user.company_name.trim())) {
+      navigate('/CompanyProfileCompletion');
+    }
+  }, [user, loading, navigate]);
 
   const handleGuideSkip = () => {
     setShowGuide(false);
@@ -550,7 +565,7 @@ const EmployerDashboard = ({ user }) => {
   const handlePrevNotification = () => setCurrentNotificationIndex(prev => prev > 0 ? prev - 1 : (notifications.length - 1 || 0));
   const handleNextNotification = () => setCurrentNotificationIndex(prev => prev < (notifications.length - 1) ? prev + 1 : 0);
 
-  const navigate = useNavigate();
+
 
   const handleCandidateClick = async (candidate, match) => {
     // Show loading state if desired, or just wait
@@ -582,6 +597,13 @@ const EmployerDashboard = ({ user }) => {
     // console.log(`Candidate ${c.full_name} isViewed: ${isViewed}, filter: ${candidateFilter}`);
     return candidateFilter === 'new' ? !isViewed : isViewed;
   });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredCandidates.length / ITEMS_PER_PAGE);
+  const displayedCandidates = filteredCandidates.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   if (loading) {
     return (
@@ -680,7 +702,7 @@ const EmployerDashboard = ({ user }) => {
             </div>
           </div>
           <div className="space-y-4 candidate-list">
-            {filteredCandidates.length > 0 ? (filteredCandidates.map((candidate, index) => {
+            {displayedCandidates.length > 0 ? (displayedCandidates.map((candidate, index) => {
               // Calculate a stable match score based on candidate ID to ensure consistency
               const getStableMatchScore = (id) => {
                 if (!id) return 90;
@@ -730,8 +752,35 @@ const EmployerDashboard = ({ user }) => {
             })) : (<div className="text-center py-8"><p className="text-gray-600">{candidateFilter === 'new' ? 'אין מועמדים חדשים זמינים כרגע.' : 'לא צפית במועמדים עדיין.'}</p></div>)
             }
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-6 pb-6">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="rounded-full w-10 h-10 p-0"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </Button>
+              <div className="text-sm font-medium text-gray-600">
+                עמוד {currentPage} מתוך {totalPages}
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="rounded-full w-10 h-10 p-0"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
+            </div>
+          )}
         </div>
-      </div>
+      </div >
 
       <EmployerGuide
         isActive={showGuide}

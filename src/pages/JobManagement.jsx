@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { differenceInDays } from "date-fns";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+import ToggleSwitch from "@/components/dashboard/ToggleSwitch";
 
 const CustomSwitch = ({ checked, onCheckedChange, disabled, id }) => (
   <SwitchPrimitives.Root
@@ -170,25 +171,14 @@ export default function JobManagement() {
 
           {/* Toggle Buttons */}
           <div className="flex justify-center mb-8">
-            <div className="flex gap-2 bg-gray-100 p-1 rounded-full">
-              <Button
-                className={`px-6 py-2 rounded-full font-semibold transition-colors ${activeView === 'active' ?
-                  'bg-blue-600 hover:bg-blue-700 text-white' :
-                  'bg-transparent hover:bg-gray-200 text-gray-700'}`
-                }
-                onClick={() => setActiveView('active')}>
-                משרות פעילות
-              </Button>
-              <Button
-                className={`px-6 py-2 rounded-full font-semibold transition-colors ${activeView === 'ended' ?
-                  'bg-blue-600 hover:bg-blue-700 text-white' :
-                  'bg-transparent hover:bg-gray-200 text-gray-700'}`
-                }
-                onClick={() => setActiveView('ended')}>
-
-                משרות שהסתיימו
-              </Button>
-            </div>
+            <ToggleSwitch
+              options={[
+                { value: 'ended', label: 'משרות שהסתיימו' },
+                { value: 'active', label: 'משרות פעילות' }
+              ]}
+              value={activeView}
+              onChange={setActiveView}
+            />
           </div>
 
           {/* Jobs List */}

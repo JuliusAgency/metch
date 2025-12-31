@@ -11,11 +11,13 @@ import CompletionStep from "@/components/company_profile/CompletionStep";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+import { useUser } from "@/contexts/UserContext";
 
-const STEPS = ["פרטי חברה", "בחירת חבילה", "תשלום", "סיום"];
+const STEPS = ["פרטי חברה", "תשלום", "בחירת חבילה", "סיום"];
 
 export default function CompanyProfileCompletion() {
   useRequireUserType(); // Ensure user has selected a user type
+  const { updateProfile } = useUser();
   const [step, setStep] = useState(1);
   const [companyData, setCompanyData] = useState({
     company_name: "",
@@ -70,7 +72,7 @@ export default function CompanyProfileCompletion() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await User.updateMyUserData(companyData);
+      await updateProfile(companyData);
       return true;
     } catch (error) {
       console.error("Failed to save company data", error);
@@ -104,9 +106,9 @@ export default function CompanyProfileCompletion() {
       case 1:
         return <CompanyDetailsStep companyData={companyData} setCompanyData={setCompanyData} />;
       case 2:
-        return <PackageSelectionStep packageData={packageData} setPackageData={setPackageData} onBack={prevStep} />;
-      case 3:
         return <PaymentStep paymentData={paymentData} setPaymentData={setPaymentData} />;
+      case 3:
+        return <PackageSelectionStep packageData={packageData} setPackageData={setPackageData} onBack={prevStep} />;
       case 4:
         return <CompletionStep />;
       default:
