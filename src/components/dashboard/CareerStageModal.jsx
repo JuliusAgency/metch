@@ -28,7 +28,14 @@ const CareerStageModal = ({ isOpen, onComplete }) => {
 
         setLoading(true);
         try {
-            await updateProfile({ career_stage: selected });
+            // "career_continuing" means they want to stay in their field -> prefers_no_career_change = true
+            // "open_to_new" means they are open to changes -> prefers_no_career_change = false
+            const prefersNoChange = selected === 'career_continuing';
+
+            await updateProfile({
+                career_stage: selected,
+                prefers_no_career_change: prefersNoChange
+            });
 
             toast({
                 title: "הבחירה נשמרה בהצלחה",

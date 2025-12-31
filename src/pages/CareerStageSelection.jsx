@@ -28,9 +28,31 @@ const CareerStageSelection = () => {
         if (!selected) return;
         setLoading(true);
         try {
-            await updateProfile({ career_stage: selected });
-            // Navigate to main CV generator
-            navigate('/CVGenerator');
+            // "career_continuing" means they want to stay in their field -> prefers_no_career_change = true
+            // "open_to_new" means they are open to changes -> prefers_no_career_change = false
+            const prefersNoChange = selected === 'career_continuing';
+
+            await updateProfile({
+                career_stage: selected,
+                prefers_no_career_change: prefersNoChange
+            });
+
+            // Check if we are in onboarding mode
+            const isOnboarding = localStorage.getItem('onboarding_active') === 'true';
+
+            if (isOnboarding) {
+                // Navigate to main CV generator only during onboarding
+                navigate('/CVGenerator');
+            } else {
+                // If accessing from settings/profile, just save and notify
+                toast({
+                    title: "הבחירה נשמרה בהצלחה",
+                    description: "שלב הקריירה שלך עודכן",
+                    variant: "default",
+                    className: "bg-green-500 text-white border-none"
+                });
+            }
+
         } catch (err) {
             console.error(err);
             toast({
