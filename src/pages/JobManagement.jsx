@@ -3,7 +3,8 @@ import { User } from "@/api/entities";
 import { Job } from "@/api/entities";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch"; // New import
+import * as SwitchPrimitives from "@radix-ui/react-switch";
+import { cn } from "@/lib/utils";
 import {
   Plus,
   Edit,
@@ -14,9 +15,29 @@ import {
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { formatDistanceToNow } from "date-fns"; // Updated import
-import { he } from 'date-fns/locale'; // New import
+import { differenceInDays } from "date-fns";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+
+const CustomSwitch = ({ checked, onCheckedChange, disabled, id }) => (
+  <SwitchPrimitives.Root
+    checked={checked}
+    onCheckedChange={onCheckedChange}
+    disabled={disabled}
+    id={id}
+    dir="ltr"
+    className={cn(
+      "peer inline-flex h-[24px] w-[44px] shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+      "bg-gray-100 data-[state=checked]:bg-gray-100 border border-gray-200"
+    )}
+  >
+    <SwitchPrimitives.Thumb
+      className={cn(
+        "pointer-events-none block h-5 w-5 rounded-full shadow-md ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0",
+        "bg-gray-200 data-[state=checked]:bg-[#4ADE80]"
+      )}
+    />
+  </SwitchPrimitives.Root>
+);
 
 export default function JobManagement() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -174,8 +195,10 @@ export default function JobManagement() {
           <div className="space-y-4 mb-8">
             {filteredJobs.length > 0 ?
               filteredJobs.map((job, index) => {
-                const config = statusConfig[job.status] || statusConfig.draft; // Fallback to draft
-                const timeAgo = formatDistanceToNow(new Date(job.created_date), { addSuffix: true, locale: he }); // New
+                const config = statusConfig[job.status] || statusConfig.draft;
+                const daysSinceCreation = differenceInDays(new Date(), new Date(job.created_date));
+                const daysRemaining = Math.max(0, 30 - daysSinceCreation);
+
                 return (
                   <motion.div
                     key={job.id}
@@ -187,26 +210,29 @@ export default function JobManagement() {
                     <div className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
                       {/* Top Section */}
                       <div className="flex items-center justify-between pb-4">
+                        {/* Right Side (Status) */}
                         <div className="flex items-center gap-2">
-                          <div className={`w-2.5 h-2.5 ${config.dotColor} rounded-full`}></div>
                           <p className="font-semibold text-gray-800">{config.label}</p>
+                          <div className={`w-3 h-3 ${config.dotColor} rounded-full`}></div>
                         </div>
+
+                        {/* Left Side (Actions) */}
                         <div className="flex items-center gap-4 text-gray-400">
-                          <Switch
+                          <CustomSwitch
                             id={`status-switch-${job.id}`}
                             checked={job.status === 'active'}
                             onCheckedChange={(checked) =>
                               handleStatusChange(job.id, checked)
                             }
-                            disabled={job.status !== 'active' && job.status !== 'paused'} // Disable if not active or paused
-                            className="peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input hidden" />
+                            disabled={job.status !== 'active' && job.status !== 'paused'}
+                          />
                           <Link to={createPageUrl(`CreateJob?id=${job.id}`)}>
-                            <Edit className="w-5 h-5 cursor-pointer hover:text-blue-600" />
+                            <Edit className="w-5 h-5 cursor-pointer hover:text-blue-600 font-light" strokeWidth={1.5} />
                           </Link>
                           <Copy
                             className="w-5 h-5 cursor-pointer hover:text-blue-600"
+                            strokeWidth={1.5}
                             onClick={() => handleDuplicateJob(job)} />
-
                         </div>
                       </div>
 
@@ -217,10 +243,10 @@ export default function JobManagement() {
                         <div className="text-right">
                           <h3 className="font-bold text-lg text-gray-900">{job.title}</h3>
                           <p className="text-gray-600">{job.location}</p>
-                          <p className="text-sm text-gray-500 mt-1">פורסם {timeAgo}</p>
+                          <p className="text-sm text-gray-400 mt-1">נותרו {daysRemaining} ימים</p>
                         </div>
                         <Link to={createPageUrl(`JobDetails?id=${job.id}`)}>
-                          <Button className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold">
+                          <Button className="bg-[#84CC9E] hover:bg-green-500 text-white px-6 py-2 rounded-full font-bold text-md">
                             צפייה במשרה
                           </Button>
                         </Link>
