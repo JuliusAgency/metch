@@ -800,16 +800,19 @@ export default function Settings() {
                   </div>
 
                   {/* Email */}
-                  <div className="relative">
-                    <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <Input
-                      placeholder="דוא״ל"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      disabled
-                      className="w-full h-12 bg-gray-50 border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm"
-                      dir="rtl"
-                    />
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">כתובת מייל</label>
+                    <div className="relative">
+                      <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Input
+                        placeholder="דוא״ל"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        disabled
+                        className="w-full h-12 bg-gray-50 border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm"
+                        dir="rtl"
+                      />
+                    </div>
                   </div>
 
                   {/* Phone */}
