@@ -284,7 +284,9 @@ export default function CVGenerator() {
 
         // Small delay to let the toast be seen/state update
         setTimeout(() => {
-          navigate('/PreferenceQuestionnaire');
+          // Check if we are in onboarding mode
+          const isOnboarding = searchParams.get('onboarding') === 'true';
+          navigate(`/PreferenceQuestionnaire${isOnboarding ? '?onboarding=true' : ''}`);
         }, 500);
         return;
       }
@@ -358,7 +360,8 @@ export default function CVGenerator() {
       localStorage.removeItem(`cv_draft_${user.email}`);
     }
     // After upload, user is done with this flow, navigate to profile
-    navigate(createPageUrl('PreferenceQuestionnaire'));
+    const isOnboarding = searchParams.get('onboarding') === 'true';
+    navigate(createPageUrl(`PreferenceQuestionnaire${isOnboarding ? '?onboarding=true' : ''}`));
   };
 
   const renderStep = () => {

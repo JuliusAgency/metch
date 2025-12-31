@@ -385,7 +385,7 @@ const UserTypeSelection = () => {
         isOpen={showCVChoiceModal}
         loading={loading}
         onSelect={(choice) => {
-          navigate(`/CVGenerator?choice=${choice}`);
+          navigate(`/CVGenerator?choice=${choice}&onboarding=true`);
         }}
       />
     </div>

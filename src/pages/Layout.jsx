@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { NavButton } from "@/components/layout/NavButton";
 import { createPageUrl } from "@/utils";
@@ -117,6 +117,11 @@ export default function Layout({ children, currentPageName }) {
   };
 
   return (
+  // Pages that should hide independent header/navbar but keep layout structure
+  const hideHeaderPages = ['CVGenerator', 'PreferenceQuestionnaire', 'CreateJob', 'CareerStageSelection', 'careerstageselection'];
+  const showHeader = !hideHeaderPages.includes(currentPageName);
+
+  return (
     <div className="min-h-screen page-gradient" dir="rtl">
       <style>
         {`
@@ -150,164 +155,168 @@ export default function Layout({ children, currentPageName }) {
       </style>
 
       {/* Desktop Navbar Wrapper */}
-      <div className="hidden md:block pt-6 sticky top-0 z-50">
-        <header className="navbar-custom w-[60vw] mx-auto rounded-full shadow-lg border border-white/20">
-          <div className="flex items-center justify-between px-8 py-4">
-            {/* Icons - Moved to be first for RTL rendering on the right */}
-            <div className="flex items-center gap-1">
-              {/* 1. Home (Both) */}
-              <NavButton
-                to={createPageUrl("Dashboard")}
-                icon={Home}
-                text="דף הבית"
-                isActive={currentPageName === 'Dashboard'}
-              />
-              <div className="h-6 w-px bg-white/50 mx-1"></div>
+      {showHeader && (
+        <div className="hidden md:block pt-6 sticky top-0 z-50">
+          <header className="navbar-custom w-[60vw] mx-auto rounded-full shadow-lg border border-white/20">
+            <div className="flex items-center justify-between px-8 py-4">
+              {/* Icons - Moved to be first for RTL rendering on the right */}
+              <div className="flex items-center gap-1">
+                {/* 1. Home (Both) */}
+                <NavButton
+                  to={createPageUrl("Dashboard")}
+                  icon={Home}
+                  text="דף הבית"
+                  isActive={currentPageName === 'Dashboard'}
+                />
+                <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-              {/* Job Seeker Navigation (Strict 1-7 Order) */}
-              {isJobSeeker && (
-                <>
-                  {/* 2. My Details (Settings) */}
-                  <NavButton
-                    to={createPageUrl("Settings")}
-                    icon={User}
-                    text="פרטים אישיים" // Was "ניהול הפרטים שלי" in title, simplified to text here to match prev
-                    isActive={currentPageName === 'Settings'}
-                  />
-                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+                {/* Job Seeker Navigation (Strict 1-7 Order) */}
+                {isJobSeeker && (
+                  <>
+                    {/* 2. My Details (Settings) */}
+                    <NavButton
+                      to={createPageUrl("Settings")}
+                      icon={User}
+                      text="פרטים אישיים" // Was "ניהול הפרטים שלי" in title, simplified to text here to match prev
+                      isActive={currentPageName === 'Settings'}
+                    />
+                    <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  {/* 3. My CV (Profile) */}
-                  <NavButton
-                    to={createPageUrl("Profile")}
-                    icon={FileText}
-                    text="קו״ח"
-                    isActive={currentPageName === 'Profile'}
-                  />
-                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+                    {/* 3. My CV (Profile) */}
+                    <NavButton
+                      to={createPageUrl("Profile")}
+                      icon={FileText}
+                      text="קו״ח"
+                      isActive={currentPageName === 'Profile'}
+                    />
+                    <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  {/* 4. Insights (Sparkles icon) */}
-                  <NavButton
-                    to={createPageUrl("Insights")}
-                    icon={Sparkles}
-                    text="תובנות"
-                    isActive={currentPageName === 'Insights'}
-                  />
-                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+                    {/* 4. Insights (Sparkles icon) */}
+                    <NavButton
+                      to={createPageUrl("Insights")}
+                      icon={Sparkles}
+                      text="תובנות"
+                      isActive={currentPageName === 'Insights'}
+                    />
+                    <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  {/* 5. Messages */}
-                  <NavButton
-                    to={createPageUrl("MessagesSeeker")}
-                    icon={MessageSquareText}
-                    text="הודעות"
-                    isActive={currentPageName === 'MessagesSeeker'}
-                  />
-                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+                    {/* 5. Messages */}
+                    <NavButton
+                      to={createPageUrl("MessagesSeeker")}
+                      icon={MessageSquareText}
+                      text="הודעות"
+                      isActive={currentPageName === 'MessagesSeeker'}
+                    />
+                    <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  {/* 6. FAQ */}
-                  <NavButton
-                    to={createPageUrl("FAQ")}
-                    icon={HelpCircle}
-                    text="שאלות נפוצות"
-                    isActive={currentPageName === 'FAQ'}
-                  />
-                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+                    {/* 6. FAQ */}
+                    <NavButton
+                      to={createPageUrl("FAQ")}
+                      icon={HelpCircle}
+                      text="שאלות נפוצות"
+                      isActive={currentPageName === 'FAQ'}
+                    />
+                    <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  {/* 7. Contact */}
-                  <NavButton
-                    to={createPageUrl("Contact")}
-                    icon={Headphones}
-                    text="יצירת קשר"
-                    isActive={currentPageName === 'Contact'}
-                  />
-                </>
-              )}
+                    {/* 7. Contact */}
+                    <NavButton
+                      to={createPageUrl("Contact")}
+                      icon={Headphones}
+                      text="יצירת קשר"
+                      isActive={currentPageName === 'Contact'}
+                    />
+                  </>
+                )}
 
-              {/* Employer Specific Navigation (Existing Logic Preserved) */}
-              {!isJobSeeker && (
-                <>
-                  <NavButton
-                    to={createPageUrl("JobManagement")}
-                    icon={Briefcase}
-                    text="משרות"
-                    isActive={currentPageName === 'JobManagement'}
-                  />
-                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+                {/* Employer Specific Navigation (Existing Logic Preserved) */}
+                {!isJobSeeker && (
+                  <>
+                    <NavButton
+                      to={createPageUrl("JobManagement")}
+                      icon={Briefcase}
+                      text="משרות"
+                      isActive={currentPageName === 'JobManagement'}
+                    />
+                    <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  <NavButton
-                    to={createPageUrl("Statistics")}
-                    icon={BarChart2}
-                    text="סטטיסטיקות"
-                    isActive={currentPageName === 'Statistics'}
-                  />
-                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+                    <NavButton
+                      to={createPageUrl("Statistics")}
+                      icon={BarChart2}
+                      text="סטטיסטיקות"
+                      isActive={currentPageName === 'Statistics'}
+                    />
+                    <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  <NavButton
-                    to={createPageUrl("Notifications")}
-                    icon={Bell}
-                    text="התראות"
-                    isActive={currentPageName === 'Notifications'}
-                  />
-                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+                    <NavButton
+                      to={createPageUrl("Notifications")}
+                      icon={Bell}
+                      text="התראות"
+                      isActive={currentPageName === 'Notifications'}
+                    />
+                    <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  <NavButton
-                    to={createPageUrl("Payments")}
-                    icon={CreditCard}
-                    text="תשלומים"
-                    isActive={currentPageName === 'Payments'}
-                  />
-                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+                    <NavButton
+                      to={createPageUrl("Payments")}
+                      icon={CreditCard}
+                      text="תשלומים"
+                      isActive={currentPageName === 'Payments'}
+                    />
+                    <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  <NavButton
-                    to={createPageUrl("Settings")}
-                    icon={Settings}
-                    text="הגדרות"
-                    isActive={currentPageName === 'Settings'}
-                  />
-                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+                    <NavButton
+                      to={createPageUrl("Settings")}
+                      icon={Settings}
+                      text="הגדרות"
+                      isActive={currentPageName === 'Settings'}
+                    />
+                    <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  <NavButton
-                    to={createPageUrl("Messages")}
-                    icon={MessageSquareText}
-                    text="הודעות"
-                    isActive={currentPageName === 'Messages'}
-                  />
-                  <div className="h-6 w-px bg-white/50 mx-1"></div>
+                    <NavButton
+                      to={createPageUrl("Messages")}
+                      icon={MessageSquareText}
+                      text="הודעות"
+                      isActive={currentPageName === 'Messages'}
+                    />
+                    <div className="h-6 w-px bg-white/50 mx-1"></div>
 
-                  <NavButton
-                    to={createPageUrl("Contact")}
-                    icon={Headphones}
-                    text="קשר"
-                    isActive={currentPageName === 'Contact'}
-                  />
-                </>
-              )}
+                    <NavButton
+                      to={createPageUrl("Contact")}
+                      icon={Headphones}
+                      text="קשר"
+                      isActive={currentPageName === 'Contact'}
+                    />
+                  </>
+                )}
+              </div>
+
+              {/* Logo */}
+              <div className="flex items-center gap-2">
+                <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
+                <img
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png"
+                  alt="Metch Logo"
+                  className="h-6"
+                />
+              </div>
             </div>
-
-            {/* Logo */}
-            <div className="flex items-center gap-2">
-              <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
-              <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png"
-                alt="Metch Logo"
-                className="h-6"
-              />
-            </div>
-          </div>
-        </header>
-      </div>
+          </header>
+        </div>
+      )}
 
       {/* Mobile Navbar */}
-      <div className="md:hidden pt-4 pb-2 px-4 sticky top-0 z-40 bg-[#dbedf3]/80 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(true)}>
-            <Menu className="w-8 h-8 text-gray-700" />
-          </Button>
-          <div className="flex items-center gap-2">
-            <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
-            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png" alt="Metch Logo" className="h-6" />
+      {showHeader && (
+        <div className="md:hidden pt-4 pb-2 px-4 sticky top-0 z-40 bg-[#dbedf3]/80 backdrop-blur-sm">
+          <div className="flex items-center justify-between">
+            <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(true)}>
+              <Menu className="w-8 h-8 text-gray-700" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
+              <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png" alt="Metch Logo" className="h-6" />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Mobile Menu Sidebar */}
       <AnimatePresence>
