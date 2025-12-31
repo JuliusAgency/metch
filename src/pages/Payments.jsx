@@ -19,6 +19,7 @@ export default function Payments() {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [formData, setFormData] = useState({ payment_info: {} }); // Mock state for PaymentStep
+    const [quantity, setQuantity] = useState(1);
 
     // Mock data for transactions based on the screenshot
     const transactions = [
@@ -173,8 +174,87 @@ ET`;
                         {/* Page Title */}
                         <h1 className="text-3xl font-bold text-center text-[#1E3A8A]">עמוד תשלומים</h1>
 
-                        {/* Payment Method Section */}
-                        <Card className="rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100">
+
+                        {/* Purchase Credits Section */}
+                        <div className="space-y-8">
+                            <h2 className="text-xl font-medium text-gray-800 text-center mb-6">בחרו כמות משרות</h2>
+
+                            {/* Quantity Selector - Delicate Pill Design */}
+                            <div className="flex justify-center mb-8">
+                                <div className="bg-white border border-[#1E3A8A] rounded-full px-4 py-2 flex items-center justify-between w-[220px] shadow-sm">
+                                    <button
+                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                        className="w-8 h-8 rounded-full bg-[#E3F2F6] text-[#1E3A8A] flex items-center justify-center hover:bg-[#d0eef7] transition-colors text-xl font-medium"
+                                    >
+                                        -
+                                    </button>
+                                    <span className="text-3xl font-bold text-[#1E3A8A] font-['Rubik']">{quantity}</span>
+                                    <button
+                                        onClick={() => setQuantity(quantity + 1)}
+                                        className="w-8 h-8 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center hover:bg-[#152a6d] transition-colors text-xl font-medium"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Pricing Card */}
+                            <div className="bg-white rounded-[30px] border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-8 md:p-10 max-w-3xl mx-auto relative overflow-hidden">
+                                <div className="flex flex-col md:flex-row gap-8 items-center justify-between relative z-10">
+
+                                    {/* Right Side: Features */}
+                                    <div className="text-right space-y-6 flex-1">
+                                        <h3 className="text-2xl font-bold text-[#1E3A8A]">מה כולל?</h3>
+                                        <ul className="space-y-4 pr-0">
+                                            {[
+                                                'פרסום למשך 30 ימים',
+                                                'אפשרויות לערוך את המשרה בכל רגע',
+                                                'ניתוח ומסקנות מועמד בעזרת AI',
+                                                'כולל שאלון סינון',
+                                                'צא׳ט ישיר עם מועמדים'
+                                            ].map((feature, idx) => (
+                                                <li key={idx} className="flex items-center gap-3 justify-end text-gray-600 font-medium">
+                                                    <span>{feature}</span>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-[#1E3A8A]"></div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+
+                                    {/* Divider for mobile */}
+                                    <div className="h-px w-full bg-gray-100 md:hidden"></div>
+
+                                    {/* Vertical Divider for desktop */}
+                                    <div className="hidden md:block w-px h-40 bg-gray-100"></div>
+
+                                    {/* Left Side: Price */}
+                                    <div className="text-center md:text-left space-y-2 flex-1 flex flex-col items-center md:items-end">
+                                        <div className="bg-[#EBF5FF] text-[#1E3A8A] px-4 py-1.5 rounded-full text-sm font-semibold mb-2 inline-block">
+                                            תשלום חד פעמי
+                                        </div>
+                                        <div className="flex items-baseline gap-1 flex-row-reverse">
+                                            <span className="text-5xl font-bold text-[#1E3A8A] tracking-tight">₪{499 * quantity}</span>
+                                        </div>
+                                        <div className="text-gray-500 text-lg">/ למשרה</div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            {/* CTA Button */}
+                            <div className="flex justify-center pt-6">
+                                <Button className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-12 py-6 text-xl font-bold shadow-lg shadow-blue-200/50 transition-all hover:-translate-y-1">
+                                    למאצ׳ המושלם
+                                    <Eye className="w-5 h-5 mr-2 scale-x-[-1]" />
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="my-16 h-px bg-gray-100 w-full max-w-2xl mx-auto"></div>
+
+                        {/* Payment Method Section (Existing) */}
+                        <h2 className="text-lg font-bold text-gray-800 text-right mb-4">אמצעי תשלום</h2>
+                        <Card className="rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100 mb-10">
                             <CardContent className="p-3">
                                 <div className="bg-[#F8FAFC] rounded-xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
                                     {/* Right Side: Info */}
