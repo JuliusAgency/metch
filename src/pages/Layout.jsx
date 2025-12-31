@@ -38,8 +38,12 @@ export default function Layout({ children, currentPageName }) {
   /* eslint-disable-next-line no-unused-vars */
   const [searchParams] = useSearchParams();
 
-  // If ?onboarding=true is present, set flag in localStorage to persist across refreshes/steps
-  if (searchParams.get('onboarding') === 'true') {
+  // Trigger Onboarding Mode if:
+  // 1. ?onboarding=true is present
+  // 2. OR we are on CVGenerator and ?choice is present (indicates initial flow from UserTypeSelection)
+  const isCVGenWithChoice = currentPageName === 'CVGenerator' && searchParams.get('choice');
+
+  if (searchParams.get('onboarding') === 'true' || isCVGenWithChoice) {
     localStorage.setItem('onboarding_active', 'true');
   }
 
