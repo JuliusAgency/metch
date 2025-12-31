@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
-import { User, CV } from "@/api/entities";
+import { User } from "@/api/entities";
 import { UploadFile } from "@/api/integrations";
 import { supabase } from "@/api/supabaseClient";
 import { Card, CardContent } from "@/components/ui/card";
@@ -91,13 +91,13 @@ export default function Settings() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [openLocation, setOpenLocation] = useState(false);
-  const [cvUploading, setCvUploading] = useState(false);
+
 
   const [showIncompleteDialog, setShowIncompleteDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [successDialogContent, setSuccessDialogContent] = useState({ title: "", description: "" });
   const fileInputRef = useRef(null);
-  const cvFileInputRef = useRef(null);
+
   const navigate = useNavigate();
   const { signOut } = useUser();
 
@@ -363,42 +363,7 @@ export default function Settings() {
     }
   };
 
-  const handleCVUpload = async (event) => {
-    // ... existing CV upload logic (mostly for job seekers) ...
-    const file = event.target.files[0];
-    if (!file) return;
 
-    // Check file size (limit 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "קובץ גדול מדי",
-        description: "הקובץ שבחרת גדול מ-5MB. אנא בחר קובץ קטן יותר.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setCvUploading(true);
-    try {
-      const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const { publicUrl, file_url } = await UploadFile({
-        file, bucket: 'public-files', path: `${Date.now()}-${cleanFileName}`
-      });
-      const fileUrl = publicUrl || file_url;
-      if (!fileUrl) throw new Error("Failed to get file URL");
-
-      await User.updateMyUserData({ resume_url: fileUrl });
-      const userEmail = user.email;
-      const existingCvs = await CV.filter({ user_email: userEmail });
-      const cvMetadata = { user_email: userEmail, file_name: file.name, file_size_kb: String(Math.round(file.size / 1024)), last_modified: new Date().toISOString() };
-      if (existingCvs.length > 0) { await CV.update(existingCvs[0].id, cvMetadata); } else { await CV.create(cvMetadata); }
-      setUser(prev => ({ ...prev, resume_url: fileUrl }));
-      toast({ variant: "success", title: "הפרופיל הושלם בהצלחה", description: "פרטים אישיים נשמרו בהצלחה לקריאה" });
-    } catch (error) {
-      console.error("Error uploading CV:", error);
-      toast({ variant: "warning", title: "שגיאה בהעלאת הקובץ", description: "אירעה שגיאה בעת העלאת הקובץ." });
-    } finally { setCvUploading(false); }
-  };
 
   const handleLogout = async () => {
     try {
@@ -927,53 +892,7 @@ export default function Settings() {
                     )}
                   </div>
 
-                  {/* CV Upload Section - Only for Job Seekers */}
-                  {user?.user_type === 'job_seeker' && (
-                    <div className="col-span-1 md:col-span-2 space-y-2 pt-2">
-                      <label className="text-sm font-medium text-gray-700 block text-right">קובץ קורות חיים</label>
-                      <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-[50px] border border-gray-200">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => cvFileInputRef.current?.click()}
-                          disabled={cvUploading}
-                          className="gap-2 shrink-0"
-                        >
-                          {cvUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4 ml-2" />}
-                          {user.resume_url ? 'החלף קובץ' : 'העלה קובץ'}
-                        </Button>
 
-                        <div className="flex-1 text-right overflow-hidden">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {user.resume_url ? 'קובץ קורות חיים מעודכן' : 'לא צורף קובץ'}
-                          </p>
-                          {user.resume_url && (
-                            <a
-                              href={user.resume_url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center justify-end gap-1"
-                            >
-                              צפה בקובץ הנוכחי
-                              <FileText className="w-3 h-3" />
-                            </a>
-                          )}
-                        </div>
-
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-                          <FileText className="w-5 h-5 text-blue-600" />
-                        </div>
-
-                        <input
-                          ref={cvFileInputRef}
-                          type="file"
-                          accept=".pdf,.doc,.docx"
-                          className="hidden"
-                          onChange={handleCVUpload}
-                        />
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
 
