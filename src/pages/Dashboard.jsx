@@ -715,6 +715,11 @@ export default function Dashboard() {
   useRequireUserType(); // Ensure user has selected a user type
   const { user, loading } = useUser();
 
+  // Clear onboarding state when reaching dashboard
+  useEffect(() => {
+    localStorage.removeItem('onboarding_active');
+  }, []);
+
   if (loading) {
     return (
       <div className="p-8 space-y-8 flex justify-center items-center h-screen" dir="rtl">

@@ -116,10 +116,22 @@ export default function Layout({ children, currentPageName }) {
     );
   };
 
-  return (
-  // Pages that should hide independent header/navbar but keep layout structure
-  const hideHeaderPages = ['CVGenerator', 'PreferenceQuestionnaire', 'CreateJob', 'CareerStageSelection', 'careerstageselection'];
-  const showHeader = !hideHeaderPages.includes(currentPageName);
+  // Pages that can run in "onboarding mode" (hidden header)
+  const onboardingPages = ['CVGenerator', 'PreferenceQuestionnaire', 'CreateJob', 'CareerStageSelection', 'careerstageselection'];
+
+  // Check for ?onboarding=true AND localStorage
+  /* eslint-disable-next-line no-unused-vars */
+  const [searchParams] = useSearchParams();
+
+  // If ?onboarding=true is present, set flag in localStorage to persist across refreshes/steps
+  if (searchParams.get('onboarding') === 'true') {
+    localStorage.setItem('onboarding_active', 'true');
+  }
+
+  const isOnboardingActive = localStorage.getItem('onboarding_active') === 'true';
+
+  // Hide header if it's an auth page OR (it's an onboarding page AND we are in onboarding mode)
+  const shouldHideHeader = authPages.includes(currentPageName) || (onboardingPages.includes(currentPageName) && isOnboardingActive);
 
   return (
     <div className="min-h-screen page-gradient" dir="rtl">
