@@ -33,6 +33,16 @@ export default function Layout({ children, currentPageName }) {
   const { user, loading } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Check for ?onboarding=true AND localStorage
+  // MOVED TO TOP to avoid "Rendered more hooks than during the previous render" error
+  /* eslint-disable-next-line no-unused-vars */
+  const [searchParams] = useSearchParams();
+
+  // If ?onboarding=true is present, set flag in localStorage to persist across refreshes/steps
+  if (searchParams.get('onboarding') === 'true') {
+    localStorage.setItem('onboarding_active', 'true');
+  }
+
   const closeMenu = () => setIsMobileMenuOpen(false);
 
   // Pages that should not show navbar (authentication pages)
@@ -118,16 +128,6 @@ export default function Layout({ children, currentPageName }) {
 
   // Pages that can run in "onboarding mode" (hidden header)
   const onboardingPages = ['CVGenerator', 'PreferenceQuestionnaire', 'CreateJob', 'CareerStageSelection', 'careerstageselection'];
-
-  // Check for ?onboarding=true AND localStorage
-  /* eslint-disable-next-line no-unused-vars */
-  const [searchParams] = useSearchParams();
-
-  // If ?onboarding=true is present, set flag in localStorage to persist across refreshes/steps
-  if (searchParams.get('onboarding') === 'true') {
-    localStorage.setItem('onboarding_active', 'true');
-  }
-
   const isOnboardingActive = localStorage.getItem('onboarding_active') === 'true';
 
   // Hide header if it's an auth page OR (it's an onboarding page AND we are in onboarding mode)
@@ -167,7 +167,7 @@ export default function Layout({ children, currentPageName }) {
       </style>
 
       {/* Desktop Navbar Wrapper */}
-      {showHeader && (
+      {!shouldHideHeader && (
         <div className="hidden md:block pt-6 sticky top-0 z-50">
           <header className="navbar-custom w-[60vw] mx-auto rounded-full shadow-lg border border-white/20">
             <div className="flex items-center justify-between px-8 py-4">
@@ -316,7 +316,7 @@ export default function Layout({ children, currentPageName }) {
       )}
 
       {/* Mobile Navbar */}
-      {showHeader && (
+      {!shouldHideHeader && (
         <div className="md:hidden pt-4 pb-2 px-4 sticky top-0 z-40 bg-[#dbedf3]/80 backdrop-blur-sm">
           <div className="flex items-center justify-between">
             <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(true)}>
