@@ -333,11 +333,19 @@ export default function Profile() {
                   {cvData ? <FileManagementCard /> : <NoCvView />}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                  {/* Preference Questionnaire Link - NOW ON RIGHT (First in RTL Grid) */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                  {/* Preference Questionnaire Link */}
                   <Link to={createPageUrl('PreferenceQuestionnaire')}>
                     <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center justify-between h-[72px] hover:border-blue-200 transition-colors cursor-pointer group">
                       <span className="font-semibold text-gray-700 text-base">ניהול שאלון העדפה</span>
+                      <ChevronLeft className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
+                    </div>
+                  </Link>
+
+                  {/* Career Questionnaire Link - NEW */}
+                  <Link to={createPageUrl('CareerStageSelection')}>
+                    <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center justify-between h-[72px] hover:border-blue-200 transition-colors cursor-pointer group">
+                      <span className="font-semibold text-gray-700 text-base">שאלון קריירה</span>
                       <ChevronLeft className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
                     </div>
                   </Link>

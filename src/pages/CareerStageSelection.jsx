@@ -16,6 +16,7 @@ const CareerStageSelection = () => {
             id: 'open_to_new',
             title: 'פתוח/ה לכיוונים חדשים',
             subtitle: 'נציע לך תפקידים במקצוע שביקשת וגם במקצועות דומים ועבודות נוספות'
+        },
         {
             id: 'career_continuing',
             title: 'הקריירה ממשיכה',
@@ -34,7 +35,7 @@ const CareerStageSelection = () => {
             console.error(err);
             toast({
                 title: "שגיאה",
-                description: "אירעה שגיאה בעת שמירת הבחירה",
+                description: err.message || "אירעה שגיאה בעת שמירת הבחירה",
                 variant: "destructive",
             });
         } finally {
