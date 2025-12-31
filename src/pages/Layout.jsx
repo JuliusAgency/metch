@@ -84,6 +84,7 @@ export default function Layout({ children, currentPageName }) {
       { page: "Profile", icon: FileText, text: "קו״ח" }, // My CV
       { page: "Insights", icon: Sparkles, text: "תובנות" }, // Insights (Icon changed to Sparkles)
       { page: "MessagesSeeker", icon: MessageSquareText, text: "הודעות" },
+      { page: "Notifications", icon: Bell, text: "התראות" },
       { page: "FAQ", icon: HelpCircle, text: "שאלות נפוצות" },
       { page: "Contact", icon: Headphones, text: "יצירת קשר" }
     ];
@@ -222,6 +223,15 @@ export default function Layout({ children, currentPageName }) {
                       icon={MessageSquareText}
                       text="הודעות"
                       isActive={currentPageName === 'MessagesSeeker'}
+                    />
+                    <div className="h-6 w-px bg-white/50 mx-1"></div>
+
+                    {/* Notifications */}
+                    <NavButton
+                      to={createPageUrl("Notifications")}
+                      icon={Bell}
+                      text="התראות"
+                      isActive={currentPageName === 'Notifications'}
                     />
                     <div className="h-6 w-px bg-white/50 mx-1"></div>
 

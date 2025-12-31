@@ -261,7 +261,7 @@ export default function MessagesSeeker() {
     if (selectedConversation) {
         return (
             <div className="h-full relative flex flex-col" dir="rtl">
-                <div className="relative h-full flex flex-col w-full max-w-7xl mx-auto">
+                <div className="relative h-full flex flex-col w-full">
                     <SeekerChatHeader
                         setSelectedConversation={setSelectedConversation}
                         selectedConversation={selectedConversation}
@@ -322,7 +322,7 @@ export default function MessagesSeeker() {
                     />
                 </div>
 
-                <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-full max-w-7xl mx-auto">
+                <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-full">
                     <div className="text-center pb-8">
                         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">הודעות</h1>
                     </div>
