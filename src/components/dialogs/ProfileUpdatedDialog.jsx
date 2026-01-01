@@ -52,7 +52,7 @@ export function ProfileUpdatedDialog({ open, onOpenChange, title = "הפרופי
                         {/* Invisible clickable area for the button */}
                         <button
                             onClick={handleClose}
-                            className="absolute bottom-[10%] left-1/2 -translate-x-1/2 w-[80%] h-[12%] bg-transparent cursor-pointer outline-none mobile-tap-highlight-transparent z-50 rounded-full"
+                            className="absolute bottom-[19%] left-1/2 -translate-x-1/2 w-[261px] h-[45px] bg-transparent cursor-pointer outline-none mobile-tap-highlight-transparent z-50 rounded-full"
                             aria-label="לעמוד הראשי"
                         />
                     </div>
