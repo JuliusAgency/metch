@@ -300,16 +300,23 @@ export default function Settings() {
 
       setErrors({});
 
-      if (isFormComplete) {
+      // Calculate if the form was ALREADY complete before this save
+      const wasFormComplete = initialFormData && formFieldsToCheck.every((field) => {
+        const value = initialFormData[field];
+        return typeof value === 'string' ? value.trim() !== '' : !!value;
+      });
+
+      if (isFormComplete && !wasFormComplete) {
+        // Only show "Completed" if it was NOT complete before but IS complete now
         setSuccessDialogContent({
           title: "הפרופיל הושלם בהצלחה",
           description: "פרטים אישיים נשמרו בהצלחה לקריאה"
         });
         setShowSuccessDialog(true);
       } else {
-        // Show success dialog for partial update
+        // Show "Updated" for all other cases (already complete, or still incomplete)
         setSuccessDialogContent({
-          title: "הפרופיל עודכן!",
+          title: "הפרופיל עודכן !",
           description: "עדכון קטן - קפיצה גדולה לקריירה"
         });
         setShowSuccessDialog(true);
@@ -956,7 +963,7 @@ export default function Settings() {
           {/* Delete Account Confirmation Modal */}
           {
             showDeleteConfirm && (
-              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" dir="rtl">
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4" dir="rtl">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
