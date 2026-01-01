@@ -30,7 +30,8 @@ import {
   Linkedin,
   Instagram,
   Twitter,
-  Briefcase
+  Briefcase,
+  Music
 } from "lucide-react";
 import {
   Command,
@@ -136,7 +137,8 @@ export default function Settings() {
         linkedin_url: userData.linkedin_url || "",
         facebook_url: userData.facebook_url || "",
         instagram_url: userData.instagram_url || "",
-        twitter_url: userData.twitter_url || ""
+        twitter_url: userData.twitter_url || "",
+        tiktok_url: userData.tiktok_url || ""
       };
 
       setFormData(loadedData);
@@ -156,7 +158,7 @@ export default function Settings() {
     const userType = user?.user_type;
 
     // Skip validation for optional fields
-    const optionalFields = ['password', 'linkedin_url', 'facebook_url', 'instagram_url', 'twitter_url', 'website', 'bio'];
+    const optionalFields = ['password', 'linkedin_url', 'facebook_url', 'instagram_url', 'twitter_url', 'website', 'bio', 'tiktok_url'];
     if (optionalFields.includes(field)) return true;
 
     // Employer specific validation
@@ -199,7 +201,7 @@ export default function Settings() {
 
       if (userType === 'employer') {
         // Employer validation
-        const optionalFields = ['password', 'linkedin_url', 'facebook_url', 'instagram_url', 'twitter_url', 'website', 'bio', 'cv_reception_email', 'main_address', 'field_of_activity'];
+        const optionalFields = ['password', 'linkedin_url', 'facebook_url', 'instagram_url', 'twitter_url', 'website', 'bio', 'cv_reception_email', 'main_address', 'field_of_activity', 'tiktok_url'];
         // Actually, let's enforce core fields
         const requiredFields = ['company_name', 'company_type', 'full_name', 'phone'];
 
@@ -269,6 +271,7 @@ export default function Settings() {
           facebook_url: formData.facebook_url,
           instagram_url: formData.instagram_url,
           twitter_url: formData.twitter_url,
+          tiktok_url: formData.tiktok_url,
         };
       } else {
         // Job Seeker Payload
@@ -719,6 +722,19 @@ export default function Settings() {
                             placeholder="Twitter URL"
                             value={formData.twitter_url}
                             onChange={(e) => handleInputChange('twitter_url', e.target.value)}
+                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                            dir="ltr"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-700">TikTok</label>
+                        <div className="relative">
+                          <Music className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <Input
+                            placeholder="TikTok URL"
+                            value={formData.tiktok_url}
+                            onChange={(e) => handleInputChange('tiktok_url', e.target.value)}
                             className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                             dir="ltr"
                           />
