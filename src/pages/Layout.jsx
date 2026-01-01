@@ -174,7 +174,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Desktop Navbar Wrapper */}
       {!shouldHideHeader && (
         <div className="hidden md:block pt-6 sticky top-0 z-50">
-          <header className="navbar-custom w-[60vw] mx-auto rounded-full shadow-lg border border-white/20">
+          <header className="navbar-custom w-[60vw] mx-auto rounded-full shadow-sm border border-white">
             <div className="flex items-center justify-between px-8 py-4">
               {/* Icons - Moved to be first for RTL rendering on the right */}
               <div className="flex items-center gap-1">
