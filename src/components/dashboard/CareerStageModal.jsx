@@ -2,12 +2,24 @@ import React, { useState } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { X } from 'lucide-react';
 const CareerStageModal = ({ isOpen, onComplete }) => {
     const [selected, setSelected] = useState(null);
     const [loading, setLoading] = useState(false);
-    const { updateProfile } = useUser();
+    const { user, updateProfile } = useUser();
     const { toast } = useToast();
+
+    // Load initial selection from user profile
+    React.useEffect(() => {
+        if (isOpen && user) {
+            if (user.career_stage) {
+                setSelected(user.career_stage);
+            } else if (user.prefers_no_career_change !== undefined && user.prefers_no_career_change !== null) {
+                // Fallback for legacy data
+                setSelected(user.prefers_no_career_change ? 'career_continuing' : 'open_to_new');
+            }
+        }
+    }, [isOpen, user]);
 
     // The options based on the user request
     const options = [
@@ -68,6 +80,14 @@ const CareerStageModal = ({ isOpen, onComplete }) => {
                     className="bg-white rounded-[40px] shadow-2xl w-full max-w-3xl p-6 md:p-10 relative overflow-hidden"
                     dir="rtl"
                 >
+                    {/* Close Button */}
+                    <button
+                        onClick={onComplete}
+                        className="absolute top-4 left-4 p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+                    >
+                        <X className="w-6 h-6" />
+                    </button>
+
                     <div className="flex flex-col items-center w-full">
                         <h1 className="text-[#003566] text-xl md:text-3xl font-['Rubik:Bold',_sans-serif] font-bold mb-3 text-center">
                             מה השלב שלך בקריירה?
