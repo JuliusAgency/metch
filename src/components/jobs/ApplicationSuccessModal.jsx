@@ -1,4 +1,4 @@
-```javascript
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import popupMatchFull from '@/assets/popup-match-full.png';
 import { useNavigate } from "react-router-dom";
