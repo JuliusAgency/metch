@@ -957,9 +957,9 @@ export default function Settings() {
                 <Button
                   type="submit"
                   disabled={isSubmitDisabled}
-                  className={`w-full md:w-96 h-12 rounded-full text-lg font-bold shadow-lg transition-all ${isSubmitDisabled
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  className={` rounded-full text-lg font-bold shadow-lg transition-all ${isSubmitDisabled
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed w-full md:w-96 h-12'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white w-full md:w-64 h-12' // Adjusted width for side-by-side
                     }`}
                 >
                   {saving ? (
@@ -971,6 +971,17 @@ export default function Settings() {
                     isOnboarding ? 'עדכן' : 'שמור שינויים'
                   )}
                 </Button>
+
+                {isOnboarding && (
+                  <Button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    variant="outline"
+                    className="w-full md:w-32 h-12 rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 font-bold text-lg mr-4"
+                  >
+                    חזור
+                  </Button>
+                )}
 
                 {!isOnboarding && (
                   <>
