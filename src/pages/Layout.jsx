@@ -317,14 +317,14 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               {/* Logo */}
-              <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <div className="flex items-center gap-2">
                 <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png"
                   alt="Metch Logo"
                   className="h-6"
                 />
-              </Link>
+              </div>
             </div>
           </header>
         </div>
