@@ -67,15 +67,6 @@ const JobSeekerDashboard = ({ user }) => {
     // Wait for initial loading and User check
     if (loading || !user) return;
 
-    // GUARD: If user doesn't have CV or Specialization, they shouldn't see these modals
-    // because they will be redirected by the other useEffect (or logic below) shortly.
-    // We check hasCV (state) and profile specialization.
-    if (!hasCV) return; // Will be redirected
-
-    // We access userProfile inside the effect or rely on 'user' object if it has merged profile data?
-    // 'user' from useUser() has merged profile data.
-    if (!user.specialization) return; // Will be redirected
-
     const params = new URLSearchParams(location.search);
     const forceOnboarding = params.get('onboarding') === 'complete';
 
@@ -89,6 +80,13 @@ const JobSeekerDashboard = ({ user }) => {
       setShowCareerModal(true);
       return; // Wait for career stage before showing guide
     }
+
+    // We check hasCV (state) and profile specialization.
+    if (!hasCV) return; // Will be redirected
+
+    // We access userProfile inside the effect or rely on 'user' object if it has merged profile data?
+    // 'user' from useUser() has merged profile data.
+    if (!user.specialization) return; // Will be redirected
 
     // 2. Second priority: Site Guide
     const hasSeenGuide = localStorage.getItem(`jobseeker_guide_${user?.email}`);
