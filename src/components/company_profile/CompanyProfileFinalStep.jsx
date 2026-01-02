@@ -6,12 +6,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { UploadCloud, Globe, Facebook, Instagram, Linkedin, Twitter, Plus, X, Copy } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import { UnsavedChangesDialog } from "@/components/dialogs/UnsavedChangesDialog";
 
 export default function CompanyProfileFinalStep({ companyData, setCompanyData, ...props }) {
     const { updateProfile } = useUser();
     const [logoPreview, setLogoPreview] = useState(companyData?.logo_url || null);
     const [activeSocial, setActiveSocial] = useState(null);
     const [socialLinks, setSocialLinks] = useState(companyData?.social_links || {});
+
+    // Validation state
+    const [showValidationDialog, setShowValidationDialog] = useState(false);
 
     const handleLogoChange = (e) => {
         const file = e.target.files[0];
@@ -39,6 +43,18 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
             setActiveSocial(null);
         } else {
             setActiveSocial(id);
+        }
+    };
+
+    const handleFinishClick = () => {
+        // Check if profile is incomplete (no description AND no social links)
+        const hasDescription = companyData.company_description && companyData.company_description.trim().length > 0;
+        const hasSocialLinks = Object.values(socialLinks).some(link => link && link.trim().length > 0);
+
+        if (!hasDescription && !hasSocialLinks) {
+            setShowValidationDialog(true);
+        } else {
+            props.onFinish();
         }
     };
 
@@ -170,7 +186,7 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
                 {/* Finish Button - Compact */}
                 <div className="pt-2 max-w-sm mx-auto w-full">
                     <Button
-                        onClick={props.onFinish}
+                        onClick={handleFinishClick}
                         className="w-full h-10 rounded-full bg-[#2987CD] hover:bg-[#206FA8] text-white font-bold text-lg shadow-md transition-all duration-200"
                     >
                         סיום
@@ -178,6 +194,17 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
                 </div>
 
             </motion.div>
+
+            {/* Validation Dialog */}
+            <UnsavedChangesDialog
+                open={showValidationDialog}
+                onOpenChange={setShowValidationDialog}
+                onConfirm={() => setShowValidationDialog(false)} // Blue button: "To Profile Completion" -> Stay
+                onCancel={() => {
+                    setShowValidationDialog(false);
+                    props.onFinish(); // White button: "Finish" -> Proceed
+                }}
+            />
         </div>
     );
 }
