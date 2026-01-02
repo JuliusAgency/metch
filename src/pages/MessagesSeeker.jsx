@@ -270,7 +270,7 @@ export default function MessagesSeeker() {
                     <div className="flex-1 p-6 overflow-y-auto space-y-4">
                         {loadingMessages && (
                             <div className="flex justify-center items-center py-8">
-                                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
                             </div>
                         )}
                         <AnimatePresence>
@@ -360,7 +360,7 @@ export default function MessagesSeeker() {
 
                     {loading ? (
                         <div className="flex justify-center items-center py-12">
-                            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
                         </div>
                     ) : paginatedConversations.length === 0 ? (
                         <div className="text-center py-12 text-gray-500">

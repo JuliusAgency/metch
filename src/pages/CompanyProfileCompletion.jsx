@@ -139,7 +139,7 @@ export default function CompanyProfileCompletion() {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen"><Loader2 className="w-12 h-12 animate-spin text-blue-600" /></div>;
+    return <div className="flex justify-center items-center h-screen"><div className="w-12 h-12 border-t-2 border-blue-600 rounded-full animate-spin"></div></div>;
   }
 
   return (
@@ -171,7 +171,7 @@ export default function CompanyProfileCompletion() {
                 onClick={nextStep}
                 disabled={saving}
               >
-                {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : (step === STEPS.length ? 'מעבר לדאשבורד' : 'המשך')}
+                {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (step === STEPS.length ? 'מעבר לדאשבורד' : 'המשך')}
                 {!saving && <ArrowLeft className="w-5 h-5 ml-2" />}
               </Button>
             </div>

@@ -121,7 +121,7 @@ export default function UploadCV({ user, onUploadComplete }) {
                 onClick={handleUpload}
                 disabled={uploadStatus === 'uploading' || uploadStatus === 'success'}
             >
-                {uploadStatus === 'uploading' && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                {uploadStatus === 'uploading' && <div className="w-4 h-4 border-t-2 border-current rounded-full animate-spin mr-2"></div>}
                 העלה קובץ
             </Button>
         </div>

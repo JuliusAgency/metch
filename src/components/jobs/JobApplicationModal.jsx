@@ -38,7 +38,7 @@ export default function JobApplicationModal({ open, onOpenChange, job, onSubmit 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    
+
     try {
       await onSubmit(formData);
       setFormData({ cover_letter: "", resume_url: "" });
@@ -60,7 +60,7 @@ export default function JobApplicationModal({ open, onOpenChange, job, onSubmit 
           </DialogTitle>
           <p className="text-gray-600">at {job.company}</p>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="cover_letter" className="font-medium text-gray-700">
@@ -106,7 +106,7 @@ export default function JobApplicationModal({ open, onOpenChange, job, onSubmit 
                   className="cursor-pointer flex flex-col items-center gap-2"
                 >
                   {uploading ? (
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
                   ) : (
                     <Upload className="w-8 h-8 text-blue-500" />
                   )}

@@ -64,7 +64,7 @@ export default function Step6_Summary({ data, setData }) {
                         disabled={isImproving || !data}
                     >
                         {isImproving ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <div className="w-4 h-4 border-t-2 border-current rounded-full animate-spin"></div>
                         ) : (
                             <Sparkles className="w-4 h-4" />
                         )}

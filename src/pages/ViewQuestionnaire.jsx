@@ -72,7 +72,7 @@ export default function ViewQuestionnaire() {
     };
 
     if (loading) {
-        return <div className="flex justify-center items-center h-screen"><Loader2 className="w-12 h-12 animate-spin text-blue-600" /></div>;
+        return <div className="flex justify-center items-center h-screen"><div className="w-12 h-12 border-t-2 border-blue-600 rounded-full animate-spin"></div></div>;
     }
 
     if (!response) {
@@ -126,7 +126,7 @@ export default function ViewQuestionnaire() {
                                     onClick={handleStartConversation}
                                     disabled={actionInProgress}
                                 >
-                                    {actionInProgress ? <Loader2 className="w-5 h-5 animate-spin" /> : "שלח הודעה למועמד"}
+                                    {actionInProgress ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : "שלח הודעה למועמד"}
                                 </Button>
                                 <Button
                                     size="lg"

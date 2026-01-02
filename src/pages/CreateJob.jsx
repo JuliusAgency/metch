@@ -232,7 +232,7 @@ export default function CreateJob() {
   if (loadingJob) {
     return (
       <div className="p-4 md:p-6 flex justify-center items-center h-[50vh]" dir="rtl">
-        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+        <div className="w-12 h-12 border-t-2 border-blue-600 rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -256,7 +256,7 @@ export default function CreateJob() {
   };
 
   const getNextButtonText = () => {
-    if (isSubmitting) return <Loader2 className="w-6 h-6 animate-spin" />;
+    if (isSubmitting) return <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div>;
     if (step === 3) {
       if (!jobData.screening_questions || jobData.screening_questions.length === 0) return 'דלג';
       // If has questions

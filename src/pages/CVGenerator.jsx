@@ -366,7 +366,7 @@ export default function CVGenerator() {
 
   const renderStep = () => {
     if (loading) {
-      return <div className="flex justify-center items-center h-full"><Loader2 className="w-8 h-8 animate-spin text-blue-500" /></div>;
+      return <div className="flex justify-center items-center h-full"><div className="w-8 h-8 border-t-2 border-blue-500 rounded-full animate-spin"></div></div>;
     }
 
     switch (step) {
@@ -449,7 +449,7 @@ export default function CVGenerator() {
               disabled={isNextDisabled}
               className="px-16 py-3 rounded-full font-bold text-lg h-auto bg-[#2589D8] hover:bg-[#1e7bc4] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all"
             >
-              {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : (step === 0 ? 'המשך' : (step === STEPS.length ? 'שמור וסיים' : 'הבא'))}
+              {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (step === 0 ? 'המשך' : (step === STEPS.length ? 'שמור וסיים' : 'הבא'))}
               {!saving && step !== 0 && <ArrowLeft className="w-5 h-5 mr-2" />}
             </Button>
           )}

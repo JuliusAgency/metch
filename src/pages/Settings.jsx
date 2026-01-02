@@ -965,7 +965,7 @@ export default function Settings() {
                 >
                   {saving ? (
                     <>
-                      <Loader2 className="w-6 h-6 animate-spin" />
+                      <div className="w-5 h-5 border-t-2 border-blue-500 rounded-full animate-spin"></div>
                       שומר...
                     </>
                   ) : (
@@ -1052,7 +1052,7 @@ export default function Settings() {
                         className="flex-1 h-12 bg-red-600 hover:bg-red-700 rounded-full"
                         disabled={deleteLoading}
                       >
-                        {deleteLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'מחק חשבון'}
+                        {deleteLoading ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : 'מחק חשבון'}
                       </Button>
                     </div>
                   </div>

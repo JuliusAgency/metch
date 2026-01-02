@@ -53,7 +53,7 @@ export default function Layout({ children, currentPageName }) {
   const authPages = ['Login', 'Register', 'Landing', 'EmailConfirmation', 'UserTypeSelection', 'ForgotPassword'];
   const shouldHideNavbar = authPages.includes(currentPageName);
 
-  if (loading) {
+  if (loading && !user) {
     return (
       <div className="min-h-screen page-gradient flex items-center justify-center" dir="rtl">
         <div className="w-10 h-10 border-t-2 border-blue-500 rounded-full animate-spin"></div>
@@ -317,14 +317,14 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               {/* Logo */}
-              <div className="flex items-center gap-2">
+              <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png"
                   alt="Metch Logo"
                   className="h-6"
                 />
-              </div>
+              </Link>
             </div>
           </header>
         </div>

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { supabase } from '@/api/supabaseClient';
 
@@ -310,7 +310,7 @@ export const UserProvider = ({ children }) => {
     };
   }, [initializeUser]);
 
-  const value = {
+  const value = React.useMemo(() => ({
     user: user ? getUserWithProfile() : null,
     profile,
     loading,
@@ -329,7 +329,7 @@ export const UserProvider = ({ children }) => {
         loadUserProfile(newUser.id).then(setProfile);
       }
     }
-  };
+  }), [user, profile, loading, signUp, signIn, signInWithGoogle, signOut, updateProfile, createUserProfile, loadUserProfile, getUserWithProfile]);
 
   return (
     <UserContext.Provider value={value}>
