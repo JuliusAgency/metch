@@ -5,8 +5,9 @@ import { UserProfile } from "@/api/entities";
 import { QuestionnaireResponse, Job, JobApplication, CV } from "@/api/entities";
 import { Core } from "@/api/integrations";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { User as UserIcon, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { User as UserIcon, Loader2, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { createPageUrl } from "@/utils";
 import { EmployerAnalytics } from "@/components/EmployerAnalytics";
 import ProfileHeader from "@/components/candidate/ProfileHeader";
@@ -14,11 +15,13 @@ import ProfileBadges from "@/components/candidate/ProfileBadges";
 import ProfileMatchScore from "@/components/candidate/ProfileMatchScore";
 import ProfileInfo from "@/components/candidate/ProfileInfo";
 import ProfileResume from "@/components/candidate/ProfileResume";
+import CVPreview from '@/components/cv_generator/CVPreview';
 import ProfileSocials from "@/components/candidate/ProfileSocials";
 import ProfileActions from "@/components/candidate/ProfileActions";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useToast } from "@/components/ui/use-toast";
 import { SendEmail } from "@/api/integrations";
+import { extractTextFromPdf } from "@/utils/pdfUtils";
 
 const arrayBufferToBase64 = (buffer) => {
   let binary = "";
@@ -43,6 +46,8 @@ export default function CandidateProfile() {
   const { toast } = useToast();
   const [aiInsights, setAiInsights] = useState({ summary: "", thoughts: [] });
   const [generatingInsights, setGeneratingInsights] = useState(false);
+  const [cvData, setCvData] = useState(null);
+  const [isCvPreviewOpen, setIsCvPreviewOpen] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -127,13 +132,47 @@ export default function CandidateProfile() {
 
               if (parts.length > 0) {
                 cvText = parts.join("\n\n");
-              } else {
-                cvText = "No parsed content or structured data available.";
               }
             }
           }
         } catch (e) {
           console.warn("Failed to fetch CV", e);
+        }
+      }
+
+      // If still no text but we have a PDF URL, try to extract it on the fly
+      if ((!cvText || cvText.length < 50) && candidateData.resume_url && candidateData.resume_url.toLowerCase().endsWith('.pdf')) {
+        try {
+
+          const extractedText = await extractTextFromPdf(candidateData.resume_url);
+          if (extractedText && extractedText.length > 50) {
+            cvText = extractedText;
+
+            // Update the CV record if we found one earlier, otherwise we might need to find/create one
+            // But for safety, let's just use it for the prompt now. 
+            // Optionally: fire and forget update
+            // (finding the ID again or passing it down would be better, but this is okay for now)
+          }
+        } catch (pdfErr) {
+          console.warn("Failed to extract PDF text on the fly", pdfErr);
+        }
+      }
+      // Fallback: If no CV text found (PDF not parsed or no CV record), use Profile Metadata
+      if (!cvText || cvText.length < 50) {
+        const profileParts = [];
+        if (candidateData.bio) profileParts.push(`Bio: ${candidateData.bio}`);
+        if (candidateData.looking_for_summary) profileParts.push(`Looking For: ${candidateData.looking_for_summary}`);
+
+        if (candidateData.preferred_job_types && Array.isArray(candidateData.preferred_job_types)) {
+          profileParts.push(`Preferred Job Types: ${candidateData.preferred_job_types.join(', ')}`);
+        }
+        if (candidateData.preferred_location) profileParts.push(`Preferred Location: ${candidateData.preferred_location}`);
+        if (candidateData.availability) profileParts.push(`Availability: ${candidateData.availability}`);
+
+        if (profileParts.length > 0) {
+          cvText = "Candidate Profile metadata (CV file content not available):\n" + profileParts.join("\n");
+        } else {
+          cvText = "No specific CV text or profile metadata available. Candidate has applied/registered.";
         }
       }
 
@@ -184,7 +223,7 @@ export default function CandidateProfile() {
         prompt
       });
 
-      console.log("AI Insights Response:", response);
+
 
       let parsed = null;
       try {
@@ -216,6 +255,17 @@ export default function CandidateProfile() {
       const results = await UserProfile.filter({ id });
       if (results.length > 0) {
         setCandidate(results[0]);
+
+        // Fetch CV for resume view
+        try {
+          const cvs = await CV.filter({ user_email: results[0].email }, "-created_date", 1);
+          if (cvs && cvs.length > 0) {
+            setCvData(cvs[0]);
+          }
+        } catch (e) {
+          console.error("Error fetching CV", e);
+        }
+
         // Trigger AI generation after loading candidate
         generateEmployerInsights(results[0]);
       } else {
@@ -508,6 +558,8 @@ export default function CandidateProfile() {
               <ProfileResume
                 resume_url={candidate.resume_url}
                 full_name={candidate.full_name}
+                cvData={cvData}
+                onViewCv={() => setIsCvPreviewOpen(true)}
               />
 
               {/* Socials */}
@@ -531,6 +583,36 @@ export default function CandidateProfile() {
           </CardFooter>
         </Card>
       </div>
+
+      <AnimatePresence>
+        {isCvPreviewOpen && cvData && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+            onClick={() => setIsCvPreviewOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative bg-white rounded-lg shadow-2xl w-full max-w-4xl h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsCvPreviewOpen(false)}
+                className="absolute top-2 right-2 rounded-full z-10 bg-white/50 hover:bg-white/80"
+              >
+                <X className="w-6 h-6" />
+              </Button>
+              <CVPreview cvData={cvData} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
