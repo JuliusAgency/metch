@@ -14,7 +14,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signIn, user, loading: authLoading } = useUser();
+  const { signIn, signInWithGoogle, user, loading: authLoading } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -181,6 +181,19 @@ const Login = () => {
                 <Button
                   type="button"
                   disabled={loading}
+                  onClick={async () => {
+                    try {
+                      setLoading(true);
+                      await signInWithGoogle();
+                    } catch (error) {
+                      toast({
+                        title: "שגיאה בהתחברות עם Google",
+                        description: error.message,
+                        variant: "destructive",
+                      });
+                      setLoading(false);
+                    }
+                  }}
                   variant="outline"
                   className="w-1/2 mx-auto bg-white border-[#e3e3ea] hover:bg-gray-50 rounded-full h-12 text-lg"
                 >
