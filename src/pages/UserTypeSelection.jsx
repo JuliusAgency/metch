@@ -183,16 +183,16 @@ const UserTypeSelection = () => {
     <div className="min-h-screen w-full bg-[#f0f9ff] flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
 
       {/* Globe Background - Bottom Left */}
-      <div className="absolute bottom-[-15vh] left-[-15vh] w-[60vh] h-[60vh] pointer-events-none z-0 opacity-80">
+      <div className="absolute bottom-0 left-0 w-[50vh] h-[50vh] pointer-events-none z-20 opacity-100 mix-blend-multiply">
         <img
           src={globeGrid}
           alt="Globe Grid"
-          className="w-full h-full object-contain"
+          className="w-full h-full object-contain object-bottom-left"
         />
       </div>
 
       {/* Main Card */}
-      <div className="bg-white rounded-[40px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] w-[95%] max-w-[1500px] h-[80vh] min-h-[600px] relative z-10 flex overflow-hidden border border-white">
+      <div className="bg-white rounded-[40px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] w-[98%] max-w-[1700px] h-[85vh] min-h-[600px] relative z-10 flex overflow-hidden border border-white">
 
         {/* Right Side: Content (Visual Right in RTL, First in DOM) */}
         <div className="w-1/2 h-full flex flex-col justify-center px-16 lg:px-24">
@@ -241,7 +241,7 @@ const UserTypeSelection = () => {
         {/* Left Side: Illustration (Visual Left in RTL, Second in DOM) */}
         <div className="w-1/2 h-full relative flex items-center justify-center bg-gradient-to-br from-blue-50/50 to-white">
           {/* Astronaut Image - Reduced Scale */}
-          <div className="w-[70%] h-[70%] relative flex items-center justify-center">
+          <div className="w-[75%] h-[75%] relative flex items-center justify-center -translate-y-6 translate-x-6">
             <img
               src={astronautWindow}
               alt="Astronaut"
