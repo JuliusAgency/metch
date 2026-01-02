@@ -17,7 +17,7 @@ const InfoInput = ({ placeholder, value, name, onChange }) => (
         value={value}
         name={name}
         onChange={onChange}
-        className="h-12 bg-white border-gray-300 rounded-full text-center focus:border-blue-500 focus:ring-blue-500 transition-all"
+        className="h-10 text-sm bg-white border-gray-300 rounded-full text-right pr-4 focus:border-blue-500 focus:ring-blue-500 transition-all placeholder:text-gray-400"
         dir="rtl"
     />
 );
@@ -27,7 +27,7 @@ const ChipButton = ({ label, isSelected, onClick }) => (
         type="button"
         variant={isSelected ? 'default' : 'outline'}
         onClick={onClick}
-        className={`rounded-full px-8 py-3 h-auto transition-all duration-200 ${isSelected ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+        className={`rounded-full px-6 py-2 h-auto text-sm transition-all duration-200 ${isSelected ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
             }`}
     >
         {label}
@@ -45,44 +45,80 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
     };
 
     return (
-        <div className="max-w-4xl mx-auto text-center" dir="rtl">
+        <div className="max-w-3xl mx-auto text-center" dir="rtl">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                className="space-y-12"
+                className="space-y-10"
             >
                 {/* Header */}
-                <div className="space-y-3">
-                    <h1 className="text-3xl font-bold text-gray-900">בואו נתחיל</h1>
-                    <p className="text-gray-600">כמה פרטים עליכם ועל החברה - מבטיחים שזה לא יהיה מתיש</p>
+                <div className="space-y-2">
+                    <h1 className="text-2xl font-bold text-gray-900">בואו נתחיל</h1>
+                    <p className="text-gray-600 text-sm">כמה פרטים עליכם ועל החברה - מבטיחים שזה לא יהיה מתיש</p>
                 </div>
 
-                {/* Info Inputs */}
+                {/* Info Inputs - Redesigned Layout */}
                 <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <InfoInput placeholder="שם מלא - איש גיוס" name="full_name" value={companyData.full_name || ""} onChange={handleInputChange} />
-                        <InfoInput placeholder="שם חברה" name="company_name" value={companyData.company_name || ""} onChange={handleInputChange} />
-                        <InfoInput placeholder="מספר טלפון - איש גיוס" name="phone" value={companyData.phone || ""} onChange={handleInputChange} />
+                    {/* Top Row: 3 Inputs */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <InfoInput
+                            placeholder="שם מלא - איש גיוס"
+                            name="full_name"
+                            value={companyData.full_name || ""}
+                            onChange={handleInputChange}
+                        />
+                        <InfoInput
+                            placeholder="שם חברה"
+                            name="company_name"
+                            value={companyData.company_name || ""}
+                            onChange={handleInputChange}
+                        />
+                        <InfoInput
+                            placeholder="מספר טלפון - איש גיוס"
+                            name="phone"
+                            value={companyData.phone || ""}
+                            onChange={handleInputChange}
+                        />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-                        <InfoInput placeholder="מייל לקבלת קו״ח" name="cv_reception_email" value={companyData.cv_reception_email || ""} onChange={handleInputChange} />
-                        <div>
+
+                    {/* Middle Row: Phone with Code & Email */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                        {/* Phone with Send Code Button */}
+                        <div className="relative">
                             <div className="relative">
-                                <InfoInput placeholder="מספר טלפון" name="company_phone" value={companyData.company_phone || ""} onChange={handleInputChange} />
-                                <Button type="button" className="absolute left-2 top-1/2 -translate-y-1/2 h-9 px-4 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200">
+                                <InfoInput
+                                    placeholder="מספר טלפון"
+                                    name="company_phone"
+                                    value={companyData.company_phone || ""}
+                                    onChange={handleInputChange}
+                                />
+                                <Button
+                                    type="button"
+                                    className="absolute left-1.5 top-1/2 -translate-y-1/2 h-8 px-4 text-xs font-medium rounded-full bg-[#1e88e5] text-white hover:bg-[#1565c0]"
+                                >
                                     שלח קוד
                                 </Button>
                             </div>
-                            <p className="text-xs text-gray-500 hover:text-blue-600 cursor-pointer mt-1">לא קיבלת? שלח שוב</p>
+                            <p className="text-xs text-[#1e88e5] font-medium cursor-pointer mt-2 text-right w-full hover:underline">
+                                לא קיבלתי שלח שוב
+                            </p>
                         </div>
+
+                        {/* CV Email */}
+                        <InfoInput
+                            placeholder="מייל לקבלת קו״ח"
+                            name="cv_reception_email"
+                            value={companyData.cv_reception_email || ""}
+                            onChange={handleInputChange}
+                        />
                     </div>
                 </div>
 
                 {/* Company Type Selection */}
-                <div className="space-y-6">
-                    <h2 className="text-xl font-bold text-gray-900">סוג חברה</h2>
-                    <div className="flex flex-wrap justify-center gap-4">
+                <div className="space-y-6 pt-4">
+                    <h2 className="text-lg font-bold text-gray-900">סוג חברה</h2>
+                    <div className="flex flex-wrap justify-center gap-3">
                         {companyTypes.map(type => (
                             <ChipButton
                                 key={type.id}
@@ -94,13 +130,23 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                     </div>
                 </div>
 
-                {/* Text Input Fields - Switched order */}
+                {/* Bottom Row: Field & Address */}
                 <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-                        <InfoInput placeholder="תחום פעילות" name="field_of_activity" value={companyData.field_of_activity || ""} onChange={handleInputChange} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                        <InfoInput
+                            placeholder="תחום פעילות"
+                            name="field_of_activity"
+                            value={companyData.field_of_activity || ""}
+                            onChange={handleInputChange}
+                        />
                         <div>
-                            <InfoInput placeholder="כתובת ראשית" name="main_address" value={companyData.main_address || ""} onChange={handleInputChange} />
-                            <p className="text-xs text-gray-500 text-right mt-1">* מיקום החברה יכול להיות שונה ממיקום המשרה</p>
+                            <InfoInput
+                                placeholder="כתובת ראשית"
+                                name="main_address"
+                                value={companyData.main_address || ""}
+                                onChange={handleInputChange}
+                            />
+                            <p className="text-[10px] text-gray-500 text-right mt-1 w-full">* מיקום החברה יכול להיות שונה ממיקום המשרה</p>
                         </div>
                     </div>
                 </div>
