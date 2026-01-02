@@ -17,7 +17,7 @@ const InfoInput = ({ placeholder, value, name, onChange }) => (
         value={value}
         name={name}
         onChange={onChange}
-        className="h-12 bg-white border-gray-300 rounded-full text-center focus:border-blue-500 focus:ring-blue-500 transition-all"
+        className="h-12 bg-white border-gray-300 rounded-full text-right pr-6 focus:border-blue-500 focus:ring-blue-500 transition-all"
         dir="rtl"
     />
 );
