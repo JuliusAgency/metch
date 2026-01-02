@@ -7,13 +7,14 @@ import { ArrowLeft, ArrowRight, Loader2, CheckCircle } from "lucide-react";
 import CompanyDetailsStep from "@/components/company_profile/CompanyDetailsStep";
 import PackageSelectionStep from "@/components/company_profile/PackageSelectionStep";
 import PaymentStep from "@/components/company_profile/PaymentStep";
+import CompanyProfileFinalStep from "@/components/company_profile/CompanyProfileFinalStep";
 import CompletionStep from "@/components/company_profile/CompletionStep";
 import { useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useUser } from "@/contexts/UserContext";
 
-const STEPS = ["פרטי חברה", "בחירת חבילה", "תשלום", "סיום"];
+const STEPS = ["פרטי חברה", "בחירת חבילה", "תשלום", "השלמת פרופיל", "סיום"];
 
 export default function CompanyProfileCompletion() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -47,13 +48,7 @@ export default function CompanyProfileCompletion() {
 
   const location = useLocation();
 
-  useEffect(() => {
-    // Check if returning from Settings with success
-    const params = new URLSearchParams(location.search);
-    if (params.get('status') === 'success') {
-      setStep(4);
-    }
-  }, [location]);
+
 
   useEffect(() => {
     const loadUser = async () => {
@@ -98,10 +93,10 @@ export default function CompanyProfileCompletion() {
       if (!saved) return;
     }
 
-    // Step 3 is Payment. After Payment, go to Settings (Onboarding mode)
-    if (step === 3) {
-      navigate(`${createPageUrl('Settings')}?onboarding=company_details`);
-      return;
+    // Step 4 is the new Final Profile Step - save before moving to Completion
+    if (step === 4) {
+      const saved = await handleSave();
+      if (!saved) return;
     }
 
     if (step < STEPS.length) {
@@ -127,6 +122,8 @@ export default function CompanyProfileCompletion() {
       case 3:
         return <PaymentStep paymentData={paymentData} setPaymentData={setPaymentData} />;
       case 4:
+        return <CompanyProfileFinalStep companyData={companyData} setCompanyData={setCompanyData} />;
+      case 5:
         return <CompletionStep hideSecondaryButton={true} />;
       default:
         return null;
