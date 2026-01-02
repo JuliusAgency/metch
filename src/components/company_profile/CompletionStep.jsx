@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 
-export default function CompletionStep() {
+export default function CompletionStep({ hideSecondaryButton = false }) {
   return (
     <div className="max-w-2xl mx-auto text-center" dir="rtl">
       <motion.div
@@ -55,11 +55,15 @@ export default function CompletionStep() {
               פרסם משרה ראשונה
             </Button>
           </Link>
-          <Link to={createPageUrl("Settings")}>
-            <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-3 rounded-full font-bold text-lg w-full sm:w-auto">
-              להשלמת פרטי חברה
-            </Button>
-          </Link>
+
+          {/* Conditional Secondary Button */}
+          {!hideSecondaryButton && (
+            <Link to={createPageUrl("Settings")}>
+              <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-3 rounded-full font-bold text-lg w-full sm:w-auto">
+                להשלמת פרטי חברה
+              </Button>
+            </Link>
+          )}
         </div>
       </motion.div>
     </div>

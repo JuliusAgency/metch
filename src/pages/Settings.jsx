@@ -102,6 +102,10 @@ export default function Settings() {
   const navigate = useNavigate();
   const { signOut } = useUser();
 
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const isOnboarding = searchParams.get('onboarding') === 'company_details';
+
   useEffect(() => {
     loadUser();
   }, []);
@@ -301,6 +305,12 @@ export default function Settings() {
       setFormData(prev => ({ ...prev, password: "" }));
       setErrors({});
 
+      // If in onboarding mode, redirect to Success step instead of showing dialog
+      if (isOnboarding) {
+        navigate(`${createPageUrl('CompanyProfileCompletion')}?status=success`);
+        return;
+      }
+
       setErrors({});
 
       // Calculate if the form was ALREADY complete before this save
@@ -453,23 +463,25 @@ export default function Settings() {
   return (
     <div className="h-full relative" dir="rtl">
       <div className="relative">
-        {/* Header with curved background */}
-        <div className="relative h-32 overflow-hidden w-full">
-          <div
-            className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_110%_at_50%_100%)]"
-            style={{
-              backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
-            }}
-          />
-          <Link to={createPageUrl("Dashboard")} className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-20">
-            <ChevronRight className="w-6 h-6 text-gray-800" />
-          </Link>
-        </div>
+        {/* Header with curved background - HIDDEN IN ONBOARDING MODE */}
+        {!isOnboarding && (
+          <div className="relative h-32 overflow-hidden w-full">
+            <div
+              className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_110%_at_50%_100%)]"
+              style={{
+                backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
+            />
+            <Link to={createPageUrl("Dashboard")} className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-20">
+              <ChevronRight className="w-6 h-6 text-gray-800" />
+            </Link>
+          </div>
+        )}
 
-        <div className="p-4 sm:p-6 md:p-8 -mt-20 relative z-10 w-full max-w-7xl mx-auto">
+        <div className={`p-4 sm:p-6 md:p-8 ${!isOnboarding ? '-mt-20' : 'mt-10'} relative z-10 w-full max-w-7xl mx-auto`}>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -479,7 +491,7 @@ export default function Settings() {
             {/* Header Section */}
             <div className="flex flex-col items-center text-center space-y-4">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                {isEmployer ? "הגדרות" : "הפרטים שלי"}
+                {isOnboarding ? "השלמת פרטי חברה" : (isEmployer ? "הגדרות" : "הפרטים שלי")}
               </h1>
 
               {/* Profile Picture with Edit Button */}
@@ -950,27 +962,38 @@ export default function Settings() {
                     : 'bg-blue-600 hover:bg-blue-700 text-white'
                     }`}
                 >
-                  {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : 'עדכן'}
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                      שומר...
+                    </>
+                  ) : (
+                    isOnboarding ? 'עדכן' : 'שמור שינויים'
+                  )}
                 </Button>
 
-                <Button
-                  type="button"
-                  variant="link"
-                  className="text-gray-500 hover:text-red-600 font-medium"
-                  onClick={() => setShowDeleteConfirm(true)}
-                >
-                  מחק חשבון
-                </Button>
+                {!isOnboarding && (
+                  <>
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="text-gray-500 hover:text-red-600 font-medium"
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      מחק חשבון
+                    </Button>
 
-                <Button
-                  type="button"
-                  onClick={handleLogout}
-                  variant="outline"
-                  className="w-full md:w-96 h-12 rounded-[50px] border-2 border-red-400 bg-white text-red-600 hover:bg-red-50 hover:border-red-500 font-semibold text-base px-6 shadow-sm"
-                >
-                  <LogOut className="w-5 h-5 ml-2" />
-                  התנתק
-                </Button>
+                    <Button
+                      type="button"
+                      onClick={handleLogout}
+                      variant="outline"
+                      className="w-full md:w-96 h-12 rounded-[50px] border-2 border-red-400 bg-white text-red-600 hover:bg-red-50 hover:border-red-500 font-semibold text-base px-6 shadow-sm"
+                    >
+                      <LogOut className="w-5 h-5 ml-2" />
+                      התנתק
+                    </Button>
+                  </>
+                )}
 
               </div>
             </form>

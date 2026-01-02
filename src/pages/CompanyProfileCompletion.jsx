@@ -8,7 +8,7 @@ import CompanyDetailsStep from "@/components/company_profile/CompanyDetailsStep"
 import PackageSelectionStep from "@/components/company_profile/PackageSelectionStep";
 import PaymentStep from "@/components/company_profile/PaymentStep";
 import CompletionStep from "@/components/company_profile/CompletionStep";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useUser } from "@/contexts/UserContext";
@@ -44,6 +44,16 @@ export default function CompanyProfileCompletion() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
+
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check if returning from Settings with success
+    const params = new URLSearchParams(location.search);
+    if (params.get('status') === 'success') {
+      setStep(4);
+    }
+  }, [location]);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -87,10 +97,17 @@ export default function CompanyProfileCompletion() {
       const saved = await handleSave();
       if (!saved) return;
     }
+
+    // Step 3 is Payment. After Payment, go to Settings (Onboarding mode)
+    if (step === 3) {
+      navigate(`${createPageUrl('Settings')}?onboarding=company_details`);
+      return;
+    }
+
     if (step < STEPS.length) {
       setStep(prev => prev + 1);
     } else {
-      // Final step action
+      // Final step action (fallback if not redirected)
       navigate(`${createPageUrl('Dashboard')}?onboarding=complete`);
     }
   };
@@ -110,7 +127,7 @@ export default function CompanyProfileCompletion() {
       case 3:
         return <PaymentStep paymentData={paymentData} setPaymentData={setPaymentData} />;
       case 4:
-        return <CompletionStep />;
+        return <CompletionStep hideSecondaryButton={true} />;
       default:
         return null;
     }
