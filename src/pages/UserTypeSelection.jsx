@@ -183,16 +183,15 @@ const UserTypeSelection = () => {
     <div className="min-h-screen w-full bg-[#f0f9ff] flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
 
       {/* Globe Background - Bottom Left */}
-      <div className="absolute bottom-[-5vh] left-[-5vh] w-[65vh] h-[65vh] pointer-events-none z-20">
+      <div className="absolute bottom-[-5vh] left-[-5vh] w-[80vh] h-[80vh] pointer-events-none z-20">
         <img
           src={globeGrid}
           alt="Globe Grid"
-          className="w-full h-full object-contain object-bottom-left mix-blend-multiply opacity-90"
-          style={{ filter: 'hue-rotate(10deg) saturate(1.5)' }}
+          className="w-full h-full object-contain object-bottom-left opacity-90"
+          style={{
+            filter: 'brightness(0) saturate(100%) invert(56%) sepia(65%) saturate(2469%) hue-rotate(184deg) brightness(96%) contrast(91%)'
+          }}
         />
-        {/* Note: Exact recolor to #3396e1 on a pre-rendered asset is difficult without mask. 
-            Adjusted size and position. If transparent, drop-shadow could work. 
-            Assuming standard blue asset, boosted saturation. */}
       </div>
 
       {/* Main Card */}
