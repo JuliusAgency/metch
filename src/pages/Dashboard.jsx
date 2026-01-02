@@ -60,12 +60,16 @@ const JobSeekerDashboard = ({ user }) => {
   const [userStats, setUserStats] = useState(null);
   const [showCareerModal, setShowCareerModal] = useState(false);
   const [hasCV, setHasCV] = useState(true); // Default to true to avoid flickers
+  const [hasCompletedOnboardingFlow, setHasCompletedOnboardingFlow] = useState(false);
   const navigate = useNavigate();
 
   // Check for onboarding triggers - MOVED AFTER GUARDS CHECK
   useEffect(() => {
     // Wait for initial loading and User check
     if (loading || !user) return;
+
+    // GUARD: If we just finished the flow, don't re-evaluate
+    if (hasCompletedOnboardingFlow) return;
 
     const params = new URLSearchParams(location.search);
     const forceOnboarding = params.get('onboarding') === 'complete';
@@ -89,7 +93,7 @@ const JobSeekerDashboard = ({ user }) => {
     if (!hasSeenGuide) {
       setShowGuide(true);
     }
-  }, [user, loading, hasCV]);
+  }, [user, loading, hasCV, hasCompletedOnboardingFlow]);
 
   const handleGuideComplete = () => {
     setShowGuide(false);
@@ -99,6 +103,8 @@ const JobSeekerDashboard = ({ user }) => {
   };
 
   const handleCareerStageComplete = () => {
+    // Mark flow as completed to prevent re-triggering
+    setHasCompletedOnboardingFlow(true);
     setShowCareerModal(false);
 
     // Check for forced onboarding param
