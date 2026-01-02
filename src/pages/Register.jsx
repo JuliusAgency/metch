@@ -132,10 +132,10 @@ const Register = () => {
 
             {/* Title */}
             <div className="text-center">
-              <h1 className="font-['Rubik:Bold',_sans-serif] font-bold text-3xl md:text-4xl text-[#32343d] mb-2" dir="auto">
+              <h1 className="font-['Rubik',_sans-serif] font-bold text-3xl md:text-4xl text-[#32343d] mb-2" dir="auto">
                 ברוכים הבאים למאצ׳ 👋
               </h1>
-              <p className="font-['Rubik:Regular',_sans-serif] text-xl text-[#32343d]" dir="auto">
+              <p className="font-['Rubik',_sans-serif] font-normal text-xl text-[#32343d]" dir="auto">
                 רק כמה פרטים – ואפשר להתחיל
               </p>
             </div>

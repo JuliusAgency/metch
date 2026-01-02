@@ -92,13 +92,19 @@ export default function Insights() {
       Do not format as markdown. Do not include newlines in strings. Return ONLY the JSON.
       `;
 
-      const response = await Core.InvokeLLM({
+      // Use the Assistant API with the provided ID
+      const INSIGHTS_ASSISTANT_ID = import.meta.env.VITE_MY_INSIGHTS_EMPLOYEE_KEY;
+
+      if (!INSIGHTS_ASSISTANT_ID) {
+        console.warn("VITE_MY_INSIGHTS_EMPLOYEE_KEY is missing from env");
+      }
+
+      const response = await Core.InvokeAssistant({
         prompt,
-        temperature: 0.7,
-        model: "gpt-3.5-turbo" // or 4o if available/needed
+        assistantId: INSIGHTS_ASSISTANT_ID
       });
 
-      console.log("AI Response:", response);
+      console.log("AI Response (Assistant):", response);
 
       let parsed = null;
       try {
