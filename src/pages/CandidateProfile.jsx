@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { User } from "@/api/entities";
 import { UserProfile } from "@/api/entities";
-import { QuestionnaireResponse } from "@/api/entities";
+import { QuestionnaireResponse, Job, JobApplication, CV } from "@/api/entities";
+import { Core } from "@/api/integrations";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { User as UserIcon, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -40,6 +41,8 @@ export default function CandidateProfile() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [aiInsights, setAiInsights] = useState({ summary: "", thoughts: [] });
+  const [generatingInsights, setGeneratingInsights] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -77,12 +80,144 @@ export default function CandidateProfile() {
     }
   };
 
+  const generateEmployerInsights = async (candidateData) => {
+    const apiKey = import.meta.env.VITE_EMPLOYER_VIEW_CANDIDATE_KEY;
+    if (!apiKey) {
+      console.log("Skipping AI generation: No API key found");
+      return;
+    }
+
+    setGeneratingInsights(true);
+    try {
+      const params = new URLSearchParams(location.search);
+      const jobId = params.get("jobId");
+      const matchScore = params.get("match") || "N/A";
+
+      // 1. Fetch CV Content
+      let cvText = "";
+      if (candidateData.email) {
+        try {
+          const cvs = await CV.filter({ user_email: candidateData.email }, "-created_date", 1);
+          if (cvs && cvs.length > 0) {
+            const record = cvs[0];
+            if (record.parsed_content) {
+              cvText = record.parsed_content;
+            } else {
+              // Build text from structured fields if parsed content is missing
+              const parts = [];
+              if (record.summary) parts.push(`Summary: ${record.summary}`);
+
+              if (record.work_experience && Array.isArray(record.work_experience)) {
+                parts.push("Work Experience:");
+                record.work_experience.forEach(exp => {
+                  parts.push(`- ${exp.title} at ${exp.company} (${exp.start_date} - ${exp.is_current ? 'Present' : exp.end_date}): ${exp.description || ''}`);
+                });
+              }
+
+              if (record.education && Array.isArray(record.education)) {
+                parts.push("Education:");
+                record.education.forEach(edu => {
+                  parts.push(`- ${edu.degree} in ${edu.field_of_study} at ${edu.institution}`);
+                });
+              }
+
+              if (record.skills && Array.isArray(record.skills)) {
+                parts.push(`Skills: ${record.skills.join(', ')}`);
+              }
+
+              if (parts.length > 0) {
+                cvText = parts.join("\n\n");
+              } else {
+                cvText = "No parsed content or structured data available.";
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to fetch CV", e);
+        }
+      }
+
+      // 2. Fetch Job Description
+      let jobDescription = "General Candidate Review";
+      if (jobId) {
+        try {
+          const job = await Job.get(jobId);
+          jobDescription = `Title: ${job.title}\nDescription: ${job.description}\nRequirements: ${job.requirements}`;
+        } catch (e) {
+          console.warn("Failed to fetch Job", e);
+        }
+      }
+
+      // 3. Career Answer (using specific field if available, or bio)
+      const careerAnswer = candidateData.career_path_status || candidateData.bio || "Not specified";
+
+      // 4. Construct Prompt
+      const prompt = `
+      Analyze this candidate for the following job.
+      
+      Job Context:
+      ${jobDescription}
+      
+      Candidate Data:
+      Name: ${candidateData.full_name}
+      Match Score: ${matchScore}
+      Career Status/Goal: ${careerAnswer}
+      
+      CV Content:
+      "${cvText.substring(0, 5000)}"
+      
+      Task:
+      Generate a JSON object with two keys:
+      1. "candidate_summary": A concise paragraph analyzing the candidate's professional background and suitability (in Hebrew).
+      2. "match_thoughts": A list of 3-5 bullet points (strings) explaining "What Match Thinks" - highlighting key strengths or gaps relative to the job (in Hebrew).
+      
+      Return ONLY valid JSON:
+      {
+        "candidate_summary": "...",
+        "match_thoughts": ["...", "..."]
+      }
+      `;
+
+      // 5. Call Assistant
+      const response = await Core.InvokeAssistant({
+        assistantId: apiKey,
+        prompt
+      });
+
+      console.log("AI Insights Response:", response);
+
+      let parsed = null;
+      try {
+        let clean = response.content.replace(/```json/g, '').replace(/```/g, '').trim();
+        const jsonMatch = clean.match(/\{[\s\S]*\}/);
+        if (jsonMatch) clean = jsonMatch[0];
+        parsed = JSON.parse(clean);
+      } catch (e) {
+        console.error("Failed to parse AI JSON", e);
+      }
+
+      if (parsed) {
+        setAiInsights({
+          summary: parsed.candidate_summary,
+          thoughts: parsed.match_thoughts
+        });
+      }
+
+    } catch (error) {
+      console.error("Error generating insights:", error);
+    } finally {
+      setGeneratingInsights(false);
+    }
+  };
+
   const loadCandidate = async (id) => {
     setLoading(true);
     try {
       const results = await UserProfile.filter({ id });
       if (results.length > 0) {
         setCandidate(results[0]);
+        // Trigger AI generation after loading candidate
+        generateEmployerInsights(results[0]);
       } else {
         console.error(`Candidate with ID ${id} not found.`);
       }
@@ -364,6 +499,9 @@ export default function CandidateProfile() {
               <ProfileInfo
                 looking_for_summary={candidate.looking_for_summary}
                 bio={candidate.bio}
+                aiSummary={aiInsights.summary}
+                aiThoughts={aiInsights.thoughts}
+                isLoading={generatingInsights}
               />
 
               {/* Resume */}

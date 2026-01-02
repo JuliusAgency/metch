@@ -40,8 +40,7 @@ export class EmployerAnalytics {
         action_type: actionType,
         session_id: sessionId,
         user_agent: navigator.userAgent,
-        additional_data: actionData,
-        ...actionData // Spread action data
+        additional_data: actionData
       };
 
       await EmployerAction.create(actionRecord);
