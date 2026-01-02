@@ -15,6 +15,7 @@ import {
   Video,
 } from "lucide-react";
 import { UploadFile } from "@/api/integrations";
+import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
 export default function Step5Preview({ jobData, setJobData }) {
   const [uploadedFiles, setUploadedFiles] = useState(
@@ -148,11 +149,10 @@ export default function Step5Preview({ jobData, setJobData }) {
         {/* Header with curved background - matching other pages */}
         <div className="relative h-32">
           <div
-            className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_110%_at_50%_100%)]"
+            className="absolute inset-0 w-full h-full"
             style={{
-              backgroundImage:
-                "url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)",
-              backgroundSize: "cover",
+              backgroundImage: `url(${settingsHeaderBg})`,
+              backgroundSize: "100% 100%",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
             }}

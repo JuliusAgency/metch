@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ChevronRight, Building2 } from "lucide-react";
 import { createPageUrl } from "@/utils";
+import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
 const SeekerHeader = ({ company, job, returnUrl }) => {
   const fallbackUrl = job ? `${createPageUrl("Dashboard")}#job-${job.id}` : createPageUrl("Dashboard");
@@ -9,10 +10,12 @@ const SeekerHeader = ({ company, job, returnUrl }) => {
   return (
     <>
       <div
-        className="absolute top-0 left-0 right-0 h-40 bg-no-repeat bg-cover bg-center"
+        className="absolute top-0 left-0 right-0 h-40"
         style={{
-          backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
-          clipPath: 'ellipse(120% 100% at 50% 0%)',
+          backgroundImage: `url(${settingsHeaderBg})`,
+          backgroundSize: '100% 100%',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
           zIndex: '-1',
         }}
       />
@@ -25,7 +28,7 @@ const SeekerHeader = ({ company, job, returnUrl }) => {
       </Link>
       <div className="w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center border-4 border-white mx-auto -mt-4 mb-4">
         {job?.company === "Google" ? (
-          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" className="w-10 h-10"/>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" className="w-10 h-10" />
         ) : (
           <Building2 className="w-10 h-10 text-gray-600" />
         )}

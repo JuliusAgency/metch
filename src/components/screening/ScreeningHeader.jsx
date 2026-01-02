@@ -1,15 +1,16 @@
 import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { createPageUrl } from "@/utils";
+import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
 const ScreeningHeader = ({ backUrl }) => (
     <div className="relative">
         <div className="relative h-24 overflow-hidden -m-px">
             <div
-                className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_110%_at_50%_100%)]"
+                className="absolute inset-0 w-full h-full"
                 style={{
-                    backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
-                    backgroundSize: 'cover',
+                    backgroundImage: `url(${settingsHeaderBg})`,
+                    backgroundSize: '100% 100%',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat'
                 }} />
