@@ -109,7 +109,11 @@ const JobSeekerDashboard = ({ user }) => {
     if (forceOnboarding) {
       // Clear the param
       navigate(location.pathname, { replace: true });
-      setShowGuide(true);
+
+      // Use timeout to ensure modal closes before guide opens
+      setTimeout(() => {
+        setShowGuide(true);
+      }, 500);
       return;
     }
 
