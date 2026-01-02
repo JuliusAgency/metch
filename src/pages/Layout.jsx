@@ -50,7 +50,7 @@ export default function Layout({ children, currentPageName }) {
   const closeMenu = () => setIsMobileMenuOpen(false);
 
   // Pages that should not show navbar (authentication pages)
-  const authPages = ['Login', 'Register', 'Landing', 'EmailConfirmation', 'UserTypeSelection', 'CompanyProfileCompletion', 'ForgotPassword'];
+  const authPages = ['Login', 'Register', 'Landing', 'EmailConfirmation', 'UserTypeSelection', 'ForgotPassword'];
   const shouldHideNavbar = authPages.includes(currentPageName);
 
   if (loading) {

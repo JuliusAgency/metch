@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { UploadCloud, Globe, Facebook, Instagram, Linkedin, Twitter, Plus, X } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 
-export default function CompanyProfileFinalStep({ companyData, setCompanyData }) {
+export default function CompanyProfileFinalStep({ companyData, setCompanyData, ...props }) {
     const { updateProfile } = useUser();
     const [logoPreview, setLogoPreview] = useState(companyData?.logo_url || null);
     const [activeSocial, setActiveSocial] = useState(null);

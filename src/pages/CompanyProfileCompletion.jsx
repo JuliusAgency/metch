@@ -122,7 +122,7 @@ export default function CompanyProfileCompletion() {
       case 3:
         return <PaymentStep paymentData={paymentData} setPaymentData={setPaymentData} />;
       case 4:
-        return <CompanyProfileFinalStep companyData={companyData} setCompanyData={setCompanyData} />;
+        return <CompanyProfileFinalStep companyData={companyData} setCompanyData={setCompanyData} onFinish={nextStep} />;
       case 5:
         return <CompletionStep hideSecondaryButton={true} />;
       default:
@@ -135,16 +135,17 @@ export default function CompanyProfileCompletion() {
   }
 
   return (
-    <div className="p-4 md:p-6" dir="rtl">
-      <div className="w-[85vw] mx-auto">
-        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden p-8">
-          <div className="max-w-4xl mx-auto">
+    <div className="max-w-2xl mx-auto py-8" dir="rtl">
+      <div>
+        <div className="max-w-4xl mx-auto">
 
 
-            <div className="my-10 min-h-[300px]">
-              {renderStepContent()}
-            </div>
+          <div className={`my-6 ${step === 4 ? 'min-h-0' : 'min-h-[300px]'}`}>
+            {renderStepContent()}
+          </div>
 
+          {/* Default Navigation Buttons - Hidden on Step 4 (Custom Finish Button) */}
+          {step !== 4 && (
             <div className={`flex ${step === 1 ? 'justify-center' : 'justify-between'} items-center mt-12`}>
               {step > 1 && (
                 <Button
@@ -166,8 +167,8 @@ export default function CompanyProfileCompletion() {
                 {!saving && <ArrowLeft className="w-5 h-5 ml-2" />}
               </Button>
             </div>
-          </div>
-        </Card>
+          )}
+        </div>
       </div>
     </div>
   );
