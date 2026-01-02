@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
-import { UploadCloud, Globe, Facebook, Instagram, Linkedin, Twitter, Plus, X } from "lucide-react";
+import { UploadCloud, Globe, Facebook, Instagram, Linkedin, Twitter, Plus, X, Copy } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 
 export default function CompanyProfileFinalStep({ companyData, setCompanyData, ...props }) {
@@ -99,12 +99,11 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
                     <p className="text-black text-lg font-medium">הפרופיל המלא משפר את סיכויי ההשמה</p>
                 </div>
 
-                {/* Social Icons */}
-                <div className="flex flex-col items-center gap-4">
+                {/* Social Icons & Input */}
+                <div className="flex flex-col items-center gap-6 w-full max-w-sm mx-auto">
                     <div className="flex justify-center gap-4">
                         {socialIcons.map((social) => {
                             const Icon = social.icon;
-                            // Checking if we have a value for this social link
                             const hasValue = socialLinks[social.id] && socialLinks[social.id].length > 0;
                             const isActive = activeSocial === social.id;
 
@@ -123,39 +122,59 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
                         })}
                     </div>
 
-                    {/* Active Social Input */}
-                    {activeSocial && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="w-full max-w-sm relative"
-                        >
-                            <div className="relative">
+                    {/* Active Social Input - Placed Below */}
+                    <div className="w-full h-12">
+                        {activeSocial ? (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="relative"
+                            >
                                 <Input
                                     placeholder={`הזן קישור ל${socialIcons.find(s => s.id === activeSocial)?.label}...`}
                                     value={socialLinks[activeSocial] || ''}
                                     onChange={(e) => handleSocialLinkChange(activeSocial, e.target.value)}
-                                    className="pr-10 h-10 rounded-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-right"
+                                    className="pr-10 h-12 rounded-xl border-blue-200 focus:border-blue-500 focus:ring-blue-500 text-right shadow-sm bg-blue-50/30"
                                     dir="ltr"
+                                    autoFocus
                                 />
-                                <div className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400">
-                                    {React.createElement(socialIcons.find(s => s.id === activeSocial)?.icon, { size: 16 })}
+                                <div className="absolute top-1/2 right-3 -translate-y-1/2 text-blue-500">
+                                    {React.createElement(socialIcons.find(s => s.id === activeSocial)?.icon, { size: 18 })}
                                 </div>
+                            </motion.div>
+                        ) : (
+                            <div className="flex items-center justify-between px-4 h-12 text-gray-500 border border-gray-200 rounded-xl bg-gray-50/50">
+                                <div className="flex items-center gap-2">
+                                    <div className="relative">
+                                        <Copy className="w-5 h-5 text-gray-400" />
+                                    </div>
+                                </div>
+                                <span className="text-base font-medium text-gray-600 ml-auto mr-0">הוסף קישור</span>
                             </div>
-                        </motion.div>
-                    )}
+                        )}
+                    </div>
                 </div>
 
                 {/* Description */}
-                <div className="space-y-2 text-right">
+                <div className="space-y-2 text-right max-w-sm mx-auto w-full">
                     <label className="text-sm font-medium text-gray-700 mr-1">תיאור החברה</label>
                     <Textarea
                         name="company_description"
                         value={companyData.company_description || ""}
                         onChange={handleInputChange}
                         placeholder="ספר/י קצת על החברה, התרבות הארגונית ומה מייחד אתכם..."
-                        className="min-h-[120px] rounded-2xl resize-none border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        className="min-h-[100px] rounded-2xl resize-none border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     />
+                </div>
+
+                {/* Finish Button - Only button on this screen */}
+                <div className="pt-4 max-w-sm mx-auto w-full">
+                    <Button
+                        onClick={props.onFinish}
+                        className="w-full h-12 rounded-full bg-[#2987CD] hover:bg-[#206FA8] text-white font-bold text-xl shadow-md transition-all duration-200"
+                    >
+                        סיום
+                    </Button>
                 </div>
 
             </motion.div>
