@@ -51,7 +51,7 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
     ];
 
     return (
-        <div className="max-w-2xl mx-auto text-center" dir="rtl">
+        <div className="max-w-lg mx-auto text-center" dir="rtl">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -61,15 +61,15 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
                 {/* Logo Upload - Round */}
                 <div className="flex flex-col items-center justify-center">
                     <div className="relative group">
-                        <div className={`w-32 h-32 rounded-full border-2 border-dashed border-blue-300 flex items-center justify-center overflow-hidden bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer relative z-10`}>
+                        <div className={`w-36 h-36 rounded-full flex items-center justify-center overflow-hidden cursor-pointer relative z-10 transition-transform duration-300 hover:scale-105`}>
                             {logoPreview ? (
-                                <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-cover" />
+                                <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-cover border-4 border-white shadow-lg rounded-full" />
                             ) : (
-                                <div className="flex flex-col items-center text-blue-500">
-                                    <UploadCloud className="w-8 h-8 mb-1" />
-                                    <span className="text-xs font-medium">העלה לוגו</span>
-                                    <span className="text-xs">חברה</span>
-                                </div>
+                                <img
+                                    src="/assets/images/company-logo-placeholder.png"
+                                    alt="Upload Logo"
+                                    className="w-full h-full object-contain"
+                                />
                             )}
                             <input
                                 type="file"
@@ -95,7 +95,7 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
 
                 {/* Titles */}
                 <div className="space-y-2">
-                    <h1 className="text-3xl font-bold text-[#0E1B4D]">השלם את הפרופיל שלך</h1>
+                    <h1 className="text-3xl font-bold text-[#000080]">השלם את הפרופיל שלך</h1>
                     <p className="text-black text-lg font-medium">הפרופיל המלא משפר את סיכויי ההשמה</p>
                 </div>
 

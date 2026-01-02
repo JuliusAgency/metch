@@ -135,7 +135,7 @@ export default function CompanyProfileCompletion() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-8" dir="rtl">
+    <div className="max-w-xl mx-auto py-8" dir="rtl">
       <div>
         <div className="max-w-4xl mx-auto">
 
