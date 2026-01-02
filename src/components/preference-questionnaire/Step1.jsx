@@ -73,7 +73,7 @@ export default function Step1({
                             variant="outline"
                             role="combobox"
                             aria-expanded={openLocation}
-                            className="h-12 w-full justify-between rounded-full border-gray-200 text-right px-6 text-gray-500 font-normal hover:bg-white"
+                            className="h-12 w-full justify-between rounded-full border-gray-200 text-right px-6 text-gray-500 font-normal bg-white hover:bg-white"
                         >
                             {preferences.location
                                 ? preferences.location
@@ -119,7 +119,7 @@ export default function Step1({
                             variant="outline"
                             role="combobox"
                             aria-expanded={openProfession}
-                            className="h-12 w-full justify-between rounded-full border-gray-200 text-right px-6 text-gray-500 font-normal hover:bg-white"
+                            className="h-12 w-full justify-between rounded-full border-gray-200 text-right px-6 text-gray-500 font-normal bg-white hover:bg-white"
                         >
                             {preferences.profession_search
                                 ? preferences.profession_search
