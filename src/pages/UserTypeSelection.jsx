@@ -183,7 +183,7 @@ const UserTypeSelection = () => {
     <div className="min-h-screen w-full bg-[#f0f9ff] flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
 
       {/* Globe Background - Bottom Left */}
-      <div className="absolute bottom-[-5vh] left-[-5vh] w-[80vh] h-[80vh] pointer-events-none z-20">
+      <div className="absolute bottom-[-5vh] left-[-5vh] w-[77vh] h-[77vh] pointer-events-none z-20">
         <img
           src={globeGrid}
           alt="Globe Grid"
@@ -242,7 +242,7 @@ const UserTypeSelection = () => {
         </div>
 
         {/* Left Side: Illustration (Visual Left in RTL, Second in DOM) */}
-        <div className="w-1/2 h-full relative flex items-center justify-center bg-gradient-to-br from-blue-50/50 to-white">
+        <div className="w-1/2 h-full relative flex items-center justify-center bg-white">
           {/* Astronaut Image - Scaled Up and Positioned */}
           <div className="w-[85%] h-[85%] relative flex items-center justify-center -translate-y-10 translate-x-12">
             <img
