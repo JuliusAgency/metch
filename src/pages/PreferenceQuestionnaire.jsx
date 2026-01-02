@@ -125,11 +125,10 @@ export default function PreferenceQuestionnaire() {
         specialization: preferences.field,
       };
 
-      // Use context updateProfile to ensure global state is updated immediately
-      // This prevents the Dashboard from seeing stale data (missing specialization)
       await updateProfile(updateData);
 
-      navigate(createPageUrl('Dashboard'));
+      // Force onboarding flow (Career Stage -> Guide) explicitly
+      navigate(createPageUrl('Dashboard?onboarding=complete'));
     } catch (error) {
       console.error("Failed to save preferences:", error);
       // In case of error (e.g. schema mismatch), we might still want to navigate or show distinct error

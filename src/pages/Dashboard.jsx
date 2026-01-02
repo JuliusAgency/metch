@@ -76,8 +76,16 @@ const JobSeekerDashboard = ({ user }) => {
     // 'user' from useUser() has merged profile data.
     if (!user.specialization) return; // Will be redirected
 
+    const params = new URLSearchParams(location.search);
+    const forceOnboarding = params.get('onboarding') === 'complete';
+
     // 1. First priority: Career Stage
-    if (!user.career_stage) {
+    // Force show if redirected from Preference Questionnaire (forceOnboarding) OR if data is missing
+    if (!user.career_stage || forceOnboarding) {
+      if (forceOnboarding) {
+        // Clear the param so it doesn't re-trigger on refresh
+        window.history.replaceState({}, '', location.pathname);
+      }
       setShowCareerModal(true);
       return; // Wait for career stage before showing guide
     }
@@ -98,9 +106,15 @@ const JobSeekerDashboard = ({ user }) => {
 
   const handleCareerStageComplete = () => {
     setShowCareerModal(false);
+
+    // Check for forced onboarding param
+    const params = new URLSearchParams(location.search);
+    const forceOnboarding = params.get('onboarding') === 'complete';
+
     // After career stage, check if we need to show the guide
+    // Force show if redirected from Preference Questionnaire (forceOnboarding)
     const hasSeenGuide = localStorage.getItem(`jobseeker_guide_${user?.email}`);
-    if (!hasSeenGuide) {
+    if (!hasSeenGuide || forceOnboarding) {
       setShowGuide(true);
     }
   };
