@@ -73,10 +73,6 @@ const JobSeekerDashboard = ({ user }) => {
     // 1. First priority: Career Stage
     // Force show if redirected from Preference Questionnaire (forceOnboarding) OR if data is missing
     if (!user.career_stage || forceOnboarding) {
-      if (forceOnboarding) {
-        // Clear the param so it doesn't re-trigger on refresh
-        window.history.replaceState({}, '', location.pathname);
-      }
       setShowCareerModal(true);
       return; // Wait for career stage before showing guide
     }
@@ -109,10 +105,17 @@ const JobSeekerDashboard = ({ user }) => {
     const params = new URLSearchParams(location.search);
     const forceOnboarding = params.get('onboarding') === 'complete';
 
-    // After career stage, check if we need to show the guide
-    // Force show if redirected from Preference Questionnaire (forceOnboarding)
+    // If forced onboarding, clear the param NOW (prevent loops) and show guide
+    if (forceOnboarding) {
+      // Clear the param
+      navigate(location.pathname, { replace: true });
+      setShowGuide(true);
+      return;
+    }
+
+    // Normal flow (not forced): Check if guide seen
     const hasSeenGuide = localStorage.getItem(`jobseeker_guide_${user?.email}`);
-    if (!hasSeenGuide || forceOnboarding) {
+    if (!hasSeenGuide) {
       setShowGuide(true);
     }
   };
