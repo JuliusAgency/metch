@@ -975,7 +975,15 @@ export default function Settings() {
                 {isOnboarding && (
                   <Button
                     type="button"
-                    onClick={() => navigate(-1)}
+                    onClick={() => {
+                      // Check if form is dirty by checking if submit is enabled
+                      // isSubmitDisabled is false when there are changes (dirty)
+                      if (!isSubmitDisabled) {
+                        setShowIncompleteDialog(true);
+                      } else {
+                        navigate(-1);
+                      }
+                    }}
                     variant="outline"
                     className="w-full md:w-32 h-12 rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 font-bold text-lg mr-4"
                   >
@@ -1056,10 +1064,10 @@ export default function Settings() {
           <UnsavedChangesDialog
             open={showIncompleteDialog}
             onOpenChange={setShowIncompleteDialog}
-            onConfirm={() => setShowIncompleteDialog(false)}
+            onConfirm={() => setShowIncompleteDialog(false)} // Confirm = "Complete Profile" (Stay)
             onCancel={() => {
               setShowIncompleteDialog(false);
-              handleSave(null); // Proceed with save (pass null event to bypass check)
+              navigate(-1); // Cancel = "Finish/End" (Exit without saving)
             }}
           />
 
