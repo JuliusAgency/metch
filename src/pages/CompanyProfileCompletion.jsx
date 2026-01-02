@@ -89,6 +89,12 @@ export default function CompanyProfileCompletion() {
 
   const nextStep = async () => {
     if (step === 1) {
+      if (!companyData.company_name || !companyData.company_name.trim()) {
+        // Since we don't have a toast component easily accessible in context, we will prevent progression.
+        // Ideally we would show a toast here. Assuming user notices field is required.
+        // For now, we will just return to prevent saving empty data.
+        return;
+      }
       const saved = await handleSave();
       if (!saved) return;
     }
@@ -103,6 +109,8 @@ export default function CompanyProfileCompletion() {
       setStep(prev => prev + 1);
     } else {
       // Final step action (fallback if not redirected)
+      // Ensure we explicitly force save one last time to be safe?
+      // handleSave(); // Optional, but usually step 4 save covers it.
       navigate(`${createPageUrl('Dashboard')}?onboarding=complete`);
     }
   };

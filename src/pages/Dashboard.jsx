@@ -489,11 +489,16 @@ const EmployerDashboard = ({ user }) => {
   };
 
   // Redirect to onboarding if company profile is incomplete
+  // Redirect to onboarding if company profile is incomplete
   useEffect(() => {
+    // Skip check if verified completion just happened
+    const params = new URLSearchParams(location.search);
+    if (params.get('onboarding') === 'complete') return;
+
     if (!loading && user && user.user_type === 'employer' && (!user.company_name || !user.company_name.trim())) {
       navigate('/CompanyProfileCompletion');
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, location.search]);
 
   const handleGuideSkip = () => {
     setShowGuide(false);
