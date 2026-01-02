@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/components/ui/use-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+import cvCreateIcon from '@/assets/cv_create_icon.png';
+import cvExistsIcon from '@/assets/cv_exists_icon.png';
+import astronautWindow from '@/assets/astronaut_window.png';
+import globeGrid from '@/assets/globe_grid.png';
 
 // Figma design assets - Desktop
 const img00113000X30003 = "http://localhost:3845/assets/0c77918b0496d6d12dc8f3e62185bd5639b2a24f.png";
@@ -17,11 +22,6 @@ const imgVector4Mobile = "http://localhost:3845/assets/72e4b24edacb5c8e832962169
 const imgVector5Mobile = "http://localhost:3845/assets/d5a77e346df785c2e61c9d8ebc59ab003a8facc8.svg";
 const imgVector6Mobile = "http://localhost:3845/assets/38437995b6d423593af0f3de968f7aa2dae9470d.svg";
 const imgEllipse480Mobile = "http://localhost:3845/assets/89b89e723ec104e845beb68e4661ff10ed044c2b.svg";
-import { motion, AnimatePresence } from 'framer-motion';
-import cvCreateIcon from '@/assets/cv_create_icon.png';
-import cvExistsIcon from '@/assets/cv_exists_icon.png';
-import astronautWindow from '@/assets/astronaut_window.png';
-import globeGrid from '@/assets/globe_grid.png';
 
 const imgHugeiconsAiMagic = "http://localhost:3845/assets/289919713a3bb46a7fa4929734053736f1a07e8a.svg";
 
@@ -102,7 +102,7 @@ const UserTypeSelection = () => {
   const [selectedType, setSelectedType] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showCVChoiceModal, setShowCVChoiceModal] = useState(false);
-  const { user, updateProfile, loading: userLoading, loadUserProfile } = useUser(); // Added loadUserProfile
+  const { user, updateProfile, loading: userLoading, loadUserProfile } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -183,7 +183,7 @@ const UserTypeSelection = () => {
     <div className="min-h-screen w-full bg-[#f0f9ff] flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
 
       {/* Globe Background - Bottom Left */}
-      <div className="absolute bottom-[-10%] left-[-10%] w-[50vh] h-[50vh] pointer-events-none z-0 opacity-80">
+      <div className="absolute bottom-[-15vh] left-[-15vh] w-[60vh] h-[60vh] pointer-events-none z-0 opacity-80">
         <img
           src={globeGrid}
           alt="Globe Grid"
@@ -192,21 +192,9 @@ const UserTypeSelection = () => {
       </div>
 
       {/* Main Card */}
-      <div className="bg-white rounded-[40px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] w-full max-w-[1200px] h-[80vh] min-h-[600px] relative z-10 flex overflow-hidden border border-white">
+      <div className="bg-white rounded-[40px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] w-[95%] max-w-[1500px] h-[80vh] min-h-[600px] relative z-10 flex overflow-hidden border border-white">
 
-        {/* Left Side: Illustration */}
-        <div className="w-1/2 h-full relative flex items-center justify-center bg-gradient-to-br from-blue-50/50 to-white">
-          {/* Astronaut Image */}
-          <div className="w-[110%] h-[110%] relative -ml-[10%] flex items-center justify-center">
-            <img
-              src={astronautWindow}
-              alt="Astronaut"
-              className="w-full h-full object-contain scale-110"
-            />
-          </div>
-        </div>
-
-        {/* Right Side: Content */}
+        {/* Right Side: Content (Visual Right in RTL, First in DOM) */}
         <div className="w-1/2 h-full flex flex-col justify-center px-16 lg:px-24">
           <div className="max-w-md w-full mx-auto space-y-12">
 
@@ -250,6 +238,18 @@ const UserTypeSelection = () => {
           </div>
         </div>
 
+        {/* Left Side: Illustration (Visual Left in RTL, Second in DOM) */}
+        <div className="w-1/2 h-full relative flex items-center justify-center bg-gradient-to-br from-blue-50/50 to-white">
+          {/* Astronaut Image - Reduced Scale */}
+          <div className="w-[70%] h-[70%] relative flex items-center justify-center">
+            <img
+              src={astronautWindow}
+              alt="Astronaut"
+              className="w-full h-full object-contain"
+            />
+          </div>
+        </div>
+
       </div>
 
       {/* Loading Overlay */}
@@ -273,4 +273,5 @@ const UserTypeSelection = () => {
     </div>
   );
 };
+
 export default UserTypeSelection;
