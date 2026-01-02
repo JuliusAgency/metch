@@ -99,7 +99,7 @@ const Login = () => {
 
             {/* Title */}
             <div className="text-center">
-              <h1 className="font-['Rubik:Bold',_sans-serif] font-bold text-3xl md:text-4xl text-[#32343d]" dir="auto">
+              <h1 className="font-['Secular_One',_sans-serif] text-3xl md:text-4xl text-[#32343d]" dir="auto">
                 התחברות
               </h1>
             </div>
@@ -144,7 +144,7 @@ const Login = () => {
 
               {/* Forgot Password Link - Moved here */}
               <div className="text-right">
-                <Link to="/forgot-password" className="font-['Rubik:Regular',_sans-serif] text-[#2987cd] text-sm hover:underline" dir="auto">
+                <Link to="/forgot-password" className="font-['Secular_One',_sans-serif] text-[#2987cd] text-sm hover:underline" dir="auto">
                   שכחתם סיסמה?
                 </Link>
               </div>
@@ -158,7 +158,7 @@ const Login = () => {
                   className="w-1/2 mx-auto bg-[#2987cd] hover:bg-[#2987cd]/90 text-white rounded-full h-12 text-lg font-bold"
                 >
                   <div className="flex items-center justify-center space-x-3 w-full">
-                    <span className="font-['Rubik:Bold',_sans-serif] font-bold text-lg" dir="auto">
+                    <span className="font-['Secular_One',_sans-serif] text-lg" dir="auto">
                       התחברות
                     </span>
                     <ArrowLeft className="w-5 h-5 text-white" />
@@ -210,8 +210,7 @@ const Login = () => {
             {/* Register Link */}
             <div className="text-center">
               <p className="text-[#32343d] text-base" dir="auto">
-                <span className="font-['Rubik:Regular',_sans-serif]">אין לכם חשבון? </span>
-                <Link to="/Register" className="font-['Rubik:Bold',_sans-serif] font-bold text-[#2987cd] hover:underline">
+                <Link to="/Register" className="font-['Secular_One',_sans-serif] text-[#2987cd] hover:underline">
                   הרשמו
                 </Link>
               </p>

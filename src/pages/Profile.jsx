@@ -342,13 +342,13 @@ export default function Profile() {
                     </div>
                   </Link>
 
-                  {/* Career Questionnaire Link - NEW */}
-                  <Link to={createPageUrl('CareerStageSelection')}>
+                  {/* Career Questionnaire Link - Opens Modal */}
+                  <div onClick={() => setIsCareerStageModalOpen(true)}>
                     <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center justify-between h-[72px] hover:border-blue-200 transition-colors cursor-pointer group">
                       <span className="font-semibold text-gray-700 text-base">שאלון קריירה</span>
                       <ChevronLeft className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
                     </div>
-                  </Link>
+                  </div>
 
                   {/* Looking for Job Switch - NOW ON LEFT (Second in RTL Grid) */}
                   <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center justify-between h-[72px]">

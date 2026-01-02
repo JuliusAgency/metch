@@ -200,42 +200,48 @@ ET`;
 
                             {/* Pricing Card */}
                             <div className="bg-white rounded-[30px] border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-8 md:p-10 max-w-3xl mx-auto relative overflow-hidden">
-                                <div className="flex flex-col md:flex-row gap-8 items-center justify-between relative z-10">
+                                <div className="flex flex-col md:flex-row gap-8 items-start justify-between relative z-10 w-full h-full">
 
-                                    {/* Right Side: Features */}
-                                    <div className="text-right space-y-6 flex-1">
-                                        <h3 className="text-2xl font-bold text-[#1E3A8A]">מה כולל?</h3>
-                                        <ul className="space-y-4 pr-0">
+                                    {/* Left Side: Price (Visually Right in RTL) */}
+                                    <div className="text-center md:text-right space-y-2 flex-1 flex flex-col items-center md:items-start order-3 md:order-1 pt-2">
+                                        <div className="bg-[#EBF5FF] text-[#003566] px-4 py-1.5 rounded-full text-sm font-medium mb-3 inline-block">
+                                            תשלום חד פעמי
+                                        </div>
+                                        <div className="flex items-baseline gap-1.5 relative">
+                                            {/* Price Amount - Will be on Right in RTL */}
+                                            <span className="text-5xl font-normal text-[#003566] tracking-tight font-['Rubik']">₪{499 * quantity}</span>
+
+                                            {/* Per Job Text with Underline - Will be on Left in RTL */}
+                                            <div className="flex flex-col items-center">
+                                                <span className="text-[#003566] text-xl font-normal leading-none">/ למשרה</span>
+                                                <div className="w-full h-[2px] bg-[#003566] mt-0.5"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Vertical Divider for desktop */}
+                                    <div className="hidden md:block w-px self-stretch bg-gray-100 order-2 mx-10"></div>
+
+                                    {/* Divider for mobile */}
+                                    <div className="h-px w-full bg-gray-100 md:hidden order-2"></div>
+
+                                    {/* Right Side: Features (Visually Left in RTL) */}
+                                    <div className="text-right space-y-4 flex-1 w-full order-1 md:order-3">
+                                        <h3 className="text-lg font-bold text-[#003566]">מה כולל?</h3>
+                                        <ul className="space-y-3 pr-0">
                                             {[
                                                 'פרסום למשך 30 ימים',
-                                                'אפשרויות לערוך את המשרה בכל רגע',
+                                                'אפשרות לערוך את המשרה בכל רגע',
                                                 'ניתוח ומסקנות מועמד בעזרת AI',
                                                 'כולל שאלון סינון',
-                                                'צא׳ט ישיר עם מועמדים'
+                                                'צ׳אט ישיר עם מועמדים'
                                             ].map((feature, idx) => (
-                                                <li key={idx} className="flex items-center gap-3 justify-end text-gray-600 font-medium">
-                                                    <span>{feature}</span>
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-[#1E3A8A]"></div>
+                                                <li key={idx} className="flex items-center gap-2.5 justify-start text-[#003566] font-normal text-sm">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-[#003566]"></div>
+                                                    <span className="text-[#003566]">{feature}</span>
                                                 </li>
                                             ))}
                                         </ul>
-                                    </div>
-
-                                    {/* Divider for mobile */}
-                                    <div className="h-px w-full bg-gray-200 md:hidden"></div>
-
-                                    {/* Vertical Divider for desktop */}
-                                    <div className="hidden md:block w-px h-40 bg-gray-200"></div>
-
-                                    {/* Left Side: Price */}
-                                    <div className="text-center md:text-left space-y-2 flex-1 flex flex-col items-center md:items-end">
-                                        <div className="bg-[#EBF5FF] text-[#1E3A8A] px-4 py-1.5 rounded-full text-sm font-semibold mb-2 inline-block">
-                                            תשלום חד פעמי
-                                        </div>
-                                        <div className="flex items-baseline gap-1 flex-row-reverse">
-                                            <span className="text-5xl font-bold text-[#1E3A8A] tracking-tight">₪{499 * quantity}</span>
-                                        </div>
-                                        <div className="text-gray-500 text-lg">/ למשרה</div>
                                     </div>
 
                                 </div>

@@ -12,11 +12,17 @@ import { ClipboardCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
+import profileSuccessIcon from '@/assets/profile-success-icon.png';
+import popupUpdatedFullV2 from '@/assets/popup-updated-full-v2.png';
+import popupCardBg from '@/assets/popup-card-background.png';
+
+import popupCompletedFull from '@/assets/popup-completed-full.png';
+
 /**
  * ProfileUpdatedDialog - Success dialog for profile update
- * Matches design: "הפרופיל עודכן!"
+ * Matches design: "הפרופיל עודכן !" or "הפרופיל הושלם בהצלחה"
  */
-export function ProfileUpdatedDialog({ open, onOpenChange, title = "הפרופיל עודכן!", description = "עדכון קטן - קפיצה גדולה לקריירה" }) {
+export function ProfileUpdatedDialog({ open, onOpenChange, title = "הפרופיל עודכן !", description = "עדכון קטן - קפיצה גדולה לקריירה" }) {
     const navigate = useNavigate();
 
     const handleClose = () => {
@@ -24,23 +30,57 @@ export function ProfileUpdatedDialog({ open, onOpenChange, title = "הפרופי
         navigate(createPageUrl('Dashboard'));
     };
 
+    // Unified logic for both "Updated" and "Completed" popups using full images
+    const isUpdated = title === "הפרופיל עודכן !";
+    const isCompleted = title === "הפרופיל הושלם בהצלחה";
+
+    if (isUpdated || isCompleted) {
+        const imageSrc = isUpdated ? popupUpdatedFullV2 : popupCompletedFull;
+
+        return (
+            <AlertDialog open={open} onOpenChange={onOpenChange}>
+                <AlertDialogContent className="w-auto h-auto max-w-none p-0 bg-transparent border-none shadow-none overflow-visible flex items-center justify-center">
+
+                    <div className="relative inline-block">
+                        {/* The popup content itself - No extra background */}
+                        <img
+                            src={imageSrc}
+                            alt={title}
+                            className="w-auto h-auto max-w-[500px] max-h-[650px] object-contain pointer-events-none"
+                        />
+
+                        {/* Invisible clickable area for the button */}
+                        <button
+                            onClick={handleClose}
+                            className="absolute bottom-[19%] left-1/2 -translate-x-1/2 w-[261px] h-[45px] bg-transparent cursor-pointer outline-none mobile-tap-highlight-transparent z-50 rounded-full"
+                            aria-label="לעמוד הראשי"
+                        />
+                    </div>
+
+                </AlertDialogContent>
+            </AlertDialog>
+        );
+    }
+
+    // Default rendering (for "Profile Completed" or other cases)
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent className="max-w-sm bg-white rounded-3xl p-8 text-center shadow-2xl">
                 {/* Glowing Icon Container */}
-                <div className="mx-auto mb-6 relative w-20 h-20 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-blue-100 rounded-full blur-xl opacity-50" />
-                    <div className="relative w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                        <ClipboardCheck className="w-8 h-8 text-blue-500" />
-                    </div>
+                <div className="mx-auto mb-6 flex justify-center">
+                    <img
+                        src={profileSuccessIcon}
+                        alt="Success"
+                        className="w-24 h-24 object-contain"
+                    />
                 </div>
 
                 {/* Content */}
                 <AlertDialogHeader className="space-y-2">
-                    <AlertDialogTitle className="text-2xl font-black text-[#0F172A] text-center">
+                    <AlertDialogTitle className="text-2xl font-bold text-[#1E3A8A] text-center">
                         {title}
                     </AlertDialogTitle>
-                    <AlertDialogDescription className="text-base text-[#475569] text-center font-medium">
+                    <AlertDialogDescription className="text-base text-[#1E3A8A]/80 text-center font-medium">
                         {description}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
