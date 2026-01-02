@@ -20,6 +20,8 @@ const imgEllipse480Mobile = "http://localhost:3845/assets/89b89e723ec104e845beb6
 import { motion, AnimatePresence } from 'framer-motion';
 import cvCreateIcon from '@/assets/cv_create_icon.png';
 import cvExistsIcon from '@/assets/cv_exists_icon.png';
+import astronautWindow from '@/assets/astronaut_window.png';
+import globeGrid from '@/assets/globe_grid.png';
 
 const imgHugeiconsAiMagic = "http://localhost:3845/assets/289919713a3bb46a7fa4929734053736f1a07e8a.svg";
 
