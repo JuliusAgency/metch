@@ -118,11 +118,11 @@ const Register = () => {
           {/* Logo */}
           <div className="flex justify-center mb-8">
             <div className="backdrop-blur-[43px] backdrop-filter bg-[rgba(204,229,248,0.3)] border border-solid border-white rounded-full p-4 px-8">
-              <div className="flex items-center space-x-2">
-                <img src="/sparkle_logo.png" alt="Sparkle" className="w-6 h-6 object-contain" />
-                <p className="font-['Poppins:Regular',_sans-serif] text-2xl text-black font-medium">
+              <div className="flex items-center gap-1">
+                <p className="font-['Poppins',_sans-serif] text-2xl text-black font-light">
                   Metch
                 </p>
+                <img src="/sparkle_logo.png" alt="Sparkle" className="w-6 h-6 object-contain" />
               </div>
             </div>
           </div>

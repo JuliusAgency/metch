@@ -85,11 +85,11 @@ const Login = () => {
           {/* Logo */}
           <div className="flex justify-center mb-8">
             <div className="backdrop-blur-[43px] backdrop-filter bg-[rgba(204,229,248,0.3)] border border-solid border-white rounded-full p-4 px-8">
-              <div className="flex items-center space-x-2">
-                <img src="/sparkle_logo.png" alt="Sparkle" className="w-6 h-6 object-contain" />
-                <p className="font-['Poppins:Regular',_sans-serif] text-2xl text-black font-medium">
+              <div className="flex items-center">
+                <p className="font-['Poppins',_sans-serif] text-2xl text-black font-light">
                   Metch
                 </p>
+                <img src="/sparkle_logo.png" alt="Sparkle" className="w-6 h-6 object-contain" />
               </div>
             </div>
           </div>
@@ -144,7 +144,7 @@ const Login = () => {
 
               {/* Forgot Password Link - Moved here */}
               <div className="text-right">
-                <Link to="/forgot-password" className="font-['Secular_One',_sans-serif] text-[#2987cd] text-sm hover:underline" dir="auto">
+                <Link to="/forgot-password" className="font-['Rubik',_sans-serif] font-normal text-[#2987cd] text-sm hover:underline" dir="auto">
                   שכחתם סיסמה?
                 </Link>
               </div>
