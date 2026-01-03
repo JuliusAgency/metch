@@ -18,6 +18,9 @@ import { createPageUrl } from "@/utils";
 import { differenceInDays } from "date-fns";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import ToggleSwitch from "@/components/dashboard/ToggleSwitch";
+import { useUser } from "@/contexts/UserContext";
+import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const CustomSwitch = ({ checked, onCheckedChange, disabled, id }) => (
   <SwitchPrimitives.Root
@@ -42,10 +45,12 @@ const CustomSwitch = ({ checked, onCheckedChange, disabled, id }) => (
 
 export default function JobManagement() {
   useRequireUserType(); // Ensure user has selected a user type
-  const [, setUser] = useState(null);
+  const [activeView, setActiveView] = useState('active'); // 'active' or 'ended'
+  const { user, updateProfile } = useUser();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeView, setActiveView] = useState('active'); // 'active' or 'ended'
 
   useEffect(() => {
     loadData();
@@ -55,7 +60,6 @@ export default function JobManagement() {
     setLoading(true); // Added from outline
     try {
       const userData = await User.me();
-      setUser(userData);
 
       // Load jobs created by the current user
       const jobsData = await Job.filter({ created_by: userData.email }, "-created_date", 50);
@@ -89,7 +93,23 @@ export default function JobManagement() {
 
   // handleDeleteJob is removed as per outline
 
+  const checkCredits = () => {
+    const credits = user?.profile?.job_credits || 0;
+    if (credits <= 0) {
+      toast({
+        title: "אין יתרת משרות לפרסום",
+        description: "נגמרה חבילת המשרות שלך. ניתן לרכוש משרות נוספות בעמוד התשלומים.",
+        variant: "destructive",
+        action: <Button variant="outline" className="text-black border-white hover:bg-white/90" onClick={() => navigate('/payments')}>לרכישה</Button>
+      });
+      return false;
+    }
+    return true;
+  };
+
   const handleDuplicateJob = async (job) => {
+    if (!checkCredits()) return;
+
     try {
       // Get current user data to set created_by fields
       const userData = await User.me();
@@ -108,9 +128,24 @@ export default function JobManagement() {
       delete duplicatedJob.id;
 
       await Job.create(duplicatedJob);
+
+      // Decrement credits
+      const currentCredits = user?.profile?.job_credits || 0;
+      if (currentCredits > 0) {
+        await updateProfile({ job_credits: currentCredits - 1 });
+      }
+
       loadData(); // Reload data
+      toast({ description: "המשרה שוכפלה בהצלחה (ירדה משרה 1 מהיתרה)" });
+
     } catch (error) {
       console.error("Error duplicating job:", error);
+    }
+  };
+
+  const handleCreateNewJob = () => {
+    if (checkCredits()) {
+      navigate(createPageUrl("CreateJob"));
     }
   };
 
@@ -265,12 +300,13 @@ export default function JobManagement() {
               </Button>
             </Link>
 
-            <Link to={createPageUrl("CreateJob")}>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg">
-                <Plus className="w-5 h-5 ml-2" />
-                צור משרה חדשה
-              </Button>
-            </Link>
+            <Button
+              onClick={handleCreateNewJob}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg"
+            >
+              <Plus className="w-5 h-5 ml-2" />
+              צור משרה חדשה
+            </Button>
           </div>
         </div>
       </div>

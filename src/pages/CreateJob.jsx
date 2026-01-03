@@ -16,6 +16,8 @@ import Step5Preview from '@/components/job_creation/Step5Preview';
 import Success from '@/components/job_creation/Success';
 import { EmployerAnalytics } from "@/components/EmployerAnalytics"; // Added EmployerAnalytics import
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+import { useUser } from "@/contexts/UserContext";
+import { useToast } from "@/components/ui/use-toast";
 
 const STEPS = ["פרטי המשרה", "פרטי החברה", "שאלון סינון", "תצוגה מקדימה"]; // Removed "חבילות"
 
@@ -47,6 +49,8 @@ export default function CreateJob() {
   const [lastCreatedJob, setLastCreatedJob] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loadingJob, setLoadingJob] = useState(true);
+  const { user, updateProfile } = useUser();
+  const { toast } = useToast();
 
   const [isScreeningSaved, setIsScreeningSaved] = useState(false);
 
@@ -138,6 +142,21 @@ export default function CreateJob() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      // Logic for credits check - ONLY for new jobs
+      if (!isEditing) {
+        const credits = user?.profile?.job_credits || 0;
+        if (credits <= 0) {
+          toast({
+            title: "אין יתרת משרות לפרסום",
+            description: "נגמרה חבילת המשרות שלך. ניתן לרכוש משרות נוספות בעמוד התשלומים.",
+            variant: "destructive",
+            action: <Button variant="outline" className="text-black border-white hover:bg-white/90" onClick={() => navigate('/payments')}>לרכישה</Button>
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       // Get user data first to ensure created_by fields are set
       const userData = await User.me();
       const now = new Date().toISOString();
@@ -182,6 +201,12 @@ export default function CreateJob() {
         if (newJobData.status === 'active') { // Assuming 'active' means published
           await EmployerAnalytics.trackJobPublish(userData.email, createdOrUpdatedJob);
         }
+
+        // Decrement job credits for new jobs
+        const currentCredits = user?.profile?.job_credits || 0;
+        if (currentCredits > 0) {
+          await updateProfile({ job_credits: currentCredits - 1 });
+        }
       }
 
       setLastCreatedJob(createdOrUpdatedJob);
@@ -201,7 +226,18 @@ export default function CreateJob() {
     setLastCreatedJob(null);
   };
 
-  const handleDuplicate = () => {
+  const handleDuplicate = async () => {
+    const credits = user?.profile?.job_credits || 0;
+    if (credits <= 0) {
+      toast({
+        title: "אין יתרת משרות ליצירת עותק",
+        description: "נגמרה חבילת המשרות שלך. ניתן לרכוש משרות נוספות בעמוד התשלומים.",
+        variant: "destructive",
+        action: <Button variant="outline" className="text-black border-white hover:bg-white/90" onClick={() => navigate('/payments')}>לרכישה</Button>
+      });
+      return;
+    }
+
     const duplicatedData = { ...lastCreatedJob, title: `${lastCreatedJob.title} (עותק)` };
     delete duplicatedData.id;
     delete duplicatedData.created_date;

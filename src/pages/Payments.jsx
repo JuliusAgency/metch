@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Eye, Download, FileOutput, CreditCard, X } from 'lucide-react';
+import { Eye, Download, FileOutput, CreditCard, X, Check } from 'lucide-react';
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,22 +11,29 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import PaymentStep from "@/components/company_profile/PaymentStep";
+import PaymentStep, { validationUtils } from "@/components/company_profile/PaymentStep";
 import { useToast } from "@/components/ui/use-toast";
+import { MetchApi } from "@/api/metchApi";
+import { Loader2 } from "lucide-react";
+import { useUser } from "@/contexts/UserContext";
 
 export default function Payments() {
     const { toast } = useToast();
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState(null);
-    const [formData, setFormData] = useState({ payment_info: {} }); // Mock state for PaymentStep
+    const [paymentData, setPaymentData] = useState({}); // Mock state for PaymentStep
     const [quantity, setQuantity] = useState(1);
+    const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState({});
+    const { user, updateProfile } = useUser();
 
-    // Mock data for transactions based on the screenshot
-    const transactions = [
+    // Mock data initial state
+    const [transactions, setTransactions] = useState([
         { id: 1, amount: 349, date: '01/01/2025', details: 'מנוי חודשי - חבילת פרימיום' },
         { id: 2, amount: 349, date: '01/01/2025', details: 'מנוי חודשי - חבילת פרימיום' },
         { id: 3, amount: 349, date: '01/01/2025', details: 'מנוי חודשי - חבילת פרימיום' },
-    ];
+    ]);
 
     const handleExport = (id) => {
         // Find the transaction
@@ -155,11 +162,98 @@ ET`;
     };
 
     const handleSavePaymentMethod = () => {
+        const newErrors = {};
+
+        const cardError = validationUtils.validateCardNumber(paymentData.cardNumber || '');
+        if (cardError) newErrors.cardNumber = cardError;
+
+        const dateError = validationUtils.validateExpiry(paymentData.expiryDate || '');
+        if (dateError) newErrors.expiryDate = dateError;
+
+        const cvvError = validationUtils.validateCvv(paymentData.cvv || '');
+        if (cvvError) newErrors.cvv = cvvError;
+
+        const idError = validationUtils.validateId(paymentData.idNumber || '');
+        if (idError) newErrors.idNumber = idError;
+
+        const nameError = validationUtils.validateHolderName(paymentData.holderName || '');
+        if (nameError) newErrors.holderName = nameError;
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            toast({
+                title: "שגיאה בפרטי התשלום",
+                description: "נא לתקן את השדות המסומנים באדום",
+                variant: "destructive"
+            });
+            return;
+        }
+
         setShowPaymentModal(false);
         toast({
             title: "אמצעי תשלום עודכן",
             description: "פרטי האשראי עודכנו בהצלחה במערכת",
         });
+    };
+
+    const handlePurchase = async () => {
+        // Validate if payment info exists
+        if (!paymentData.cardNumber || !paymentData.expiryDate || !paymentData.cvv) {
+            toast({
+                title: "חסרים פרטי תשלום",
+                description: "נא לעדכן את אמצעי התשלום לפני ביצוע הרכישה",
+                variant: "destructive"
+            });
+            setShowPaymentModal(true);
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await MetchApi.createTransaction({
+                Amount: 499 * quantity,
+                CardNumber: paymentData.cardNumber,
+                CardExpirationMMYY: paymentData.expiryDate.replace('/', ''), // Format adjustment
+                CVV2: paymentData.cvv,
+                CardOwnerName: paymentData.holderName,
+                CardOwnerIdentityNumber: paymentData.idNumber,
+                NumberOfPayments: 1
+            });
+
+            // 1. Update User Credits in Supabase
+            const currentCredits = user?.profile?.job_credits || 0;
+            const newCredits = currentCredits + quantity;
+
+            await updateProfile({ job_credits: newCredits });
+
+            // 2. Add Transaction to List
+            const newTransaction = {
+                id: Date.now().toString().slice(-6), // Simple ID generation
+                amount: 499 * quantity,
+                date: new Date().toLocaleDateString('en-GB'),
+                details: `רכישת ${quantity} משרות חדשות`
+            };
+
+            setTransactions(prev => [newTransaction, ...prev]);
+
+            // 3. Show Success & Update Message
+            setShowSuccessModal(true);
+
+            toast({
+                title: "יתרת משרות עודכנה",
+                description: `נוספו ${quantity} משרות לחשבונך. יתרה נוכחית: ${newCredits}`,
+            });
+
+        } catch (error) {
+            console.error("Purchase failed:", error);
+            toast({
+                title: "העסקה נכשלה",
+                description: "אירעה שגיאה בעת ביצוע החיוב. אנא ודאו שפרטי הכרטיס תקינים ונסו שוב.",
+                variant: "destructive"
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -249,9 +343,17 @@ ET`;
 
                             {/* CTA Button */}
                             <div className="flex justify-center pt-6">
-                                <Button className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-12 py-6 text-xl font-bold shadow-lg shadow-blue-200/50 transition-all hover:-translate-y-1">
-                                    למאצ׳ המושלם
-                                    <Eye className="w-5 h-5 mr-2 scale-x-[-1]" />
+                                <Button
+                                    onClick={handlePurchase}
+                                    disabled={loading}
+                                    className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-12 py-6 text-xl font-bold shadow-lg shadow-blue-200/50 transition-all hover:-translate-y-1"
+                                >
+                                    {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                                        <>
+                                            למאצ׳ המושלם
+                                            <Eye className="w-5 h-5 mr-2 scale-x-[-1]" />
+                                        </>
+                                    )}
                                 </Button>
                             </div>
                         </div>
@@ -344,7 +446,12 @@ ET`;
                         <DialogTitle className="text-center text-xl font-bold text-[#1E3A8A]">עדכון אמצעי תשלום</DialogTitle>
                     </DialogHeader>
                     <div className="py-4">
-                        <PaymentStep formData={formData} setFormData={setFormData} />
+                        <PaymentStep
+                            paymentData={paymentData}
+                            setPaymentData={setPaymentData}
+                            errors={errors}
+                            setErrors={setErrors}
+                        />
                         <div className="mt-8 flex justify-center">
                             <Button
                                 onClick={handleSavePaymentMethod}
@@ -391,6 +498,34 @@ ET`;
                             </div>
                         </div>
                     )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Success Modal */}
+            <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+                <DialogContent className="sm:max-w-[400px] p-8 rounded-[40px]" dir="rtl">
+                    <div className="flex flex-col items-center text-center space-y-6">
+                        {/* Glowing Checkmark */}
+                        <div className="relative">
+                            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                                    <Check className="w-6 h-6 text-white stroke-[3]" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <h2 className="text-2xl font-bold text-[#0F172A]">הרכישה בוצעה בהצלחה</h2>
+                            <p className="text-gray-500 text-sm">פרטי העסקה נשלחו אל הדוא״ל</p>
+                        </div>
+
+                        <Button
+                            onClick={() => setShowSuccessModal(false)}
+                            className="w-[80%] bg-[#2987CD] hover:bg-[#1C649B] text-white rounded-full py-6 text-lg font-bold shadow-lg"
+                        >
+                            אישור
+                        </Button>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

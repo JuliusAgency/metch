@@ -12,8 +12,10 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useUser } from "@/contexts/UserContext";
+import { MetchApi } from "@/api/metchApi";
+import { toast } from "sonner";
 
-const STEPS = ["פרטי חברה", "תשלום", "בחירת חבילה", "סיום"];
+const STEPS = ["פרטי חברה", "בחירת חבילה", "תשלום", "סיום"];
 
 export default function CompanyProfileCompletion() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -87,6 +89,36 @@ export default function CompanyProfileCompletion() {
       const saved = await handleSave();
       if (!saved) return;
     }
+
+    // Payment Step (Step 3)
+    if (step === 3) {
+      if (!paymentData.cardNumber || !paymentData.expiryDate || !paymentData.cvv) {
+        toast.error("נא למלא את כל פרטי התשלום");
+        return;
+      }
+
+      setSaving(true);
+      try {
+        await MetchApi.createTransaction({
+          Amount: packageData.price,
+          CardNumber: paymentData.cardNumber,
+          CardExpirationMMYY: paymentData.expiryDate.replace('/', ''), // Assuming format MM/YY -> MMYY
+          CVV2: paymentData.cvv,
+          CardOwnerName: paymentData.holderName,
+          CardOwnerIdentityNumber: paymentData.idNumber,
+          NumberOfPayments: 1
+        });
+        toast.success("התשלום בוצע בהצלחה!");
+      } catch (error) {
+        console.error("Payment failed:", error);
+        toast.error("התשלום נכשל: " + error.message);
+        setSaving(false);
+        return; // Stop if payment fails
+      } finally {
+        setSaving(false);
+      }
+    }
+
     if (step < STEPS.length) {
       setStep(prev => prev + 1);
     } else {
@@ -106,9 +138,9 @@ export default function CompanyProfileCompletion() {
       case 1:
         return <CompanyDetailsStep companyData={companyData} setCompanyData={setCompanyData} />;
       case 2:
-        return <PaymentStep paymentData={paymentData} setPaymentData={setPaymentData} />;
-      case 3:
         return <PackageSelectionStep packageData={packageData} setPackageData={setPackageData} onBack={prevStep} />;
+      case 3:
+        return <PaymentStep paymentData={paymentData} setPaymentData={setPaymentData} />;
       case 4:
         return <CompletionStep />;
       default:
