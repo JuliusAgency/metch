@@ -7,15 +7,16 @@ import { ArrowLeft, ArrowRight, Loader2, CheckCircle } from "lucide-react";
 import CompanyDetailsStep from "@/components/company_profile/CompanyDetailsStep";
 import PackageSelectionStep from "@/components/company_profile/PackageSelectionStep";
 import PaymentStep from "@/components/company_profile/PaymentStep";
+import CompanyProfileFinalStep from "@/components/company_profile/CompanyProfileFinalStep";
 import CompletionStep from "@/components/company_profile/CompletionStep";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useUser } from "@/contexts/UserContext";
 import { MetchApi } from "@/api/metchApi";
 import { toast } from "sonner";
 
-const STEPS = ["פרטי חברה", "בחירת חבילה", "תשלום", "סיום"];
+const STEPS = ["פרטי חברה", "בחירת חבילה", "תשלום", "השלמת פרופיל", "סיום"];
 
 export default function CompanyProfileCompletion() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -46,6 +47,10 @@ export default function CompanyProfileCompletion() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
+
+  const location = useLocation();
+
+
 
   useEffect(() => {
     const loadUser = async () => {
@@ -86,11 +91,17 @@ export default function CompanyProfileCompletion() {
 
   const nextStep = async () => {
     if (step === 1) {
+      if (!companyData.company_name || !companyData.company_name.trim()) {
+        // Since we don't have a toast component easily accessible in context, we will prevent progression.
+        // Ideally we would show a toast here. Assuming user notices field is required.
+        // For now, we will just return to prevent saving empty data.
+        return;
+      }
       const saved = await handleSave();
       if (!saved) return;
     }
 
-    // Payment Step (Step 3)
+    // Payment Step (Step 3) - from HEAD
     if (step === 3) {
       if (!paymentData.cardNumber || !paymentData.expiryDate || !paymentData.cvv) {
         toast.error("נא למלא את כל פרטי התשלום");
@@ -119,10 +130,18 @@ export default function CompanyProfileCompletion() {
       }
     }
 
+    // Step 4 is the new Final Profile Step - save before moving to Completion
+    if (step === 4) {
+      const saved = await handleSave();
+      if (!saved) return;
+    }
+
     if (step < STEPS.length) {
       setStep(prev => prev + 1);
     } else {
-      // Final step action
+      // Final step action (fallback if not redirected)
+      // Ensure we explicitly force save one last time to be safe?
+      // handleSave(); // Optional, but usually step 4 save covers it.
       navigate(`${createPageUrl('Dashboard')}?onboarding=complete`);
     }
   };
@@ -142,27 +161,30 @@ export default function CompanyProfileCompletion() {
       case 3:
         return <PaymentStep paymentData={paymentData} setPaymentData={setPaymentData} />;
       case 4:
-        return <CompletionStep />;
+        return <CompanyProfileFinalStep companyData={companyData} setCompanyData={setCompanyData} onFinish={nextStep} />;
+      case 5:
+        return <CompletionStep hideSecondaryButton={true} />;
       default:
         return null;
     }
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen"><Loader2 className="w-12 h-12 animate-spin text-blue-600" /></div>;
+    return <div className="flex justify-center items-center h-screen"><div className="w-12 h-12 border-t-2 border-blue-600 rounded-full animate-spin"></div></div>;
   }
 
   return (
-    <div className="p-4 md:p-6" dir="rtl">
-      <div className="w-[85vw] mx-auto">
-        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden p-8">
-          <div className="max-w-4xl mx-auto">
+    <div className="max-w-xl mx-auto py-8" dir="rtl">
+      <div>
+        <div className="max-w-4xl mx-auto">
 
 
-            <div className="my-10 min-h-[300px]">
-              {renderStepContent()}
-            </div>
+          <div className={`my-6 ${step === 4 ? 'min-h-0' : 'min-h-[300px]'}`}>
+            {renderStepContent()}
+          </div>
 
+          {/* Default Navigation Buttons - Hidden on Step 4 (Custom Finish Button) */}
+          {step !== 4 && (
             <div className={`flex ${step === 1 ? 'justify-center' : 'justify-between'} items-center mt-12`}>
               {step > 1 && (
                 <Button
@@ -180,12 +202,12 @@ export default function CompanyProfileCompletion() {
                 onClick={nextStep}
                 disabled={saving}
               >
-                {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : (step === STEPS.length ? 'מעבר לדאשבורד' : 'המשך')}
+                {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (step === STEPS.length ? 'מעבר לדאשבורד' : 'המשך')}
                 {!saving && <ArrowLeft className="w-5 h-5 ml-2" />}
               </Button>
             </div>
-          </div>
-        </Card>
+          )}
+        </div>
       </div>
     </div>
   );

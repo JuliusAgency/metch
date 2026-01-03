@@ -94,7 +94,7 @@ export default function Step2({ preferences, setPreferences, onSave, onBack, sav
                     disabled={saving || selectedTraits.length !== 3} // Enforce exactly 3? User said "Choose the 3 traits". Usually means exactly 3.
                     className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-12 py-6 text-lg font-bold flex items-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                    {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (
                         <>
                             המשך
                             <ArrowLeft className="w-5 h-5" />

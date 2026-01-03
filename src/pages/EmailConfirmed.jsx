@@ -154,39 +154,10 @@ const EmailConfirmed = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, userLoading, navigate, toast]);
 
-  // Show loading state while checking
   if (loading || userLoading) {
     return (
-      <div className="bg-gradient-to-b from-[#dbedf3] from-[12.35%] to-[#ffffff] via-[#ffffff] via-[32.336%] min-h-screen flex items-center justify-center p-4">
-        {/* Background Card */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="bg-[rgba(255,255,255,0.5)] rounded-[40px] shadow-[0px_0px_17.611px_0px_rgba(0,0,0,0.2)] w-full max-w-4xl h-full max-h-[90vh]" />
-        </div>
-
-        {/* Loading Content */}
-        <div className="relative z-10 w-full max-w-md mx-auto text-center">
-          {/* Logo */}
-          <div className="flex justify-center mb-8">
-            <div className="backdrop-blur-[43px] backdrop-filter bg-[rgba(204,229,248,0.3)] border border-solid border-white rounded-full p-4">
-              <div className="flex items-center space-x-2">
-                <img alt="" className="w-8 h-8" src={imgHugeiconsAiMagic} />
-                <p className="font-['Poppins:Regular',_sans-serif] text-2xl text-black font-medium">
-                  Metch
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Loading Message */}
-          <div className="space-y-4">
-            <h1 className="font-['Rubik:Bold',_sans-serif] font-bold text-3xl md:text-4xl text-[#32343d]">
-              מכין פרופיל...
-            </h1>
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2987cd]"></div>
-            </div>
-          </div>
-        </div>
+      <div className="min-h-screen page-gradient flex flex-col items-center justify-center p-4" dir="rtl">
+        <div className="w-10 h-10 border-t-2 border-blue-500 rounded-full animate-spin"></div>
       </div>
     );
   }

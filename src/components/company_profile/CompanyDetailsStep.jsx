@@ -82,9 +82,17 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                         />
                     </div>
 
-                    {/* Middle Row: Phone with Code & Email */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                        {/* Phone with Send Code Button */}
+                    {/* Middle Row: Phone with Code & Email - Redesigned to 3 cols for width matching */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                        {/* CV Email - Swapped to be first (Right in RTL) */}
+                        <InfoInput
+                            placeholder="מייל לקבלת קו״ח"
+                            name="cv_reception_email"
+                            value={companyData.cv_reception_email || ""}
+                            onChange={handleInputChange}
+                        />
+
+                        {/* Phone with Send Code Button - Swapped to be second (Center in RTL) */}
                         <div className="relative">
                             <div className="relative">
                                 <InfoInput
@@ -104,14 +112,6 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                                 לא קיבלתי שלח שוב
                             </p>
                         </div>
-
-                        {/* CV Email */}
-                        <InfoInput
-                            placeholder="מייל לקבלת קו״ח"
-                            name="cv_reception_email"
-                            value={companyData.cv_reception_email || ""}
-                            onChange={handleInputChange}
-                        />
                     </div>
                 </div>
 

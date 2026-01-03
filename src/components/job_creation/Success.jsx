@@ -1,4 +1,4 @@
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Check, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -7,6 +7,7 @@ import Lottie from 'lottie-react';
 import confettiAnimation from '../../../Confetti banner.json';
 
 export default function Success({ onReset, onDuplicate }) {
+  const navigate = useNavigate();
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -52,7 +53,7 @@ export default function Success({ onReset, onDuplicate }) {
           שכפול משרה
         </Button>
         <Button
-          onClick={() => window.location.href = '/Dashboard'}
+          onClick={() => navigate('/Dashboard')}
           variant="outline"
           className="px-8 py-3 h-auto text-lg rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2"
         >

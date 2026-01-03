@@ -60,6 +60,7 @@ const JobSeekerDashboard = ({ user }) => {
   const [userStats, setUserStats] = useState(null);
   const [showCareerModal, setShowCareerModal] = useState(false);
   const [hasCV, setHasCV] = useState(true); // Default to true to avoid flickers
+  const [hasCompletedOnboardingFlow, setHasCompletedOnboardingFlow] = useState(false);
   const navigate = useNavigate();
 
   // Check for onboarding triggers - MOVED AFTER GUARDS CHECK
@@ -67,8 +68,19 @@ const JobSeekerDashboard = ({ user }) => {
     // Wait for initial loading and User check
     if (loading || !user) return;
 
-    // GUARD: If user doesn't have CV or Specialization, they shouldn't see these modals
-    // because they will be redirected by the other useEffect (or logic below) shortly.
+    // GUARD: If we just finished the flow, don't re-evaluate
+    if (hasCompletedOnboardingFlow) return;
+
+    const params = new URLSearchParams(location.search);
+    const forceOnboarding = params.get('onboarding') === 'complete';
+
+    // 1. First priority: Career Stage
+    // Force show if redirected from Preference Questionnaire (forceOnboarding) OR if data is missing
+    if (!user.career_stage || forceOnboarding) {
+      setShowCareerModal(true);
+      return; // Wait for career stage before showing guide
+    }
+
     // We check hasCV (state) and profile specialization.
     if (!hasCV) return; // Will be redirected
 
@@ -76,18 +88,12 @@ const JobSeekerDashboard = ({ user }) => {
     // 'user' from useUser() has merged profile data.
     if (!user.specialization) return; // Will be redirected
 
-    // 1. First priority: Career Stage
-    if (!user.career_stage) {
-      setShowCareerModal(true);
-      return; // Wait for career stage before showing guide
-    }
-
     // 2. Second priority: Site Guide
     const hasSeenGuide = localStorage.getItem(`jobseeker_guide_${user?.email}`);
     if (!hasSeenGuide) {
       setShowGuide(true);
     }
-  }, [user, loading, hasCV]);
+  }, [user, loading, hasCV, hasCompletedOnboardingFlow]);
 
   const handleGuideComplete = () => {
     setShowGuide(false);
@@ -97,8 +103,27 @@ const JobSeekerDashboard = ({ user }) => {
   };
 
   const handleCareerStageComplete = () => {
+    // Mark flow as completed to prevent re-triggering
+    setHasCompletedOnboardingFlow(true);
     setShowCareerModal(false);
-    // After career stage, check if we need to show the guide
+
+    // Check for forced onboarding param
+    const params = new URLSearchParams(location.search);
+    const forceOnboarding = params.get('onboarding') === 'complete';
+
+    // If forced onboarding, clear the param NOW (prevent loops) and show guide
+    if (forceOnboarding) {
+      // Clear the param
+      navigate(location.pathname, { replace: true });
+
+      // Use timeout to ensure modal closes before guide opens
+      setTimeout(() => {
+        setShowGuide(true);
+      }, 500);
+      return;
+    }
+
+    // Normal flow (not forced): Check if guide seen
     const hasSeenGuide = localStorage.getItem(`jobseeker_guide_${user?.email}`);
     if (!hasSeenGuide) {
       setShowGuide(true);
@@ -464,11 +489,16 @@ const EmployerDashboard = ({ user }) => {
   };
 
   // Redirect to onboarding if company profile is incomplete
+  // Redirect to onboarding if company profile is incomplete
   useEffect(() => {
+    // Skip check if verified completion just happened
+    const params = new URLSearchParams(location.search);
+    if (params.get('onboarding') === 'complete') return;
+
     if (!loading && user && user.user_type === 'employer' && (!user.company_name || !user.company_name.trim())) {
       navigate('/CompanyProfileCompletion');
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, location.search]);
 
   const handleGuideSkip = () => {
     setShowGuide(false);
@@ -804,7 +834,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="p-8 space-y-8 flex justify-center items-center h-screen" dir="rtl">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="w-10 h-10 border-t-2 border-blue-600 rounded-full animate-spin"></div>
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { ChevronRight } from 'lucide-react';
 import { createPageUrl } from "@/utils";
+import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
 const ProfileHeader = () => {
     const navigate = useNavigate();
@@ -17,15 +18,14 @@ const ProfileHeader = () => {
     };
 
     return (
-        <div className="relative w-full h-40 md:h-48 overflow-hidden">
+        <div className="relative h-24 overflow-hidden -m-px">
             <div
                 className="absolute inset-0 w-full h-full"
                 style={{
-                    backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/ca93821b0_image.png)',
-                    backgroundSize: 'cover',
+                    backgroundImage: `url(${settingsHeaderBg})`,
+                    backgroundSize: '100% 100%',
                     backgroundPosition: 'center top',
-                    backgroundRepeat: 'no-repeat',
-                    clipPath: "ellipse(120% 100% at 50% 0%)"
+                    backgroundRepeat: 'no-repeat'
                 }}
             ></div>
             <button

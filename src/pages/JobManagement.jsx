@@ -21,6 +21,7 @@ import ToggleSwitch from "@/components/dashboard/ToggleSwitch";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
 const CustomSwitch = ({ checked, onCheckedChange, disabled, id }) => (
   <SwitchPrimitives.Root
@@ -189,10 +190,10 @@ export default function JobManagement() {
         {/* Header */}
         <div className="relative h-32 overflow-hidden w-full">
           <div
-            className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_110%_at_50%_100%)]"
+            className="absolute inset-0 w-full h-full"
             style={{
-              backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
-              backgroundSize: 'cover',
+              backgroundImage: `url(${settingsHeaderBg})`,
+              backgroundSize: '100% 100%',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat'
             }} />

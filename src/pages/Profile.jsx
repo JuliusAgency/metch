@@ -17,6 +17,7 @@ import { useRequireUserType } from '@/hooks/use-require-user-type';
 import CareerStageModal from '@/components/dashboard/CareerStageModal';
 import Lottie from 'lottie-react';
 import confettiAnimation from '../../Confetti banner.json';
+import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
 export default function Profile() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -289,7 +290,7 @@ export default function Profile() {
   );
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen"><Loader2 className="w-12 h-12 animate-spin text-blue-600" /></div>;
+    return <div className="flex justify-center items-center h-screen"><div className="w-12 h-12 border-t-2 border-blue-600 rounded-full animate-spin"></div></div>;
   }
 
   return (
@@ -297,11 +298,10 @@ export default function Profile() {
       <div className="relative">
         <div className="relative h-32 overflow-hidden w-full">
           <div
-            className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_110%_at_50%_100%)]"
+            className="absolute inset-0 w-full h-full"
             style={{
-              backgroundImage:
-                "url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)",
-              backgroundSize: "cover",
+              backgroundImage: `url(${settingsHeaderBg})`,
+              backgroundSize: "100% 100%",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
             }}

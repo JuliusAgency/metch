@@ -18,37 +18,47 @@ import { AlertCircle } from 'lucide-react';
 export function UnsavedChangesDialog({ open, onOpenChange, onConfirm, onCancel }) {
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
-            <AlertDialogContent className="max-w-md bg-white rounded-2xl p-8 text-center">
-                {/* Icon */}
-                <div className="w-16 h-16 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4">
-                    <AlertCircle className="w-8 h-8" />
+            <AlertDialogContent className="w-[90%] max-w-[500px] bg-white rounded-[20px] p-0 overflow-hidden border-0 shadow-2xl gap-0">
+                <div className="flex flex-col items-center pt-6 pb-5 px-6 text-center">
+                    {/* Icon - Using the uploaded red alert icon */}
+                    <div className="mb-4 relative">
+                        <div className="w-20 h-20 flex items-center justify-center">
+                            <img
+                                src="/assets/images/popup-alert-icon.png"
+                                alt="Alert"
+                                className="w-full h-full object-contain"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Title */}
+                    <AlertDialogHeader className="space-y-3 mb-6 w-full px-2">
+                        <AlertDialogTitle className="text-2xl font-bold text-[#0E1B4D] text-center" style={{ fontFamily: 'Rubik, sans-serif' }}>
+                            ?האם אתה בטוח שברצונך לסיים
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-lg text-[#0E1B4D] text-center font-normal">
+                            פרופיל מלא משפר את סיכוי ההשמה
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+
+                    {/* Actions */}
+                    <div className="w-full space-y-3 px-6 pb-2">
+                        <AlertDialogAction
+                            onClick={onConfirm}
+                            className="w-full h-12 rounded-full bg-[#2987CD] hover:bg-[#206FA8] text-white font-bold text-xl shadow-none transition-all duration-200"
+                        >
+                            להשלמת פרופיל
+                        </AlertDialogAction>
+
+                        <AlertDialogCancel
+                            onClick={onCancel}
+                            className="w-full h-12 rounded-full bg-white border border-[#D1D5DB] hover:bg-gray-50 text-[#0E1B4D] font-bold text-xl shadow-none mt-0"
+                            style={{ marginTop: '0.75rem' }}
+                        >
+                            סיום
+                        </AlertDialogCancel>
+                    </div>
                 </div>
-
-                {/* Title */}
-                <AlertDialogHeader>
-                    <AlertDialogTitle className="text-xl font-bold text-gray-900 text-center">
-                        האם אתה בטוח שברצונך לסיים?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className="text-sm text-gray-600 text-center mt-2">
-                        פרופיל מלא מעלה את סיכויי ההשמה
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-
-                {/* Actions */}
-                <AlertDialogFooter className="flex flex-col gap-3 mt-6 sm:flex-col">
-                    <AlertDialogAction
-                        onClick={onConfirm}
-                        className="w-full h-10 rounded-full bg-[#2987CD] text-white font-semibold hover:bg-[#2987CD]/90"
-                    >
-                        להשלמת פרופיל
-                    </AlertDialogAction>
-                    <AlertDialogCancel
-                        onClick={onCancel}
-                        className="w-full text-gray-500 hover:text-gray-700 bg-transparent border-0 shadow-none"
-                    >
-                        סיום
-                    </AlertDialogCancel>
-                </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
     );

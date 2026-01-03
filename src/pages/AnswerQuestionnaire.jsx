@@ -102,7 +102,7 @@ export default function AnswerQuestionnaire() {
     if (loading) {
         return (
             <div className="flex justify-center items-center h-screen" dir="rtl">
-                <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+                <div className="w-12 h-12 border-t-2 border-blue-600 rounded-full animate-spin"></div>
             </div>
         );
     }
@@ -141,7 +141,7 @@ export default function AnswerQuestionnaire() {
                             size="lg"
                             className="px-12 h-14 rounded-full font-bold text-lg bg-blue-600 hover:bg-blue-700"
                         >
-                            {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : "שלחו קורות חיים"}
+                            {submitting ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : "שלחו קורות חיים"}
                         </Button>
                     </div>
                 </form>

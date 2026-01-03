@@ -34,7 +34,7 @@ const ProfileActions = ({
             onClick={handleExportToEmail}
             disabled={exportingResume}
         >
-            {exportingResume && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
+            {exportingResume && <div className="w-4 h-4 border-t-2 border-current rounded-full animate-spin ml-2"></div>}
             ייצוא למייל
         </Button>
 
@@ -45,7 +45,7 @@ const ProfileActions = ({
             onClick={handleStartConversation}
             disabled={creatingConversation}
         >
-            {creatingConversation && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
+            {creatingConversation && <div className="w-4 h-4 border-t-2 border-current rounded-full animate-spin ml-2"></div>}
             שלח הודעה למועמד
         </Button>
     </div>

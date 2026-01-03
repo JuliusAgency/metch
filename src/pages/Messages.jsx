@@ -23,6 +23,7 @@ import ConversationList from "@/components/messages/ConversationList";
 import Pagination from "@/components/messages/Pagination";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useLocation, useNavigate } from "react-router-dom";
+import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
 const ITEMS_PER_PAGE = 4;
 const SUPPORT_EMAIL = "business@metch.co.il";
@@ -336,7 +337,7 @@ export default function Messages() {
                     <div className="flex-1 p-6 overflow-y-auto space-y-4">
                         {loadingMessages && (
                             <div className="flex justify-center items-center py-8">
-                                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
                             </div>
                         )}
 
@@ -397,10 +398,10 @@ export default function Messages() {
             <div className="relative">
                 <div className="relative h-32 overflow-hidden w-full">
                     <div
-                        className="absolute inset-0 w-full h-full [clip-path:ellipse(120%_110%_at_50%_100%)]"
+                        className="absolute inset-0 w-full h-full"
                         style={{
-                            backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/d9fc7bd69_Rectangle6463.png)',
-                            backgroundSize: 'cover',
+                            backgroundImage: `url(${settingsHeaderBg})`,
+                            backgroundSize: '100% 100%',
                             backgroundPosition: 'center',
                             backgroundRepeat: 'no-repeat'
                         }}
@@ -427,7 +428,7 @@ export default function Messages() {
                     <div className="space-y-4 mb-8">
                         {loading ? (
                             <div className="flex justify-center items-center py-12">
-                                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
                             </div>
                         ) : paginatedConversations.length === 0 ? (
                             <div className="text-center py-12 text-gray-500">

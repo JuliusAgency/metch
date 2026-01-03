@@ -50,13 +50,13 @@ export default function Layout({ children, currentPageName }) {
   const closeMenu = () => setIsMobileMenuOpen(false);
 
   // Pages that should not show navbar (authentication pages)
-  const authPages = ['Login', 'Register', 'Landing', 'EmailConfirmation', 'UserTypeSelection', 'CompanyProfileCompletion', 'ForgotPassword'];
+  const authPages = ['Login', 'Register', 'Landing', 'EmailConfirmation', 'UserTypeSelection', 'ForgotPassword'];
   const shouldHideNavbar = authPages.includes(currentPageName);
 
-  if (loading) {
+  if (loading && !user) {
     return (
       <div className="min-h-screen page-gradient flex items-center justify-center" dir="rtl">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="w-10 h-10 border-t-2 border-blue-500 rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -135,8 +135,9 @@ export default function Layout({ children, currentPageName }) {
   const onboardingPages = ['CVGenerator', 'PreferenceQuestionnaire', 'CreateJob', 'CareerStageSelection', 'careerstageselection'];
   const isOnboardingActive = localStorage.getItem('onboarding_active') === 'true';
 
-  // Hide header if it's an auth page OR (it's an onboarding page AND we are in onboarding mode)
-  const shouldHideHeader = authPages.includes(currentPageName) || (onboardingPages.includes(currentPageName) && isOnboardingActive);
+  // Hide header if it's an auth page OR (it's an onboarding page AND we are in onboarding mode) OR specific onboarding query param exists
+  const isSettingsOnboarding = currentPageName === 'Settings' && searchParams.get('onboarding') === 'company_details';
+  const shouldHideHeader = authPages.includes(currentPageName) || (onboardingPages.includes(currentPageName) && isOnboardingActive) || isSettingsOnboarding;
 
   return (
     <div className="min-h-screen page-gradient" dir="rtl">

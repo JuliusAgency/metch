@@ -108,7 +108,7 @@ export const WhatsAppVerificationDialog = ({ isOpen, onClose, onVerified, initia
                                     onClick={handleSendCode}
                                     disabled={loading}
                                 >
-                                    {loading ? <Loader2 className="animate-spin" /> : "שלח קוד אימות"}
+                                    {loading ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : "שלח קוד אימות"}
                                 </Button>
                             </div>
                         </div>
@@ -143,7 +143,7 @@ export const WhatsAppVerificationDialog = ({ isOpen, onClose, onVerified, initia
                                     onClick={handleVerifyCode}
                                     disabled={loading}
                                 >
-                                    {loading ? <Loader2 className="animate-spin" /> : "אמת קוד"}
+                                    {loading ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : "אמת קוד"}
                                 </Button>
                             </div>
                         </div>
