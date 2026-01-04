@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
-import { UploadCloud, Globe, Facebook, Instagram, Linkedin, Plus, X, Copy } from "lucide-react";
+import { UploadCloud, Globe, Facebook, Instagram, Linkedin, Plus, X, Copy, Music } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { UnsavedChangesDialog } from "@/components/dialogs/UnsavedChangesDialog";
 
@@ -70,6 +70,7 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
         { id: 'instagram', icon: Instagram, label: 'אינסטגרם' },
         { id: 'linkedin', icon: Linkedin, label: 'לינקדאין' },
         { id: 'twitter', icon: XIcon, label: 'X' },
+        { id: 'tiktok', icon: Music, label: 'טיקטוק' },
     ];
 
     return (
