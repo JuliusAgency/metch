@@ -201,14 +201,27 @@ export default function CompanyProfileCompletion() {
                   <ArrowRight className="w-5 h-5 mr-2" />
                 </Button>
               )}
-              <Button
-                className={`bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg disabled:opacity-50 transition-transform duration-300 ${step === 1 ? 'px-14 py-4 text-xl transform hover:scale-105' : 'px-12 py-3 text-lg'}`}
-                onClick={nextStep}
-                disabled={saving}
-              >
-                {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (step === STEPS.length ? 'מעבר לדאשבורד' : 'המשך')}
-                {!saving && <ArrowLeft className="w-5 h-5 ml-2" />}
-              </Button>
+              {(() => {
+                const isStep1Valid = step === 1 && (
+                  companyData.company_name?.trim() &&
+                  companyData.full_name?.trim() &&
+                  companyData.phone?.trim() &&
+                  companyData.cv_reception_email?.trim() &&
+                  companyData.company_phone?.trim() &&
+                  companyData.is_phone_verified
+                );
+
+                return (
+                  <Button
+                    className={`bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg disabled:opacity-50 transition-transform duration-300 ${step === 1 ? 'px-14 py-4 text-xl transform hover:scale-105' : 'px-12 py-3 text-lg'}`}
+                    onClick={nextStep}
+                    disabled={saving || (step === 1 && !isStep1Valid)}
+                  >
+                    {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (step === STEPS.length ? 'מעבר לדאשבורד' : 'המשך')}
+                    {!saving && <ArrowLeft className="w-5 h-5 ml-2" />}
+                  </Button>
+                );
+              })()}
             </div>
           )}
         </div>
