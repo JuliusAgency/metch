@@ -5,6 +5,14 @@ import { Notification } from "@/api/entities";
 import { useUser } from "@/contexts/UserContext";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   Eye,
   MessageSquare,
   FileText,
@@ -18,8 +26,10 @@ import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
+
 const ITEMS_PER_PAGE = 7;
 
+// Allowed notification types for Employer users
 // Allowed notification types for Employer users
 const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message'];
 
@@ -27,6 +37,7 @@ const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_messa
 const getNotificationConfig = (type) => {
   const configs = {
     job_view: { icon: Eye, title: "צפייה במשרה" },
+    profile_view: { icon: Eye, title: "צפייה בכרטיס" },
     new_message: { icon: MessageSquare, title: "הודעה חדשה" },
     application_submitted: { icon: FileText, title: "הוגשה מועמדות" },
     new_candidate: { icon: UserPlus, title: "מועמד חדש" },
@@ -42,6 +53,7 @@ export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedNotification, setSelectedNotification] = useState(null); // State for modal
 
   const loadNotifications = useCallback(async () => {
     if (!user?.email) {
@@ -51,9 +63,40 @@ export default function Notifications() {
 
     try {
       setLoading(true);
+
+      // --- TEMPORARY TEST SEEDING ---
+      if (user.user_type === 'employer') {
+        const existingTests = await Notification.filter({ created_by: user.id }, "-created_date");
+        const hasAppTest = existingTests.some(n => n.message.includes("דניאל כהן הגיש"));
+        const hasMsgTest = existingTests.some(n => n.message.includes("הודעה חדשה מאת"));
+
+        if (!hasAppTest) {
+          await Notification.create({
+            created_by: user.id,
+            type: 'application_submitted',
+            message: "דניאל כהן הגיש מועמדות למשרה ״מנהל מוצר״",
+            is_read: 'false',
+            created_date: new Date().toISOString()
+          });
+        }
+
+        if (!hasMsgTest) {
+          await Notification.create({
+            created_by: user.id,
+            type: 'new_message',
+            message: "הודעה חדשה מאת שרה לוי",
+            is_read: 'false',
+            created_date: new Date(Date.now() - 86400000).toISOString() // Yesterday
+          });
+        }
+      }
+      // -----------------------------
+
+
+
       // Fetch all notifications for the user, ordered by created_date descending
       const allNotifications = await Notification.filter(
-        { email: user.email },
+        { created_by: user.id },
         "-created_date"
       );
 
@@ -63,13 +106,27 @@ export default function Notifications() {
         : allNotifications;
 
       setNotifications(filteredNotifications);
+
+      // --- TEMPORARY CLEANUP SCRIPT ---
+      const testMessages = ["'שילב' צפו בפרופיל שלך", "'פוקס הום' צפו בפרופיל שלך"];
+      const notificationsToDelete = allNotifications.filter(n =>
+        testMessages.includes(n.message) && n.type === 'profile_view'
+      );
+
+      if (notificationsToDelete.length > 0) {
+        console.log("Cleaning up test notifications...", notificationsToDelete.length);
+        await Promise.all(notificationsToDelete.map(n => Notification.delete(n.id)));
+        // Update state to remove them immediately from view
+        setNotifications(prev => prev.filter(n => !notificationsToDelete.some(d => d.id === n.id)));
+      }
+      // --------------------------------
     } catch (error) {
       console.error("Error loading notifications:", error);
       setNotifications([]);
     } finally {
       setLoading(false);
     }
-  }, [user?.email]);
+  }, [user?.email, user?.id, user?.user_type]);
 
   useEffect(() => {
     loadNotifications();
@@ -98,6 +155,25 @@ export default function Notifications() {
       return "";
     }
   };
+
+  const handleNotificationClick = async (notif) => {
+    setSelectedNotification(notif);
+
+    // Mark as read if not already
+    if (notif.is_read === 'false' || notif.is_read === false) {
+      try {
+        await Notification.update(notif.id, { is_read: 'true' });
+        // Update local state to reflect read status
+        setNotifications(prev => prev.map(n =>
+          n.id === notif.id ? { ...n, is_read: 'true', read: true } : n
+        ));
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
+      }
+    }
+  };
+
+  const closeDialog = () => setSelectedNotification(null);
 
   return (
     <div className="h-full relative" dir="rtl">
@@ -148,20 +224,23 @@ export default function Notifications() {
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     className="flex items-center justify-between p-4 border-b border-gray-200/80 last:border-b-0"
                   >
-                    <span className="text-gray-500 text-sm whitespace-nowrap">
-                      {formatDate(notif.created_date || notif.created_at)}
-                    </span>
+                    <div
+                      onClick={() => handleNotificationClick(notif)}
+                      className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 bg-white flex-shrink-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                    >
+                      <Icon className="w-5 h-5 text-blue-600" />
+                    </div>
                     <div className="flex-1 text-right px-4 sm:px-8">
                       <p className="font-semibold text-gray-800">
                         {config.title}
                       </p>
-                      <p className="text-gray-600">
+                      <p className="font-bold text-gray-900 mt-1">
                         {notif.message || "התראה חדשה"}
                       </p>
                     </div>
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 bg-white flex-shrink-0">
-                      <Icon className="w-5 h-5 text-gray-600" />
-                    </div>
+                    <span className="text-gray-500 text-sm whitespace-nowrap">
+                      {formatDate(notif.created_date || notif.created_at)}
+                    </span>
                   </motion.div>
                 );
               })}
@@ -207,6 +286,37 @@ export default function Notifications() {
           )}
         </div>
       </div>
+
+      {/* Notification Details Dialog */}
+      <Dialog open={!!selectedNotification} onOpenChange={closeDialog}>
+        <DialogContent className="sm:max-w-md text-right" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              {selectedNotification && (() => {
+                const config = getNotificationConfig(selectedNotification.type);
+                const Icon = config.icon;
+                return <><Icon className="w-6 h-6 text-blue-600" /> {config.title}</>;
+              })()}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="text-gray-700 text-lg font-medium leading-relaxed">
+                {selectedNotification?.message}
+              </p>
+            </div>
+            <div className="flex justify-between items-center text-sm text-gray-500">
+              <span>תאריך קבלה:</span>
+              <span>{selectedNotification && formatDate(selectedNotification.created_date || selectedNotification.created_at)}</span>
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-start">
+            <Button type="button" variant="secondary" onClick={closeDialog} className="w-full">
+              סגור
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

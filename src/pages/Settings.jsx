@@ -29,7 +29,6 @@ import {
   Facebook,
   Linkedin,
   Instagram,
-  Twitter,
   Briefcase,
   Music
 } from "lucide-react";
@@ -728,11 +727,13 @@ export default function Settings() {
                         </div>
                       </div>
                       <div className="space-y-1">
-                        <label className="text-sm font-medium text-gray-700">Twitter (X)</label>
+                        <label className="text-sm font-medium text-gray-700">X (Twitter)</label>
                         <div className="relative">
-                          <Twitter className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <svg viewBox="0 0 24 24" fill="currentColor" className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400">
+                            <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+                          </svg>
                           <Input
-                            placeholder="Twitter URL"
+                            placeholder="X URL"
                             value={formData.twitter_url}
                             onChange={(e) => handleInputChange('twitter_url', e.target.value)}
                             className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"

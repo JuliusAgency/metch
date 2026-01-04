@@ -199,14 +199,14 @@ export default function JobManagement() {
             }} />
         </div>
 
-        <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-full max-w-7xl mx-auto">
+        <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-[75%] mx-auto">
           {/* Title */}
           <div className="text-center mb-8">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">ניהול משרות</h1>
           </div>
 
           {/* Toggle Buttons */}
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-end mb-8">
             <ToggleSwitch
               options={[
                 { value: 'ended', label: 'משרות שהסתיימו' },
