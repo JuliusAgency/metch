@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from "react-router-do
 import { useUser } from "@/contexts/UserContext";
 import ToggleSwitch from "@/components/dashboard/ToggleSwitch";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
-import { Job, JobView, Notification, UserProfile, CandidateView } from "@/api/entities";
+import { Job, JobView, Notification, UserProfile, CandidateView, CV } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
