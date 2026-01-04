@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from "react-router-do
 import { useUser } from "@/contexts/UserContext";
 import ToggleSwitch from "@/components/dashboard/ToggleSwitch";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
-import { Job, JobView, Notification, UserProfile, CandidateView } from "@/api/entities";
+import { Job, JobView, Notification, UserProfile, CandidateView, CV } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -196,24 +196,26 @@ const JobSeekerDashboard = ({ user }) => {
           total_applications: 0
         };
 
+        const mockJob = {
+          id: 'mock-google-crm',
+          title: 'מנהלת קשרי לקוחות',
+          company: 'Google',
+          location: 'מרכז',
+          company_logo_url: 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png',
+          match_score: 90,
+          start_date: 'מיידי',
+          description: 'אנחנו מחפשים רכז/ת גיוס טכנולוגי/ת יצירתי/ת שיצטרפו לצוות שלנו...',
+          requirements: ['ניסיון של שנתיים לפחות בגיוס טכנולוגי - חובה', 'אנגלית ברמה גבוהה'],
+          responsibilities: ['אחריות מלאה על תהליך הגיוס מקצה לקצה'],
+          created_date: new Date().toISOString()
+        };
+
         setUserStats(enhancedStats);
-        setAllJobs(jobsWithScores);
+        setAllJobs([mockJob, ...jobsWithScores]);
         // Use String for ID sets to ensure consistent matching
         setViewedJobIds(new Set(jobViewsData.map(view => String(view.job_id))));
         setNotifications(notificationsData);
 
-        // Navigation guards for Job Seekers
-        const cvs = await CV.filter({ user_email: user.email });
-        if (cvs.length === 0) {
-          setHasCV(false);
-          navigate('/CVGenerator');
-          return;
-        }
-
-        if (!userProfile?.specialization) {
-          navigate('/PreferenceQuestionnaire');
-          return;
-        }
 
       } catch (error) {
         console.error("Error loading jobs for seeker:", error);

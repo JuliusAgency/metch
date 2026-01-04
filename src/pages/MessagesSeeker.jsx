@@ -18,7 +18,7 @@ import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useLocation, useNavigate } from "react-router-dom";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
-const ITEMS_PER_PAGE = 4;
+const ITEMS_PER_PAGE = 5;
 const SUPPORT_EMAIL = "support@metch.co.il";
 
 export default function MessagesSeeker() {
@@ -318,7 +318,7 @@ export default function MessagesSeeker() {
     return (
         <div className="h-full relative" dir="rtl">
             <div className="relative">
-                <div className="relative h-32 overflow-hidden w-full">
+                <div className="relative h-24 overflow-hidden w-full">
                     <div
                         className="absolute inset-0 w-full h-full"
                         style={{
@@ -330,18 +330,18 @@ export default function MessagesSeeker() {
                     />
                 </div>
 
-                <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-full">
-                    <div className="text-center pb-8">
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">הודעות</h1>
+                <div className="p-2 sm:p-4 md:p-6 -mt-12 relative z-10 w-full">
+                    <div className="text-center pb-4">
+                        <h1 className="text-2xl md:text-3xl font-bold text-[#001a6e]">הודעות</h1>
                     </div>
 
-                    <div className="relative mb-8">
+                    <div className="relative mb-4">
                         <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                         <Input
                             placeholder="חיפוש בהודעות"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pr-12 pl-4 py-3 border-gray-300 focus:border-blue-400 rounded-full h-12 text-right"
+                            className="pr-12 pl-4 py-3 border-gray-300 focus:border-blue-400 rounded-lg h-12 text-right"
                             dir="rtl"
                         />
                     </div>

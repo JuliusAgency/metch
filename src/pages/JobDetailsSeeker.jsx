@@ -42,6 +42,32 @@ export default function JobDetailsSeeker() {
 
       const jobId = jobIdParam;
 
+      if (jobId === 'mock-google-crm') {
+        const mockJob = {
+          id: 'mock-google-crm',
+          title: 'מנהלת קשרי לקוחות',
+          company: 'Google',
+          location: 'מרכז',
+          company_logo_url: 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png',
+          match_score: 90,
+          start_date: 'מיידי',
+          description: 'אנחנו מחפשים רכז/ת גיוס טכנולוגי/ת יצירתי/ת שיצטרפו לצוות שלנו...',
+          requirements: ['ניסיון של שנתיים לפחות בגיוס טכנולוגי - חובה', 'ניסיון קודם בחברת הייטק או סטארטאפ - יתרון', 'יכולת בין אישית גבוהה ותקשורת מצויינת', 'אנגלית ברמה גבוהה (ראיונות באנגלית)', 'משרה מיידית'],
+          responsibilities: ['ניסיון של שנתיים לפחות בגיוס טכנולוגי - חובה', 'ניסיון קודם בחברת הייטק או סטארטאפ - יתרון', 'יכולת בין אישית גבוהה ותקשורת מצויינת', 'אנגלית ברמה גבוהה (ראיונות באנגלית)', 'משרה מיידית'],
+          company_perks: ['משרד מפנק', 'עבודה במשמרות', 'רכב חברה', 'סיבוס'],
+          attachments: [
+            'https://images.unsplash.com/photo-1497366216548-37526070a792?auto=format&fit=crop&w=400&h=300',
+            'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=400&h=300',
+            'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=400&h=300'
+          ],
+          status: 'active',
+          created_date: new Date().toISOString()
+        };
+        setJob(mockJob);
+        setLoading(false);
+        return;
+      }
+
       if (jobId) {
         const jobResults = await Job.filter({ id: jobId });
         if (jobResults.length > 0) {
@@ -239,10 +265,10 @@ export default function JobDetailsSeeker() {
   return (
     <div className="h-full relative" dir="rtl">
       <div className="relative h-full overflow-y-auto">
-        <div className="p-4 sm:p-6 md:p-8 w-full max-w-7xl mx-auto">
+        <div className="p-2 sm:p-4 md:p-6 w-full max-w-5xl mx-auto">
           <SeekerHeader job={job} returnUrl={returnUrl} />
           {isUnavailable && (
-            <JobStatusBanner status={job.status} className="mb-6" />
+            <JobStatusBanner status={job.status} className="mb-4" />
           )}
           <SeekerJobTitle job={job} employmentTypeText={employmentTypeText} />
           <SeekerJobPerks perks={job.company_perks} />

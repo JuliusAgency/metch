@@ -26,7 +26,7 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, sendingMessage, 
                     <Button
                         type="submit"
                         disabled={!newMessage.trim() || sendingMessage}
-                        className="bg-blue-100 hover:bg-blue-200 rounded-full w-12 h-12 flex-shrink-0"
+                        className="bg-blue-100 hover:bg-blue-200 rounded-lg w-12 h-12 flex-shrink-0"
                         size="icon"
                         aria-label="שלח הודעה"
                     >
@@ -37,7 +37,7 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, sendingMessage, 
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="הקלד כאן..."
-                        className="flex-1 rounded-full h-12 pr-6 pl-6 text-right border-gray-200 focus:border-blue-400"
+                        className="flex-1 rounded-lg h-12 pr-6 pl-6 text-right border-gray-200 focus:border-blue-400"
                         dir="rtl"
                         disabled={sendingMessage}
                         aria-label="תיבת כתיבת הודעה"

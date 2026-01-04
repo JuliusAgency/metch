@@ -1,15 +1,15 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Plus, 
-  Eye, 
-  Edit, 
-  User, 
-  MessageCircle, 
-  FileText, 
+import {
+  Plus,
+  Eye,
+  Edit,
+  User,
+  MessageCircle,
+  FileText,
   Pause,
-  CheckCircle 
+  CheckCircle
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { he } from 'date-fns/locale';
@@ -54,6 +54,11 @@ const ACTION_CONFIG = {
     icon: Pause,
     label: 'השהה משרה',
     color: 'bg-orange-100 text-orange-700'
+  },
+  application_received: {
+    icon: FileText,
+    label: 'הוגשה מועמדות',
+    color: 'bg-green-100 text-green-700'
   }
 };
 
@@ -83,11 +88,11 @@ export default function EmployerActivityFeed({ activities = [], className = "" }
             label: activity.action_type,
             color: 'bg-gray-100 text-gray-700'
           };
-          
+
           const Icon = config.icon;
-          const timeAgo = formatDistanceToNow(new Date(activity.created_date), { 
-            addSuffix: true, 
-            locale: he 
+          const timeAgo = formatDistanceToNow(new Date(activity.created_date), {
+            addSuffix: true,
+            locale: he
           });
 
           return (

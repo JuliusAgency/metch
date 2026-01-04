@@ -23,13 +23,12 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
 const ITEMS_PER_PAGE = 7;
 
-// Allowed notification types for Employer users
 // Allowed notification types for Employer users
 const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message'];
 
@@ -64,33 +63,6 @@ export default function Notifications() {
     try {
       setLoading(true);
 
-      // --- TEMPORARY TEST SEEDING ---
-      if (user.user_type === 'employer') {
-        const existingTests = await Notification.filter({ created_by: user.id }, "-created_date");
-        const hasAppTest = existingTests.some(n => n.message.includes("דניאל כהן הגיש"));
-        const hasMsgTest = existingTests.some(n => n.message.includes("הודעה חדשה מאת"));
-
-        if (!hasAppTest) {
-          await Notification.create({
-            created_by: user.id,
-            type: 'application_submitted',
-            message: "דניאל כהן הגיש מועמדות למשרה ״מנהל מוצר״",
-            is_read: 'false',
-            created_date: new Date().toISOString()
-          });
-        }
-
-        if (!hasMsgTest) {
-          await Notification.create({
-            created_by: user.id,
-            type: 'new_message',
-            message: "הודעה חדשה מאת שרה לוי",
-            is_read: 'false',
-            created_date: new Date(Date.now() - 86400000).toISOString() // Yesterday
-          });
-        }
-      }
-      // -----------------------------
 
 
 
@@ -107,19 +79,6 @@ export default function Notifications() {
 
       setNotifications(filteredNotifications);
 
-      // --- TEMPORARY CLEANUP SCRIPT ---
-      const testMessages = ["'שילב' צפו בפרופיל שלך", "'פוקס הום' צפו בפרופיל שלך"];
-      const notificationsToDelete = allNotifications.filter(n =>
-        testMessages.includes(n.message) && n.type === 'profile_view'
-      );
-
-      if (notificationsToDelete.length > 0) {
-        console.log("Cleaning up test notifications...", notificationsToDelete.length);
-        await Promise.all(notificationsToDelete.map(n => Notification.delete(n.id)));
-        // Update state to remove them immediately from view
-        setNotifications(prev => prev.filter(n => !notificationsToDelete.some(d => d.id === n.id)));
-      }
-      // --------------------------------
     } catch (error) {
       console.error("Error loading notifications:", error);
       setNotifications([]);
@@ -156,14 +115,15 @@ export default function Notifications() {
     }
   };
 
-  const handleNotificationClick = async (notif) => {
-    setSelectedNotification(notif);
 
-    // Mark as read if not already
+
+  const navigate = useNavigate();
+
+  const handleNotificationClick = async (notif) => {
+    // Mark as read immediately
     if (notif.is_read === 'false' || notif.is_read === false) {
       try {
         await Notification.update(notif.id, { is_read: 'true' });
-        // Update local state to reflect read status
         setNotifications(prev => prev.map(n =>
           n.id === notif.id ? { ...n, is_read: 'true', read: true } : n
         ));
@@ -171,6 +131,15 @@ export default function Notifications() {
         console.error("Error marking notification as read:", error);
       }
     }
+
+    // Navigation logic
+    if (notif.type === 'new_message') {
+      navigate('/Messages');
+      return;
+    }
+
+    // Default behavior for other types
+    setSelectedNotification(notif);
   };
 
   const closeDialog = () => setSelectedNotification(null);

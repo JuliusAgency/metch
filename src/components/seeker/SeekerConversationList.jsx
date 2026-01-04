@@ -16,7 +16,7 @@ const SeekerConversationList = ({ conversations, handleConversationSelect }) => 
     };
 
     return (
-        <div className="space-y-4 mb-8">
+        <div className="space-y-1.5 mb-6 max-w-4xl mx-auto px-4 sm:px-8">
             {Array.isArray(conversations) && conversations.map((conversation, index) => {
                 const statusBadge = getStatusBadge(conversation.job_status);
 
@@ -26,15 +26,15 @@ const SeekerConversationList = ({ conversations, handleConversationSelect }) => 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.1 }}
-                        className={`flex items-center justify-between p-4 hover:bg-gray-50/80 rounded-xl cursor-pointer transition-colors border ${conversation.is_unread ? 'bg-blue-50 border-blue-200' : 'border-gray-100'
+                        className={`flex items-center justify-between p-3 hover:bg-gray-50/80 rounded-lg cursor-pointer transition-colors border ${conversation.is_unread ? 'bg-blue-50 border-blue-200' : 'border-gray-100'
                             }`}
                         onClick={() => handleConversationSelect(conversation)}
                     >
                         <div className="flex items-center gap-4">
-                            <span className="text-gray-500 text-sm whitespace-nowrap">
+                            <span className="text-gray-500 text-xs whitespace-nowrap">
                                 {format(new Date(conversation.last_message_time), "dd.MM.yy")}
                             </span>
-                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 bg-white flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200 bg-white flex items-center justify-center">
                                 {conversation.profileImage && conversation.profileImage !== "" ? (
                                     <img
                                         src={conversation.profileImage}
@@ -43,18 +43,18 @@ const SeekerConversationList = ({ conversations, handleConversationSelect }) => 
                                     />
                                 ) : (
                                     <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
-                                        <span className="text-xs font-bold text-gray-600">
+                                        <span className="text-[10px] font-bold text-gray-600">
                                             {conversation.employer_name.slice(0, 2)}
                                         </span>
                                     </div>
                                 )}
                             </div>
                             <div className="text-right">
-                                <span className="font-medium text-gray-800 block">{conversation.employer_name}</span>
+                                <span className="font-medium text-gray-800 block text-sm">{conversation.employer_name}</span>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm text-gray-500">{conversation.job_title}</span>
+                                    <span className="text-xs text-gray-500">{conversation.job_title}</span>
                                     {statusBadge.label && (
-                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge.color}`}>
+                                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${statusBadge.color}`}>
                                             {statusBadge.label}
                                         </span>
                                     )}

@@ -10,7 +10,7 @@ const SeekerHeader = ({ company, job, returnUrl }) => {
   return (
     <>
       <div
-        className="absolute top-0 left-0 right-0 h-40"
+        className="absolute top-0 left-0 right-0 h-32"
         style={{
           backgroundImage: `url(${settingsHeaderBg})`,
           backgroundSize: '100% 100%',
@@ -22,15 +22,15 @@ const SeekerHeader = ({ company, job, returnUrl }) => {
 
       <Link
         to={targetUrl}
-        className="absolute top-6 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-20"
+        className="absolute top-4 right-4 w-9 h-9 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-20"
       >
-        <ChevronRight className="w-6 h-6 text-gray-800" />
+        <ChevronRight className="w-5 h-5 text-gray-800" />
       </Link>
-      <div className="w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center border-4 border-white mx-auto -mt-4 mb-4">
+      <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-white mx-auto -mt-4 mb-2">
         {job?.company === "Google" ? (
-          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" className="w-10 h-10" />
+          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" className="w-8 h-8" />
         ) : (
-          <Building2 className="w-10 h-10 text-gray-600" />
+          <Building2 className="w-8 h-8 text-gray-600" />
         )}
       </div>
     </>
