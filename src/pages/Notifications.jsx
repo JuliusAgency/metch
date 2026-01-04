@@ -30,7 +30,8 @@ import settingsHeaderBg from "@/assets/settings_header_bg.png";
 const ITEMS_PER_PAGE = 7;
 
 // Allowed notification types for Employer users
-const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message', 'profile_view'];
+// Allowed notification types for Employer users
+const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message'];
 
 // Map notification types to icons and titles
 const getNotificationConfig = (type) => {
@@ -62,6 +63,34 @@ export default function Notifications() {
 
     try {
       setLoading(true);
+
+      // --- TEMPORARY TEST SEEDING ---
+      if (user.user_type === 'employer') {
+        const existingTests = await Notification.filter({ created_by: user.id }, "-created_date");
+        const hasAppTest = existingTests.some(n => n.message.includes("דניאל כהן הגיש"));
+        const hasMsgTest = existingTests.some(n => n.message.includes("הודעה חדשה מאת"));
+
+        if (!hasAppTest) {
+          await Notification.create({
+            created_by: user.id,
+            type: 'application_submitted',
+            message: "דניאל כהן הגיש מועמדות למשרה ״מנהל מוצר״",
+            is_read: 'false',
+            created_date: new Date().toISOString()
+          });
+        }
+
+        if (!hasMsgTest) {
+          await Notification.create({
+            created_by: user.id,
+            type: 'new_message',
+            message: "הודעה חדשה מאת שרה לוי",
+            is_read: 'false',
+            created_date: new Date(Date.now() - 86400000).toISOString() // Yesterday
+          });
+        }
+      }
+      // -----------------------------
 
 
 
