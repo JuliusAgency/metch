@@ -1,16 +1,6 @@
 import { supabase } from './supabaseClient';
 
-/**
- * Core integration namespace
- */
-export const Core = {
-  InvokeLLM,
-  SendEmail,
-  UploadFile,
-  GenerateImage,
-  UploadPrivateFile,
-  InvokeAssistant
-};
+
 
 /**
  * Invoke LLM (OpenAI) integration
@@ -349,3 +339,15 @@ export async function InvokeAssistant({
     threadId: thread.id
   };
 }
+
+/**
+ * Core integration namespace
+ */
+export const Core = {
+  InvokeLLM,
+  SendEmail,
+  UploadFile,
+  GenerateImage,
+  UploadPrivateFile,
+  InvokeAssistant
+};
