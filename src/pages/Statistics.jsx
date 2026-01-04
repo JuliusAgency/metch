@@ -94,14 +94,14 @@ export default function Statistics() {
                     </button>
                 </div>
 
-                <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-full max-w-7xl mx-auto">
+                <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-[75%] mx-auto">
                     {/* Title */}
                     <div className="text-center mb-8">
                         <h1 className="text-3xl font-bold text-[#1a237e]">הסטטיסטיקות שלי</h1>
                     </div>
 
                     {/* Toggle */}
-                    <div className="flex justify-center mb-12">
+                    <div className="flex justify-end mb-12">
                         <div className="flex bg-white border border-blue-200 rounded-full p-1 shadow-sm">
                             <button
                                 onClick={() => setActiveView('active')}
@@ -125,12 +125,12 @@ export default function Statistics() {
                     </div>
 
                     {/* Table Headers */}
-                    <div className="flex items-center gap-12 px-4 mb-4 text-gray-600 text-sm font-medium">
-                        <div className="flex-1 text-right pr-4">משרה</div>
-                        <div className="w-32 text-right">מיקום</div>
-                        <div className="w-32 text-center">תאריך</div>
-                        <div className="w-24 text-center">קו"ח שהוגשו</div>
-                        <div className="w-24 text-center">צפיות</div>
+                    <div className="grid grid-cols-12 gap-4 px-4 mb-4 text-gray-600 text-sm font-medium items-center">
+                        <div className="col-span-4 text-right pr-4">משרה</div>
+                        <div className="col-span-2 text-center invisible">מיקום</div>
+                        <div className="col-span-2 text-center invisible">תאריך</div>
+                        <div className="col-span-2 text-center">קו"ח שהוגשו</div>
+                        <div className="col-span-2 text-center">צפיות</div>
                     </div>
 
                     {/* List */}

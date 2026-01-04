@@ -47,6 +47,9 @@ export default function MessagesSeeker() {
             const userData = await User.me();
             setUser(userData);
 
+
+
+            let mappedConversations = [];
             try {
                 const conversationsData = await Conversation.filter(
                     { candidate_email: userData.email },
@@ -69,7 +72,7 @@ export default function MessagesSeeker() {
                     console.error("Error fetching unread messages:", error);
                 }
 
-                const mappedConversations = await Promise.all(conversationsData.map(async (conv) => {
+                mappedConversations = await Promise.all(conversationsData.map(async (conv) => {
                     let employerName = "מעסיק לא ידוע";
                     let profileImage = "";
 
@@ -107,11 +110,15 @@ export default function MessagesSeeker() {
                         is_unread: unreadConversationIds.has(conv.id)
                     };
                 }));
-
-                setConversations(mappedConversations);
             } catch (error) {
-                console.error("Error loading conversations:", error);
+                console.error("Error loading conversations or no connection:", error);
+                // Fallback or just empty
             }
+
+
+
+            setConversations(mappedConversations);
+
         } catch (error) {
             console.error("Error loading data:", error);
         } finally {

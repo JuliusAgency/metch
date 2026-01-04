@@ -8,7 +8,7 @@ import {
   Facebook,
   Instagram,
   Linkedin,
-  Youtube
+  Twitter
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
@@ -47,7 +47,7 @@ export default function Contact() {
     <div className="w-full mx-auto" dir="rtl">
       <div className="relative rounded-2xl overflow-hidden mb-6">
         {/* Header with curved background */}
-        <div className="relative h-24 overflow-hidden -m-px">
+        <div className="relative h-20 overflow-hidden -m-px">
           <div
             className="absolute inset-0 w-full h-full"
             style={{
@@ -59,9 +59,9 @@ export default function Contact() {
           />
           <Link
             to={createPageUrl("Dashboard")}
-            className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-10"
+            className="absolute top-4 right-6 w-8 h-8 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-10"
           >
-            <ChevronLeft className="w-6 h-6 text-gray-800 rotate-180" />
+            <ChevronLeft className="w-5 h-5 text-gray-800 rotate-180" />
           </Link>
         </div>
 
@@ -70,28 +70,28 @@ export default function Contact() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="flex flex-col items-center justify-center text-center space-y-10 py-6"
+            className="flex flex-col items-center justify-center text-center space-y-8 py-4"
           >
             {/* Title */}
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">יצירת קשר</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900">יצירת קשר</h1>
 
             {/* Action Buttons */}
-            <div className="flex flex-col gap-4 w-full max-w-sm">
+            <div className="flex flex-col gap-3 w-full max-w-xs">
               <Button
                 onClick={handleEmailContact}
-                className="bg-[#3B82F6] hover:bg-[#2563EB] text-white px-8 py-3 rounded-full font-bold h-14 text-lg"
+                className="bg-[#3B82F6] hover:bg-[#2563EB] text-white px-6 py-2 rounded-full font-bold h-12 text-base"
               >
-                <Mail className="w-5 h-5 ml-2" />
+                <Mail className="w-4 h-4 ml-2" />
                 שלח מייל
               </Button>
               <Button
                 onClick={handleSupportChat}
                 disabled={chatLoading}
-                className="bg-[#3B82F6] hover:bg-[#2563EB] text-white px-8 py-3 rounded-full font-bold h-14 text-lg"
+                className="bg-[#3B82F6] hover:bg-[#2563EB] text-white px-6 py-2 rounded-full font-bold h-12 text-base"
               >
                 {chatLoading ? 'מתחבר...' : (
                   <>
-                    <MessageCircle className="w-5 h-5 ml-2" />
+                    <MessageCircle className="w-4 h-4 ml-2" />
                     התחל צ'אט
                   </>
                 )}
@@ -101,16 +101,11 @@ export default function Contact() {
             {/* Social Media Links */}
             <div className="space-y-4">
               <p className="text-gray-600 font-medium">עקבו אחרינו ברשתות</p>
-              <div className="flex items-center gap-4">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"><Facebook className="w-6 h-6 text-blue-600" /></a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"><Instagram className="w-6 h-6 text-pink-600" /></a>
-                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"><Youtube className="w-6 h-6 text-red-600" /></a>
-                <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-black">
-                    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
-                  </svg>
-                </a>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"><Linkedin className="w-6 h-6 text-sky-700" /></a>
+              <div className="flex items-center gap-4" dir="ltr">
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-[#3B82F6] rounded-full hover:bg-blue-50 transition-colors"><Facebook className="w-6 h-6 text-[#3B82F6]" /></a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-[#3B82F6] rounded-full hover:bg-blue-50 transition-colors"><Instagram className="w-6 h-6 text-[#3B82F6]" /></a>
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-[#3B82F6] rounded-full hover:bg-blue-50 transition-colors"><Linkedin className="w-6 h-6 text-[#3B82F6]" /></a>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-[#3B82F6] rounded-full hover:bg-blue-50 transition-colors"><Twitter className="w-6 h-6 text-[#3B82F6]" /></a>
               </div>
             </div>
 

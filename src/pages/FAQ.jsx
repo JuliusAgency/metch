@@ -16,6 +16,9 @@ import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useUser } from "@/contexts/UserContext";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
+import faqPlus from "@/assets/faq_plus.png";
+import faqMinus from "@/assets/faq_minus.png";
+
 const FAQ_DATA = [
   {
     id: 1,
@@ -60,6 +63,7 @@ const FAQ_DATA = [
 ];
 
 export default function FAQ() {
+  // ... existing hook calls ...
   useRequireUserType(); // Ensure user has selected a user type
   const [searchTerm, setSearchTerm] = useState("");
   const [activeQuestionId, setActiveQuestionId] = useState(null);
@@ -74,6 +78,7 @@ export default function FAQ() {
   };
 
   const handleQuestionKeyDown = (event, index) => {
+    // ... existing handler ...
     const total = filteredFAQ.length;
     if (!total) return;
 
@@ -98,6 +103,7 @@ export default function FAQ() {
   const navigate = useNavigate();
 
   const handleSupportClick = () => {
+    // ... existing support handler ...
     if (user?.user_type === 'job_seeker') {
       navigate(createPageUrl("MessagesSeeker"), { state: { supportChat: true } });
       return;
@@ -112,6 +118,7 @@ export default function FAQ() {
   return (
     <div className="h-full relative" dir="rtl">
       <div className="relative">
+        {/* ... existing header ... */}
         <div className="relative h-32 overflow-hidden w-full">
           <div
             className="absolute inset-0 w-full h-full"
@@ -155,7 +162,7 @@ export default function FAQ() {
             </div>
 
             {/* FAQ Questions */}
-            <div className="space-y-4">
+            <div className="">
               {filteredFAQ.length > 0 ? (
                 filteredFAQ.map((item, index) => (
                   <motion.div
@@ -163,32 +170,32 @@ export default function FAQ() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
-                    className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm"
+                    className="border-b-2 border-[#d7def0]"
                   >
                     <button
                       onClick={() => toggleQuestion(item.id)}
                       onKeyDown={(event) => handleQuestionKeyDown(event, index)}
-                      className="w-full p-4 text-right hover:bg-gray-50 transition-colors flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                      className="w-full p-4 text-right hover:bg-gray-50 transition-colors flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 gap-4"
                       aria-expanded={activeQuestionId === item.id}
                       aria-controls={`faq-content-${item.id}`}
                       id={`faq-trigger-${item.id}`}
                       ref={el => { questionRefs.current[index] = el; }}
                       type="button"
                     >
-                      <div className="flex items-center text-blue-600">
-                        {activeQuestionId === item.id ? (
-                          <Minus className="w-5 h-5" />
-                        ) : (
-                          <Plus className="w-5 h-5" />
-                        )}
-                      </div>
-                      <div className="flex-1 mr-4">
+                      <div className="flex-1">
                         <p
-                          className="text-gray-900 text-lg"
+                          className="text-gray-900 text-lg font-bold"
                           id={`faq-title-${item.id}`}
                         >
                           {item.question}
                         </p>
+                      </div>
+                      <div className="flex items-center flex-shrink-0">
+                        {activeQuestionId === item.id ? (
+                          <img src={faqMinus} alt="סגור" className="w-[30px] h-[30px]" />
+                        ) : (
+                          <img src={faqPlus} alt="פתח" className="w-[30px] h-[30px]" />
+                        )}
                       </div>
                     </button>
 
