@@ -4,13 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
-import { UploadCloud, Globe, Facebook, Instagram, Linkedin, Plus, X, Copy, Music } from "lucide-react";
+import { UploadCloud, Globe, Facebook, Instagram, Linkedin, Plus, X, Copy } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { UnsavedChangesDialog } from "@/components/dialogs/UnsavedChangesDialog";
 
 const XIcon = ({ size = 24, ...props }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" {...props}>
         <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+    </svg>
+);
+
+const TikTokIcon = ({ size = 24, ...props }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" {...props}>
+        <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.65-1.58-1.11v8.52c-.67 3.32-3.79 5.6-7.1 5.25-3.32-.34-5.85-3.23-5.63-6.57.23-3.04 2.82-5.38 5.86-5.28V4.83a5.81 5.81 0 1 0-.02 11.63 5.84 5.84 0 0 0 4.2-1.89V6.03c-1.01.62-2.19.98-3.41 1.02-3.14.07-5.74-2.52-5.71-5.66.02-3.12 2.56-5.67 5.68-5.68Z" />
     </svg>
 );
 
@@ -70,7 +76,7 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
         { id: 'instagram', icon: Instagram, label: 'אינסטגרם' },
         { id: 'linkedin', icon: Linkedin, label: 'לינקדאין' },
         { id: 'twitter', icon: XIcon, label: 'X' },
-        { id: 'tiktok', icon: Music, label: 'טיקטוק' },
+        { id: 'tiktok', icon: TikTokIcon, label: 'טיקטוק' },
     ];
 
     return (
