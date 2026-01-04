@@ -41,6 +41,8 @@ const getNotificationConfig = (type) => {
     application_submitted: { icon: FileText, title: "הוגשה מועמדות" },
     new_candidate: { icon: UserPlus, title: "מועמד חדש" },
     job_status_change: { icon: Bell, title: "שינוי סטטוס משרה" },
+    high_match_alert: { icon: UserPlus, title: "התאמה גבוהה נמצאה!" },
+    daily_match_summary: { icon: Bell, title: "סיכום התאמות יומי" },
     default: { icon: Bell, title: "התראה" },
   };
   return configs[type] || configs.default;
@@ -135,6 +137,11 @@ export default function Notifications() {
     // Navigation logic
     if (notif.type === 'new_message') {
       navigate('/Messages');
+      return;
+    }
+
+    if (notif.type === 'high_match_alert' && notif.data?.job_id) {
+      navigate(`/JobDetails?id=${notif.data.job_id}`);
       return;
     }
 
