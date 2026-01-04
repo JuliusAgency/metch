@@ -1,5 +1,8 @@
 import { InvokeLLM } from '@/api/integrations';
 
+// Simple in-memory cache for the session
+const careerChangeCache = new Map();
+
 /**
  * AI-powered function to determine if a job represents a significant career change
  * @param {Object} candidate_profile - Candidate profile data
@@ -8,6 +11,27 @@ import { InvokeLLM } from '@/api/integrations';
  */
 export async function is_career_change(candidate_profile, job_posting) {
   try {
+    // 1. Fast Heuristic Check
+    const candidateSpec = (candidate_profile.specialization || '').toLowerCase();
+    const candidateProf = (candidate_profile.profession || '').toLowerCase();
+    const jobCat = (job_posting.category || '').toLowerCase();
+    const jobTitle = (job_posting.title || '').toLowerCase();
+
+    // If specialization or profession clearly match the job, it's NOT a career change
+    if (candidateSpec && (jobCat.includes(candidateSpec) || jobTitle.includes(candidateSpec))) {
+      return false;
+    }
+    if (candidateProf && (jobCat.includes(candidateProf) || jobTitle.includes(candidateProf))) {
+      return false;
+    }
+
+    // 2. Cache Check
+    const cacheKey = `${candidate_profile.id || candidate_profile.email}_${job_posting.id}`;
+    if (careerChangeCache.has(cacheKey)) {
+      return careerChangeCache.get(cacheKey);
+    }
+
+    // 3. AI Analysis (only if heuristic is unclear)
     // Build context about candidate's background
     const candidateBackground = buildCandidateBackground(candidate_profile);
     
@@ -21,17 +45,19 @@ export async function is_career_change(candidate_profile, job_posting) {
     const response = await InvokeLLM({
       prompt,
       model: 'gpt-3.5-turbo',
-      temperature: 0.3, // Lower temperature for more consistent analysis
+      temperature: 0.3,
       max_tokens: 200
     });
 
     // Parse AI response
     const result = parseCareerChangeResponse(response.content);
     
+    // Save to cache
+    careerChangeCache.set(cacheKey, result);
+    
     return result;
   } catch (error) {
     console.error('Error in career change detection:', error);
-    // Default to false if AI fails (conservative approach)
     return false;
   }
 }

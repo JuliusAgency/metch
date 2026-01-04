@@ -1,8 +1,8 @@
-
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
+import { WhatsAppVerificationDialog } from "@/components/dialogs/WhatsAppVerificationDialog";
 
 const companyTypes = [
     { id: 'business', label: 'עסקית' },
@@ -11,13 +11,14 @@ const companyTypes = [
     { id: 'hr', label: 'כח אדם' },
 ];
 
-const InfoInput = ({ placeholder, value, name, onChange }) => (
+const InfoInput = ({ placeholder, value, name, onChange, disabled }) => (
     <Input
         placeholder={placeholder}
         value={value}
         name={name}
         onChange={onChange}
-        className="h-10 text-sm bg-white border-gray-300 rounded-full text-right pr-4 focus:border-blue-500 focus:ring-blue-500 transition-all placeholder:text-gray-400"
+        disabled={disabled}
+        className="h-10 text-sm bg-white border-gray-300 rounded-full text-right pr-4 focus:border-blue-500 focus:ring-blue-500 transition-all placeholder:text-gray-400 disabled:bg-gray-50 disabled:text-gray-500"
         dir="rtl"
     />
 );
@@ -35,6 +36,8 @@ const ChipButton = ({ label, isSelected, onClick }) => (
 );
 
 export default function CompanyDetailsStep({ companyData, setCompanyData }) {
+    const [isVerificationOpen, setIsVerificationOpen] = useState(false);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setCompanyData(prev => ({ ...prev, [name]: value }));
@@ -100,17 +103,27 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                                     name="company_phone"
                                     value={companyData.company_phone || ""}
                                     onChange={handleInputChange}
+                                    disabled={companyData.is_phone_verified}
                                 />
                                 <Button
                                     type="button"
-                                    className="absolute left-1.5 top-1/2 -translate-y-1/2 h-8 px-4 text-xs font-medium rounded-full bg-[#1e88e5] text-white hover:bg-[#1565c0]"
+                                    onClick={() => setIsVerificationOpen(true)}
+                                    className={`absolute left-1.5 top-1/2 -translate-y-1/2 h-8 px-4 text-xs font-medium rounded-full transition-all ${companyData.is_phone_verified
+                                            ? 'bg-green-500 hover:bg-green-600 text-white'
+                                            : 'bg-[#1e88e5] text-white hover:bg-[#1565c0]'
+                                        }`}
                                 >
-                                    שלח קוד
+                                    {companyData.is_phone_verified ? 'אומת ✓' : 'שלח קוד'}
                                 </Button>
                             </div>
-                            <p className="text-xs text-[#1e88e5] font-medium cursor-pointer mt-2 text-right w-full hover:underline">
-                                לא קיבלתי שלח שוב
-                            </p>
+                            {!companyData.is_phone_verified && (
+                                <p
+                                    onClick={() => setIsVerificationOpen(true)}
+                                    className="text-xs text-[#1e88e5] font-medium cursor-pointer mt-2 text-right w-full hover:underline"
+                                >
+                                    לא קיבלתי שלח שוב
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -151,6 +164,20 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                     </div>
                 </div>
             </motion.div>
+
+            <WhatsAppVerificationDialog
+                isOpen={isVerificationOpen}
+                onClose={() => setIsVerificationOpen(false)}
+                initialPhone={companyData.company_phone}
+                onVerified={(phone) => {
+                    setCompanyData(prev => ({
+                        ...prev,
+                        company_phone: phone,
+                        is_phone_verified: true
+                    }));
+                    setIsVerificationOpen(false);
+                }}
+            />
         </div>
     );
 }

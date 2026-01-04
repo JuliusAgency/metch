@@ -30,8 +30,10 @@ export default function CompanyProfileCompletion() {
     cv_reception_email: "",
     company_phone: "",
     full_name: "",
-    phone: ""
+    phone: "",
+    is_phone_verified: false
   });
+
   const [packageData, setPackageData] = useState({
     type: 'per_job',
     quantity: 1,
@@ -47,10 +49,7 @@ export default function CompanyProfileCompletion() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
-
   const location = useLocation();
-
-
 
   useEffect(() => {
     const loadUser = async () => {
@@ -65,7 +64,8 @@ export default function CompanyProfileCompletion() {
           cv_reception_email: user.cv_reception_email || user.email,
           company_phone: user.company_phone || "",
           full_name: user.full_name || "",
-          phone: user.phone || ""
+          phone: user.phone || "",
+          is_phone_verified: user.is_phone_verified || false
         }));
       } catch (error) {
         console.error("Error loading user data:", error);
@@ -92,11 +92,15 @@ export default function CompanyProfileCompletion() {
   const nextStep = async () => {
     if (step === 1) {
       if (!companyData.company_name || !companyData.company_name.trim()) {
-        // Since we don't have a toast component easily accessible in context, we will prevent progression.
-        // Ideally we would show a toast here. Assuming user notices field is required.
-        // For now, we will just return to prevent saving empty data.
+        toast.error("אנא מלא את שם החברה");
         return;
       }
+
+      if (!companyData.is_phone_verified) {
+        toast.error("חובה לאמת את מספר הטלפון בווצאפ כדי להמשיך");
+        return;
+      }
+
       const saved = await handleSave();
       if (!saved) return;
     }

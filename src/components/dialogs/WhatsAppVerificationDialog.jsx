@@ -39,7 +39,7 @@ export const WhatsAppVerificationDialog = ({ isOpen, onClose, onVerified, initia
 
             await SendWhatsAppMessage({
                 phoneNumber: phoneNumber,
-                message: `Your verification code is: ${newCode}`
+                message: `קוד האימות שלך ל-Metch הוא: ${newCode}`
             });
 
             toast({
