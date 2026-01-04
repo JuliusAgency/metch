@@ -34,11 +34,21 @@ export default function UploadCV({ user, onUploadComplete }) {
             }
 
             // 1. Upload the file
-            const uploadResult = await UploadFile({ file });
-            if (!uploadResult || !uploadResult.file_url) {
+            // Sanitize filename to avoid "Invalid key" errors with special characters
+            const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+            const { publicUrl, file_url } = await UploadFile({
+                file,
+                bucket: 'public-files',
+                path: `${Date.now()}-${cleanFileName}`
+            });
+
+            const resumeUrl = publicUrl || file_url;
+
+            if (!resumeUrl) {
                 throw new Error("File upload failed to return a URL.");
             }
-            const fileUrl = uploadResult.file_url;
+
+            const fileUrl = resumeUrl;
 
             // 2. Update the User entity with the new resume URL
             await User.updateMyUserData({ resume_url: fileUrl });

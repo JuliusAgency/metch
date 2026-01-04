@@ -6,6 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { CV } from '@/api/entities';
+import { UploadFile } from '@/api/integrations';
 import { User as UserEntity } from '@/api/entities';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -113,11 +114,11 @@ export default function Profile() {
       // 1. Upload file
       // Sanitize filename to avoid "Invalid key" errors with special characters
       const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const { publicUrl, file_url } = await import('@/api/integrations').then(m => m.UploadFile({
+      const { publicUrl, file_url } = await UploadFile({
         file,
         bucket: 'public-files',
         path: `${Date.now()}-${cleanFileName}`
-      }));
+      });
 
       const resumeUrl = publicUrl || file_url;
 
