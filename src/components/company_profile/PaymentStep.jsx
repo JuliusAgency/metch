@@ -144,26 +144,31 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
         {/* Credit Card Visual */}
         <div className="flex flex-col items-center mb-16">
           <div className="relative">
-            <div className="w-[340px] h-[200px] bg-[#1a222e] rounded-2xl shadow-2xl text-white p-8 flex flex-col justify-center gap-8 relative overflow-hidden font-mono">
-              {/* Card number - Centered */}
-              <div className="text-2xl tracking-[0.2em] text-center w-full">
+            <div className="w-[360px] h-[220px] bg-[#0a0f18] rounded-[18px] shadow-2xl text-white p-10 flex flex-col justify-between relative overflow-hidden">
+              {/* Background Arc Effect - Two-tone split */}
+              <div className="absolute top-[-50%] right-[-25%] w-[150%] h-[200%] bg-[#1c2533] rounded-[45%] rotate-[-15deg]"></div>
+
+              {/* Mastercard-style logo top right */}
+              <div className="flex justify-end pr-2 relative z-10">
+                <div className="flex">
+                  <div className="w-11 h-11 bg-white/[0.9] rounded-full"></div>
+                  <div className="w-11 h-11 bg-white/[0.3] rounded-full -ml-5 backdrop-blur-[1px]"></div>
+                </div>
+              </div>
+
+              {/* Card number - Centered vertically */}
+              <div className="text-[25px] tracking-[0.14em] text-center w-full font-sans -mt-2 relative z-10 leading-none">
                 {paymentData.cardNumber || "0000 0000 0000 0000"}
               </div>
 
-              {/* Cardholder info and Expiry - Row at bottom */}
-              <div className="flex justify-between items-center w-full mt-4">
-                <div className="text-sm tracking-widest uppercase truncate max-w-[200px]">
+              {/* Cardholder info and Expiry - Bottom row */}
+              <div className="flex justify-between items-end w-full pb-2 relative z-10">
+                <div className="text-[17px] tracking-wide uppercase truncate max-w-[220px] font-sans opacity-90">
                   {paymentData.holderName ? paymentData.holderName : "ISRAEL ISRAELI"}
                 </div>
-                <div className="text-sm tracking-widest">
+                <div className="text-[17px] tracking-widest font-sans opacity-90">
                   {paymentData.expiryDate || "MM/YY"}
                 </div>
-              </div>
-
-              {/* Discreet Mastercard-style icon in background/corner */}
-              <div className="absolute top-6 right-8 flex">
-                <div className="w-10 h-10 bg-white/20 rounded-full"></div>
-                <div className="w-10 h-10 bg-white/10 rounded-full -ml-4"></div>
               </div>
             </div>
 

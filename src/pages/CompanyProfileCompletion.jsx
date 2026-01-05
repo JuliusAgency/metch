@@ -188,10 +188,10 @@ export default function CompanyProfileCompletion() {
             {renderStepContent()}
           </div>
 
-          {/* Default Navigation Buttons - Hidden on Step 4 (Custom Finish Button) */}
+          {/* Navigation Buttons */}
           {step !== 4 && (
-            <div className={`flex ${step === 1 ? 'justify-center' : 'justify-between'} items-center mt-12`}>
-              {step > 1 && (
+            <div className={`flex ${step === 1 || step === 3 ? 'justify-center' : 'justify-between'} items-center mt-12`}>
+              {step > 1 && step !== 3 && (
                 <Button
                   variant="outline"
                   className="px-6 py-3 rounded-full font-bold text-lg disabled:opacity-50"
@@ -214,11 +214,11 @@ export default function CompanyProfileCompletion() {
 
                 return (
                   <Button
-                    className={`bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg disabled:opacity-50 transition-transform duration-300 ${step === 1 ? 'px-14 py-4 text-xl transform hover:scale-105' : 'px-12 py-3 text-lg'}`}
+                    className={`bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg disabled:opacity-50 transition-transform duration-300 ${step === 1 || step === 3 ? 'px-14 py-4 text-xl transform hover:scale-105' : 'px-12 py-3 text-lg'}`}
                     onClick={nextStep}
                     disabled={saving || (step === 1 && !isStep1Valid)}
                   >
-                    {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (step === STEPS.length ? 'מעבר לדאשבורד' : 'המשך')}
+                    {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (step === 3 ? 'לתשלום' : step === STEPS.length ? 'מעבר לדאשבורד' : 'המשך')}
                     {!saving && <ArrowLeft className="w-5 h-5 ml-2" />}
                   </Button>
                 );
