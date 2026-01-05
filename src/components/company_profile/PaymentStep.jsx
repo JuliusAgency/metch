@@ -107,6 +107,10 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
         formattedValue = value.replace(/\D/g, '');
         error = validationUtils.validateId(formattedValue);
         break;
+      case 'vatNumber':
+        // Allow only digits
+        formattedValue = value.replace(/\D/g, '');
+        break;
       case 'holderName':
         error = validationUtils.validateHolderName(value);
         break;
@@ -130,107 +134,135 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
   };
 
   return (
-    <div className="max-w-2xl mx-auto text-center" dir="rtl">
+    <div className="max-w-4xl mx-auto text-center" dir="rtl">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="space-y-8"
+        className="space-y-12"
       >
         {/* Credit Card Visual */}
-        <div className="flex justify-center mb-8">
+        <div className="flex flex-col items-center gap-6 mb-12">
           <div className="relative">
-            <div className="w-80 h-48 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl text-white p-6 relative overflow-hidden">
-              {/* Card circles design */}
-              <div className="absolute top-4 right-4 w-8 h-8 bg-white/20 rounded-full"></div>
-              <div className="absolute top-4 right-10 w-8 h-8 bg-white/10 rounded-full"></div>
-
-              {/* Card number */}
-              <div className="absolute bottom-20 right-6 text-xl font-mono tracking-wider">
+            <div className="w-[340px] h-[200px] bg-[#1a222e] rounded-2xl shadow-2xl text-white p-8 flex flex-col justify-center gap-8 relative overflow-hidden font-mono">
+              {/* Card number - Centered */}
+              <div className="text-2xl tracking-[0.2em] text-center w-full">
                 {paymentData.cardNumber || "0000 0000 0000 0000"}
               </div>
 
-              {/* Cardholder info */}
-              <div className="absolute bottom-6 right-6 flex justify-between w-64">
-                <div className="text-right">
-                  <div className="text-sm">{paymentData.expiryDate || "MM/YY"}</div>
+              {/* Cardholder info and Expiry - Row at bottom */}
+              <div className="flex justify-between items-center w-full mt-4">
+                <div className="text-sm tracking-widest uppercase truncate max-w-[200px]">
+                  {paymentData.holderName ? paymentData.holderName : "ISRAEL ISRAELI"}
                 </div>
-                <div>
-                  <div className="text-xs text-gray-300 mb-1">
-                    {paymentData.holderName ? paymentData.holderName.toUpperCase() : "ISRAEL ISRAELI"}
-                  </div>
+                <div className="text-sm tracking-widest">
+                  {paymentData.expiryDate || "MM/YY"}
                 </div>
+              </div>
+
+              {/* Discreet Mastercard-style icon in background/corner */}
+              <div className="absolute top-6 right-8 flex">
+                <div className="w-10 h-10 bg-white/20 rounded-full"></div>
+                <div className="w-10 h-10 bg-white/10 rounded-full -ml-4"></div>
               </div>
             </div>
 
-            {/* Camera icon */}
-            <div className="absolute -bottom-4 left-6 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center border-4 border-gray-100">
-              <Camera className="w-6 h-6 text-gray-400" />
+            {/* Camera icon - Centered BELOW the card */}
+            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center border-4 border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
+              <div className="relative">
+                {/* Viewfinder brackets style icon */}
+                <div className="absolute -top-3 -left-3 border-t-2 border-l-2 border-gray-400 w-2 h-2"></div>
+                <div className="absolute -top-3 -right-3 border-t-2 border-r-2 border-gray-400 w-2 h-2"></div>
+                <div className="absolute -bottom-3 -left-3 border-b-2 border-l-2 border-gray-400 w-2 h-2"></div>
+                <div className="absolute -bottom-3 -right-3 border-b-2 border-r-2 border-gray-400 w-2 h-2"></div>
+                <Camera className="w-7 h-7 text-gray-400" />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Payment Form */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mx-auto">
+        {/* Payment Form - 3 Columns Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-6 max-w-3xl mx-auto pt-4">
+
+          {/* Row 1: VAT, ID, Holder Name */}
           <div className="space-y-1">
             <Input
-              placeholder="שם בעל הכרטיס"
-              value={paymentData.holderName || ''}
-              onChange={(e) => handleInputChange('holderName', e.target.value)}
-              className={`rounded-full text-center ${errors.holderName ? 'border-red-500' : ''}`}
+              placeholder="ח.פ. עבור חשבונית"
+              value={paymentData.vatNumber || ''}
+              onChange={(e) => handleInputChange('vatNumber', e.target.value)}
+              className="h-12 rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400"
               dir="rtl"
             />
-            {errors.holderName && <p className="text-xs text-red-500">{errors.holderName}</p>}
           </div>
+
           <div className="space-y-1">
             <Input
               placeholder="מספר זיהוי (9 ספרות)"
               value={paymentData.idNumber || ''}
               onChange={(e) => handleInputChange('idNumber', e.target.value)}
-              className={`rounded-full text-center ${errors.idNumber ? 'border-red-500' : ''}`}
+              className={`h-12 rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 ${errors.idNumber ? 'border-red-500' : ''}`}
               dir="rtl"
               maxLength={9}
             />
-            {errors.idNumber && <p className="text-xs text-red-500">{errors.idNumber}</p>}
           </div>
+
           <div className="space-y-1">
+            <Input
+              placeholder="שם בעל הכרטיס"
+              value={paymentData.holderName || ''}
+              onChange={(e) => handleInputChange('holderName', e.target.value)}
+              className={`h-12 rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 ${errors.holderName ? 'border-red-500' : ''}`}
+              dir="rtl"
+            />
+          </div>
+
+          {/* Row 2: CVV, Expiry, Card Number */}
+          <div className="space-y-1 relative">
             <Input
               placeholder="CVV"
               value={paymentData.cvv || ''}
               onChange={(e) => handleInputChange('cvv', e.target.value)}
-              className="rounded-full text-center"
+              className="h-12 rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400"
               maxLength={3}
               dir="rtl"
             />
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300">
+              <svg width="24" height="16" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0.5" y="0.5" width="23" height="15" rx="1.5" stroke="currentColor" />
+                <rect x="4" y="8" width="8" height="2" fill="currentColor" />
+              </svg>
+            </div>
           </div>
+
           <div className="space-y-1">
             <Input
               placeholder="תוקף MM/YY"
               value={paymentData.expiryDate || ''}
               onChange={(e) => handleInputChange('expiryDate', e.target.value)}
-              className={`rounded-full text-center ${errors.expiryDate ? 'border-red-500' : ''}`}
+              className={`h-12 rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 ${errors.expiryDate ? 'border-red-500' : ''}`}
               dir="rtl"
               maxLength={5}
             />
-            {errors.expiryDate && <p className="text-xs text-red-500">{errors.expiryDate}</p>}
+          </div>
+
+          <div className="space-y-1">
+            <Input
+              placeholder="מספר כרטיס אשראי"
+              value={paymentData.cardNumber || ''}
+              onChange={(e) => handleInputChange('cardNumber', e.target.value)}
+              className={`h-12 rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 ${errors.cardNumber ? 'border-red-500' : ''}`}
+              maxLength={19}
+              dir="rtl"
+            />
           </div>
         </div>
 
-        <div className="space-y-1 max-w-lg mx-auto">
-          <Input
-            placeholder="מספר כרטיס אשראי"
-            value={paymentData.cardNumber || ''}
-            onChange={(e) => handleInputChange('cardNumber', e.target.value)}
-            className={`rounded-full text-center ${errors.cardNumber ? 'border-red-500' : ''}`}
-            maxLength={19}
-            dir="rtl"
-          />
-          {errors.cardNumber && <p className="text-xs text-red-500">{errors.cardNumber}</p>}
-        </div>
-
         {/* Security Notice */}
-        <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg max-w-lg mx-auto">
-          <p>🔒 התשלום מאובטח ומוצפן. אנחנו לא שומרים פרטי אשראי</p>
+        <div className="mt-8 flex justify-center">
+          <div className="text-xs text-gray-500 bg-gray-50/50 px-6 py-2 rounded-full flex items-center gap-2 border border-gray-100">
+            <span>🔒</span>
+            <span>התשלום מאובטח ומוצפן. אנחנו לא שומרים פרטי אשראי</span>
+          </div>
         </div>
       </motion.div>
     </div>

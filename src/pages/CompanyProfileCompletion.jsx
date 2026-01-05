@@ -44,7 +44,8 @@ export default function CompanyProfileCompletion() {
     expiryDate: "",
     cvv: "",
     holderName: "",
-    idNumber: ""
+    idNumber: "",
+    vatNumber: ""
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
