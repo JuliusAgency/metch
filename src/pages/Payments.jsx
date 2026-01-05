@@ -302,9 +302,9 @@ ET`;
                                             תשלום חד פעמי
                                         </div>
                                         <div className="flex flex-col items-center md:items-start">
-                                            <div className="flex items-center gap-2 text-[#003566]">
+                                            <div className="flex items-baseline gap-1 text-[#003566]">
                                                 <span className="text-5xl font-normal font-['Rubik']">₪{499 * quantity}</span>
-                                                <span className="text-xl font-normal">/ למשרה</span>
+                                                <span className="text-2xl font-normal">/למשרה</span>
                                             </div>
                                             <div className="w-full h-[3px] bg-[#003566] mt-1 rounded-full"></div>
                                         </div>
