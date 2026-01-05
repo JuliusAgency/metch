@@ -168,21 +168,21 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
             </div>
 
             {/* Camera icon - Centered BELOW the card */}
-            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center border-4 border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
-              <div className="relative">
+            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 cursor-pointer hover:opacity-80 transition-opacity">
+              <div className="relative p-3">
                 {/* Viewfinder brackets style icon */}
-                <div className="absolute -top-3 -left-3 border-t-2 border-l-2 border-gray-400 w-2 h-2"></div>
-                <div className="absolute -top-3 -right-3 border-t-2 border-r-2 border-gray-400 w-2 h-2"></div>
-                <div className="absolute -bottom-3 -left-3 border-b-2 border-l-2 border-gray-400 w-2 h-2"></div>
-                <div className="absolute -bottom-3 -right-3 border-b-2 border-r-2 border-gray-400 w-2 h-2"></div>
-                <Camera className="w-7 h-7 text-gray-400" />
+                <div className="absolute top-0 left-0 border-t-[2.5px] border-l-[2.5px] border-slate-400 w-3 h-3 rounded-tl-[4px]"></div>
+                <div className="absolute top-0 right-0 border-t-[2.5px] border-r-[2.5px] border-slate-400 w-3 h-3 rounded-tr-[4px]"></div>
+                <div className="absolute bottom-0 left-0 border-b-[2.5px] border-l-[2.5px] border-slate-400 w-3 h-3 rounded-bl-[4px]"></div>
+                <div className="absolute bottom-0 right-0 border-b-[2.5px] border-r-[2.5px] border-slate-400 w-3 h-3 rounded-br-[4px]"></div>
+                <Camera className="w-8 h-8 text-slate-400" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Payment Form - 3 Columns Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-6 max-w-3xl mx-auto pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-6 max-w-[820px] mx-auto pt-4">
 
           {/* Row 1: VAT, ID, Holder Name */}
           <div className="space-y-1">
