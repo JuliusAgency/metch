@@ -92,11 +92,15 @@ export default function CompanyProfileCompletion() {
   const nextStep = async () => {
     if (step === 1) {
       if (!companyData.company_name || !companyData.company_name.trim()) {
-        // Since we don't have a toast component easily accessible in context, we will prevent progression.
-        // Ideally we would show a toast here. Assuming user notices field is required.
-        // For now, we will just return to prevent saving empty data.
+        toast.error("נא להזין שם חברה");
         return;
       }
+
+      if (!companyData.phone_verified) {
+        toast.error("נא לאמת את מספר הטלפון כדי להמשיך");
+        return;
+      }
+
       const saved = await handleSave();
       if (!saved) return;
     }
