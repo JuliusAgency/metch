@@ -293,10 +293,28 @@ ET`;
                             </div>
 
                             {/* Pricing Card */}
-                            <div className="bg-white rounded-[30px] border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] py-8 px-10 max-w-4xl mx-auto relative overflow-hidden">
+                            <div className="bg-white rounded-[30px] border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] py-8 px-10 max-w-[940px] mx-auto relative overflow-hidden">
                                 <div className="flex flex-col md:flex-row items-stretch relative z-10 w-full" dir="rtl">
 
-                                    {/* Features Section (Right side in RTL) */}
+                                    {/* Price Section (Right side in RTL) */}
+                                    <div className="flex-1 flex flex-col items-center justify-start py-4">
+                                        <div className="bg-[#EBF5FF] text-[#003566] px-4 py-1.5 rounded-full text-xs font-medium mb-6">
+                                            תשלום חד פעמי
+                                        </div>
+                                        <div className="flex flex-col items-center">
+                                            <div className="flex items-baseline gap-1 text-[#003566]">
+                                                <span className="text-[45px] font-normal font-['Rubik']">₪{499 * quantity}</span>
+                                                <span className="text-2xl font-normal">/למשרה</span>
+                                            </div>
+                                            <div className="w-full h-[3px] bg-[#003566] mt-2 rounded-full"></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Vertical Divider */}
+                                    <div className="hidden md:block w-px bg-gray-100 mx-10"></div>
+                                    <div className="h-px w-full bg-gray-100 md:hidden my-6"></div>
+
+                                    {/* Features Section (Left side in RTL) */}
                                     <div className="flex-1 text-right py-4">
                                         <h3 className="text-lg font-bold text-[#003566] mb-6">מה כולל?</h3>
                                         <ul className="space-y-4">
@@ -313,24 +331,6 @@ ET`;
                                                 </li>
                                             ))}
                                         </ul>
-                                    </div>
-
-                                    {/* Vertical Divider */}
-                                    <div className="hidden md:block w-px bg-gray-100 mx-10"></div>
-                                    <div className="h-px w-full bg-gray-100 md:hidden my-6"></div>
-
-                                    {/* Price Section (Left side in RTL) */}
-                                    <div className="flex-1 flex flex-col items-center justify-center py-4">
-                                        <div className="bg-[#EBF5FF] text-[#003566] px-4 py-1.5 rounded-full text-xs font-medium mb-4">
-                                            תשלום חד פעמי
-                                        </div>
-                                        <div className="flex flex-col items-center">
-                                            <div className="flex items-baseline gap-1 text-[#003566]">
-                                                <span className="text-5xl font-normal font-['Rubik']">₪{499 * quantity}</span>
-                                                <span className="text-2xl font-normal">/למשרה</span>
-                                            </div>
-                                            <div className="w-full h-[3px] bg-[#003566] mt-2 rounded-full"></div>
-                                        </div>
                                     </div>
 
                                 </div>
