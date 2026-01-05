@@ -182,7 +182,7 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
         </div>
 
         {/* Payment Form - 3 Columns Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-5 max-w-[880px] mx-auto pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-5 max-w-[980px] mx-auto pt-6">
 
           {/* Row 1: VAT, ID, Holder Name */}
           <div className="space-y-1">
