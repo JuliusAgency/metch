@@ -35,42 +35,73 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
           <p className="text-gray-600">בעזרת הבינה המלאכותית של מאצ'</p>
         </div>
 
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">בחרו כמות משרות</h2>
-          <div className="flex justify-center items-center gap-4">
-            <Button size="icon" variant="outline" className="rounded-full w-12 h-12 border-gray-300" onClick={() => handleQuantityChange(-1)} disabled={quantity <= 1}>
-              <Minus className="w-6 h-6" />
-            </Button>
-            <span className="text-4xl font-bold w-16 text-center text-gray-800">{quantity}</span>
-            <Button size="icon" className="rounded-full w-12 h-12 bg-gray-800 hover:bg-gray-900" onClick={() => handleQuantityChange(1)}>
-              <Plus className="w-6 h-6" />
-            </Button>
+        {/* Quantity Selector - Delicate Pill Design */}
+        <div className="flex justify-center mb-8">
+          <div className="bg-white border border-gray-200 rounded-full px-4 py-2 flex items-center justify-between w-[220px] shadow-sm">
+            <button
+              onClick={() => handleQuantityChange(-1)}
+              disabled={quantity <= 1}
+              className="w-8 h-8 rounded-full bg-[#f0f4f8] text-[#1E3A8A] flex items-center justify-center hover:bg-[#e1eaf0] transition-colors text-xl font-medium disabled:opacity-50"
+            >
+              -
+            </button>
+            <span className="text-3xl font-bold text-[#1E3A8A] font-['Rubik']">{quantity}</span>
+            <button
+              onClick={() => handleQuantityChange(1)}
+              className="w-8 h-8 rounded-full bg-[#1e293b] text-white flex items-center justify-center hover:bg-[#0f172a] transition-colors text-xl font-medium"
+            >
+              +
+            </button>
           </div>
         </div>
 
-        <Card className="max-w-lg mx-auto bg-white rounded-2xl shadow-lg border border-gray-200">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start">
-              <div className="text-left flex-shrink-0">
-                <div className="bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full mb-2 inline-block">
-                  תשלום חד פעמי
-                </div>
-                <div className="text-4xl font-bold text-gray-900">₪{pricePerJob}</div>
-                <div className="text-gray-600">/ למשרה</div>
+        {/* Pricing Card */}
+        <div className="bg-white rounded-[30px] border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-8 md:p-10 max-w-3xl mx-auto relative overflow-hidden">
+          <div className="flex flex-col md:flex-row gap-8 items-start justify-between relative z-10 w-full h-full">
+
+            {/* Left Side: Price (Visually Right in RTL) */}
+            <div className="text-center md:text-right space-y-2 flex-1 flex flex-col items-center md:items-start order-3 md:order-1 pt-2">
+              <div className="bg-[#EBF5FF] text-[#003566] px-4 py-1.5 rounded-full text-sm font-medium mb-3 inline-block">
+                תשלום חד פעמי
               </div>
-              <div className="text-right space-y-4">
-                <h3 className="font-bold text-lg">מה כולל?</h3>
-                <ul className="space-y-2 text-gray-700 text-sm">
-                  <li className="flex items-center gap-2"><span>•</span><span>פרסום למשך 30 ימים</span></li>
-                  <li className="flex items-center gap-2"><span>•</span><span>אפשרות לערוך את המשרה בכל רגע</span></li>
-                  <li className="flex items-center gap-2"><span>•</span><span>ניתוח ומסקנות מועמד בעזרת AI</span></li>
-                  <li className="flex items-center gap-2"><span>•</span><span>כולל שאלון סינון</span></li>
-                  <li className="flex items-center gap-2"><span>•</span><span>צ'אט ישיר עם מועמדים</span></li>
-                </ul>
+              <div className="flex items-baseline gap-1.5 relative">
+                {/* Price Amount - Will be on Right in RTL */}
+                <span className="text-5xl font-normal text-[#003566] tracking-tight font-['Rubik']">₪{pricePerJob * quantity}</span>
+
+                {/* Per Job Text with Underline - Will be on Left in RTL */}
+                <div className="flex flex-col items-center">
+                  <span className="text-[#003566] text-xl font-normal leading-none">/ למשרה</span>
+                  <div className="w-full h-[2px] bg-[#003566] mt-0.5"></div>
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Vertical Divider for desktop */}
+            <div className="hidden md:block w-px self-stretch bg-gray-100 order-2 mx-10"></div>
+
+            {/* Divider for mobile */}
+            <div className="h-px w-full bg-gray-100 md:hidden order-2"></div>
+
+            {/* Right Side: Features (Visually Left in RTL) */}
+            <div className="text-right space-y-4 flex-1 w-full order-1 md:order-3">
+              <h3 className="text-lg font-bold text-[#003566]">מה כולל?</h3>
+              <ul className="space-y-3 pr-0">
+                {[
+                  'פרסום למשך 30 ימים',
+                  'אפשרות לערוך את המשרה בכל רגע',
+                  'ניתוח ומסקנות מועמד בעזרת AI',
+                  'כולל שאלון סינון',
+                  'צ׳אט ישיר עם מועמדים'
+                ].map((feature, idx) => (
+                  <li key={idx} className="flex items-center gap-2.5 justify-start text-[#003566] font-normal text-sm">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#003566]"></div>
+                    <span className="text-[#003566]">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
       </motion.div>
     </div>
   );
