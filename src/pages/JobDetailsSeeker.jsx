@@ -197,6 +197,11 @@ export default function JobDetailsSeeker() {
       return;
     }
 
+    if (job.id === 'mock-google-crm') {
+      setShowSuccessModal(true);
+      return;
+    }
+
     try {
       if (user.email) {
         await UserAnalytics.trackJobApplication(user.email, job);

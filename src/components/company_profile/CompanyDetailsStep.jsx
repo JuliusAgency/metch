@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { toast } from "sonner";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
@@ -11,7 +13,7 @@ const companyTypes = [
     { id: 'hr', label: 'כח אדם' },
 ];
 
-const InfoInput = ({ placeholder, value, name, onChange, disabled }) => (
+const InfoInput = ({ placeholder, value, name, onChange, disabled, ...props }) => (
     <Input
         placeholder={placeholder}
         value={value}
@@ -20,6 +22,7 @@ const InfoInput = ({ placeholder, value, name, onChange, disabled }) => (
         disabled={disabled}
         className="h-10 text-sm bg-white border-gray-300 rounded-full text-right pr-4 focus:border-blue-500 focus:ring-blue-500 transition-all placeholder:text-gray-400 disabled:bg-gray-50 disabled:text-gray-500"
         dir="rtl"
+        {...props}
     />
 );
 
@@ -43,12 +46,33 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
         setCompanyData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleSendCode = () => {
+        setIsVerificationOpen(true);
+    };
+
+    const handleVerified = (verifiedPhone) => {
+        // Persist verification status
+        setCompanyData(prev => ({
+            ...prev,
+            company_phone: verifiedPhone,
+            is_phone_verified: true
+        }));
+        toast.success("הטלפון אומת בהצלחה");
+    };
+
     const handleCompanyTypeSelect = (typeId) => {
         setCompanyData(prev => ({ ...prev, company_type: typeId }));
     };
 
     return (
         <div className="max-w-3xl mx-auto text-center" dir="rtl">
+            <WhatsAppVerificationDialog
+                isOpen={isVerificationOpen}
+                onClose={() => setIsVerificationOpen(false)}
+                onVerified={handleVerified}
+                initialPhone={companyData.company_phone}
+            />
+
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -109,8 +133,8 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                                     type="button"
                                     onClick={() => setIsVerificationOpen(true)}
                                     className={`absolute left-1.5 top-1/2 -translate-y-1/2 h-8 px-4 text-xs font-medium rounded-full transition-all ${companyData.is_phone_verified
-                                            ? 'bg-green-500 hover:bg-green-600 text-white'
-                                            : 'bg-[#1e88e5] text-white hover:bg-[#1565c0]'
+                                        ? 'bg-green-500 hover:bg-green-600 text-white'
+                                        : 'bg-[#1e88e5] text-white hover:bg-[#1565c0]'
                                         }`}
                                 >
                                     {companyData.is_phone_verified ? 'אומת ✓' : 'שלח קוד'}
