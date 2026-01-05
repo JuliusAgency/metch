@@ -369,7 +369,7 @@ ET`;
                                     <div className="text-right space-y-1">
                                         <p className="text-gray-500 text-sm">אמצעי תשלום</p>
                                         <div className="flex items-center gap-2 justify-end">
-                                            <p className="text-gray-500 text-sm tracking-widest font-normal" dir="ltr">xxxx 6655</p>
+                                            <p className="text-gray-500 text-sm tracking-widest font-normal" dir="ltr">xxxx {paymentData.cardNumber ? paymentData.cardNumber.replace(/\D/g, '').slice(-4) : '6655'}</p>
                                         </div>
                                     </div>
                                     {/* Left Side: Button */}
