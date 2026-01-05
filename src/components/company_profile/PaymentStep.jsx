@@ -142,7 +142,7 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
         className="space-y-12"
       >
         {/* Credit Card Visual */}
-        <div className="flex flex-col items-center gap-6 mb-12">
+        <div className="flex flex-col items-center mb-16">
           <div className="relative">
             <div className="w-[340px] h-[200px] bg-[#1a222e] rounded-2xl shadow-2xl text-white p-8 flex flex-col justify-center gap-8 relative overflow-hidden font-mono">
               {/* Card number - Centered */}
@@ -167,22 +167,22 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
               </div>
             </div>
 
-            {/* Camera icon - Centered BELOW the card */}
-            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 cursor-pointer hover:opacity-80 transition-opacity">
-              <div className="relative p-3">
+            {/* Camera icon - Centered BETWEEN the card and inputs */}
+            <div className="absolute -bottom-14 left-1/2 -translate-x-1/2 cursor-pointer hover:opacity-80 transition-opacity">
+              <div className="relative p-1">
                 {/* Viewfinder brackets style icon */}
-                <div className="absolute top-0 left-0 border-t-[2.5px] border-l-[2.5px] border-slate-400 w-3 h-3 rounded-tl-[4px]"></div>
-                <div className="absolute top-0 right-0 border-t-[2.5px] border-r-[2.5px] border-slate-400 w-3 h-3 rounded-tr-[4px]"></div>
-                <div className="absolute bottom-0 left-0 border-b-[2.5px] border-l-[2.5px] border-slate-400 w-3 h-3 rounded-bl-[4px]"></div>
-                <div className="absolute bottom-0 right-0 border-b-[2.5px] border-r-[2.5px] border-slate-400 w-3 h-3 rounded-br-[4px]"></div>
-                <Camera className="w-8 h-8 text-slate-400" />
+                <div className="absolute top-0 left-0 border-t-[2px] border-l-[2px] border-slate-400 w-2.5 h-2.5 rounded-tl-[3px]"></div>
+                <div className="absolute top-0 right-0 border-t-[2px] border-r-[2px] border-slate-400 w-2.5 h-2.5 rounded-tr-[3px]"></div>
+                <div className="absolute bottom-0 left-0 border-b-[2px] border-l-[2px] border-slate-400 w-2.5 h-2.5 rounded-bl-[3px]"></div>
+                <div className="absolute bottom-0 right-0 border-b-[2px] border-r-[2px] border-slate-400 w-2.5 h-2.5 rounded-br-[3px]"></div>
+                <Camera className="w-7 h-7 text-slate-400" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Payment Form - 3 Columns Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-6 max-w-[820px] mx-auto pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-5 max-w-[880px] mx-auto pt-6">
 
           {/* Row 1: VAT, ID, Holder Name */}
           <div className="space-y-1">
@@ -190,7 +190,7 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
               placeholder="ח.פ. עבור חשבונית"
               value={paymentData.vatNumber || ''}
               onChange={(e) => handleInputChange('vatNumber', e.target.value)}
-              className="h-12 rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400"
+              className="h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm"
               dir="rtl"
             />
           </div>
@@ -200,7 +200,7 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
               placeholder="מספר זיהוי (9 ספרות)"
               value={paymentData.idNumber || ''}
               onChange={(e) => handleInputChange('idNumber', e.target.value)}
-              className={`h-12 rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 ${errors.idNumber ? 'border-red-500' : ''}`}
+              className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.idNumber ? 'border-red-500' : ''}`}
               dir="rtl"
               maxLength={9}
             />
@@ -211,7 +211,7 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
               placeholder="שם בעל הכרטיס"
               value={paymentData.holderName || ''}
               onChange={(e) => handleInputChange('holderName', e.target.value)}
-              className={`h-12 rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 ${errors.holderName ? 'border-red-500' : ''}`}
+              className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.holderName ? 'border-red-500' : ''}`}
               dir="rtl"
             />
           </div>
@@ -222,12 +222,12 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
               placeholder="CVV"
               value={paymentData.cvv || ''}
               onChange={(e) => handleInputChange('cvv', e.target.value)}
-              className="h-12 rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400"
+              className="h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm"
               maxLength={3}
               dir="rtl"
             />
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300">
-              <svg width="24" height="16" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="20" height="14" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="0.5" y="0.5" width="23" height="15" rx="1.5" stroke="currentColor" />
                 <rect x="4" y="8" width="8" height="2" fill="currentColor" />
               </svg>
@@ -239,7 +239,7 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
               placeholder="תוקף MM/YY"
               value={paymentData.expiryDate || ''}
               onChange={(e) => handleInputChange('expiryDate', e.target.value)}
-              className={`h-12 rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 ${errors.expiryDate ? 'border-red-500' : ''}`}
+              className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.expiryDate ? 'border-red-500' : ''}`}
               dir="rtl"
               maxLength={5}
             />
@@ -250,7 +250,7 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
               placeholder="מספר כרטיס אשראי"
               value={paymentData.cardNumber || ''}
               onChange={(e) => handleInputChange('cardNumber', e.target.value)}
-              className={`h-12 rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 ${errors.cardNumber ? 'border-red-500' : ''}`}
+              className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.cardNumber ? 'border-red-500' : ''}`}
               maxLength={19}
               dir="rtl"
             />
