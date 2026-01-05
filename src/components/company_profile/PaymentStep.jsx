@@ -148,11 +148,11 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
               {/* Background Arc Effect - Two-tone split */}
               <div className="absolute top-[-50%] right-[-25%] w-[150%] h-[200%] bg-[#1c2533] rounded-[45%] rotate-[-15deg]"></div>
 
-              {/* Mastercard-style logo top right */}
-              <div className="flex justify-end pr-2 relative z-10">
+              {/* Mastercard-style logo top LEFT */}
+              <div className="flex justify-start pl-2 relative z-10">
                 <div className="flex">
-                  <div className="w-11 h-11 bg-white/[0.9] rounded-full"></div>
-                  <div className="w-11 h-11 bg-white/[0.3] rounded-full -ml-5 backdrop-blur-[1px]"></div>
+                  <div className="w-11 h-11 bg-white/[0.5] rounded-full"></div>
+                  <div className="w-11 h-11 bg-white/[0.9] rounded-full -ml-5 backdrop-blur-[1px]"></div>
                 </div>
               </div>
 
@@ -161,13 +161,13 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
                 {paymentData.cardNumber || "0000 0000 0000 0000"}
               </div>
 
-              {/* Cardholder info and Expiry - Bottom row */}
+              {/* Expiry and Cardholder info - Bottom row SWAPPED */}
               <div className="flex justify-between items-end w-full pb-2 relative z-10">
-                <div className="text-[17px] tracking-wide uppercase truncate max-w-[220px] font-sans opacity-90">
-                  {paymentData.holderName ? paymentData.holderName : "ISRAEL ISRAELI"}
-                </div>
                 <div className="text-[17px] tracking-widest font-sans opacity-90">
                   {paymentData.expiryDate || "MM/YY"}
+                </div>
+                <div className="text-[17px] tracking-wide uppercase truncate max-w-[220px] font-sans opacity-90">
+                  {paymentData.holderName ? paymentData.holderName : "ISRAEL ISRAELI"}
                 </div>
               </div>
             </div>
