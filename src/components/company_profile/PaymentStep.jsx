@@ -189,13 +189,13 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
         {/* Payment Form - 3 Columns Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-5 max-w-[980px] mx-auto pt-6">
 
-          {/* Row 1: VAT, ID, Holder Name */}
+          {/* Row 1: Holder Name, ID, VAT */}
           <div className="space-y-1">
             <Input
-              placeholder="ח.פ. עבור חשבונית"
-              value={paymentData.vatNumber || ''}
-              onChange={(e) => handleInputChange('vatNumber', e.target.value)}
-              className="h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm"
+              placeholder="שם בעל הכרטיס"
+              value={paymentData.holderName || ''}
+              onChange={(e) => handleInputChange('holderName', e.target.value)}
+              className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.holderName ? 'border-red-500' : ''}`}
               dir="rtl"
             />
           </div>
@@ -213,15 +213,37 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
 
           <div className="space-y-1">
             <Input
-              placeholder="שם בעל הכרטיס"
-              value={paymentData.holderName || ''}
-              onChange={(e) => handleInputChange('holderName', e.target.value)}
-              className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.holderName ? 'border-red-500' : ''}`}
+              placeholder="ח.פ. עבור חשבונית"
+              value={paymentData.vatNumber || ''}
+              onChange={(e) => handleInputChange('vatNumber', e.target.value)}
+              className="h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm"
               dir="rtl"
             />
           </div>
 
-          {/* Row 2: CVV, Expiry, Card Number */}
+          {/* Row 2: Card Number, Expiry, CVV */}
+          <div className="space-y-1">
+            <Input
+              placeholder="מספר כרטיס אשראי"
+              value={paymentData.cardNumber || ''}
+              onChange={(e) => handleInputChange('cardNumber', e.target.value)}
+              className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.cardNumber ? 'border-red-500' : ''}`}
+              maxLength={19}
+              dir="rtl"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Input
+              placeholder="תוקף MM/YY"
+              value={paymentData.expiryDate || ''}
+              onChange={(e) => handleInputChange('expiryDate', e.target.value)}
+              className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.expiryDate ? 'border-red-500' : ''}`}
+              dir="rtl"
+              maxLength={5}
+            />
+          </div>
+
           <div className="space-y-1 relative">
             <Input
               placeholder="CVV"
@@ -237,28 +259,6 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
                 <rect x="4" y="8" width="8" height="2" fill="currentColor" />
               </svg>
             </div>
-          </div>
-
-          <div className="space-y-1">
-            <Input
-              placeholder="תוקף MM/YY"
-              value={paymentData.expiryDate || ''}
-              onChange={(e) => handleInputChange('expiryDate', e.target.value)}
-              className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.expiryDate ? 'border-red-500' : ''}`}
-              dir="rtl"
-              maxLength={5}
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Input
-              placeholder="מספר כרטיס אשראי"
-              value={paymentData.cardNumber || ''}
-              onChange={(e) => handleInputChange('cardNumber', e.target.value)}
-              className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.cardNumber ? 'border-red-500' : ''}`}
-              maxLength={19}
-              dir="rtl"
-            />
           </div>
         </div>
 
