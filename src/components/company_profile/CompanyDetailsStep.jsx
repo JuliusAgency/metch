@@ -1,12 +1,10 @@
-
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
-
-import { WhatsAppVerificationDialog } from '@/components/dialogs/WhatsAppVerificationDialog';
+import { WhatsAppVerificationDialog } from "@/components/dialogs/WhatsAppVerificationDialog";
 
 const companyTypes = [
     { id: 'business', label: 'עסקית' },
@@ -15,13 +13,14 @@ const companyTypes = [
     { id: 'hr', label: 'כח אדם' },
 ];
 
-const InfoInput = ({ placeholder, value, name, onChange, ...props }) => (
+const InfoInput = ({ placeholder, value, name, onChange, disabled, ...props }) => (
     <Input
         placeholder={placeholder}
         value={value}
         name={name}
         onChange={onChange}
-        className="h-10 text-sm bg-white border-gray-300 rounded-full text-right pr-4 focus:border-blue-500 focus:ring-blue-500 transition-all placeholder:text-gray-400"
+        disabled={disabled}
+        className="h-10 text-sm bg-white border-gray-300 rounded-full text-right pr-4 focus:border-blue-500 focus:ring-blue-500 transition-all placeholder:text-gray-400 disabled:bg-gray-50 disabled:text-gray-500"
         dir="rtl"
         {...props}
     />
@@ -40,13 +39,7 @@ const ChipButton = ({ label, isSelected, onClick }) => (
 );
 
 export default function CompanyDetailsStep({ companyData, setCompanyData }) {
-    const [showVerificationDialog, setShowVerificationDialog] = useState(false);
-    // Verification state is now persistent through companyData or separate if needed, 
-    // but assuming simple state for this step for now.
-    // Ideally we might want to check if companyData.phone_verified exists if we want persistence.
-    // Initialize isVerified based on companyData if available (assuming persistence in next steps or if re-visited)
-    // Note: If companyData doesn't carry this flag from backend, it will reset on refresh, which is expected for transient state.
-    const [isVerified, setIsVerified] = useState(companyData.phone_verified || false);
+    const [isVerificationOpen, setIsVerificationOpen] = useState(false);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -54,16 +47,15 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
     };
 
     const handleSendCode = () => {
-        setShowVerificationDialog(true);
+        setIsVerificationOpen(true);
     };
 
     const handleVerified = (verifiedPhone) => {
-        setIsVerified(true);
         // Persist verification status
         setCompanyData(prev => ({
             ...prev,
             company_phone: verifiedPhone,
-            phone_verified: true
+            is_phone_verified: true
         }));
         toast.success("הטלפון אומת בהצלחה");
     };
@@ -75,8 +67,8 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
     return (
         <div className="max-w-3xl mx-auto text-center" dir="rtl">
             <WhatsAppVerificationDialog
-                isOpen={showVerificationDialog}
-                onClose={() => setShowVerificationDialog(false)}
+                isOpen={isVerificationOpen}
+                onClose={() => setIsVerificationOpen(false)}
                 onVerified={handleVerified}
                 initialPhone={companyData.company_phone}
             />
@@ -135,26 +127,24 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                                     name="company_phone"
                                     value={companyData.company_phone || ""}
                                     onChange={handleInputChange}
-                                    disabled={isVerified}
+                                    disabled={companyData.is_phone_verified}
                                 />
-                                {isVerified ? (
-                                    <div className="absolute left-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1 text-green-600 px-3 bg-white rounded-full">
-                                        <Check size={16} />
-                                        <span className="text-xs font-bold">אומת</span>
-                                    </div>
-                                ) : (
-                                    <Button
-                                        type="button"
-                                        onClick={handleSendCode}
-                                        className="absolute left-1.5 top-1/2 -translate-y-1/2 h-8 px-4 text-xs font-medium rounded-full bg-[#1e88e5] text-white hover:bg-[#1565c0]"
-                                    >
-                                        שלח קוד
-                                    </Button>
-                                )}
+                                <Button
+                                    type="button"
+                                    onClick={() => setIsVerificationOpen(true)}
+                                    className={`absolute left-1.5 top-1/2 -translate-y-1/2 h-8 px-4 text-xs font-medium rounded-full transition-all ${companyData.is_phone_verified
+                                        ? 'bg-green-500 hover:bg-green-600 text-white'
+                                        : 'bg-[#1e88e5] text-white hover:bg-[#1565c0]'
+                                        }`}
+                                >
+                                    {companyData.is_phone_verified ? 'אומת ✓' : 'שלח קוד'}
+                                </Button>
                             </div>
-
-                            {!isVerified && (
-                                <p className="text-xs text-[#1e88e5] font-medium cursor-pointer mt-2 text-right w-full hover:underline" onClick={handleSendCode}>
+                            {!companyData.is_phone_verified && (
+                                <p
+                                    onClick={() => setIsVerificationOpen(true)}
+                                    className="text-xs text-[#1e88e5] font-medium cursor-pointer mt-2 text-right w-full hover:underline"
+                                >
                                     לא קיבלתי שלח שוב
                                 </p>
                             )}
@@ -198,6 +188,20 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                     </div>
                 </div>
             </motion.div>
+
+            <WhatsAppVerificationDialog
+                isOpen={isVerificationOpen}
+                onClose={() => setIsVerificationOpen(false)}
+                initialPhone={companyData.company_phone}
+                onVerified={(phone) => {
+                    setCompanyData(prev => ({
+                        ...prev,
+                        company_phone: phone,
+                        is_phone_verified: true
+                    }));
+                    setIsVerificationOpen(false);
+                }}
+            />
         </div>
     );
 }

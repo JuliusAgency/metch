@@ -30,8 +30,10 @@ export default function CompanyProfileCompletion() {
     cv_reception_email: "",
     company_phone: "",
     full_name: "",
-    phone: ""
+    phone: "",
+    is_phone_verified: false
   });
+
   const [packageData, setPackageData] = useState({
     type: 'per_job',
     quantity: 1,
@@ -47,10 +49,7 @@ export default function CompanyProfileCompletion() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
-
   const location = useLocation();
-
-
 
   useEffect(() => {
     const loadUser = async () => {
@@ -65,7 +64,8 @@ export default function CompanyProfileCompletion() {
           cv_reception_email: user.cv_reception_email || user.email,
           company_phone: user.company_phone || "",
           full_name: user.full_name || "",
-          phone: user.phone || ""
+          phone: user.phone || "",
+          is_phone_verified: user.is_phone_verified || false
         }));
       } catch (error) {
         console.error("Error loading user data:", error);
@@ -92,12 +92,12 @@ export default function CompanyProfileCompletion() {
   const nextStep = async () => {
     if (step === 1) {
       if (!companyData.company_name || !companyData.company_name.trim()) {
-        toast.error("נא להזין שם חברה");
+        toast.error("אנא מלא את שם החברה");
         return;
       }
 
-      if (!companyData.phone_verified) {
-        toast.error("נא לאמת את מספר הטלפון כדי להמשיך");
+      if (!companyData.is_phone_verified) {
+        toast.error("חובה לאמת את מספר הטלפון בווצאפ כדי להמשיך");
         return;
       }
 
@@ -201,14 +201,27 @@ export default function CompanyProfileCompletion() {
                   <ArrowRight className="w-5 h-5 mr-2" />
                 </Button>
               )}
-              <Button
-                className={`bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg disabled:opacity-50 transition-transform duration-300 ${step === 1 ? 'px-14 py-4 text-xl transform hover:scale-105' : 'px-12 py-3 text-lg'}`}
-                onClick={nextStep}
-                disabled={saving}
-              >
-                {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (step === STEPS.length ? 'מעבר לדאשבורד' : 'המשך')}
-                {!saving && <ArrowLeft className="w-5 h-5 ml-2" />}
-              </Button>
+              {(() => {
+                const isStep1Valid = step === 1 && (
+                  companyData.company_name?.trim() &&
+                  companyData.full_name?.trim() &&
+                  companyData.phone?.trim() &&
+                  companyData.cv_reception_email?.trim() &&
+                  companyData.company_phone?.trim() &&
+                  companyData.is_phone_verified
+                );
+
+                return (
+                  <Button
+                    className={`bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg disabled:opacity-50 transition-transform duration-300 ${step === 1 ? 'px-14 py-4 text-xl transform hover:scale-105' : 'px-12 py-3 text-lg'}`}
+                    onClick={nextStep}
+                    disabled={saving || (step === 1 && !isStep1Valid)}
+                  >
+                    {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (step === STEPS.length ? 'מעבר לדאשבורד' : 'המשך')}
+                    {!saving && <ArrowLeft className="w-5 h-5 ml-2" />}
+                  </Button>
+                );
+              })()}
             </div>
           )}
         </div>

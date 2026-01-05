@@ -37,16 +37,24 @@ import CareerStageModal from "@/components/dashboard/CareerStageModal";
 import { calculate_match_score } from "@/utils/matchScore";
 const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message'];
 
-// --- JOB SEEKER DASHBOARD COMPONENT (New) ---
+// --- ICONS AND ASSETS ---
 import iconJsRelevantJobs from "@/assets/icon_js_relevant_jobs.png";
 import iconJsApplications from "@/assets/icon_js_applications.png";
 import iconJsCv from "@/assets/icon_js_cv.png";
 import iconJsProfileViews from "@/assets/icon_js_profile_views.png";
+import iconViews from "@/assets/icon_views.png";
+import iconActiveJobs from "@/assets/icon_active_jobs.png";
+import iconApplications from "@/assets/icon_applications.png";
 
 const JsRelevantJobsIcon = ({ className }) => <img src={iconJsRelevantJobs} className={`${className} object-contain`} alt="Relevant Jobs" />;
 const JsApplicationsIcon = ({ className }) => <img src={iconJsApplications} className={`${className} object-contain`} alt="Applications" />;
 const JsCvIcon = ({ className }) => <img src={iconJsCv} className={`${className} object-contain`} alt="CVs" />;
 const JsProfileViewsIcon = ({ className }) => <img src={iconJsProfileViews} className={`${className} object-contain`} alt="Profile Views" />;
+const ViewsIcon = ({ className }) => <img src={iconViews} className={`${className} object-contain`} alt="Views" />;
+const ApplicationsIcon = ({ className }) => <img src={iconApplications} className={`${className} object-contain`} alt="Applications" />;
+const ActiveJobsIcon = ({ className }) => <img src={iconActiveJobs} className={`${className} object-contain`} alt="Active Jobs" />;
+
+// --- JOB SEEKER DASHBOARD COMPONENT (New) ---
 
 const JobSeekerDashboard = ({ user }) => {
   const [jobFilter, setJobFilter] = useState('new');
@@ -60,8 +68,11 @@ const JobSeekerDashboard = ({ user }) => {
   const [userStats, setUserStats] = useState(null);
   const [showCareerModal, setShowCareerModal] = useState(false);
   const [hasCV, setHasCV] = useState(true); // Default to true to avoid flickers
+  const [currentPage, setCurrentPage] = useState(1);
   const [hasCompletedOnboardingFlow, setHasCompletedOnboardingFlow] = useState(false);
+  const ITEMS_PER_PAGE = 10;
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Check for onboarding triggers - MOVED AFTER GUARDS CHECK
   useEffect(() => {
@@ -144,7 +155,7 @@ const JobSeekerDashboard = ({ user }) => {
 
       try {
         const results = await Promise.allSettled([
-          Job.filter({ status: 'active' }, "-created_date", 200),
+          Job.filter({ status: 'active' }, "-created_date", 100),
           JobView.filter({ user_email: user.email }),
           Notification.filter({ is_read: false, email: user.email }, "-created_date", 5),
           UserAnalytics.getUserStats(user.email),
@@ -196,24 +207,26 @@ const JobSeekerDashboard = ({ user }) => {
           total_applications: 0
         };
 
+        const mockJob = {
+          id: 'mock-google-crm',
+          title: 'מנהלת קשרי לקוחות',
+          company: 'Google',
+          location: 'מרכז',
+          company_logo_url: 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png',
+          match_score: 90,
+          start_date: 'מיידי',
+          description: 'אנחנו מחפשים רכז/ת גיוס טכנולוגי/ת יצירתי/ת שיצטרפו לצוות שלנו...',
+          requirements: ['ניסיון של שנתיים לפחות בגיוס טכנולוגי - חובה', 'אנגלית ברמה גבוהה'],
+          responsibilities: ['אחריות מלאה על תהליך הגיוס מקצה לקצה'],
+          created_date: new Date().toISOString()
+        };
+
         setUserStats(enhancedStats);
-        setAllJobs(jobsWithScores);
+        setAllJobs([mockJob, ...jobsWithScores]);
         // Use String for ID sets to ensure consistent matching
         setViewedJobIds(new Set(jobViewsData.map(view => String(view.job_id))));
         setNotifications(notificationsData);
 
-        // Navigation guards for Job Seekers
-        const cvs = await CV.filter({ user_email: user.email });
-        if (cvs.length === 0) {
-          setHasCV(false);
-          navigate('/CVGenerator');
-          return;
-        }
-
-        if (!userProfile?.specialization) {
-          navigate('/PreferenceQuestionnaire');
-          return;
-        }
 
       } catch (error) {
         console.error("Error loading jobs for seeker:", error);
@@ -227,6 +240,10 @@ const JobSeekerDashboard = ({ user }) => {
     };
     loadData();
   }, [user, navigate]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, jobFilter]);
 
   const StatCard = ({ icon: Icon, title, value }) => (
     <Card className="bg-white border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] rounded-2xl h-full">
@@ -262,9 +279,14 @@ const JobSeekerDashboard = ({ user }) => {
     if (jobFilter === 'viewed') {
       return viewedJobIds.has(String(job.id));
     }
-    return true; // Should not happen with 'new'/'viewed' filters
+    return true;
   });
-  const location = useLocation();
+
+  const totalPages = Math.ceil(displayedJobs.length / ITEMS_PER_PAGE);
+  const paginatedJobs = displayedJobs.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   useEffect(() => {
     if (!loading && location.hash && location.hash.startsWith('#job-')) {
@@ -277,7 +299,7 @@ const JobSeekerDashboard = ({ user }) => {
       // Allow DOM to paint before scrolling
       requestAnimationFrame(scrollToTarget);
     }
-  }, [loading, location.hash, displayedJobs.length]);
+  }, [loading, location.hash, paginatedJobs.length]);
 
   return (
     <>
@@ -342,14 +364,14 @@ const JobSeekerDashboard = ({ user }) => {
           <div className="space-y-4 job-list">
             {loading ? (
               <div className="text-center py-8 text-gray-500">טוען משרות...</div>
-            ) : displayedJobs.length > 0 ? ( // Changed to displayedJobs
-              displayedJobs.map((job, index) => (
+            ) : paginatedJobs.length > 0 ? (
+              paginatedJobs.map((job, index) => (
                 <motion.div
                   key={job.id}
                   id={`job-${job.id}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  transition={{ duration: 0.4 }}
                 >
                   <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
                     <div className="flex items-center justify-between gap-4">
@@ -396,8 +418,41 @@ const JobSeekerDashboard = ({ user }) => {
               <div className="text-center py-8 text-gray-500">{jobFilter === 'new' ? 'אין משרות חדשות עבורך כרגע.' : 'עדיין לא צפית באף משרה.'}</div>
             )}
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-6 pb-6">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  setCurrentPage(prev => Math.max(prev - 1, 1));
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                disabled={currentPage === 1}
+                className="rounded-full w-10 h-10 p-0"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </Button>
+              <div className="text-sm font-medium text-gray-600">
+                עמוד {currentPage} מתוך {totalPages}
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  setCurrentPage(prev => Math.min(prev + 1, totalPages));
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                disabled={currentPage === totalPages}
+                className="rounded-full w-10 h-10 p-0"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
+            </div>
+          )}
         </div>
-      </div>
+      </div >
 
       <JobSeekerGuide
         isActive={showGuide}
@@ -414,14 +469,6 @@ const JobSeekerDashboard = ({ user }) => {
 };
 
 // --- EMPLOYER DASHBOARD COMPONENT ---
-import iconViews from "@/assets/icon_views.png";
-import iconActiveJobs from "@/assets/icon_active_jobs.png";
-import iconApplications from "@/assets/icon_applications.png";
-
-// Icon components
-const ViewsIcon = ({ className }) => <img src={iconViews} className={`${className} object-contain`} alt="Views" />;
-const ApplicationsIcon = ({ className }) => <img src={iconApplications} className={`${className} object-contain`} alt="Applications" />;
-const ActiveJobsIcon = ({ className }) => <img src={iconActiveJobs} className={`${className} object-contain`} alt="Active Jobs" />;
 
 const EmployerDashboard = ({ user }) => {
   const [viewedCandidates, setViewedCandidates] = useState([]);

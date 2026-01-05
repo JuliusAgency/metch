@@ -25,7 +25,7 @@ import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useLocation, useNavigate } from "react-router-dom";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
-const ITEMS_PER_PAGE = 4;
+const ITEMS_PER_PAGE = 5;
 const SUPPORT_EMAIL = "business@metch.co.il";
 
 // Helper function to safely format dates
@@ -328,7 +328,7 @@ export default function Messages() {
     if (selectedConversation) {
         return (
             <div className="h-full relative flex flex-col" dir="rtl">
-                <div className="relative h-full flex flex-col w-full max-w-7xl mx-auto">
+                <div className="relative h-full flex flex-col w-full">
                     <ChatHeader
                         setSelectedConversation={setSelectedConversation}
                         selectedConversation={selectedConversation}
@@ -363,7 +363,7 @@ export default function Messages() {
                                         transition={{ duration: 0.3, delay: index * 0.1 }}
                                         className={`flex ${isMyMessage ? 'justify-start' : 'justify-end'}`}
                                     >
-                                        <div className={`max-w-xs lg:max-w-md px-6 py-3 rounded-2xl ${isMyMessage
+                                        <div className={`max-w-xs lg:max-w-md px-6 py-3 rounded-lg ${isMyMessage
                                             ? 'bg-blue-600 text-white'
                                             : 'bg-gray-100 text-gray-900'
                                             }`}>
@@ -396,7 +396,7 @@ export default function Messages() {
     return (
         <div className="h-full relative" dir="rtl">
             <div className="relative">
-                <div className="relative h-32 overflow-hidden w-full">
+                <div className="relative h-24 overflow-hidden w-full">
                     <div
                         className="absolute inset-0 w-full h-full"
                         style={{
@@ -408,24 +408,24 @@ export default function Messages() {
                     />
                 </div>
 
-                <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-full max-w-7xl mx-auto">
-                    <div className="text-center pb-8">
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">הודעות</h1>
+                <div className="p-2 sm:p-4 md:p-6 -mt-12 relative z-10 w-full">
+                    <div className="text-center pb-4">
+                        <h1 className="text-2xl md:text-3xl font-bold text-[#001a6e]">הודעות</h1>
                     </div>
 
-                    <div className="relative mb-8">
+                    <div className="relative mb-4 w-1/3 mx-auto">
                         <Input
                             placeholder="חיפוש בהודעות"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-12 pr-4 py-3 border-gray-300 focus:border-blue-400 rounded-full h-12 text-right"
+                            className="pl-12 pr-4 py-3 bg-[#F9FAFB] border-none focus:ring-1 focus:ring-blue-200 rounded-lg h-12 text-right shadow-sm placeholder:text-gray-400"
                             dir="rtl"
                         />
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500 w-5 h-5" />
                     </div>
 
                     {/* Conversations List */}
-                    <div className="space-y-4 mb-8">
+                    <div className="space-y-2.5 mb-6 w-[858px] mx-auto">
                         {loading ? (
                             <div className="flex justify-center items-center py-12">
                                 <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
@@ -435,46 +435,50 @@ export default function Messages() {
                                 <p>אין הודעות כרגע</p>
                             </div>
                         ) : (
-                            paginatedConversations.map((conversation, index) => (
-                                <motion.div
-                                    key={conversation.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                                    className="flex items-center justify-between p-4 hover:bg-gray-50/80 rounded-xl cursor-pointer transition-colors"
-                                    onClick={() => handleConversationSelect(conversation)}
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className="space-y-1 text-right">
-                                            <span className={`font-medium ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'text-gray-500' : 'text-gray-800'
+                            paginatedConversations.map((conversation, index) => {
+                                const names = conversation.candidate_name ? conversation.candidate_name.split(' ') : [];
+                                const firstName = names[0] || "";
+                                const lastInitial = names.length > 1 ? names[names.length - 1].charAt(0) : "";
+
+                                return (
+                                    <motion.div
+                                        key={conversation.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                                        className="flex items-center justify-between p-3 bg-[#F4F9FF] mb-2 hover:bg-[#EBF5FF] cursor-pointer transition-colors h-14 rounded-lg"
+                                        onClick={() => handleConversationSelect(conversation)}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-10 h-10 rounded-full overflow-hidden ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'grayscale opacity-75' : ''
                                                 }`}>
-                                                {conversation.candidate_name}
-                                            </span>
-                                            <div className="text-xs text-gray-500">{conversation.job_title}</div>
-                                            <ConversationStatusIndicator jobStatus={conversation.job_status} className="text-xs" />
+                                                {conversation.profileImage && conversation.profileImage !== "" ? (
+                                                    <img
+                                                        src={conversation.profileImage}
+                                                        alt={conversation.candidate_name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
+                                                        <span className="text-xs font-bold text-gray-600">
+                                                            {conversation.candidate_name.slice(0, 2)}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="text-right">
+                                                <span className={`text-base text-gray-900 font-bold ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'text-gray-500' : ''
+                                                    }`}>
+                                                    {firstName} {lastInitial && <span>{lastInitial}</span>}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className={`w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'grayscale opacity-75' : ''
-                                            }`}>
-                                            {conversation.profileImage && conversation.profileImage !== "" ? (
-                                                <img
-                                                    src={conversation.profileImage}
-                                                    alt={conversation.candidate_name}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
-                                                    <span className="text-xs font-bold text-gray-600">
-                                                        {conversation.candidate_name.slice(0, 2)}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <span className="text-gray-500 text-sm whitespace-nowrap">
-                                        {safeFormatDate(conversation.last_message_time, "dd.MM.yy", "--")}
-                                    </span>
-                                </motion.div>
-                            ))
+                                        <span className="text-gray-400 text-xs font-light whitespace-nowrap px-4">
+                                            {format(new Date(conversation.last_message_time), "dd.MM.yy")}
+                                        </span>
+                                    </motion.div>
+                                );
+                            })
                         )}
                     </div>
 

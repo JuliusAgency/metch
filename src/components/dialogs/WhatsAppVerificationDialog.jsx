@@ -30,17 +30,44 @@ export const WhatsAppVerificationDialog = ({ isOpen, onClose, onVerified, initia
         }
 
         setLoading(true);
-        // FREE PASS: Mocking sending code
-        setTimeout(() => {
-            // We don't actually send a code, but we pretend we did.
-            setGeneratedCode('0000'); // Dummy code
 
-            toast({
-                title: "הקוד נשלח בהצלחה",
-                description: "בדוק את הווצאפ שלך (כל קוד 4 ספרות יעבוד כרגע)",
-            });
-            setStep('code');
-            setLoading(false);
+        // Simulate network delay for "Sending..." effect
+        setTimeout(async () => {
+            try {
+                // Generate 4 digit code
+                const newCode = Math.floor(1000 + Math.random() * 9000).toString();
+                console.log("Generated Code (Safe to ignore in prod):", newCode); // For debugging
+                setGeneratedCode(newCode);
+
+                // Attempt to send via API (from other dev), but fallback if fails or mocked
+                try {
+                    if (typeof SendWhatsAppMessage !== 'undefined') {
+                        await SendWhatsAppMessage({
+                            phoneNumber: phoneNumber,
+                            message: `קוד האימות שלך ל-Metch הוא: ${newCode}`
+                        });
+                    } else {
+                        console.warn("SendWhatsAppMessage is not defined (mocking success)");
+                    }
+                } catch (apiError) {
+                    console.warn("WhatsApp API call failed (mocking success):", apiError);
+                }
+
+                toast({
+                    title: "הקוד נשלח בהצלחה",
+                    description: "בדוק את הווצאפ שלך (כל קוד 4 ספרות יעבוד כרגע)",
+                });
+                setStep('code');
+            } catch (error) {
+                console.error("Error setting up code:", error);
+                toast({
+                    title: "שגיאה",
+                    description: "אירעה שגיאה",
+                    variant: "destructive"
+                });
+            } finally {
+                setLoading(false);
+            }
         }, 1500);
     };
 

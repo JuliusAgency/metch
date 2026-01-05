@@ -227,6 +227,26 @@ export async function GenerateImage({ prompt, size = '1024x1024', model = 'dall-
 }
 
 /**
+ * Send WhatsApp message using Green API (via secure Edge Function)
+ * @param {Object} params - Message parameters
+ * @param {string} params.phoneNumber - Recipient phone number
+ * @param {string} params.message - Message text
+ * @returns {Promise<Object>} Send result
+ */
+export async function SendWhatsAppMessage({ phoneNumber, message }) {
+  const { data, error } = await supabase.functions.invoke('send-whatsapp', {
+    body: { phoneNumber, message }
+  });
+
+  if (error) {
+    console.error('Error calling send-whatsapp function:', error);
+    throw new Error(`Failed to send WhatsApp message: ${error.message}`);
+  }
+
+  return data;
+}
+
+/**
  * Extract data from uploaded file (e.g., PDF, images)
  * This would typically use an OCR or document parsing service
  * @param {Object} params - Extraction parameters
@@ -349,5 +369,6 @@ export const Core = {
   UploadFile,
   GenerateImage,
   UploadPrivateFile,
-  InvokeAssistant
+  InvokeAssistant,
+  SendWhatsAppMessage
 };

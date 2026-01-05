@@ -36,7 +36,7 @@ const SeekerJobImages = ({ images: rawAttachments }) => {
     if (!Array.isArray(attachments) || attachments.length === 0) return null;
 
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10 mt-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6 mt-4">
             {attachments.map((file, index) => {
                 if (!file) return null;
 
