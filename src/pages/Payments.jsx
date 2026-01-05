@@ -293,12 +293,12 @@ ET`;
                             </div>
 
                             {/* Pricing Card */}
-                            <div className="bg-white rounded-[30px] border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-8 md:p-10 max-w-3xl mx-auto relative overflow-hidden">
-                                <div className="flex flex-col md:flex-row gap-8 items-start justify-between relative z-10 w-full h-full">
+                            <div className="bg-white rounded-[30px] border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] py-6 px-10 max-w-4xl mx-auto relative overflow-hidden">
+                                <div className="flex flex-col md:flex-row items-stretch justify-between relative z-10 w-full">
 
-                                    {/* Price Section (Visually Right in RTL) */}
-                                    <div className="flex-1 flex flex-col items-center md:items-start order-3 md:order-1 pt-2">
-                                        <div className="bg-[#EBF5FF] text-[#003566] px-4 py-1.5 rounded-full text-xs font-medium mb-3 inline-block">
+                                    {/* Price Section (50%) */}
+                                    <div className="flex-1 flex flex-col items-center md:items-start justify-center order-3 md:order-1 py-4">
+                                        <div className="bg-[#EBF5FF] text-[#003566] px-4 py-1.5 rounded-full text-xs font-medium mb-3">
                                             תשלום חד פעמי
                                         </div>
                                         <div className="flex flex-col items-center md:items-start">
@@ -310,16 +310,14 @@ ET`;
                                         </div>
                                     </div>
 
-                                    {/* Vertical Divider for desktop */}
-                                    <div className="hidden md:block w-px self-stretch bg-gray-100 order-2 mx-10"></div>
+                                    {/* Vertical Divider */}
+                                    <div className="hidden md:block w-px bg-gray-100 mx-8"></div>
+                                    <div className="h-px w-full bg-gray-100 md:hidden my-4"></div>
 
-                                    {/* Divider for mobile */}
-                                    <div className="h-px w-full bg-gray-100 md:hidden order-2"></div>
-
-                                    {/* Features Section (Visually Left in RTL) */}
-                                    <div className="flex-1 w-full order-1 md:order-3 text-right">
+                                    {/* Features Section (50%) */}
+                                    <div className="flex-1 w-full order-1 md:order-3 text-right flex flex-col justify-center py-4">
                                         <h3 className="text-lg font-bold text-[#003566] mb-4">מה כולל?</h3>
-                                        <ul className="space-y-3 pr-0">
+                                        <ul className="space-y-3 pr-0 text-right">
                                             {[
                                                 'פרסום למשך 30 ימים',
                                                 'אפשרות לערוך את המשרה בכל רגע',
@@ -327,14 +325,13 @@ ET`;
                                                 'כולל שאלון סינון',
                                                 'צ׳אט ישיר עם מועמדים'
                                             ].map((feature, idx) => (
-                                                <li key={idx} className="flex items-center gap-2.5 justify-start text-[#003566] font-normal text-sm">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-[#003566] flex-shrink-0"></div>
-                                                    <span className="text-right leading-tight">{feature}</span>
+                                                <li key={idx} className="flex items-center gap-2.5 justify-end text-[#003566] font-normal text-sm">
+                                                    <span className="text-right leading-tight order-1">{feature}</span>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-[#003566] flex-shrink-0 order-2"></div>
                                                 </li>
                                             ))}
                                         </ul>
                                     </div>
-
                                 </div>
                             </div>
 
