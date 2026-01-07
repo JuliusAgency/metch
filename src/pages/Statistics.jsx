@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import JobStatsItem from '@/components/JobStatsItem';
 import { useRequireUserType } from "@/hooks/use-require-user-type";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
@@ -15,10 +15,16 @@ export default function Statistics() {
     const [jobViews, setJobViews] = useState({});
     const [loading, setLoading] = useState(true);
     const [activeView, setActiveView] = useState('active'); // 'active' or 'expired'
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 5;
 
     useEffect(() => {
         loadData();
     }, []);
+
+    useEffect(() => {
+        setCurrentPage(1); // Reset to page 1 when switching views
+    }, [activeView]);
 
     const loadData = async () => {
         setLoading(true);
@@ -72,11 +78,17 @@ export default function Statistics() {
         }
     });
 
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
+
     return (
         <div className="h-full relative" dir="rtl">
             <div className="relative">
                 {/* Header Background */}
-                <div className="relative h-32 overflow-hidden w-full">
+                <div className="relative h-40 overflow-hidden w-full">
                     <div
                         className="absolute inset-0 w-full h-full"
                         style={{
@@ -92,16 +104,16 @@ export default function Statistics() {
                     >
                         <ChevronRight className="w-6 h-6 text-gray-600" />
                     </button>
-                </div>
 
-                <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-[75%] mx-auto">
-                    {/* Title */}
-                    <div className="text-center mb-8">
+                    {/* Title - Higher on the header */}
+                    <div className="absolute top-8 left-0 right-0 text-center z-20">
                         <h1 className="text-3xl font-bold text-[#1a237e]">הסטטיסטיקות שלי</h1>
                     </div>
+                </div>
 
-                    {/* Toggle */}
-                    <div className="flex justify-end mb-12">
+                <div className="p-4 sm:p-6 md:p-8 -mt-20 relative z-10 w-[72%] mx-auto">
+                    {/* Toggle - Centered */}
+                    <div className="flex justify-center mb-8">
                         <div className="flex bg-white border border-blue-200 rounded-full p-1 shadow-sm">
                             <button
                                 onClick={() => setActiveView('active')}
@@ -134,15 +146,15 @@ export default function Statistics() {
                     </div>
 
                     {/* List */}
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         {loading ? (
-                            <div className="space-y-4">
-                                {[1, 2, 3].map(i => (
-                                    <div key={i} className="h-20 bg-gray-100 rounded-2xl animate-pulse" />
+                            <div className="space-y-3">
+                                {[1, 2, 3, 4, 5].map(i => (
+                                    <div key={i} className="h-20 bg-gray-100 rounded-2xl animate-pulse shadow-md" />
                                 ))}
                             </div>
-                        ) : filteredJobs.length > 0 ? (
-                            filteredJobs.map(job => (
+                        ) : paginatedJobs.length > 0 ? (
+                            paginatedJobs.map(job => (
                                 <JobStatsItem
                                     key={job.id}
                                     job={job}
@@ -155,6 +167,33 @@ export default function Statistics() {
                             </div>
                         )}
                     </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="flex justify-center items-center gap-3 mt-8 pb-6">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="rounded-full w-10 h-10 p-0 border-blue-200 hover:bg-blue-50 disabled:opacity-30"
+                            >
+                                <ChevronRight className="w-5 h-5" />
+                            </Button>
+                            <div className="text-sm font-medium text-gray-600 min-w-[100px] text-center">
+                                עמוד {currentPage} מתוך {totalPages}
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                                className="rounded-full w-10 h-10 p-0 border-blue-200 hover:bg-blue-50 disabled:opacity-30"
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </Button>
+                        </div>
+                    )}
 
                 </div>
             </div>

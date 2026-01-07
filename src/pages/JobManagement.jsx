@@ -16,7 +16,9 @@ import {
   Edit,
   Copy,
   Briefcase,
-  BarChart
+  BarChart,
+  ChevronRight,
+  ChevronLeft
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -58,10 +60,16 @@ export default function JobManagement() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 2;
 
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1); // Reset to page 1 when switching views
+  }, [activeView]);
 
   const loadData = async () => {
     setLoading(true); // Added from outline
@@ -178,11 +186,17 @@ export default function JobManagement() {
       endedStatuses.includes(job.status)
   );
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
+
   if (loading) {
     return (
       <div className="p-4 md:p-6" dir="rtl">
         <div className="w-[85vw] mx-auto">
-          {Array(3).fill(0).map((_, i) =>
+          {Array(2).fill(0).map((_, i) =>
             <div key={i} className="h-32 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl animate-pulse mb-4" />
           )}
         </div>
@@ -195,7 +209,7 @@ export default function JobManagement() {
       <div className="h-full relative" dir="rtl">
         <div className="relative">
           {/* Header */}
-          <div className="relative h-32 overflow-hidden w-full">
+          <div className="relative h-40 overflow-hidden w-full">
             <div
               className="absolute inset-0 w-full h-full"
               style={{
@@ -204,16 +218,17 @@ export default function JobManagement() {
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat'
               }} />
+
+            {/* Title - On the curve */}
+            <div className="absolute top-8 left-0 right-0 text-center z-20">
+              <h1 className="text-3xl font-bold text-[#001a6e]">ניהול משרות</h1>
+            </div>
           </div>
 
-          <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-[75%] mx-auto">
-            {/* Title */}
-            <div className="text-center mb-8">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">ניהול משרות</h1>
-            </div>
-
-            {/* Toggle Buttons */}
-            <div className="flex justify-end mb-8">
+          <div className="p-2 sm:p-4 md:p-6 -mt-16 relative z-10 w-[70%] mx-auto">
+            {/* Toggle Buttons - with Stats Icon on right edge */}
+            <div className="flex justify-between items-center mb-4">
+              <div className="w-6"></div> {/* Spacer for symmetry */}
               <ToggleSwitch
                 options={[
                   { value: 'ended', label: 'משרות שהסתיימו' },
@@ -222,12 +237,26 @@ export default function JobManagement() {
                 value={activeView}
                 onChange={setActiveView}
               />
+              <Link to={createPageUrl("Statistics")}>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className="text-blue-600 hover:text-blue-700 cursor-pointer transition-colors"
+                >
+                  <rect x="3" y="14" width="3" height="7" rx="1" fill="currentColor" />
+                  <rect x="8" y="10" width="3" height="11" rx="1" fill="currentColor" />
+                  <rect x="13" y="6" width="3" height="15" rx="1" fill="currentColor" />
+                  <rect x="18" y="3" width="3" height="18" rx="1" fill="currentColor" />
+                </svg>
+              </Link>
             </div>
 
             {/* Jobs List */}
-            <div className="space-y-4 mb-8">
-              {filteredJobs.length > 0 ?
-                filteredJobs.map((job, index) => {
+            <div className="space-y-3 mb-4">
+              {paginatedJobs.length > 0 ?
+                paginatedJobs.map((job, index) => {
                   const config = statusConfig[job.status] || statusConfig.draft;
                   const daysSinceCreation = differenceInDays(new Date(), new Date(job.created_date));
                   const daysRemaining = Math.max(0, 30 - daysSinceCreation);
@@ -240,9 +269,9 @@ export default function JobManagement() {
                       transition={{ duration: 0.3, delay: index * 0.1 }}>
 
                       {/* Updated Card Structure */}
-                      <div className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
+                      <div className="bg-white border border-gray-200/90 shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
                         {/* Top Section */}
-                        <div className="flex items-center justify-between pb-4">
+                        <div className="flex items-center justify-between pb-3">
                           {/* Right Side (Status) */}
                           <div className="flex items-center gap-2">
                             <p className="font-semibold text-gray-800">{config.label}</p>
@@ -287,14 +316,14 @@ export default function JobManagement() {
                         <div className="border-t border-gray-200"></div>
 
                         {/* Bottom Section */}
-                        <div className="flex items-center justify-between pt-4">
+                        <div className="flex items-center justify-between pt-3">
                           <div className="text-right">
                             <h3 className="font-bold text-lg text-gray-900">{job.title}</h3>
                             <p className="text-gray-600">{job.location}</p>
                             <p className="text-sm text-gray-400 mt-1">נותרו {daysRemaining} ימים</p>
                           </div>
                           <Link to={createPageUrl(`JobDetails?id=${job.id}`)}>
-                            <Button className="bg-[#84CC9E] hover:bg-green-500 text-white px-6 py-2 rounded-full font-bold text-md">
+                            <Button className="bg-[#84CC9E] hover:bg-green-500 text-white px-6 py-2 rounded-full font-bold text-sm">
                               צפייה במשרה
                             </Button>
                           </Link>
@@ -314,15 +343,38 @@ export default function JobManagement() {
               }
             </div>
 
-            {/* Create New Job & Stats Buttons */}
-            <div className="flex flex-col md:flex-row justify-center items-center gap-4">
-              <Link to={createPageUrl("Statistics")}>
-                <Button variant="outline" className="px-8 py-3 rounded-full font-bold text-lg border-blue-600 text-blue-600 hover:bg-blue-50 shadow-sm">
-                  <BarChart className="w-5 h-5 ml-2" />
-                  הסטטיסטיקות שלי
-                </Button>
-              </Link>
+            {/* Bottom Row: Pagination (Left) and Create Button (Right) */}
+            <div className="flex justify-between items-center mt-6">
+              {/* Pagination Controls - Left Side */}
+              <div className="flex items-center gap-3">
+                {totalPages > 1 && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="rounded-full w-10 h-10 p-0 border-blue-200 hover:bg-blue-50 disabled:opacity-30"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </Button>
+                    <div className="text-sm font-medium text-gray-600 min-w-[100px] text-center">
+                      עמוד {currentPage} מתוך {totalPages}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="rounded-full w-10 h-10 p-0 border-blue-200 hover:bg-blue-50 disabled:opacity-30"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </Button>
+                  </>
+                )}
+              </div>
 
+              {/* Create New Job Button - Right Side */}
               <Button
                 onClick={handleCreateNewJob}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg"

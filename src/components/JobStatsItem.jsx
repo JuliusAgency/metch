@@ -10,12 +10,12 @@ export default function JobStatsItem({ job, viewsCount }) {
     return (
         <div
             onClick={() => navigate(`${createPageUrl('JobDetails')}?id=${job.id}`)}
-            className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between mb-3 hover:shadow-md transition-shadow cursor-pointer"
+            className="bg-white rounded-2xl p-4 shadow-md hover:shadow-lg border border-gray-100 flex items-center justify-between mb-3 transition-shadow cursor-pointer"
         >
-            <div className="grid grid-cols-12 gap-4 w-full items-center">
+            <div className="grid grid-cols-12 gap-4 w-full items-center justify-items-center">
 
                 {/* Status & Title */}
-                <div className="col-span-4 flex items-center gap-3 min-w-0 pr-2">
+                <div className="col-span-4 flex items-center gap-3 min-w-0 pr-2 justify-self-start">
                     <div className={`flex-shrink-0 w-3 h-3 rounded-full ${job.status === 'active'
                         ? 'bg-[#39FF14] shadow-[0_0_8px_rgba(57,255,20,0.6)]'
                         : job.status === 'paused'
