@@ -20,7 +20,8 @@ import {
   Menu,
   X,
   FileText,
-  Sparkles
+  Sparkles,
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { User as UserEntity } from "@/api/entities";
@@ -30,8 +31,18 @@ import { useUser } from "@/contexts/UserContext";
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, loading } = useUser();
+  const { user, loading, signOut } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLogoHovered, setIsLogoHovered] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/Login'); // Or Landing, but Login is standard
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   // Check for ?onboarding=true AND localStorage
   // MOVED TO TOP to avoid "Rendered more hooks than during the previous render" error
@@ -326,13 +337,44 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               {/* Logo */}
-              <div className="flex items-center gap-2">
-                <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png"
-                  alt="Metch Logo"
-                  className="h-6"
-                />
+              {/* Logo with Logout on Hover */}
+              <div
+                className="flex items-center gap-2 cursor-pointer min-w-[100px] justify-end"
+                onMouseEnter={() => setIsLogoHovered(true)}
+                onMouseLeave={() => setIsLogoHovered(false)}
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  {isLogoHovered ? (
+                    <motion.button
+                      key="logout"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 text-gray-900 hover:text-gray-700"
+                    >
+                      <span className="text-lg font-medium">התנתקות</span>
+                      <LogOut className="w-5 h-5" />
+                    </motion.button>
+                  ) : (
+                    <motion.div
+                      key="logo"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center gap-2"
+                    >
+                      <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
+                      <img
+                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png"
+                        alt="Metch Logo"
+                        className="h-6"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </header>
