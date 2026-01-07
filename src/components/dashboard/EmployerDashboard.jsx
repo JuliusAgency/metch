@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { UserProfile } from "@/api/entities";
 import { Notification } from "@/api/entities";
 import { CandidateView } from "@/api/entities";
+import { JobApplication, Job } from "@/api/entities";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +16,10 @@ import {
   Search,
   User as UserIcon,
   HelpCircle,
-  CheckCircle
+  MapPin,
+  Clock,
+  Briefcase,
+  FileText
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { UserAnalytics } from "@/components/UserAnalytics";
@@ -53,6 +57,9 @@ const EmployerDashboard = ({ user }) => {
   // New state for employer analytics
   const [employerStats, setEmployerStats] = useState(null);
   const [employerActivity, setEmployerActivity] = useState([]);
+
+  // State for storing application info per candidate (email -> jobTitle)
+  const [candidateApplications, setCandidateApplications] = useState({});
 
   useEffect(() => {
     const filterParam = searchParams.get('filter');
@@ -130,6 +137,50 @@ const EmployerDashboard = ({ user }) => {
     console.log('Viewed Candidates Data:', viewedCandidates);
     console.log('User:', user);
   }, [candidates, viewedCandidates, user]);
+
+  // Fetch applications for displayed candidates to show "Job Applied For"
+  useEffect(() => {
+    const fetchCandidateApplications = async () => {
+      if (!user?.email || candidates.length === 0) return;
+
+      const appMap = {};
+
+      try {
+        // 1. Get Jobs created by this employer
+        const myJobs = await Job.filter({ created_by: user.email });
+        if (!myJobs || myJobs.length === 0) return;
+
+        const myJobIds = myJobs.map(j => j.id);
+        const myJobMap = myJobs.reduce((acc, job) => ({ ...acc, [job.id]: job.title }), {});
+
+        // 2. For each candidate, check for applications to these jobs
+        await Promise.all(candidates.map(async (candidate) => {
+          if (!candidate.email) return;
+          try {
+            // Fetch applications by this candidate
+            // Optimally we would filter by both applicant and job_id list but client lib limitation
+            const apps = await JobApplication.filter({ applicant_email: candidate.email });
+
+            // Find one that matches one of my jobs
+            const relevantApp = apps.find(app => myJobIds.includes(app.job_id));
+
+            if (relevantApp) {
+              appMap[candidate.email] = myJobMap[relevantApp.job_id];
+            }
+          } catch (e) {
+            console.error(`Error fetching apps for ${candidate.email}`, e);
+          }
+        }));
+
+        setCandidateApplications(appMap);
+
+      } catch (err) {
+        console.error("Error fetching candidate applications context", err);
+      }
+    };
+
+    fetchCandidateApplications();
+  }, [candidates, user]);
 
   const handleViewCandidate = async (candidate) => {
     try {
@@ -266,12 +317,31 @@ const EmployerDashboard = ({ user }) => {
             </div>
             <div className="space-y-4 candidate-list">
               {filteredCandidates.length > 0 ? (filteredCandidates.map((candidate, index) => {
-                const match = Math.floor(Math.random() * 24) + 75; return (
+                const match = Math.floor(Math.random() * 24) + 75;
+                const jobAppliedTo = candidateApplications[candidate.email];
+
+                // Helper Maps
+                const availabilityText = {
+                  immediate: "מיידי",
+                  two_weeks: "תוך שבועיים",
+                  one_month: "תוך חודש",
+                  negotiable: "גמיש",
+                };
+
+                const jobTypeText = {
+                  full_time: "משרה מלאה",
+                  part_time: "משרה חלקית",
+                  contract: "חוזה",
+                  freelance: "פרילנס",
+                  internship: "התמחות",
+                };
+
+                return (
                   <motion.div key={candidate.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
                     <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl">
                       <CardContent className="p-4">
                         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                          <div className="flex items-center gap-4 self-start md:self-center">
+                          <div className="flex items-center gap-4 self-start md:self-center basis-1/3">
                             <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0"><div className="w-full h-full bg-blue-200 flex items-center justify-center"><UserIcon className="w-8 h-8 text-blue-500" /></div></div>
                             <div className="text-right">
                               <h3 className="font-bold text-lg text-gray-900">
@@ -281,11 +351,45 @@ const EmployerDashboard = ({ user }) => {
                                   return 'מועמד ללא שם';
                                 })()}
                               </h3>
-                              <p className="text-gray-600">{candidate.experience_level?.replace('_', ' ')}</p>
+                              <p className="text-gray-600">{candidate.experience_level?.replace('_', ' ') || "ללא ניסיון"}</p>
                             </div>
                           </div>
-                          <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full md:w-auto">
-                            <div className="flex flex-wrap gap-2 justify-center sm:justify-start">{candidate.skills?.slice(0, 3).map((skill, i) => (<Badge key={i} variant="outline" className="border-blue-200 text-blue-700 bg-blue-50/50 text-xs">{skill}</Badge>))}</div>
+
+                          {/* New Info Section */}
+                          <div className="flex flex-wrap md:flex-nowrap gap-x-6 gap-y-2 items-center justify-start md:justify-center text-sm text-gray-600 w-full md:w-auto basis-1/3">
+                            <div className="flex items-center gap-1">
+                              <MapPin className="w-4 h-4 text-blue-500" />
+                              <span>{candidate.preferred_location || "לא צוין"}</span>
+                            </div>
+
+                            {jobAppliedTo && (
+                              <div className="flex items-center gap-1 font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
+                                <FileText className="w-4 h-4" />
+                                <span>{jobAppliedTo}</span>
+                              </div>
+                            )}
+
+                            <div className="w-full sm:w-auto flex flex-wrap gap-4">
+                              <div className="flex items-center gap-1">
+                                <Briefcase className="w-4 h-4 text-gray-400" />
+                                <span>
+                                  {candidate.preferred_job_types?.length > 0
+                                    ? (jobTypeText[candidate.preferred_job_types[0]] || candidate.preferred_job_types[0])
+                                    : "לא צוין"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-4 h-4 text-gray-400" />
+                                <span>
+                                  {candidate.availability
+                                    ? (availabilityText[candidate.availability] || candidate.availability)
+                                    : "לא צוין"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full md:w-auto basis-1/3 justify-end">
                             <div className="w-full sm:w-48 text-right"><div className="text-sm text-gray-600 mb-1.5">{match}% התאמה</div><div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden"><div className={`h-full transition-all duration-500 ${match >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${match}%` }}></div></div></div>
                             <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-full sm:w-auto view-candidate-button">
                               <Link
