@@ -117,9 +117,9 @@ const Register = () => {
 
           {/* Logo */}
           <div className="flex justify-center mb-8">
-            <div className="backdrop-blur-[43px] backdrop-filter bg-[rgba(204,229,248,0.3)] border border-solid border-white rounded-full p-4 px-8">
+            <div className="backdrop-blur-[43px] backdrop-filter bg-[rgba(204,229,248,0.3)] border border-solid border-white rounded-full p-5 px-10">
               <div className="flex items-center gap-1">
-                <p className="font-['Poppins',_sans-serif] text-2xl text-black font-light">
+                <p className="font-['Poppins',_sans-serif] text-xl text-black font-light">
                   Metch
                 </p>
                 <img src="/sparkle_logo.png" alt="Sparkle" className="w-6 h-6 object-contain" />
@@ -132,7 +132,7 @@ const Register = () => {
 
             {/* Title */}
             <div className="text-center">
-              <h1 className="font-['Rubik',_sans-serif] font-bold text-3xl md:text-4xl text-[#32343d] mb-2" dir="auto">
+              <h1 className="font-['Rubik',_sans-serif] font-bold text-2xl md:text-3xl text-[#32343d] mb-2" dir="auto">
                 ברוכים הבאים למאצ׳ 👋
               </h1>
               <p className="font-['Rubik',_sans-serif] font-normal text-xl text-[#32343d]" dir="auto">
@@ -211,7 +211,7 @@ const Register = () => {
                   className="w-1/2 mx-auto bg-[#2987cd] hover:bg-[#2987cd]/90 text-white rounded-full h-12 text-lg font-bold"
                 >
                   <div className="flex items-center justify-center space-x-3 w-full">
-                    <span className="font-['Rubik:Bold',_sans-serif] font-bold text-lg" dir="auto">
+                    <span className="font-['Rubik:Bold',_sans-serif] font-bold text-lg ml-2" dir="auto">
                       הרשמה
                     </span>
                     <ArrowLeft className="w-5 h-5 text-white" />
