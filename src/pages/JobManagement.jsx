@@ -3,6 +3,12 @@ import { User } from "@/api/entities";
 import { Job } from "@/api/entities";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import * as SwitchPrimitives from "@radix-ui/react-switch";
 import { cn } from "@/lib/utils";
 import {
@@ -185,132 +191,149 @@ export default function JobManagement() {
   }
 
   return (
-    <div className="h-full relative" dir="rtl">
-      <div className="relative">
-        {/* Header */}
-        <div className="relative h-32 overflow-hidden w-full">
-          <div
-            className="absolute inset-0 w-full h-full"
-            style={{
-              backgroundImage: `url(${settingsHeaderBg})`,
-              backgroundSize: '100% 100%',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
-            }} />
-        </div>
-
-        <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-[75%] mx-auto">
-          {/* Title */}
-          <div className="text-center mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">ניהול משרות</h1>
+    <TooltipProvider delayDuration={0}>
+      <div className="h-full relative" dir="rtl">
+        <div className="relative">
+          {/* Header */}
+          <div className="relative h-32 overflow-hidden w-full">
+            <div
+              className="absolute inset-0 w-full h-full"
+              style={{
+                backgroundImage: `url(${settingsHeaderBg})`,
+                backgroundSize: '100% 100%',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }} />
           </div>
 
-          {/* Toggle Buttons */}
-          <div className="flex justify-end mb-8">
-            <ToggleSwitch
-              options={[
-                { value: 'ended', label: 'משרות שהסתיימו' },
-                { value: 'active', label: 'משרות פעילות' }
-              ]}
-              value={activeView}
-              onChange={setActiveView}
-            />
-          </div>
+          <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-[75%] mx-auto">
+            {/* Title */}
+            <div className="text-center mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">ניהול משרות</h1>
+            </div>
 
-          {/* Jobs List */}
-          <div className="space-y-4 mb-8">
-            {filteredJobs.length > 0 ?
-              filteredJobs.map((job, index) => {
-                const config = statusConfig[job.status] || statusConfig.draft;
-                const daysSinceCreation = differenceInDays(new Date(), new Date(job.created_date));
-                const daysRemaining = Math.max(0, 30 - daysSinceCreation);
+            {/* Toggle Buttons */}
+            <div className="flex justify-end mb-8">
+              <ToggleSwitch
+                options={[
+                  { value: 'ended', label: 'משרות שהסתיימו' },
+                  { value: 'active', label: 'משרות פעילות' }
+                ]}
+                value={activeView}
+                onChange={setActiveView}
+              />
+            </div>
 
-                return (
-                  <motion.div
-                    key={job.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}>
+            {/* Jobs List */}
+            <div className="space-y-4 mb-8">
+              {filteredJobs.length > 0 ?
+                filteredJobs.map((job, index) => {
+                  const config = statusConfig[job.status] || statusConfig.draft;
+                  const daysSinceCreation = differenceInDays(new Date(), new Date(job.created_date));
+                  const daysRemaining = Math.max(0, 30 - daysSinceCreation);
 
-                    {/* Updated Card Structure */}
-                    <div className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
-                      {/* Top Section */}
-                      <div className="flex items-center justify-between pb-4">
-                        {/* Right Side (Status) */}
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-gray-800">{config.label}</p>
-                          <div className={`w-3 h-3 ${config.dotColor} rounded-full`}></div>
+                  return (
+                    <motion.div
+                      key={job.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}>
+
+                      {/* Updated Card Structure */}
+                      <div className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
+                        {/* Top Section */}
+                        <div className="flex items-center justify-between pb-4">
+                          {/* Right Side (Status) */}
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-gray-800">{config.label}</p>
+                            <div className={`w-3 h-3 ${config.dotColor} rounded-full`}></div>
+                          </div>
+
+                          {/* Left Side (Actions) */}
+                          <div className="flex items-center gap-4 text-gray-400">
+                            <CustomSwitch
+                              id={`status-switch-${job.id}`}
+                              checked={job.status === 'active'}
+                              onCheckedChange={(checked) =>
+                                handleStatusChange(job.id, checked)
+                              }
+                              disabled={job.status !== 'active' && job.status !== 'paused'}
+                            />
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Link to={createPageUrl(`CreateJob?id=${job.id}`)}>
+                                  <Edit className="w-5 h-5 cursor-pointer hover:text-blue-600 font-light" strokeWidth={1.5} />
+                                </Link>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>עריכת משרה</p>
+                              </TooltipContent>
+                            </Tooltip>
+
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Copy
+                                  className="w-5 h-5 cursor-pointer hover:text-blue-600"
+                                  strokeWidth={1.5}
+                                  onClick={() => handleDuplicateJob(job)} />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>שכפול משרה</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
                         </div>
 
-                        {/* Left Side (Actions) */}
-                        <div className="flex items-center gap-4 text-gray-400">
-                          <CustomSwitch
-                            id={`status-switch-${job.id}`}
-                            checked={job.status === 'active'}
-                            onCheckedChange={(checked) =>
-                              handleStatusChange(job.id, checked)
-                            }
-                            disabled={job.status !== 'active' && job.status !== 'paused'}
-                          />
-                          <Link to={createPageUrl(`CreateJob?id=${job.id}`)}>
-                            <Edit className="w-5 h-5 cursor-pointer hover:text-blue-600 font-light" strokeWidth={1.5} />
+                        <div className="border-t border-gray-200"></div>
+
+                        {/* Bottom Section */}
+                        <div className="flex items-center justify-between pt-4">
+                          <div className="text-right">
+                            <h3 className="font-bold text-lg text-gray-900">{job.title}</h3>
+                            <p className="text-gray-600">{job.location}</p>
+                            <p className="text-sm text-gray-400 mt-1">נותרו {daysRemaining} ימים</p>
+                          </div>
+                          <Link to={createPageUrl(`JobDetails?id=${job.id}`)}>
+                            <Button className="bg-[#84CC9E] hover:bg-green-500 text-white px-6 py-2 rounded-full font-bold text-md">
+                              צפייה במשרה
+                            </Button>
                           </Link>
-                          <Copy
-                            className="w-5 h-5 cursor-pointer hover:text-blue-600"
-                            strokeWidth={1.5}
-                            onClick={() => handleDuplicateJob(job)} />
                         </div>
                       </div>
+                    </motion.div>);
 
-                      <div className="border-t border-gray-200"></div>
+                }) :
 
-                      {/* Bottom Section */}
-                      <div className="flex items-center justify-between pt-4">
-                        <div className="text-right">
-                          <h3 className="font-bold text-lg text-gray-900">{job.title}</h3>
-                          <p className="text-gray-600">{job.location}</p>
-                          <p className="text-sm text-gray-400 mt-1">נותרו {daysRemaining} ימים</p>
-                        </div>
-                        <Link to={createPageUrl(`JobDetails?id=${job.id}`)}>
-                          <Button className="bg-[#84CC9E] hover:bg-green-500 text-white px-6 py-2 rounded-full font-bold text-md">
-                            צפייה במשרה
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </motion.div>);
-
-              }) :
-
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Briefcase className="w-8 h-8 text-gray-400" />
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Briefcase className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">עדיין לא פרסמת משרות</h3>
+                  <p className="text-gray-600 mb-4">התחל לפרסם משרות כדי למצוא מועמדים מתאימים</p>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">עדיין לא פרסמת משרות</h3>
-                <p className="text-gray-600 mb-4">התחל לפרסם משרות כדי למצוא מועמדים מתאימים</p>
-              </div>
-            }
-          </div>
+              }
+            </div>
 
-          {/* Create New Job & Stats Buttons */}
-          <div className="flex flex-col md:flex-row justify-center items-center gap-4">
-            <Link to={createPageUrl("Statistics")}>
-              <Button variant="outline" className="px-8 py-3 rounded-full font-bold text-lg border-blue-600 text-blue-600 hover:bg-blue-50 shadow-sm">
-                <BarChart className="w-5 h-5 ml-2" />
-                הסטטיסטיקות שלי
+            {/* Create New Job & Stats Buttons */}
+            <div className="flex flex-col md:flex-row justify-center items-center gap-4">
+              <Link to={createPageUrl("Statistics")}>
+                <Button variant="outline" className="px-8 py-3 rounded-full font-bold text-lg border-blue-600 text-blue-600 hover:bg-blue-50 shadow-sm">
+                  <BarChart className="w-5 h-5 ml-2" />
+                  הסטטיסטיקות שלי
+                </Button>
+              </Link>
+
+              <Button
+                onClick={handleCreateNewJob}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg"
+              >
+                <Plus className="w-5 h-5 ml-2" />
+                צור משרה חדשה
               </Button>
-            </Link>
-
-            <Button
-              onClick={handleCreateNewJob}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg"
-            >
-              <Plus className="w-5 h-5 ml-2" />
-              צור משרה חדשה
-            </Button>
+            </div>
           </div>
         </div>
       </div>
-    </div>);
+    </TooltipProvider>);
 
 }
