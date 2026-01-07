@@ -25,12 +25,16 @@ export default function Step7_Preview({ cvData, setData, onEdit }) {
                     <p className="text-gray-600 max-w-lg mx-auto">בחלק הזה תעברו על קורות החיים ותוכלו לערוך במידת הצורך או לחזור אחורה ולתקן את אחד מהחלקים</p>
                 </div>
 
-                <div className="mb-8 max-w-md mx-auto">
+                <div className="mb-8 max-w-md mx-auto text-right">
+                    <label className="text-sm font-medium text-gray-700 mb-2 block mr-4">
+                        שם הקובץ <span className="text-red-500">*</span>
+                    </label>
                     <Input
                         placeholder="בחרו שם לקובץ קורות החיים"
                         value={cvData.file_name || ''}
                         onChange={handleFileNameChange}
                         className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400"
+                        required
                     />
                 </div>
 
