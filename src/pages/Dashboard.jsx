@@ -42,17 +42,60 @@ import iconJsRelevantJobs from "@/assets/icon_js_relevant_jobs.png";
 import iconJsApplications from "@/assets/icon_js_applications.png";
 import iconJsCv from "@/assets/icon_js_cv.png";
 import iconJsProfileViews from "@/assets/icon_js_profile_views.png";
-import iconViews from "@/assets/icon_views.png";
-import iconActiveJobs from "@/assets/icon_active_jobs.png";
 import iconApplications from "@/assets/icon_applications.png";
 
-const JsRelevantJobsIcon = ({ className }) => <img src={iconJsRelevantJobs} className={`${className} object-contain`} alt="Relevant Jobs" />;
-const JsApplicationsIcon = ({ className }) => <img src={iconJsApplications} className={`${className} object-contain`} alt="Applications" />;
-const JsCvIcon = ({ className }) => <img src={iconJsCv} className={`${className} object-contain`} alt="CVs" />;
-const JsProfileViewsIcon = ({ className }) => <img src={iconJsProfileViews} className={`${className} object-contain`} alt="Profile Views" />;
-const ViewsIcon = ({ className }) => <img src={iconViews} className={`${className} object-contain`} alt="Views" />;
-const ApplicationsIcon = ({ className }) => <img src={iconApplications} className={`${className} object-contain`} alt="Applications" />;
-const ActiveJobsIcon = ({ className }) => <img src={iconActiveJobs} className={`${className} object-contain`} alt="Active Jobs" />;
+
+
+
+const JsRelevantJobsIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="6" y="10" width="20" height="14" rx="3" stroke="#2987cd" strokeWidth="1.8" />
+    <path d="M6 14.5H26" stroke="#2987cd" strokeWidth="1.8" />
+    <path d="M12 14.5v3M20 14.5v3" stroke="#2987cd" strokeWidth="1.8" strokeLinecap="round" />
+    <path d="M12 10V8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="#2987cd" strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
+
+const JsApplicationsIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6 11c0-2.76 2.24-5 5-5h7l8 8v9c0 2.76-2.24 5-5 5H11c-2.76 0-5-2.24-5-5V11z" stroke="#2987cd" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M18 6v5a3 3 0 0 0 3 3h5" stroke="#2987cd" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M16 21v-8M12.5 16.5 16 13l3.5 3.5" stroke="#2987cd" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const JsCvIcon = ({ className }) => <img src={iconJsCv} className={`${className} object-contain`} style={{ imageRendering: '-webkit-optimize-contrast', filter: 'contrast(1.05)' }} alt="CVs" />;
+
+const JsProfileViewsIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 8C10 8 6 12 4 16c2 4 6 8 12 8s10-4 12-8c-2-4-6-8-12-8z" stroke="#2987cd" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="16" cy="16" r="4" stroke="#2987cd" strokeWidth="1.8" fill="none" />
+  </svg>
+);
+
+const ViewsIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 8C10 8 6 12 4 16c2 4 6 8 12 8s10-4 12-8c-2-4-6-8-12-8z" stroke="#2987cd" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="16" cy="16" r="4" stroke="#2987cd" strokeWidth="1.8" fill="none" />
+  </svg>
+);
+
+const ApplicationsIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6 11c0-2.76 2.24-5 5-5h7l8 8v9c0 2.76-2.24 5-5 5H11c-2.76 0-5-2.24-5-5V11z" stroke="#2987cd" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M18 6v5a3 3 0 0 0 3 3h5" stroke="#2987cd" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M16 21v-8M12.5 16.5 16 13l3.5 3.5" stroke="#2987cd" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const ActiveJobsIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="6" y="10" width="20" height="14" rx="3" stroke="#2987cd" strokeWidth="1.8" />
+    <path d="M6 14.5H26" stroke="#2987cd" strokeWidth="1.8" />
+    <path d="M12 14.5v3M20 14.5v3" stroke="#2987cd" strokeWidth="1.8" strokeLinecap="round" />
+    <path d="M12 10V8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="#2987cd" strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
 
 // --- JOB SEEKER DASHBOARD COMPONENT (New) ---
 
@@ -248,8 +291,8 @@ const JobSeekerDashboard = ({ user }) => {
   const StatCard = ({ icon: Icon, title, value }) => (
     <Card className="bg-white border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] rounded-2xl h-full">
       <CardContent className="p-6 text-center flex flex-col items-center justify-center h-full">
-        <div className="w-16 h-16 rounded-full border border-blue-200 flex items-center justify-center mb-4">
-          <Icon className="w-8 h-8 object-contain" />
+        <div className="w-16 h-16 rounded-full border-[1.8px] flex items-center justify-center mb-4" style={{ borderColor: '#2987cd' }}>
+          <Icon className="w-9 h-9 object-contain" style={{ imageRendering: '-webkit-optimize-contrast', filter: 'contrast(1.05)' }} />
         </div>
         <p className="text-blue-900 font-bold text-base mb-2">{title}</p>
         <div className="text-3xl text-gray-500 font-normal">{value}</div>
@@ -769,10 +812,10 @@ const EmployerDashboard = ({ user }) => {
           {/* Enhanced Stats Grid with Real Analytics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 employer-stats">
             <EmployerStatsCard
-              icon={ViewsIcon}
-              title="צפיות במשרות"
-              value={employerStats?.total_job_views || 0}
-              color="bg-blue-50 text-blue-600"
+              icon={ActiveJobsIcon}
+              title="משרות פעילות"
+              value={employerStats?.total_jobs_published || 0}
+              color="bg-purple-50 text-purple-600"
             />
             <EmployerStatsCard
               icon={ApplicationsIcon}
@@ -781,10 +824,10 @@ const EmployerDashboard = ({ user }) => {
               color="bg-green-50 text-green-600"
             />
             <EmployerStatsCard
-              icon={ActiveJobsIcon}
-              title="משרות פעילות"
-              value={employerStats?.total_jobs_published || 0}
-              color="bg-purple-50 text-purple-600"
+              icon={ViewsIcon}
+              title="צפיות במשרות"
+              value={employerStats?.total_job_views || 0}
+              color="bg-blue-50 text-blue-600"
             />
             <Card className="relative col-span-2 sm:col-span-1 bg-[#84CC9E] text-white border-0 shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl create-job-card">
               <Link to={createPageUrl("CreateJob")}>
