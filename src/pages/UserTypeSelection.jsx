@@ -56,14 +56,14 @@ const CVChoiceModal = ({ isOpen, onSelect, loading }) => {
           <div className="flex flex-col items-center w-full">
             {/* Header with Logo */}
             <div className="flex items-center gap-2 mb-6">
-              <img alt="" className="w-8 h-8" src={imgHugeiconsAiMagic} />
-              <p className="font-['Poppins:Regular',_sans-serif] text-2xl text-black font-medium">Metch</p>
+              <img src="/sparkle_logo.png" alt="Sparkle" className="w-6 h-6 object-contain" />
+              <p className="font-['Poppins',_sans-serif] text-2xl text-black font-light">Metch</p>
             </div>
 
-            <h1 className="text-[#003566] text-2xl md:text-3xl font-['Rubik:Bold',_sans-serif] font-bold mb-3 text-center">
+            <h1 className="text-[#003566] text-2xl md:text-3xl font-['Rubik',_sans-serif] font-bold mb-3 text-center">
               איך תרצה להוסיף את קורות החיים שלך?
             </h1>
-            <p className="text-[#003566] text-base md:text-lg font-['Rubik:Regular',_sans-serif] text-center mb-10 opacity-90 max-w-2xl">
+            <p className="text-[#003566] text-base md:text-lg font-['Rubik',_sans-serif] text-center mb-10 opacity-90 max-w-2xl">
               המענה שלך יעזור לנו למקד עבורך את ההצעות הרלוונטיות ביותר
             </p>
 
@@ -78,17 +78,17 @@ const CVChoiceModal = ({ isOpen, onSelect, loading }) => {
                   `}
                 >
                   <img src={opt.imageSrc} alt={opt.title} className="w-16 h-16 object-contain mb-2" />
-                  <h3 className="text-xl font-['Rubik:Bold',_sans-serif] font-bold leading-tight">
+                  <h3 className="text-xl font-['Rubik',_sans-serif] font-bold leading-tight">
                     {opt.title}
                   </h3>
-                  <p className="text-sm font-['Rubik:Regular',_sans-serif] leading-relaxed px-2 text-[#003566]/80">
+                  <p className="text-sm font-['Rubik',_sans-serif] leading-relaxed px-2 text-[#003566]/80">
                     {opt.subtitle}
                   </p>
                 </div>
               ))}
             </div>
 
-            <p className="mt-4 text-[#003566] text-xs md:text-sm font-['Rubik:Regular',_sans-serif] opacity-80 text-center">
+            <p className="mt-4 text-[#003566] text-xs md:text-sm font-['Rubik',_sans-serif] opacity-80 text-center">
               אל דאגה, ניתן לשנות את הבחירה בכל עת.
             </p>
           </div>
