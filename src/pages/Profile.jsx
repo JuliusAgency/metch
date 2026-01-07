@@ -267,15 +267,19 @@ export default function Profile() {
           מחק קובץ
         </button>
 
-        <div className="w-px h-4 bg-gray-300"></div>
+        {cvData.personal_details && (
+          <>
+            <div className="w-px h-4 bg-gray-300"></div>
 
-        <Link
-          to={createPageUrl('CVGenerator')}
-          className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
-        >
-          <img src="/edit_icon.png" alt="Edit" className="w-4 h-4" />
-          ערוך קובץ
-        </Link>
+            <Link
+              to={createPageUrl('CVGenerator')}
+              className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
+            >
+              <img src="/edit_icon.png" alt="Edit" className="w-4 h-4" />
+              ערוך קובץ
+            </Link>
+          </>
+        )}
 
         <div className="w-px h-4 bg-gray-300"></div>
 

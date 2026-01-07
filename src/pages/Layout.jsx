@@ -98,6 +98,7 @@ export default function Layout({ children, currentPageName }) {
       { page: "Payments", icon: CreditCard, text: "תשלומים" },
       { page: "Settings", icon: Settings, text: "הגדרות" },
       { page: "Messages", icon: MessageSquareText, text: "הודעות" },
+      { page: "FAQ", icon: HelpCircle, text: "שאלות נפוצות" },
       { page: "Contact", icon: Headphones, text: "צור קשר" }
     ];
   }
@@ -175,7 +176,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Desktop Navbar Wrapper */}
       {!shouldHideHeader && (
         <div className="hidden md:block pt-6 sticky top-0 z-50">
-          <header className="navbar-custom w-[60vw] mx-auto rounded-full shadow-sm border border-white">
+          <header className="navbar-custom w-[70vw] mx-auto rounded-full shadow-sm border border-white">
             <div className="flex items-center justify-between px-8 py-4">
               {/* Icons - Moved to be first for RTL rendering on the right */}
               <div className="flex items-center gap-1">
@@ -303,6 +304,14 @@ export default function Layout({ children, currentPageName }) {
                       icon={MessageSquareText}
                       text="הודעות"
                       isActive={currentPageName === 'Messages'}
+                    />
+                    <div className="h-6 w-px bg-white/50 mx-1"></div>
+
+                    <NavButton
+                      to={createPageUrl("FAQ")}
+                      icon={HelpCircle}
+                      text="שאלות נפוצות"
+                      isActive={currentPageName === 'FAQ'}
                     />
                     <div className="h-6 w-px bg-white/50 mx-1"></div>
 

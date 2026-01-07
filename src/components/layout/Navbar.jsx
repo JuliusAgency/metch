@@ -96,6 +96,7 @@ export default function Navbar({ currentPageName, isJobSeeker }) {
             { page: "Payments", icon: CreditCard, text: "תשלומים" },
             { page: "Settings", icon: Settings, text: "הגדרות" },
             { page: "Messages", icon: MessageSquareText, text: "הודעות" },
+            { page: "FAQ", icon: HelpCircle, text: "שאלות נפוצות" },
             { page: "Contact", icon: Headphones, text: "צור קשר" }
         ];
     }

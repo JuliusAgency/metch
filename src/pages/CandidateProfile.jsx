@@ -49,6 +49,7 @@ export default function CandidateProfile() {
   const [cvData, setCvData] = useState(null);
   const [isCvPreviewOpen, setIsCvPreviewOpen] = useState(false);
   const [markingNotRelevant, setMarkingNotRelevant] = useState(false);
+  const [appliedJob, setAppliedJob] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -76,6 +77,36 @@ export default function CandidateProfile() {
     };
     fetchQuestionnaire();
   }, [candidate]);
+
+  useEffect(() => {
+    const fetchAppliedJob = async () => {
+      if (!user?.email || !candidate?.email) return;
+
+      try {
+        // 1. Get employer's jobs
+        const myJobs = await Job.filter({ created_by: user.email });
+        if (!myJobs || myJobs.length === 0) return;
+
+        const myJobIds = myJobs.map(j => j.id);
+
+        // 2. Get candidate's applications
+        const apps = await JobApplication.filter({ applicant_email: candidate.email });
+
+        // 3. Find match (handling potential string/number mismatches)
+        const relevantApp = apps.find(app => myJobIds.some(id => String(id) === String(app.job_id)));
+
+        if (relevantApp) {
+          const job = myJobs.find(j => String(j.id) === String(relevantApp.job_id));
+          if (job) {
+            setAppliedJob({ title: job.title, location: job.location });
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching applied job details", err);
+      }
+    };
+    fetchAppliedJob();
+  }, [user, candidate]);
 
   const loadUser = async () => {
     try {
@@ -555,6 +586,7 @@ export default function CandidateProfile() {
   };
 
   const params = new URLSearchParams(location.search);
+  const jobTitle = params.get("title");
   const matchFromUrl = params.get("match");
   const matchScore = matchFromUrl ? parseInt(matchFromUrl, 10) : (candidate ? getStableMatchScore(candidate.id) : 90);
 
@@ -611,6 +643,13 @@ export default function CandidateProfile() {
                 availabilityText={availabilityText}
                 availability={candidate.availability}
               />
+
+              {/* Job Applied For */}
+              {appliedJob && (
+                <div className="text-lg text-gray-700 font-medium mt-2">
+                  עבור <span className="text-[#003566] font-bold">{appliedJob.title},</span> {appliedJob.location}.
+                </div>
+              )}
 
               {/* Match Score */}
               <ProfileMatchScore matchScore={matchScore} />
