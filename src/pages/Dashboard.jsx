@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 import ToggleSwitch from "@/components/dashboard/ToggleSwitch";
@@ -284,9 +284,30 @@ const JobSeekerDashboard = ({ user }) => {
 
   const totalPages = Math.ceil(displayedJobs.length / ITEMS_PER_PAGE);
   const paginatedJobs = displayedJobs.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
+    0,
     currentPage * ITEMS_PER_PAGE
   );
+
+  const observerRef = useRef();
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && paginatedJobs.length < displayedJobs.length) {
+          setCurrentPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) observer.unobserve(observerRef.current);
+    };
+  }, [paginatedJobs.length, displayedJobs.length]);
 
   useEffect(() => {
     if (!loading && location.hash && location.hash.startsWith('#job-')) {
@@ -420,35 +441,10 @@ const JobSeekerDashboard = ({ user }) => {
           </div>
 
           {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-6 pb-6">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => {
-                  setCurrentPage(prev => Math.max(prev - 1, 1));
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                disabled={currentPage === 1}
-                className="rounded-full w-10 h-10 p-0"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-              <div className="text-sm font-medium text-gray-600">
-                עמוד {currentPage} מתוך {totalPages}
-              </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => {
-                  setCurrentPage(prev => Math.min(prev + 1, totalPages));
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                disabled={currentPage === totalPages}
-                className="rounded-full w-10 h-10 p-0"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </Button>
+          {/* Infinite Scroll Sentinel */}
+          {paginatedJobs.length < displayedJobs.length && (
+            <div ref={observerRef} className="flex justify-center items-center py-4">
+              <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
             </div>
           )}
         </div>
@@ -726,9 +722,30 @@ const EmployerDashboard = ({ user }) => {
   // Calculate pagination
   const totalPages = Math.ceil(filteredCandidates.length / ITEMS_PER_PAGE);
   const displayedCandidates = filteredCandidates.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
+    0,
     currentPage * ITEMS_PER_PAGE
   );
+
+  const observerRef = useRef();
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && displayedCandidates.length < filteredCandidates.length) {
+          setCurrentPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) observer.unobserve(observerRef.current);
+    };
+  }, [displayedCandidates.length, filteredCandidates.length]);
 
   if (loading) {
     return (
@@ -929,29 +946,10 @@ const EmployerDashboard = ({ user }) => {
           </div>
 
           {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-6 pb-6">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="rounded-full w-10 h-10 p-0"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-              <div className="text-sm font-medium text-gray-600">
-                עמוד {currentPage} מתוך {totalPages}
-              </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="rounded-full w-10 h-10 p-0"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </Button>
+          {/* Infinite Scroll Sentinel */}
+          {displayedCandidates.length < filteredCandidates.length && (
+            <div ref={observerRef} className="flex justify-center items-center py-4">
+              <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
             </div>
           )}
         </div>
