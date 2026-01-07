@@ -23,7 +23,8 @@ const TikTokIcon = ({ size = 24, ...props }) => (
 export default function CompanyProfileFinalStep({ companyData, setCompanyData, ...props }) {
     const { updateProfile } = useUser();
     const [logoPreview, setLogoPreview] = useState(companyData?.logo_url || null);
-    const [activeSocial, setActiveSocial] = useState(null);
+    // Initialize with 'website' by default as requested
+    const [activeSocial, setActiveSocial] = useState('website');
     const [socialLinks, setSocialLinks] = useState(companyData?.social_links || {});
 
     // Validation state
@@ -51,11 +52,8 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
     };
 
     const toggleSocialInput = (id) => {
-        if (activeSocial === id) {
-            setActiveSocial(null);
-        } else {
-            setActiveSocial(id);
-        }
+        // Always switch, never toggle off (null)
+        setActiveSocial(id);
     };
 
     const handleFinishClick = () => {
