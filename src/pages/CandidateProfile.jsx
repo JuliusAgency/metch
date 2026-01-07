@@ -48,6 +48,7 @@ export default function CandidateProfile() {
   const [generatingInsights, setGeneratingInsights] = useState(false);
   const [cvData, setCvData] = useState(null);
   const [isCvPreviewOpen, setIsCvPreviewOpen] = useState(false);
+  const [markingNotRelevant, setMarkingNotRelevant] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -438,6 +439,60 @@ export default function CandidateProfile() {
     }
   };
 
+  const handleNotRelevant = async () => {
+    if (!user || !candidate || markingNotRelevant) return;
+
+    setMarkingNotRelevant(true);
+    try {
+      const params = new URLSearchParams(location.search);
+      const jobId = params.get("jobId");
+      const jobTitle = params.get("title");
+
+      // 1. Track Analytics
+      await EmployerAnalytics.trackCandidateRejection(user.email, candidate, { id: jobId, title: jobTitle });
+
+      // 2. Update Application Status (if exists and jobId is present)
+      if (jobId) {
+        try {
+          const apps = await JobApplication.filter({
+            job_id: jobId,
+            applicant_email: candidate.email
+          });
+
+          if (apps.length > 0) {
+            const app = apps[0];
+            await JobApplication.update(app.id, { ...app, status: 'rejected' });
+          } else {
+            // Create a rejected application record to ensure it's filtered out
+            await JobApplication.create({
+              job_id: jobId,
+              applicant_email: candidate.email,
+              status: 'rejected'
+            });
+          }
+        } catch (e) {
+          console.error("Error updating application status:", e);
+        }
+      }
+
+      toast({
+        title: "המועמד סומן כלא רלוונטי",
+        description: "המועמד הוסר מהרשימה.",
+      });
+
+      handleNavigateBack();
+    } catch (error) {
+      console.error("Error marking candidate as not relevant:", error);
+      toast({
+        title: "שגיאה",
+        description: "אירעה שגיאה. נסה שוב.",
+        variant: "destructive",
+      });
+    } finally {
+      setMarkingNotRelevant(false);
+    }
+  };
+
   const handleNavigateBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
       navigate(-1);
@@ -579,6 +634,8 @@ export default function CandidateProfile() {
               handleExportToEmail={handleExportToEmail}
               exportingResume={exportingResume}
               questionnaireResponse={questionnaireResponse}
+              handleNotRelevant={handleNotRelevant}
+              markingNotRelevant={markingNotRelevant}
             />
           </CardFooter>
         </Card>

@@ -8,7 +8,9 @@ const ProfileActions = ({
     creatingConversation,
     handleExportToEmail,
     exportingResume,
-    questionnaireResponse
+    questionnaireResponse,
+    handleNotRelevant,
+    markingNotRelevant
 }) => (
     <div className="flex flex-col-reverse sm:flex-row items-center justify-center gap-6 w-full pt-2 pb-2">
         {/* Actions in RTL: First child is Right, Last child is Left */}
@@ -30,7 +32,7 @@ const ProfileActions = ({
         <Button
             size="lg"
             variant="outline"
-            className="w-auto px-10 h-12 rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
+            className="w-auto px-10 h-12 rounded-full border-gray-300 text-gray-700 bg-transparent hover:bg-gray-50 font-medium"
             onClick={handleExportToEmail}
             disabled={exportingResume}
         >
@@ -47,6 +49,18 @@ const ProfileActions = ({
         >
             {creatingConversation && <div className="w-4 h-4 border-t-2 border-current rounded-full animate-spin ml-2"></div>}
             שלח הודעה למועמד
+        </Button>
+
+        {/* Far Left Button: Not Relevant */}
+        <Button
+            size="lg"
+            variant="outline"
+            className="w-auto px-8 h-12 rounded-full border-gray-300 text-gray-700 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200 font-medium"
+            onClick={handleNotRelevant}
+            disabled={markingNotRelevant}
+        >
+            {markingNotRelevant && <div className="w-4 h-4 border-t-2 border-current rounded-full animate-spin ml-2"></div>}
+            לא רלוונטי
         </Button>
     </div>
 );

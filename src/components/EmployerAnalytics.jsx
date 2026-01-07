@@ -204,6 +204,18 @@ export class EmployerAnalytics {
   }
 
   /**
+   * Track candidate rejection/not relevant
+   */
+  static async trackCandidateRejection(employerEmail, candidate, jobContext = null) {
+    return this.trackAction(employerEmail, 'candidate_reject', {
+      candidate_email: candidate.email,
+      candidate_name: candidate.full_name,
+      job_id: jobContext?.id,
+      job_title: jobContext?.title
+    });
+  }
+
+  /**
    * Track message sent to candidate
    */
   static async trackMessageSent(employerEmail, candidateEmail, jobContext = null) {
