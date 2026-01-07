@@ -14,21 +14,44 @@ export default function Step6_Summary({ data, setData }) {
             return;
         }
 
+        const assistantId = import.meta.env.VITE_REWRITE_EMPLOYEE_SUMMARY;
+        if (!assistantId) {
+            console.error("VITE_REWRITE_EMPLOYEE_SUMMARY is missing");
+            toast.error("חסרה הגדרת Assistant במערכת");
+            return;
+        }
+
         setIsImproving(true);
         try {
-            const response = await Core.InvokeLLM({
+            const response = await Core.InvokeAssistant({
+                assistantId: assistantId,
                 prompt: `Improve the following professional summary for a CV. Make it professional, concise, and impressive. 
                 You must output the result in Hebrew language only, regardless of the input language.
                 
                 Input text:
                 "${data}"
                 
-                Output only the improved text in Hebrew, nothing else.`,
-                temperature: 0.7
+                Output only the improved text in Hebrew, nothing else.`
             });
 
             if (response.content) {
-                setData(response.content.trim());
+                let cleanContent = response.content.trim();
+
+                // Remove markdown code blocks if present
+                cleanContent = cleanContent.replace(/^```json\s*/g, '').replace(/^```\s*/g, '').replace(/\s*```$/g, '');
+
+                try {
+                    const parsed = JSON.parse(cleanContent);
+                    if (parsed.summary) {
+                        cleanContent = parsed.summary;
+                    } else if (parsed.text) {
+                        cleanContent = parsed.text;
+                    }
+                } catch (e) {
+                    // Not a JSON object, use as is
+                }
+
+                setData(cleanContent);
                 toast.success("הטקסט שופר בהצלחה!");
             }
         } catch (error) {

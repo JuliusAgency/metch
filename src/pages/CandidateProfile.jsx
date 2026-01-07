@@ -93,10 +93,23 @@ export default function CandidateProfile() {
       return;
     }
 
+    const params = new URLSearchParams(location.search);
+    const jobId = params.get("jobId");
+    const cacheKey = `employer_insights_${candidateData.id}_${jobId || 'general'}`;
+
+    const cachedData = localStorage.getItem(cacheKey);
+    if (cachedData) {
+      try {
+        setAiInsights(JSON.parse(cachedData));
+        return;
+      } catch (e) {
+        console.error("Error parsing cached insights", e);
+        localStorage.removeItem(cacheKey);
+      }
+    }
+
     setGeneratingInsights(true);
     try {
-      const params = new URLSearchParams(location.search);
-      const jobId = params.get("jobId");
       const matchScore = params.get("match") || "N/A";
 
       // 1. Fetch CV Content
@@ -237,10 +250,12 @@ export default function CandidateProfile() {
       }
 
       if (parsed) {
-        setAiInsights({
+        const insights = {
           summary: parsed.candidate_summary,
           thoughts: parsed.match_thoughts
-        });
+        };
+        setAiInsights(insights);
+        localStorage.setItem(cacheKey, JSON.stringify(insights));
       }
 
     } catch (error) {
