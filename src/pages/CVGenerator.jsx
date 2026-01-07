@@ -262,11 +262,24 @@ export default function CVGenerator() {
         return;
       }
 
+      let payload = { ...cvData };
+      if (step === STEPS.length) {
+        if (!payload.file_name || !payload.file_name.trim()) {
+          toast({
+            title: "שם קובץ חסר",
+            description: "אנא בחר שם לקובץ קורות החיים שלך לפני השמירה.",
+            variant: "destructive"
+          });
+          setSaving(false);
+          return;
+        }
+      }
+
       let savedCv;
       if (cvId) {
-        savedCv = await CV.update(cvId, cvData);
+        savedCv = await CV.update(cvId, payload);
       } else {
-        savedCv = await CV.create({ ...cvData, user_email: userEmail });
+        savedCv = await CV.create({ ...payload, user_email: userEmail });
         setCvId(savedCv.id);
       }
 
@@ -418,7 +431,7 @@ export default function CVGenerator() {
     ? STEPS.map((_, idx) => (idx > 0 ? idx : null)).filter((idx) => idx !== null)
     : [];
 
-  const isNextDisabled = saving || (step === 0 && !choice) || (step === 1 && !isStep1Valid);
+  const isNextDisabled = saving || (step === 0 && !choice) || (step === 1 && !isStep1Valid) || (step === STEPS.length && (!cvData.file_name || !cvData.file_name.trim()));
 
   return (
     <div className="p-4 md:p-8 min-h-screen" dir="rtl">

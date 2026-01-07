@@ -84,9 +84,9 @@ const Login = () => {
 
           {/* Logo */}
           <div className="flex justify-center mb-8">
-            <div className="backdrop-blur-[43px] backdrop-filter bg-[rgba(204,229,248,0.3)] border border-solid border-white rounded-full p-4 px-8">
+            <div className="backdrop-blur-[43px] backdrop-filter bg-[rgba(204,229,248,0.3)] border border-solid border-white rounded-full p-5 px-10">
               <div className="flex items-center">
-                <p className="font-['Poppins',_sans-serif] text-2xl text-black font-light">
+                <p className="font-['Poppins',_sans-serif] text-xl text-black font-light">
                   Metch
                 </p>
                 <img src="/sparkle_logo.png" alt="Sparkle" className="w-6 h-6 object-contain" />
@@ -155,10 +155,10 @@ const Login = () => {
                   type="submit"
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="w-1/2 mx-auto bg-[#2987cd] hover:bg-[#2987cd]/90 text-white rounded-full h-12 text-lg font-bold"
+                  className="w-1/2 mx-auto bg-[#2987cd] hover:bg-[#2987cd]/90 text-white rounded-full h-12 text-lg font-bold "
                 >
                   <div className="flex items-center justify-center space-x-3 w-full">
-                    <span className="font-['Secular_One',_sans-serif] text-lg" dir="auto">
+                    <span className="font-['Secular_One',_sans-serif] text-lg ml-2" dir="auto">
                       התחברות
                     </span>
                     <ArrowLeft className="w-5 h-5 text-white" />

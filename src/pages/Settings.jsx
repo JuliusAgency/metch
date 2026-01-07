@@ -274,7 +274,7 @@ export default function Settings() {
           facebook_url: formData.facebook_url,
           instagram_url: formData.instagram_url,
           twitter_url: formData.twitter_url,
-          tiktok_url: formData.tiktok_url,
+          // tiktok_url: formData.tiktok_url, // Removed: Column does not exist in DB
         };
       } else {
         // Job Seeker Payload
@@ -740,7 +740,8 @@ export default function Settings() {
                           />
                         </div>
                       </div>
-                      <div className="space-y-1">
+                      {/* TikTok field temporarily removed due to missing DB column
+                        <div className="space-y-1">
                         <label className="text-sm font-medium text-gray-700">TikTok</label>
                         <div className="relative">
                           <svg viewBox="0 0 24 24" fill="currentColor" className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400">
@@ -755,6 +756,7 @@ export default function Settings() {
                           />
                         </div>
                       </div>
+                      */}
                     </div>
                   </div>
                 </>

@@ -11,15 +11,15 @@ const SeekerJobTitle = ({ job, employmentTypeText }) => (
         <h1 className="text-2xl font-bold text-gray-900 mb-3">{job.title}</h1>
 
         <div className="flex justify-center items-center gap-3 mb-4">
-            <Badge variant="outline" className="text-xs font-bold bg-blue-50 border-blue-100 text-blue-900 py-1.5 px-3 rounded-lg shadow-sm">
+            <Badge variant="outline" className="text-xs font-bold bg-white-50 border-blue-100 text-blue-900 py-1.5 px-3 rounded-lg shadow-sm">
                 <MapPin className="w-3.5 h-3.5 ml-1 text-blue-900" />
                 {job.location}
             </Badge>
-            <Badge variant="outline" className="text-xs font-bold bg-blue-50 border-blue-100 text-blue-900 py-1.5 px-3 rounded-lg shadow-sm">
+            <Badge variant="outline" className="text-xs font-bold bg-white-50 border-blue-100 text-blue-900 py-1.5 px-3 rounded-lg shadow-sm">
                 <Briefcase className="w-3.5 h-3.5 ml-1 text-blue-900" />
                 {employmentTypeText[job.employment_type] || 'משרה מלאה'}
             </Badge>
-            <Badge variant="outline" className="text-xs font-bold bg-blue-50 border-blue-100 text-blue-900 py-1.5 px-3 rounded-lg shadow-sm">
+            <Badge variant="outline" className="text-xs font-bold bg-white-50 border-blue-100 text-blue-900 py-1.5 px-3 rounded-lg shadow-sm">
                 <Clock className="w-3.5 h-3.5 ml-1 text-blue-900" />
                 {job.start_date}
             </Badge>

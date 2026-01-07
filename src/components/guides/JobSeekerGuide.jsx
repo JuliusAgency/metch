@@ -8,15 +8,15 @@ import { motion, AnimatePresence } from "framer-motion";
 const GUIDE_STEPS = [
   {
     id: 1,
-    title: "ברוך הבא ל-Metch!",
-    content: "אנחנו נעזור לך למצוא את המשרה המושלמת. בוא נתחיל בסיור קצר",
+    title: "ברוכים הבאים לדשבורד של METCH",
+    content: "סקירה קצרה של הדשבורד שלנו",
     target: null,
     position: "center"
   },
   {
     id: 2,
     title: "הסטטיסטיקות שלך",
-    content: "כאן תוכל לראות כמה משרות רלוונטיות יש, כמה מועמדויות הגשת וכמה צפו בקורות החיים שלך",
+    content: "כאן ניתן לראות כמה משרות רלוונטיות יש, כמה מועמדויות הגשת וכמה צפו בקו״ח שלך",
     target: ".stats-grid",
     position: "bottom"
   },
@@ -30,21 +30,21 @@ const GUIDE_STEPS = [
   {
     id: 4,
     title: "חיפוש משרות",
-    content: "השתמש בשדה החיפוש כדי למצוא משרות ספציפיות לפי תפקיד, חברה או מילות מפתח",
+    content: "שדה החיפוש כאן נועד לעזור לך למצוא משרות שמאצ' התאימה במיוחד עבורך",
     target: ".job-search-input",
     position: "top"
   },
   {
     id: 5,
     title: "משרות מותאמות אישית",
-    content: "המערכת מציגה לך משרות שמתאימות לפרופיל שלך. לחץ על 'לצפייה' כדי לראות פרטים נוספים",
+    content: "המערכת מציגה לך משרות מותאמות אישית במיוחד עבורך, יש ללחוץ על כפתור כדי לראות פרטים נוספים",
     target: ".job-list",
     position: "top"
   },
   {
     id: 6,
-    title: "סיימנו!",
-    content: "עכשיו אתה מכיר את הדף הראשי. מוכן להתחיל לחפש את המשרה הבאה שלך?",
+    title: "סיימנו",
+    content: "עכשיו אנחנו מכירים את הדף הראשי, יאללה מתחילים :)",
     target: null,
     position: "center"
   }
@@ -60,7 +60,7 @@ export default function JobSeekerGuide({ isActive, onComplete, onSkip }) {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -81,7 +81,7 @@ export default function JobSeekerGuide({ isActive, onComplete, onSkip }) {
     });
 
     const step = GUIDE_STEPS[currentStep];
-    
+
     // On mobile, we don't position relative to elements, we always center
     if (isMobile) {
       // Highlighting is not desired on mobile, so we return after clearing.
@@ -97,9 +97,9 @@ export default function JobSeekerGuide({ isActive, onComplete, onSkip }) {
         const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
         const cardWidth = 320; // Fixed for desktop
         const cardHeight = 200; // Fixed for desktop
-        
+
         let top, left, transform = '';
-        
+
         switch (step.position) {
           case 'bottom':
             top = rect.bottom + scrollTop + 20;
@@ -127,12 +127,12 @@ export default function JobSeekerGuide({ isActive, onComplete, onSkip }) {
             left = rect.left + scrollLeft - cardWidth - 20;
             transform = 'translateY(-50%)';
         }
-        
+
         // Ensure the guide stays within viewport bounds
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
         const padding = 20; // Fixed for desktop
-        
+
         if (left < padding) {
           left = padding;
           transform = 'translateY(-50%)'; // Recalculate transform if position changes
@@ -140,7 +140,7 @@ export default function JobSeekerGuide({ isActive, onComplete, onSkip }) {
           left = viewportWidth - cardWidth - padding;
           transform = 'translateY(-50%)'; // Recalculate transform if position changes
         }
-        
+
         if (top < padding) {
           top = padding;
           transform = transform.includes('translateX') ? 'translateX(-50%)' : '';
@@ -148,9 +148,9 @@ export default function JobSeekerGuide({ isActive, onComplete, onSkip }) {
           top = viewportHeight - cardHeight - padding;
           transform = transform.includes('translateX') ? 'translateX(-50%)' : '';
         }
-        
+
         setGuidePosition({ top, left, transform });
-        
+
         // Add highlight to target element
         element.classList.add('guide-highlight');
         // No explicit cleanup return needed here as all highlights are cleared at the start of the effect.
@@ -185,7 +185,7 @@ export default function JobSeekerGuide({ isActive, onComplete, onSkip }) {
     <>
       {/* Overlay */}
       <div className="fixed inset-0 bg-black/50 z-[100]" />
-      
+
       {/* Guide Card */}
       <AnimatePresence>
         <motion.div
@@ -193,33 +193,30 @@ export default function JobSeekerGuide({ isActive, onComplete, onSkip }) {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
-          className={`fixed z-[101] ${
-            isCenter // If isCenter is true (which it is for all mobile cases)
-              ? 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2' 
+          className={`fixed z-[101] ${isCenter // If isCenter is true (which it is for all mobile cases)
+              ? 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'
               : ''
-          } ${isMobile ? 'px-4' : ''}`}
+            } ${isMobile ? 'px-4' : ''}`}
           style={!isCenter // Apply dynamic position only if NOT centered (i.e., desktop and not "center" position)
-            ? { 
-                top: `${guidePosition.top}px`, 
-                left: `${guidePosition.left}px`,
-                transform: guidePosition.transform
-              } 
+            ? {
+              top: `${guidePosition.top}px`,
+              left: `${guidePosition.left}px`,
+              transform: guidePosition.transform
+            }
             : {} // Otherwise, let Tailwind classes handle centering
           }
           dir="rtl"
         >
-          <Card className={`bg-white shadow-2xl rounded-2xl border-2 border-blue-200 ${
-            isMobile ? 'w-[calc(100vw-2rem)] max-w-sm mx-auto' : 'w-80'
-          }`}>
+          <Card className={`bg-white shadow-2xl rounded-2xl border-2 border-blue-200 ${isMobile ? 'w-[calc(100vw-2rem)] max-w-sm mx-auto' : 'w-80'
+            }`}>
             <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
               <div className="flex justify-between items-start mb-4">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleSkip}
-                  className={`rounded-full hover:bg-gray-100 ${
-                    isMobile ? 'w-8 h-8' : 'w-10 h-10'
-                  }`}
+                  className={`rounded-full hover:bg-gray-100 ${isMobile ? 'w-8 h-8' : 'w-10 h-10'
+                    }`}
                 >
                   <X className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`} />
                 </Button>
@@ -230,18 +227,16 @@ export default function JobSeekerGuide({ isActive, onComplete, onSkip }) {
                   </span>
                 </div>
               </div>
-              
-              <h3 className={`font-bold text-gray-900 mb-3 ${
-                isMobile ? 'text-base' : 'text-lg'
-              }`}>
+
+              <h3 className={`font-bold text-gray-900 mb-3 ${isMobile ? 'text-base' : 'text-lg'
+                }`}>
                 {step.title}
               </h3>
-              <p className={`text-gray-600 mb-6 leading-relaxed ${
-                isMobile ? 'text-sm' : 'text-base'
-              }`}>
+              <p className={`text-gray-600 mb-6 leading-relaxed ${isMobile ? 'text-sm' : 'text-base'
+                }`}>
                 {step.content}
               </p>
-              
+
               <div className="flex justify-between items-center">
                 <Button
                   variant="outline"
@@ -252,25 +247,22 @@ export default function JobSeekerGuide({ isActive, onComplete, onSkip }) {
                   <ArrowRight className={`ml-1 ${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                   הקודם
                 </Button>
-                
+
                 <div className="flex gap-1">
                   {GUIDE_STEPS.map((_, index) => (
                     <div
                       key={index}
-                      className={`rounded-full ${
-                        isMobile ? 'w-2 h-2' : 'w-2 h-2'
-                      } ${
-                        index === currentStep ? 'bg-blue-600' : 'bg-gray-300'
-                      }`}
+                      className={`rounded-full ${isMobile ? 'w-2 h-2' : 'w-2 h-2'
+                        } ${index === currentStep ? 'bg-blue-600' : 'bg-gray-300'
+                        }`}
                     />
                   ))}
                 </div>
-                
+
                 <Button
                   onClick={nextStep}
-                  className={`bg-blue-600 hover:bg-blue-700 rounded-full ${
-                    isMobile ? 'px-3 py-2 text-sm' : 'px-4'
-                  }`}
+                  className={`bg-blue-600 hover:bg-blue-700 rounded-full ${isMobile ? 'px-3 py-2 text-sm' : 'px-4'
+                    }`}
                 >
                   {currentStep === GUIDE_STEPS.length - 1 ? 'סיום' : 'הבא'}
                   <ArrowLeft className={`mr-1 ${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />

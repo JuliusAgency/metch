@@ -96,13 +96,27 @@ export default function JobManagement() {
     }
   };
 
-  const handleStatusChange = async (jobId, checked) => {// Modified signature
-    const newStatus = checked ? 'active' : 'paused'; // Logic change
+  const handleStatusChange = async (jobId, checked) => {
+    const newStatus = checked ? 'active' : 'paused';
+
+    // Optimistic update
+    setJobs(prevJobs => prevJobs.map(job =>
+      job.id === jobId ? { ...job, status: newStatus } : job
+    ));
+
     try {
       await Job.update(jobId, { status: newStatus });
-      loadData(); // Reload data
     } catch (error) {
       console.error("Error updating job status:", error);
+      // Revert change on error
+      setJobs(prevJobs => prevJobs.map(job =>
+        job.id === jobId ? { ...job, status: !checked ? 'active' : 'paused' } : job
+      ));
+      toast({
+        title: "שגיאה",
+        description: "לא ניתן היה לעדכן את סטטוס המשרה",
+        variant: "destructive"
+      });
     }
   };
 
