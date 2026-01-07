@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Eye, Download, FileOutput, CreditCard, X, Check, MessageCircle } from 'lucide-react';
-import { Link, useNavigate } from "react-router-dom";
+import { Eye, Download, FileOutput, Plus } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -9,25 +9,17 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog";
 import PaymentStep, { validationUtils } from "@/components/company_profile/PaymentStep";
 import { useToast } from "@/components/ui/use-toast";
-import { MetchApi } from "@/api/metchApi";
-import { Loader2 } from "lucide-react";
-import { useUser } from "@/contexts/UserContext";
 
 export default function Payments() {
     const { toast } = useToast();
     const navigate = useNavigate();
     const [showPaymentModal, setShowPaymentModal] = useState(false);
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [paymentData, setPaymentData] = useState({}); // Mock state for PaymentStep
-    const [quantity, setQuantity] = useState(1);
-    const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
-    const { user, updateProfile } = useUser();
 
     // Mock data initial state
     const [transactions, setTransactions] = useState([
@@ -197,79 +189,8 @@ ET`;
         });
     };
 
-    const getPricePerJob = (qty) => {
-        if (qty === 1) return 600;
-        if (qty >= 2 && qty <= 3) return 550;
-        if (qty >= 4 && qty <= 5) return 500;
-        if (qty >= 6 && qty <= 7) return 450;
-        if (qty >= 8 && qty <= 9) return 400;
-        return 0; // 10+
-    };
-
-    const handleContactSupport = () => {
-        navigate(createPageUrl("Messages"), { state: { supportChat: true } });
-    };
-
-    const handlePurchase = async () => {
-        // Validate if payment info exists
-        if (!paymentData.cardNumber || !paymentData.expiryDate || !paymentData.cvv) {
-            toast({
-                title: "חסרים פרטי תשלום",
-                description: "נא לעדכן את אמצעי התשלום לפני ביצוע הרכישה",
-                variant: "destructive"
-            });
-            setShowPaymentModal(true);
-            return;
-        }
-
-        const totalAmount = getPricePerJob(quantity) * quantity;
-
-        setLoading(true);
-        try {
-            await MetchApi.createTransaction({
-                Amount: totalAmount,
-                CardNumber: paymentData.cardNumber,
-                CardExpirationMMYY: paymentData.expiryDate.replace('/', ''), // Format adjustment
-                CVV2: paymentData.cvv,
-                CardOwnerName: paymentData.holderName,
-                CardOwnerIdentityNumber: paymentData.idNumber,
-                NumberOfPayments: 1
-            });
-
-            // 1. Update User Credits in Supabase
-            const currentCredits = user?.profile?.job_credits || 0;
-            const newCredits = currentCredits + quantity;
-
-            await updateProfile({ job_credits: newCredits });
-
-            // 2. Add Transaction to List
-            const newTransaction = {
-                id: Date.now().toString().slice(-6), // Simple ID generation
-                amount: totalAmount,
-                date: new Date().toLocaleDateString('en-GB'),
-                details: `רכישת ${quantity} משרות חדשות`
-            };
-
-            setTransactions(prev => [newTransaction, ...prev]);
-
-            // 3. Show Success & Update Message
-            setShowSuccessModal(true);
-
-            toast({
-                title: "יתרת משרות עודכנה",
-                description: `נוספו ${quantity} משרות לחשבונך. יתרה נוכחית: ${newCredits}`,
-            });
-
-        } catch (error) {
-            console.error("Purchase failed:", error);
-            toast({
-                title: "העסקה נכשלה",
-                description: "אירעה שגיאה בעת ביצוע החיוב. אנא ודאו שפרטי הכרטיס תקינים ונסו שוב.",
-                variant: "destructive"
-            });
-        } finally {
-            setLoading(false);
-        }
+    const handleSelectPackage = () => {
+        navigate(createPageUrl("Packages"));
     };
 
     return (
@@ -280,116 +201,11 @@ ET`;
                 <h1 className="text-3xl font-bold text-center text-[#1E3A8A]">עמוד תשלומים</h1>
 
 
-                {/* Purchase Credits Section */}
-                <div className="space-y-8">
-                    <h2 className="text-xl font-medium text-gray-800 text-center mb-6">בחרו כמות משרות</h2>
-
-                    {/* Quantity Selector - Delicate Pill Design */}
-                    <div className="flex justify-center mb-8">
-                        <div className="bg-white border border-gray-200 rounded-full px-4 py-2 flex items-center justify-between w-[220px] shadow-sm">
-                            <button
-                                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                className="w-8 h-8 rounded-full bg-[#f0f4f8] text-[#1E3A8A] flex items-center justify-center hover:bg-[#e1eaf0] transition-colors text-xl font-medium"
-                            >
-                                -
-                            </button>
-                            <span className="text-3xl font-bold text-[#1E3A8A] font-['Rubik']">{quantity}</span>
-                            <button
-                                onClick={() => setQuantity(quantity + 1)}
-                                className="w-8 h-8 rounded-full bg-[#1e293b] text-white flex items-center justify-center hover:bg-[#0f172a] transition-colors text-xl font-medium"
-                            >
-                                +
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Pricing Card */}
-                    <div className="bg-white rounded-[30px] border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] py-8 px-10 max-w-[940px] mx-auto relative overflow-hidden">
-                        <div className="flex flex-col md:flex-row items-stretch relative z-10 w-full" dir="rtl">
-
-                            {/* Price Section (Right side in RTL) */}
-                            <div className="flex-1 flex flex-col items-center justify-start py-4">
-                                <div className="bg-[#EBF5FF] text-[#003566] px-4 py-1.5 rounded-full text-xs font-medium mb-6">
-                                    {quantity >= 10 ? 'פנה לנציג' : 'תשלום חד פעמי'}
-                                </div>
-                                <div className="flex flex-col items-center">
-                                    {quantity >= 10 ? (
-                                        <Button
-                                            onClick={handleContactSupport}
-                                            className="bg-[#1e293b] hover:bg-[#0f172a] text-white rounded-full px-8 py-6 text-lg font-bold shadow-lg transition-all hover:scale-105"
-                                        >
-                                            <MessageCircle className="w-5 h-5 ml-2" />
-                                            התחל שיחה עם נציג אישי
-                                        </Button>
-                                    ) : (
-                                        <>
-                                            <div className="flex items-baseline gap-1 text-[#003566]">
-                                                <span className="text-[45px] font-normal font-['Rubik']">₪{getPricePerJob(quantity) * quantity}</span>
-                                                <span className="text-2xl font-normal">{quantity === 1 ? '/למשרה' : 'סה״כ'}</span>
-                                            </div>
-                                            {quantity > 1 && (
-                                                <div className="text-sm text-gray-500 mt-1">
-                                                    (₪{getPricePerJob(quantity)} למשרה)
-                                                </div>
-                                            )}
-                                            <div className="w-full h-[3px] bg-[#003566] mt-2 rounded-full"></div>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Vertical Divider */}
-                            <div className="hidden md:block w-px bg-gray-100 mx-10"></div>
-                            <div className="h-px w-full bg-gray-100 md:hidden my-6"></div>
-
-                            {/* Features Section (Left side in RTL) */}
-                            <div className="flex-1 text-right py-4">
-                                <h3 className="text-lg font-bold text-[#003566] mb-6">מה כולל?</h3>
-                                <ul className="space-y-4">
-                                    {[
-                                        'פרסום למשך 30 ימים',
-                                        'אפשרות לערוך את המשרה בכל רגע',
-                                        'ניתוח ומסקנות מועמד בעזרת AI',
-                                        'כולל שאלון סינון',
-                                        'צ׳אט ישיר עם מועמדים'
-                                    ].map((feature, idx) => (
-                                        <li key={idx} className="flex items-start gap-3 justify-start text-[#003566]">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-[#003566] mt-2 flex-shrink-0"></div>
-                                            <span className="text-sm font-normal leading-tight">{feature}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    {/* CTA Button */}
-                    {quantity < 10 && (
-                        <div className="flex justify-center pt-6">
-                            <Button
-                                onClick={handlePurchase}
-                                disabled={loading}
-                                className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-12 py-6 text-xl font-bold shadow-lg shadow-blue-200/50 transition-all hover:-translate-y-1"
-                            >
-                                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
-                                    <>
-                                        למאצ׳ המושלם
-                                        <Eye className="w-5 h-5 mr-2 scale-x-[-1]" />
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    )}
-                </div>
-
-                <div className="my-16 h-px bg-gray-100 w-full max-w-2xl mx-auto"></div>
-
-                {/* Payment Method Section (Existing) */}
-                <h2 className="text-lg font-bold text-gray-800 text-right mb-4">אמצעי תשלום</h2>
-                <Card className="rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100 mb-10">
+                {/* Payment Method Section - Updated Layout */}
+                <Card className="rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100">
                     <CardContent className="p-3">
                         <div className="bg-[#F8FAFC] rounded-xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+
                             {/* Right Side: Info */}
                             <div className="text-right space-y-1">
                                 <p className="text-gray-500 text-sm">אמצעי תשלום</p>
@@ -397,13 +213,24 @@ ET`;
                                     <p className="text-gray-500 text-sm tracking-widest font-normal" dir="ltr">xxxx {paymentData.cardNumber ? paymentData.cardNumber.replace(/\D/g, '').slice(-4) : '6655'}</p>
                                 </div>
                             </div>
-                            {/* Left Side: Button */}
-                            <Button
-                                onClick={() => setShowPaymentModal(true)}
-                                className="bg-[#1E3A8A] hover:bg-[#1e293b] text-white rounded-full px-6 py-2 h-auto text-sm font-medium shadow-none w-full md:w-auto"
-                            >
-                                שינוי אמצעי תשלום
-                            </Button>
+
+                            {/* Left Side: Buttons */}
+                            <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
+                                <Button
+                                    onClick={() => setShowPaymentModal(true)}
+                                    className="bg-[#1E3A8A] hover:bg-[#1e293b] text-white rounded-full px-6 py-2 h-auto text-sm font-medium shadow-none w-full md:w-auto"
+                                >
+                                    שינוי אמצעי תשלום
+                                </Button>
+                                <Button
+                                    onClick={handleSelectPackage}
+                                    className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-6 py-2 h-auto text-sm font-medium shadow-none w-full md:w-auto"
+                                >
+                                    לרכישת משרות
+                                    {/* <Plus className="w-4 h-4 mr-2" /> */}
+                                </Button>
+                            </div>
+
                         </div>
                     </CardContent>
                 </Card>
@@ -524,34 +351,7 @@ ET`;
                     )}
                 </DialogContent>
             </Dialog>
-
-            {/* Success Modal */}
-            <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-                <DialogContent className="sm:max-w-[400px] p-8 rounded-[40px]" dir="rtl">
-                    <div className="flex flex-col items-center text-center space-y-6">
-                        {/* Glowing Checkmark */}
-                        <div className="relative">
-                            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.3)]">
-                                <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                                    <Check className="w-6 h-6 text-white stroke-[3]" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-bold text-[#0F172A]">הרכישה בוצעה בהצלחה</h2>
-                            <p className="text-gray-500 text-sm">פרטי העסקה נשלחו אל הדוא״ל</p>
-                        </div>
-
-                        <Button
-                            onClick={() => setShowSuccessModal(false)}
-                            className="w-[80%] bg-[#2987CD] hover:bg-[#1C649B] text-white rounded-full py-6 text-lg font-bold shadow-lg"
-                        >
-                            אישור
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }
+
