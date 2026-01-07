@@ -1,23 +1,43 @@
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Minus, ChevronRight, Sparkles } from "lucide-react";
+import { Plus, Minus, ChevronRight, Sparkles, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 export default function PackageSelectionStep({ packageData = {}, setPackageData, onBack }) {
   const [quantity, setQuantity] = useState(packageData.quantity || 1);
-  const pricePerJob = 499;
+  const navigate = useNavigate();
+
+  const getPricePerJob = (qty) => {
+    if (qty === 1) return 600;
+    if (qty >= 2 && qty <= 3) return 550;
+    if (qty >= 4 && qty <= 5) return 500;
+    if (qty >= 6 && qty <= 7) return 450;
+    if (qty >= 8 && qty <= 9) return 400;
+    return 0; // 10+
+  };
 
   const handleQuantityChange = (amount) => {
     const newQuantity = Math.max(1, quantity + amount);
     setQuantity(newQuantity);
+
+    const unitPrice = getPricePerJob(newQuantity);
+
     if (setPackageData) {
       setPackageData({
         type: 'per_job',
         quantity: newQuantity,
-        price: pricePerJob * newQuantity
+        price: unitPrice * newQuantity
       });
     }
+  };
+
+  const handleContactSupport = () => {
+    navigate(createPageUrl("Messages"), {
+      state: { supportChat: true }
+    });
   };
 
   return (
@@ -62,14 +82,32 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
             {/* Price Section (Right side in RTL) */}
             <div className="flex-1 flex flex-col items-center justify-start py-4">
               <div className="bg-[#EBF5FF] text-[#003566] px-4 py-1.5 rounded-full text-xs font-medium mb-6">
-                תשלום חד פעמי
+                {quantity >= 10 ? 'פנה לנציג' : 'תשלום חד פעמי'}
               </div>
+
               <div className="flex flex-col items-center">
-                <div className="flex items-baseline gap-1 text-[#003566]">
-                  <span className="text-[45px] font-normal font-['Rubik']">₪{pricePerJob * quantity}</span>
-                  <span className="text-2xl font-normal">/למשרה</span>
-                </div>
-                <div className="w-full h-[3px] bg-[#003566] mt-2 rounded-full"></div>
+                {quantity >= 10 ? (
+                  <Button
+                    onClick={handleContactSupport}
+                    className="bg-[#1e293b] hover:bg-[#0f172a] text-white rounded-full px-8 py-6 text-lg font-bold shadow-lg transition-all hover:scale-105"
+                  >
+                    <MessageCircle className="w-5 h-5 ml-2" />
+                    התחל שיחה עם נציג אישי
+                  </Button>
+                ) : (
+                  <>
+                    <div className="flex items-baseline gap-1 text-[#003566]">
+                      <span className="text-[45px] font-normal font-['Rubik']">₪{getPricePerJob(quantity) * quantity}</span>
+                      <span className="text-2xl font-normal">{quantity === 1 ? '/למשרה' : 'סה״כ'}</span>
+                    </div>
+                    {quantity > 1 && (
+                      <div className="text-sm text-gray-500 mt-1">
+                        (₪{getPricePerJob(quantity)} למשרה)
+                      </div>
+                    )}
+                    <div className="w-full h-[3px] bg-[#003566] mt-2 rounded-full"></div>
+                  </>
+                )}
               </div>
             </div>
 

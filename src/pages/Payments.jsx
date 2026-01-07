@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Eye, Download, FileOutput, CreditCard, X, Check } from 'lucide-react';
-import { Link } from "react-router-dom";
+import { Eye, Download, FileOutput, CreditCard, X, Check, MessageCircle } from 'lucide-react';
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -19,6 +19,7 @@ import { useUser } from "@/contexts/UserContext";
 
 export default function Payments() {
     const { toast } = useToast();
+    const navigate = useNavigate();
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState(null);
@@ -196,6 +197,19 @@ ET`;
         });
     };
 
+    const getPricePerJob = (qty) => {
+        if (qty === 1) return 600;
+        if (qty >= 2 && qty <= 3) return 550;
+        if (qty >= 4 && qty <= 5) return 500;
+        if (qty >= 6 && qty <= 7) return 450;
+        if (qty >= 8 && qty <= 9) return 400;
+        return 0; // 10+
+    };
+
+    const handleContactSupport = () => {
+        navigate(createPageUrl("Messages"), { state: { supportChat: true } });
+    };
+
     const handlePurchase = async () => {
         // Validate if payment info exists
         if (!paymentData.cardNumber || !paymentData.expiryDate || !paymentData.cvv) {
@@ -208,10 +222,12 @@ ET`;
             return;
         }
 
+        const totalAmount = getPricePerJob(quantity) * quantity;
+
         setLoading(true);
         try {
             await MetchApi.createTransaction({
-                Amount: 499 * quantity,
+                Amount: totalAmount,
                 CardNumber: paymentData.cardNumber,
                 CardExpirationMMYY: paymentData.expiryDate.replace('/', ''), // Format adjustment
                 CVV2: paymentData.cvv,
@@ -229,7 +245,7 @@ ET`;
             // 2. Add Transaction to List
             const newTransaction = {
                 id: Date.now().toString().slice(-6), // Simple ID generation
-                amount: 499 * quantity,
+                amount: totalAmount,
                 date: new Date().toLocaleDateString('en-GB'),
                 details: `רכישת ${quantity} משרות חדשות`
             };
@@ -299,14 +315,31 @@ ET`;
                                     {/* Price Section (Right side in RTL) */}
                                     <div className="flex-1 flex flex-col items-center justify-start py-4">
                                         <div className="bg-[#EBF5FF] text-[#003566] px-4 py-1.5 rounded-full text-xs font-medium mb-6">
-                                            תשלום חד פעמי
+                                            {quantity >= 10 ? 'פנה לנציג' : 'תשלום חד פעמי'}
                                         </div>
                                         <div className="flex flex-col items-center">
-                                            <div className="flex items-baseline gap-1 text-[#003566]">
-                                                <span className="text-[45px] font-normal font-['Rubik']">₪{499 * quantity}</span>
-                                                <span className="text-2xl font-normal">/למשרה</span>
-                                            </div>
-                                            <div className="w-full h-[3px] bg-[#003566] mt-2 rounded-full"></div>
+                                            {quantity >= 10 ? (
+                                                <Button
+                                                    onClick={handleContactSupport}
+                                                    className="bg-[#1e293b] hover:bg-[#0f172a] text-white rounded-full px-8 py-6 text-lg font-bold shadow-lg transition-all hover:scale-105"
+                                                >
+                                                    <MessageCircle className="w-5 h-5 ml-2" />
+                                                    התחל שיחה עם נציג אישי
+                                                </Button>
+                                            ) : (
+                                                <>
+                                                    <div className="flex items-baseline gap-1 text-[#003566]">
+                                                        <span className="text-[45px] font-normal font-['Rubik']">₪{getPricePerJob(quantity) * quantity}</span>
+                                                        <span className="text-2xl font-normal">{quantity === 1 ? '/למשרה' : 'סה״כ'}</span>
+                                                    </div>
+                                                    {quantity > 1 && (
+                                                        <div className="text-sm text-gray-500 mt-1">
+                                                            (₪{getPricePerJob(quantity)} למשרה)
+                                                        </div>
+                                                    )}
+                                                    <div className="w-full h-[3px] bg-[#003566] mt-2 rounded-full"></div>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
 
@@ -337,20 +370,22 @@ ET`;
                             </div>
 
                             {/* CTA Button */}
-                            <div className="flex justify-center pt-6">
-                                <Button
-                                    onClick={handlePurchase}
-                                    disabled={loading}
-                                    className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-12 py-6 text-xl font-bold shadow-lg shadow-blue-200/50 transition-all hover:-translate-y-1"
-                                >
-                                    {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
-                                        <>
-                                            למאצ׳ המושלם
-                                            <Eye className="w-5 h-5 mr-2 scale-x-[-1]" />
-                                        </>
-                                    )}
-                                </Button>
-                            </div>
+                            {quantity < 10 && (
+                                <div className="flex justify-center pt-6">
+                                    <Button
+                                        onClick={handlePurchase}
+                                        disabled={loading}
+                                        className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-12 py-6 text-xl font-bold shadow-lg shadow-blue-200/50 transition-all hover:-translate-y-1"
+                                    >
+                                        {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                                            <>
+                                                למאצ׳ המושלם
+                                                <Eye className="w-5 h-5 mr-2 scale-x-[-1]" />
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            )}
                         </div>
 
                         <div className="my-16 h-px bg-gray-100 w-full max-w-2xl mx-auto"></div>

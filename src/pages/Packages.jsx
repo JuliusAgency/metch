@@ -12,7 +12,7 @@ export default function Packages() {
     const [packageData, setPackageData] = useState({
         type: 'per_job',
         quantity: 1,
-        price: 499
+        price: 600
     });
 
     const handleContinue = () => {
@@ -39,13 +39,15 @@ export default function Packages() {
                                 חזור
                                 <ArrowRight className="w-5 h-5 mr-2" />
                             </Button>
-                            <Button
-                                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg px-12 py-3 text-lg"
-                                onClick={handleContinue}
-                            >
-                                המשך לתשלום
-                                <ArrowLeft className="w-5 h-5 ml-2" />
-                            </Button>
+                            {packageData.quantity < 10 && (
+                                <Button
+                                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg px-12 py-3 text-lg"
+                                    onClick={handleContinue}
+                                >
+                                    המשך לתשלום
+                                    <ArrowLeft className="w-5 h-5 ml-2" />
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </Card>

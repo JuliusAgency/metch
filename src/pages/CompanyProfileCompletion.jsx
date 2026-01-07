@@ -37,7 +37,7 @@ export default function CompanyProfileCompletion() {
   const [packageData, setPackageData] = useState({
     type: 'per_job',
     quantity: 1,
-    price: 499
+    price: 600
   });
   const [paymentData, setPaymentData] = useState({
     cardNumber: "",
@@ -211,6 +211,12 @@ export default function CompanyProfileCompletion() {
                   companyData.company_phone?.trim() &&
                   companyData.is_phone_verified
                 );
+
+                const isCustomPackage = packageData.quantity >= 10;
+
+                if (step === 2 && isCustomPackage) {
+                  return null;
+                }
 
                 return (
                   <Button
