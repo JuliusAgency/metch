@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Check, ChevronsUpDown } from 'lucide-react';
+import { toast } from "sonner";
+import { WhatsAppVerificationDialog } from "@/components/dialogs/WhatsAppVerificationDialog";
 import {
   Command,
   CommandEmpty,
@@ -20,14 +22,14 @@ import { cn } from "@/lib/utils";
 import locationsList from '../../../locations.json';
 
 
-const PillInput = ({ name, placeholder, value, onChange, type = "text", ...props }) => (
+const PillInput = ({ name, placeholder, value, onChange, type = "text", className, ...props }) => (
   <Input
     name={name}
     placeholder={placeholder}
     value={value}
     onChange={onChange}
     type={type}
-    className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400"
+    className={cn("w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400", className)}
     {...props}
   />
 );
@@ -67,10 +69,12 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     phone: '',
     address: '',
     birthDate: '',
-    gender: ''
+    gender: '',
+    is_phone_verified: false
   });
 
   const [openLocation, setOpenLocation] = useState(false);
+  const [isVerificationOpen, setIsVerificationOpen] = useState(false);
 
   const notifyValidity = useCallback((formState) => {
     onValidityChange(isFormComplete(formState));
@@ -92,7 +96,10 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
       phone: data?.phone || user?.phone || '',
       address: isValidAddress ? savedAddress : '',
       birthDate: getBirthDateValue(data) || '',
+      address: isValidAddress ? savedAddress : '',
+      birthDate: getBirthDateValue(data) || '',
       gender: data?.gender || '',
+      is_phone_verified: data?.is_phone_verified || false
     };
 
     setLocalData(initialState);
@@ -115,6 +122,10 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    // Validations
+    if (name === 'phone' && !/^\d*$/.test(value)) return;
+
     const sanitizedValue = name === 'birthDate' ? value.trim() : value;
     const nextValue = name === 'birthDate' && sanitizedValue && !DATE_REGEX.test(sanitizedValue)
       ? ''
@@ -126,6 +137,21 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
       notifyValidity(updatedLocal);
       return updatedLocal;
     });
+  };
+
+  const handleVerified = (verifiedPhone) => {
+    setLocalData(prev => {
+      const updatedLocal = { ...prev, phone: verifiedPhone, is_phone_verified: true };
+
+      // Update parent data
+      updateParentData('phone', verifiedPhone, updatedLocal);
+      updateParentData('is_phone_verified', true, updatedLocal);
+
+      notifyValidity(updatedLocal);
+      return updatedLocal;
+    });
+    setIsVerificationOpen(false);
+    toast.success("הטלפון אומת בהצלחה");
   };
 
   const handleLocationChange = (value) => {
@@ -165,7 +191,36 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
         {/* Row 1 */}
         <PillInput name="firstName" placeholder="שם פרטי" value={localData.firstName} onChange={handleInputChange} />
         <PillInput name="lastName" placeholder="שם משפחה" value={localData.lastName} onChange={handleInputChange} />
-        <PillInput name="phone" placeholder="מספר טלפון" value={localData.phone} onChange={handleInputChange} />
+        <div className="relative">
+          <div className="relative">
+            <PillInput
+              name="phone"
+              placeholder="מספר טלפון"
+              value={localData.phone}
+              onChange={handleInputChange}
+              className="pl-36"
+              disabled={localData.is_phone_verified}
+            />
+            <Button
+              type="button"
+              onClick={() => setIsVerificationOpen(true)}
+              className={`absolute left-1.5 top-1/2 -translate-y-1/2 h-8 px-4 text-xs font-medium rounded-full transition-all ${localData.is_phone_verified
+                ? 'bg-green-500 hover:bg-green-600 text-white'
+                : 'bg-[#1e88e5] text-white hover:bg-[#1565c0]'
+                }`}
+            >
+              {localData.is_phone_verified ? 'אומת ✓' : 'שלח קוד'}
+            </Button>
+          </div>
+          {!localData.is_phone_verified && (
+            <p
+              onClick={() => setIsVerificationOpen(true)}
+              className="text-xs text-[#1e88e5] font-medium cursor-pointer mt-2 text-right w-full hover:underline mr-4"
+            >
+              לא קיבלתי שלח שוב
+            </p>
+          )}
+        </div>
 
         {/* Row 2 */}
         <PillSelect name="gender" placeholder="מגדר" value={localData.gender} onValueChange={handleSelectChange}>
@@ -183,7 +238,7 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
               className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400 justify-between font-normal hover:bg-white"
             >
               {localData.address || "מקום מגורים"}
-              <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50 absolute left-4" />
+              <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[300px] p-0" align="start" dir="rtl">
@@ -229,6 +284,13 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
           onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }}
         />
       </div>
+
+      <WhatsAppVerificationDialog
+        isOpen={isVerificationOpen}
+        onClose={() => setIsVerificationOpen(false)}
+        initialPhone={localData.phone}
+        onVerified={handleVerified}
+      />
     </div>
   );
 }
