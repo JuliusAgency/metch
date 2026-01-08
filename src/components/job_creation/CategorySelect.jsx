@@ -24,7 +24,7 @@ export default function CategorySelect({ value = "", onChange, options = [], pla
           aria-expanded={open}
           dir="rtl"
           className={cn(
-            "w-full justify-between h-12 rounded-full border border-gray-300 text-right font-normal",
+            "w-full justify-between h-12 rounded-full border border-gray-300 text-right font-normal bg-white text-gray-900 hover:bg-white hover:text-gray-900",
             !value && "text-muted-foreground"
           )}
         >
