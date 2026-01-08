@@ -241,7 +241,7 @@ export default function JobDetailsSeeker() {
     if (user?.email && job) {
       await UserAnalytics.trackJobRejection(user.email, job);
     }
-    navigate(createPageUrl("JobSearch"));
+    navigate(createPageUrl("Dashboard"));
   };
 
   const employmentTypeText = {
