@@ -8,7 +8,7 @@ import { useRequireUserType } from '@/hooks/use-require-user-type';
 import Step1 from '@/components/preference-questionnaire/Step1';
 import Step2 from '@/components/preference-questionnaire/Step2';
 import ProgressBar from '@/components/preference-questionnaire/ProgressBar';
-import { Info } from 'lucide-react';
+import { Info, ChevronRight } from 'lucide-react';
 
 const AVAILABILITY_MAPPING = {
   'immediate': 'מיידי',
@@ -140,6 +140,13 @@ export default function PreferenceQuestionnaire() {
 
   return (
     <div className="h-full relative" dir="rtl">
+      <button
+        onClick={() => navigate(-1)}
+        className="absolute top-6 right-6 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors z-50 shadow-sm"
+        aria-label="חזור"
+      >
+        <ChevronRight className="w-6 h-6 text-gray-600" />
+      </button>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
