@@ -228,7 +228,7 @@ export default function Profile() {
         <h3 className="text-lg font-medium text-gray-900">אין לך קורות חיים?</h3>
         <p className="mt-1 text-sm text-gray-500 mb-4">צור קורות חיים מקצועיים בקלות</p>
         <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white rounded-full">
-          <Link to={createPageUrl('CVGenerator')}>
+          <Link to={`${createPageUrl('CVGenerator')}?choice=create`}>
             צור קורות חיים
           </Link>
         </Button>
