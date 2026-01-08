@@ -7,7 +7,7 @@ import { UserProfile } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Headphones, ChevronLeft } from "lucide-react";
+import { Search, Headphones, ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import SeekerChatHeader from "@/components/seeker/SeekerChatHeader";
 import SeekerMessageItem from "@/components/seeker/SeekerMessageItem";

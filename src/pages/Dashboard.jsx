@@ -294,13 +294,13 @@ const JobSeekerDashboard = ({ user }) => {
   }, [searchTerm, jobFilter]);
 
   const StatCard = ({ icon: Icon, title, value }) => (
-    <Card className="bg-white border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] rounded-2xl h-full">
-      <CardContent className="p-6 text-center flex flex-col items-center justify-center h-full">
-        <div className="w-16 h-16 rounded-full border-[1.8px] flex items-center justify-center mb-4" style={{ borderColor: '#2987cd' }}>
-          <Icon className="w-9 h-9 object-contain" style={{ imageRendering: '-webkit-optimize-contrast', filter: 'contrast(1.05)' }} />
+    <Card className="bg-white border border-gray-100 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12)] rounded-2xl h-full">
+      <CardContent className="py-4 px-3 text-center flex flex-col items-center justify-center h-full">
+        <div className="w-[44px] h-[44px] rounded-full border-[1.8px] flex items-center justify-center mb-2" style={{ borderColor: '#2987cd' }}>
+          <Icon className="w-[22px] h-[22px] object-contain" style={{ imageRendering: '-webkit-optimize-contrast', filter: 'contrast(1.05)' }} />
         </div>
-        <p className="text-blue-900 font-bold text-base mb-2">{title}</p>
-        <div className="text-3xl text-gray-500 font-normal">{value}</div>
+        <p className="text-blue-900 font-bold text-[15px] mb-0.5">{title}</p>
+        <div className="text-[22px] text-gray-500 font-normal">{value}</div>
       </CardContent>
     </Card>
   );
@@ -372,20 +372,16 @@ const JobSeekerDashboard = ({ user }) => {
 
   return (
     <>
-      <div className="max-w-7xl mx-auto space-y-6 pt-2 p-4 md:p-6">
-        <div className="flex justify-between items-center px-4">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+      <div className="max-w-7xl w-[71%] mx-auto space-y-4 pt-1 px-4 md:px-6 md:pb-6">
+        <div className="flex justify-between items-center px-4 mt-2">
+          <h1 className="text-lg font-bold text-gray-900 mb-1">
             {user.full_name?.trim() ? ` היי ${user.full_name}👋` : 'היי👋'}
           </h1>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">התראות חדשות</span>
-            <Bell className="w-5 h-5 text-yellow-500" />
-          </div>
         </div>
 
         <div className="space-y-8">
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stats-grid">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 stats-grid">
             <StatCard icon={JsRelevantJobsIcon} title="משרות רלוונטיות" value={allJobs.length} />
             <StatCard icon={JsCvIcon} title="קו״ח שהגשת" value={userStats?.resume_views || userStats?.profile_views || 0} />
             <StatCard icon={JsApplicationsIcon} title="מועמדויות שהגשתי" value={userStats?.total_applications || 0} />
@@ -408,16 +404,7 @@ const JobSeekerDashboard = ({ user }) => {
 
           {/* Filter Toggle */}
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="relative w-full md:w-96 job-search-input">
-              <Input
-                placeholder="אפשר גם לחפש"
-                className="pl-12 pr-4 py-2 border-gray-300 focus:border-blue-400 rounded-full h-11"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            </div>
-            <div className="flex justify-end w-full md:w-auto job-filter-buttons">
+            <div className="flex justify-end w-full md:w-auto job-filter-buttons order-2 md:order-1">
               <ToggleSwitch
                 options={[
                   { value: 'viewed', label: 'משרות שצפית' },
@@ -426,6 +413,15 @@ const JobSeekerDashboard = ({ user }) => {
                 value={jobFilter}
                 onChange={setJobFilter}
               />
+            </div>
+            <div className="relative w-full md:w-96 job-search-input order-1 md:order-2">
+              <Input
+                placeholder="אפשר גם לחפש"
+                className="pl-12 pr-4 py-2 border-gray-300 focus:border-blue-400 rounded-full h-11"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             </div>
           </div>
 
@@ -442,7 +438,7 @@ const JobSeekerDashboard = ({ user }) => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
+                  <Card className="bg-white border border-gray-200/90 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12)] hover:shadow-xl transition-all duration-300 rounded-2xl p-4">
                     <div className="flex items-center justify-between gap-4">
                       <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">
                         <img src={job.company_logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=random`} alt={job.company} className="w-full h-full object-cover" />
@@ -450,10 +446,16 @@ const JobSeekerDashboard = ({ user }) => {
                       <div className="text-right">
                         <h3 className="font-bold text-lg text-gray-900">{job.title}</h3>
                         <p className="text-gray-600 text-sm">{job.company}</p>
-                        <div className="flex gap-4 text-xs text-gray-500 mt-1">
-                          <span className="flex items-center gap-1"><MapPin className="w-3 h-3 ml-1" />{job.location}</span>
-                          <span className="flex items-center gap-1"><Briefcase className="w-3 h-3 ml-1" />משרה מלאה</span>
-                          <span className="flex items-center gap-1"><Clock className="w-3 h-3 ml-1" />{job.start_date || 'מיידי'}</span>
+                        <div className="flex gap-2 text-xs mt-2 flex-wrap justify-end">
+                          <span className="flex items-center gap-1 bg-[#eaf5fc] text-[#001a6e] px-2.5 py-1 rounded-lg border border-blue-100/50 font-bold">
+                            <MapPin className="w-3 h-3 ml-1 text-[#001a6e]" />{job.location}
+                          </span>
+                          <span className="flex items-center gap-1 bg-[#eaf5fc] text-[#001a6e] px-2.5 py-1 rounded-lg border border-blue-100/50 font-bold">
+                            <Briefcase className="w-3 h-3 ml-1 text-[#001a6e]" />משרה מלאה
+                          </span>
+                          <span className="flex items-center gap-1 bg-[#eaf5fc] text-[#001a6e] px-2.5 py-1 rounded-lg border border-blue-100/50 font-bold">
+                            <Clock className="w-3 h-3 ml-1 text-[#001a6e]" />{job.start_date || 'מיידי'}
+                          </span>
                         </div>
                       </div>
                       {job.match_score !== null && (
@@ -465,10 +467,10 @@ const JobSeekerDashboard = ({ user }) => {
                         </div>
                       )}
                       <Button asChild className={`${appliedJobIds.has(String(job.id))
-                          ? 'bg-gray-200 text-gray-700 hover:bg-gray-200'
-                          : viewedJobIds.has(String(job.id))
-                            ? 'bg-gray-400 hover:bg-gray-500 text-white'
-                            : 'bg-[#84CC9E] hover:bg-green-500 text-white'
+                        ? 'bg-gray-200 text-gray-700 hover:bg-gray-200'
+                        : viewedJobIds.has(String(job.id))
+                          ? 'bg-gray-400 hover:bg-gray-500 text-white'
+                          : 'bg-[#84CC9E] hover:bg-green-500 text-white'
                         } px-5 py-2 rounded-full font-bold w-36 view-job-button`}>
                         <Link
                           to={createPageUrl(`JobDetailsSeeker?id=${job.id}&from=Dashboard`)}

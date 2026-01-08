@@ -1,4 +1,4 @@
-import { ChevronLeft } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
 const SeekerChatHeader = ({ setSelectedConversation, selectedConversation }) => {
