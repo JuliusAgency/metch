@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2, Compass, ChevronRight } from 'lucide-react';
+import { FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2, Compass, ChevronRight, Eye, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { UploadFile } from '@/api/integrations';
 import { User as UserEntity } from '@/api/entities';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { useUser } from '@/contexts/UserContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -19,6 +19,7 @@ import CareerStageModal from '@/components/dashboard/CareerStageModal';
 import Lottie from 'lottie-react';
 import confettiAnimation from '../../Confetti banner.json';
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
+import CVPreview from '@/components/cv_generator/CVPreview';
 
 export default function Profile() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -27,6 +28,7 @@ export default function Profile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isLookingForJob, setIsLookingForJob] = useState(true);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isCareerStageModalOpen, setIsCareerStageModalOpen] = useState(false);
   const [statusModalStep, setStatusModalStep] = useState(1);
@@ -148,6 +150,7 @@ export default function Profile() {
         file_size_kb: Math.round(file.size / 1024),
         last_modified: new Date().toISOString(),
       });
+      setUser(prev => ({ ...prev, resume_url: resumeUrl }));
 
       toast({
         variant: "success",
@@ -236,63 +239,85 @@ export default function Profile() {
     </div>
   );
 
-  const FileManagementCard = () => (
-    <div className="w-full">
-      {/* Dashed File Info Card */}
-      <div className="bg-[#f8fafd] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 mb-4">
-        <div className="flex items-center gap-6">
-          <div className="flex-shrink-0">
-            <img src="/pdf_icon.png" alt="PDF" className="w-12 h-auto" />
+  const FileManagementCard = () => {
+    const handleViewCV = () => {
+      // Check if it's a generated CV (has personal details)
+      if (cvData.personal_details && Object.keys(cvData.personal_details).length > 0) {
+        setIsPreviewOpen(true);
+      } else if (user?.resume_url) {
+        // It's an uploaded file
+        window.open(user.resume_url, '_blank');
+      }
+    };
+
+    return (
+      <div className="w-full">
+        {/* Dashed File Info Card */}
+        <div className="bg-[#f8fafd] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 mb-4 flex justify-between items-end">
+          <div className="flex items-center gap-6">
+            <div className="flex-shrink-0">
+              <img src="/pdf_icon.png" alt="PDF" className="w-12 h-auto" />
+            </div>
+            <div className="text-right">
+              <p className="font-semibold text-gray-900 text-lg" title={cvData.file_name}>
+                {cvData.file_name}
+              </p>
+              <p className="text-sm text-gray-400 mt-1">
+                {format(new Date(cvData.last_modified), 'dd.MM.yyyy HH:mm')}
+                <span className="mx-2">|</span>
+                {cvData.file_size_kb} KB
+              </p>
+            </div>
           </div>
-          <div className="text-right flex-1">
-            <p className="font-semibold text-gray-900 text-lg" title={cvData.file_name}>
-              {cvData.file_name}
-            </p>
-            <p className="text-sm text-gray-400 mt-1">
-              {format(new Date(cvData.last_modified), 'dd.MM.yyyy HH:mm')}
-              <span className="mx-2">|</span>
-              {cvData.file_size_kb} KB
-            </p>
-          </div>
+
+          <button
+            onClick={handleViewCV}
+            className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors font-medium mb-1"
+          >
+            <Eye className="w-4 h-4" />
+            צפייה
+          </button>
+        </div>
+
+        {/* Action Buttons Row - Aligned Left (justify-end in RTL) */}
+        <div className="flex items-center justify-end gap-6 text-sm font-medium px-2">
+
+
+          <button
+            onClick={handleDeleteFile}
+            className="flex items-center gap-2 text-[#FF4D4D] hover:text-red-700 transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+            מחק קובץ
+          </button>
+
+          {cvData.personal_details && (
+            <>
+              <div className="w-px h-4 bg-gray-300"></div>
+
+              <Link
+                to={createPageUrl('CVGenerator')}
+                className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
+              >
+                <img src="/edit_icon.png" alt="Edit" className="w-4 h-4" />
+                ערוך קובץ
+              </Link>
+            </>
+          )}
+
+          <div className="w-px h-4 bg-gray-300"></div>
+
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
+          >
+            <img src="/replace_icon.png" alt="Replace" className="w-4 h-4" />
+            החלף קובץ
+          </button>
         </div>
       </div>
-
-      {/* Action Buttons Row - Aligned Left (justify-end in RTL) */}
-      <div className="flex items-center justify-end gap-6 text-sm font-medium px-2">
-        <button
-          onClick={handleDeleteFile}
-          className="flex items-center gap-2 text-[#FF4D4D] hover:text-red-700 transition-colors"
-        >
-          <Trash2 className="w-4 h-4" />
-          מחק קובץ
-        </button>
-
-        {cvData.personal_details && (
-          <>
-            <div className="w-px h-4 bg-gray-300"></div>
-
-            <Link
-              to={createPageUrl('CVGenerator')}
-              className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
-            >
-              <img src="/edit_icon.png" alt="Edit" className="w-4 h-4" />
-              ערוך קובץ
-            </Link>
-          </>
-        )}
-
-        <div className="w-px h-4 bg-gray-300"></div>
-
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
-        >
-          <img src="/replace_icon.png" alt="Replace" className="w-4 h-4" />
-          החלף קובץ
-        </button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen"><div className="w-12 h-12 border-t-2 border-blue-600 rounded-full animate-spin"></div></div>;
@@ -440,6 +465,37 @@ export default function Profile() {
         isOpen={isCareerStageModalOpen}
         onComplete={() => setIsCareerStageModalOpen(false)}
       />
+
+      {/* CV Preview Modal */}
+      <AnimatePresence>
+        {isPreviewOpen && cvData && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4"
+            onClick={() => setIsPreviewOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative bg-white rounded-lg shadow-2xl w-full max-w-4xl h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsPreviewOpen(false)}
+                className="absolute top-2 right-2 rounded-full z-10 bg-white/50 hover:bg-white/80"
+              >
+                <X className="w-6 h-6" />
+              </Button>
+              <CVPreview cvData={cvData} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
