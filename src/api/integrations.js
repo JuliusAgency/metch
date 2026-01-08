@@ -74,30 +74,30 @@ export async function InvokeLLM({
  * @returns {Promise<Object>} Send result
  */
 export async function SendEmail({ to, from, subject, html, text, attachments }) {
-  const apiKey = import.meta.env.VITE_RESEND_API_KEY;
+  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-  if (!apiKey) {
-    throw new Error('VITE_RESEND_API_KEY environment variable is not set');
-  }
-
-  const response = await fetch('https://api.resend.com/emails', {
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
+      'Authorization': `Bearer ${anonKey}`,
+      'apikey': anonKey
     },
     body: JSON.stringify({
-      from: from || 'noreply@example.com',
-      to: Array.isArray(to) ? to : [to],
+      to,
+      from,
       subject,
       html,
       text,
-      ...(attachments && attachments.length ? { attachments } : {})
+      attachments
     })
   });
 
   if (!response.ok) {
-    throw new Error(`Resend API error: ${response.statusText}`);
+    const errorData = await response.json().catch(() => ({}));
+    console.error('Email Function Error Details:', errorData);
+    throw new Error(`Failed to send email: ${response.statusText}`);
   }
 
   return await response.json();

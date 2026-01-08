@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { User } from "@/api/entities";
 import { UserProfile } from "@/api/entities";
-import { QuestionnaireResponse, Job, JobApplication, CV } from "@/api/entities";
+import { QuestionnaireResponse, Job, JobApplication, CV, Conversation } from "@/api/entities";
 import { Core } from "@/api/integrations";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -330,24 +330,40 @@ export default function CandidateProfile() {
 
     setCreatingConversation(true);
     try {
-      const existingConversations = await Conversation.filter({
+      const queryParams = new URLSearchParams(location.search);
+      const jobId = queryParams.get("jobId");
+      const jobTitle = queryParams.get("title") || "משרה כללית";
+
+      const filterParams = {
         employer_email: user.email,
         candidate_email: candidate.email,
-      });
+      };
+
+      if (jobId) {
+        filterParams.job_id = jobId;
+      }
+
+      const existingConversations = await Conversation.filter(filterParams);
 
       let conversation;
       if (existingConversations.length > 0) {
         conversation = existingConversations[0];
       } else {
-        conversation = await Conversation.create({
+        const createParams = {
           employer_email: user.email,
           candidate_email: candidate.email,
           candidate_name: candidate.full_name,
-          job_title: "משרה כללית",
+          job_title: jobTitle,
           last_message: "",
           last_message_time: new Date().toISOString(),
           unread_count: 0,
-        });
+        };
+
+        if (jobId) {
+          createParams.job_id = jobId;
+        }
+
+        conversation = await Conversation.create(createParams);
       }
 
       await EmployerAnalytics.trackAction(
@@ -392,13 +408,80 @@ export default function CandidateProfile() {
     }
   };
 
+  const formatCvDataToHtml = (cv) => {
+    if (!cv) return "";
+
+    const formatSection = (title, content) => `
+      <div style="margin-bottom: 20px; border-bottom: 2px solid #2987cd; padding-bottom: 5px;">
+        <h2 style="color: #003566; margin: 0; font-size: 18px;">${title}</h2>
+      </div>
+      <div style="margin-bottom: 25px;">${content}</div>
+    `;
+
+    let html = `
+      <div style="font-family: Arial, sans-serif; direction: rtl; text-align: right; max-width: 800px; margin: 0 auto; color: #333;">
+        <h1 style="color: #003566; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 15px;">${cv.personal_details?.full_name || candidate.full_name}</h1>
+        <div style="text-align: center; margin-bottom: 30px; color: #666; font-size: 14px;">
+          ${cv.personal_details?.email ? `<span>${cv.personal_details.email}</span>` : ""}
+          ${cv.personal_details?.phone ? ` | <span>${cv.personal_details.phone}</span>` : ""}
+          ${cv.personal_details?.address ? ` | <span>${cv.personal_details.address}</span>` : ""}
+        </div>
+    `;
+
+    if (cv.summary) {
+      html += formatSection("תמצית", `<p style="line-height: 1.6;">${cv.summary}</p>`);
+    }
+
+    if (cv.work_experience?.length > 0) {
+      const expHtml = cv.work_experience.map(exp => `
+        <div style="margin-bottom: 15px;">
+          <div style="display: flex; justify-content: space-between; font-weight: bold;">
+            <span>${exp.title}</span>
+            <span style="color: #666; font-size: 12px;">${exp.start_date || ""} - ${exp.is_current ? "היום" : (exp.end_date || "")}</span>
+          </div>
+          <div style="color: #2987cd; margin-top: 2px;">${exp.company} | ${exp.location || ""}</div>
+          ${exp.description ? `<p style="margin-top: 5px; color: #555; font-size: 13px; white-space: pre-wrap;">${exp.description}</p>` : ""}
+        </div>
+      `).join("");
+      html += formatSection("ניסיון תעסוקתי", expHtml);
+    }
+
+    if (cv.education?.length > 0) {
+      const eduHtml = cv.education.map(edu => `
+        <div style="margin-bottom: 15px;">
+          <div style="display: flex; justify-content: space-between; font-weight: bold;">
+            <span>${edu.institution}</span>
+            <span style="color: #666; font-size: 12px;">${edu.start_date || ""} - ${edu.is_current ? "היום" : (edu.end_date || "")}</span>
+          </div>
+          <div style="color: #2987cd; margin-top: 2px;">${edu.degree || ""} ${edu.field_of_study ? `| ${edu.field_of_study}` : ""}</div>
+          ${edu.description ? `<p style="margin-top: 5px; color: #555; font-size: 13px; white-space: pre-wrap;">${edu.description}</p>` : ""}
+        </div>
+      `).join("");
+      html += formatSection("השכלה", eduHtml);
+    }
+
+    if (cv.skills?.length > 0) {
+      const skillsHtml = `<p>${cv.skills.join(" • ")}</p>`;
+      html += formatSection("כישורים", skillsHtml);
+    }
+
+    html += `
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #999; font-size: 12px;">
+          נשלח באמצעות מערכת Metch
+        </div>
+      </div>
+    `;
+
+    return html;
+  };
+
   const handleExportToEmail = async () => {
     if (!user || !candidate || exportingResume) return;
 
-    if (!candidate.resume_url) {
+    if (!candidate.resume_url && !cvData) {
       toast({
-        title: "לא נמצא קובץ קורות חיים",
-        description: "אין קובץ מצורף למועמד זה.",
+        title: "לא נמצאו קורות חיים",
+        description: "אין קובץ מצורף או קורות חיים דיגיטליים למועמד זה.",
         variant: "destructive",
       });
       return;
@@ -415,40 +498,53 @@ export default function CandidateProfile() {
         {
           candidate_email: candidate.email,
           candidate_name: candidate.full_name,
+          has_pdf: !!candidate.resume_url,
+          has_digital: !!cvData
         }
       );
 
-      const response = await fetch(candidate.resume_url);
-      if (!response.ok) {
-        throw new Error("לא ניתן למשוך את קובץ הקורות חיים");
-      }
+      let attachments = [];
+      let emailHtml = "";
 
-      const arrayBuffer = await response.arrayBuffer();
-      const resumeBase64 = arrayBufferToBase64(arrayBuffer);
-      const guessedName =
-        candidate.resume_url.split("/").pop() ||
-        `${candidate.full_name}-resume.pdf`;
-      const filename = guessedName.toLowerCase().endsWith(".pdf")
-        ? guessedName
-        : `${guessedName}.pdf`;
+      if (candidate.resume_url) {
+        const response = await fetch(candidate.resume_url);
+        if (!response.ok) {
+          throw new Error("לא ניתן למשוך את קובץ הקורות חיים");
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const resumeBase64 = arrayBufferToBase64(arrayBuffer);
+        const guessedName =
+          candidate.resume_url.split("/").pop() ||
+          `${candidate.full_name}-resume.pdf`;
+        const filename = guessedName.toLowerCase().endsWith(".pdf")
+          ? guessedName
+          : `${guessedName}.pdf`;
+
+        attachments = [{
+          filename,
+          content: resumeBase64,
+          contentType: "application/pdf",
+        }];
+
+        emailHtml = `
+          <div style="direction: rtl; text-align: right; font-family: Arial, sans-serif;">
+            <p>שלום,</p>
+            <p>מצ"ב קורות החיים המקוריים (PDF) של <b>${candidate.full_name}</b>.</p>
+            <p>בברכה,<br/>צוות Metch</p>
+          </div>
+        `;
+      } else if (cvData) {
+        emailHtml = formatCvDataToHtml(cvData);
+      }
 
       await SendEmail({
         to: recipient,
         from: user.email,
         subject,
-        html: `
-                    <p>שלום,</p>
-                    <p>מצ"ב קורות החיים העדכניים של ${candidate.full_name}.</p>
-                    <p>בברכה,<br/>צוות Metch</p>
-                `,
-        text: `מצורפים קורות החיים של ${candidate.full_name}.`,
-        attachments: [
-          {
-            filename,
-            content: resumeBase64,
-            contentType: "application/pdf",
-          },
-        ],
+        html: emailHtml,
+        text: `קורות החיים של ${candidate.full_name}.`,
+        attachments: attachments.length > 0 ? attachments : undefined,
       });
 
       toast({
