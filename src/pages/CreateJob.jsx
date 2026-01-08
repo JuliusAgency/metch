@@ -275,14 +275,16 @@ export default function CreateJob() {
 
   const isStepValid = () => {
     if (step === 1) {
-      return (
+      // Step 1: Basic details
+      // Note: structured_requirements are optional
+      const isValid = (
         jobData.title &&
         jobData.category &&
         jobData.start_date &&
         jobData.employment_type &&
-        jobData.description &&
-        jobData.structured_requirements?.some(req => req.value && req.value.trim() !== "")
+        jobData.description
       );
+      return !!isValid;
     }
     if (step === 2) {
       // Step 2 is Step3Company, requires exactly 3 success factors
