@@ -14,7 +14,20 @@ export default function Step7_Preview({ cvData, setData, onEdit }) {
     };
 
     const handleDownload = () => {
+        const originalTitle = document.title;
+        if (cvData.file_name?.trim()) {
+            document.title = cvData.file_name;
+        }
         window.print();
+        // Restore title after print dialog closes (for blocking browsers) or via event
+        if ('onafterprint' in window) {
+            window.addEventListener('afterprint', () => {
+                document.title = originalTitle;
+            }, { once: true });
+        } else {
+            // Fallback for browsers where print() is blocking
+            document.title = originalTitle;
+        }
     };
 
     return (
