@@ -105,6 +105,7 @@ const JobSeekerDashboard = ({ user }) => {
   const [currentNotificationIndex, setCurrentNotificationIndex] = useState(0);
   const [allJobs, setAllJobs] = useState([]); // Renamed 'jobs' to 'allJobs'
   const [viewedJobIds, setViewedJobIds] = useState(new Set()); // New state for viewed job IDs
+  const [appliedJobIds, setAppliedJobIds] = useState(new Set()); // New state for applied job IDs
   const [loading, setLoading] = useState(true);
   const [showGuide, setShowGuide] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -203,7 +204,8 @@ const JobSeekerDashboard = ({ user }) => {
           Notification.filter({ is_read: false, email: user.email }, "-created_date", 5),
           UserAnalytics.getUserStats(user.email),
           CandidateView.filter({ candidate_name: user.full_name }), // Get profile views for this job seeker
-          UserProfile.filter({ email: user.email }).then(profiles => profiles[0] || null) // Get user profile
+          UserProfile.filter({ email: user.email }).then(profiles => profiles[0] || null), // Get user profile
+          JobApplication.filter({ applicant_email: user.email }) // Get user applications
         ]);
 
         const jobsData = results[0].status === 'fulfilled' ? results[0].value : [];
@@ -216,6 +218,7 @@ const JobSeekerDashboard = ({ user }) => {
         const statsData = results[3].status === 'fulfilled' ? results[3].value : null;
         const profileViewsData = results[4].status === 'fulfilled' ? results[4].value : [];
         const userProfile = results[5].status === 'fulfilled' ? results[5].value : null;
+        const applicationsData = results[6].status === 'fulfilled' ? results[6].value : [];
 
         // Calculate match scores for each job
         const jobsWithScores = await Promise.all(
@@ -268,6 +271,7 @@ const JobSeekerDashboard = ({ user }) => {
         setAllJobs([mockJob, ...jobsWithScores]);
         // Use String for ID sets to ensure consistent matching
         setViewedJobIds(new Set(jobViewsData.map(view => String(view.job_id))));
+        setAppliedJobIds(new Set(applicationsData.map(app => String(app.job_id))));
         setNotifications(notificationsData);
 
 
@@ -275,6 +279,7 @@ const JobSeekerDashboard = ({ user }) => {
         console.error("Error loading jobs for seeker:", error);
         setAllJobs([]);
         setViewedJobIds(new Set());
+        setAppliedJobIds(new Set());
         setNotifications([]);
         setUserStats(null);
       } finally {
@@ -459,7 +464,12 @@ const JobSeekerDashboard = ({ user }) => {
                           </div>
                         </div>
                       )}
-                      <Button asChild className={`${viewedJobIds.has(String(job.id)) ? 'bg-gray-400 hover:bg-gray-500' : 'bg-[#84CC9E] hover:bg-green-500'} text-white px-5 py-2 rounded-full font-bold w-28 view-job-button`}>
+                      <Button asChild className={`${appliedJobIds.has(String(job.id))
+                          ? 'bg-gray-200 text-gray-700 hover:bg-gray-200'
+                          : viewedJobIds.has(String(job.id))
+                            ? 'bg-gray-400 hover:bg-gray-500 text-white'
+                            : 'bg-[#84CC9E] hover:bg-green-500 text-white'
+                        } px-5 py-2 rounded-full font-bold w-36 view-job-button`}>
                         <Link
                           to={createPageUrl(`JobDetailsSeeker?id=${job.id}&from=Dashboard`)}
                           onClick={() => {
@@ -470,7 +480,11 @@ const JobSeekerDashboard = ({ user }) => {
                             }
                           }}
                         >
-                          {viewedJobIds.has(String(job.id)) ? "נצפה" : "צפייה"}
+                          {appliedJobIds.has(String(job.id))
+                            ? "הוגשה מועמדות"
+                            : viewedJobIds.has(String(job.id))
+                              ? "נצפה"
+                              : "צפייה"}
                         </Link>
                       </Button>
                     </div>
