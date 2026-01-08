@@ -178,7 +178,7 @@ export default function Layout({ children, currentPageName }) {
           }
 
           .navbar-custom {
-            background-color: transparent;
+            background: linear-gradient(90deg, #dde6eb 0%, #f0f8ff 50%, #dde6eb 100%);
             backdrop-filter: blur(10px);
           }
         `}
@@ -366,11 +366,11 @@ export default function Layout({ children, currentPageName }) {
                       transition={{ duration: 0.2 }}
                       className="flex items-center gap-2"
                     >
-                      <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
+                      <h1 className="text-gray-800 text-[26px] metch-logo-font">Metch</h1>
                       <img
                         src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png"
                         alt="Metch Logo"
-                        className="h-6"
+                        className="h-4"
                       />
                     </motion.div>
                   )}

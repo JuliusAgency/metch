@@ -7,7 +7,7 @@ import { UserProfile } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Headphones, ChevronLeft } from "lucide-react";
+import { Search, Headphones, ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import SeekerChatHeader from "@/components/seeker/SeekerChatHeader";
 import SeekerMessageItem from "@/components/seeker/SeekerMessageItem";
@@ -328,6 +328,12 @@ export default function MessagesSeeker() {
                             backgroundRepeat: 'no-repeat'
                         }}
                     />
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-20"
+                    >
+                        <ChevronRight className="w-6 h-6 text-gray-800" />
+                    </button>
                 </div>
 
                 <div className="p-2 sm:p-4 md:p-6 -mt-12 relative z-10 w-full">
