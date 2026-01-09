@@ -123,6 +123,7 @@ export default function PreferenceQuestionnaire() {
         availability: dbAvailability,
         character_traits: preferences.traits,
         specialization: preferences.field,
+        is_onboarding_completed: true
       };
 
       await updateProfile(updateData);

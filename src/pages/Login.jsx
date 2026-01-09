@@ -30,6 +30,15 @@ const Login = () => {
       if (!userProfile || !userProfile.user_type) {
 
         navigate('/EmailConfirmed');
+      } else if (!userProfile.is_onboarding_completed) {
+        // Check user type for redirection
+        if (userProfile.user_type === 'job_seeker') {
+          navigate('/UserTypeSelection');
+        } else if (userProfile.user_type === 'employer') {
+          navigate('/CompanyProfileCompletion');
+        } else {
+          navigate('/Dashboard');
+        }
       } else {
 
         navigate('/Dashboard');
@@ -59,6 +68,15 @@ const Login = () => {
       if (!userProfile || !userProfile.user_type) {
         // User doesn't have a complete profile, redirect to EmailConfirmed for profile setup
         navigate('/EmailConfirmed');
+      } else if (!userProfile.is_onboarding_completed) {
+        // User has type but didn't complete onboarding
+        if (userProfile.user_type === 'job_seeker') {
+          navigate('/UserTypeSelection'); // Or CVGenerator logic if needed, but this is the entry point
+        } else if (userProfile.user_type === 'employer') {
+          navigate('/CompanyProfileCompletion');
+        } else {
+          navigate('/Dashboard');
+        }
       } else {
         // User has a complete profile, go to dashboard
         navigate('/Dashboard');
@@ -159,7 +177,7 @@ const Login = () => {
                 >
                   <div className="flex items-center justify-center space-x-3 w-full">
                     <span className="font-['Secular_One',_sans-serif] text-lg ml-2" dir="auto">
-                      התחברות
+                      התחברו
                     </span>
                     <ArrowLeft className="w-5 h-5 text-white" />
                   </div>

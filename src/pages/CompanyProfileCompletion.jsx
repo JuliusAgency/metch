@@ -144,9 +144,8 @@ export default function CompanyProfileCompletion() {
     if (step < STEPS.length) {
       setStep(prev => prev + 1);
     } else {
-      // Final step action (fallback if not redirected)
-      // Ensure we explicitly force save one last time to be safe?
-      // handleSave(); // Optional, but usually step 4 save covers it.
+      // Final step action
+      await updateProfile({ is_onboarding_completed: true });
       navigate(`${createPageUrl('Dashboard')}?onboarding=complete`);
     }
   };

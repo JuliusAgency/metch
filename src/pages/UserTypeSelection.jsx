@@ -111,11 +111,17 @@ const UserTypeSelection = () => {
     // Only redirect if we are not currently in the process of selecting a type (e.g. showing modal)
     // and if the user already had a type when loading (not just set now)
     if (!userLoading && user && user.user_type && !selectedType && !loading) {
-      if (user.user_type === 'job_seeker') {
+      if (user.is_onboarding_completed) {
         navigate('/Dashboard');
       } else {
-        // For employers, we might want to check completion status, but for now stick to flow
-        navigate('/CompanyProfileCompletion');
+        // Enforce onboarding flow
+        if (user.user_type === 'employer') {
+          navigate('/CompanyProfileCompletion');
+        } else if (user.user_type === 'job_seeker') {
+          // For job seekers, if they are here, they might need to see the modal or be redirected.
+          // If we don't redirect, they stay on this page to click "Job Seeker" again which opens modal.
+          // Optionally we could force open modal, but better let them interact.
+        }
       }
     }
   }, [user, userLoading, navigate, selectedType, loading]);
