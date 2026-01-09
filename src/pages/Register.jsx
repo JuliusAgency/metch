@@ -212,7 +212,7 @@ const Register = () => {
                 >
                   <div className="flex items-center justify-center space-x-3 w-full">
                     <span className="font-['Rubik:Bold',_sans-serif] font-bold text-lg ml-2" dir="auto">
-                      הרשמה
+                      הרשמו
                     </span>
                     <ArrowLeft className="w-5 h-5 text-white" />
                   </div>
@@ -265,14 +265,14 @@ const Register = () => {
               <p className="text-[#32343d] text-base" dir="auto">
                 <span className="font-['Rubik:Regular',_sans-serif]">כבר רשומים? </span>
                 <Link to="/Login" className="font-['Rubik:Bold',_sans-serif] font-bold text-[#2987cd] hover:underline">
-                  התחברו כאן
+                  התחברו
                 </Link>
               </p>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 
