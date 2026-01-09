@@ -167,7 +167,8 @@ export default function CVGenerator() {
         }
 
         // Fallback to DB if no draft
-        const existingCvs = await CV.filter({ user_email: userData.email });
+        // CHANGE: Use user_id for strict association, avoiding email collision with deleted users
+        const existingCvs = await CV.filter({ user_id: userData.id });
         if (existingCvs.length > 0) {
           const normalizedData = normalizeCvRecord(existingCvs[0]);
           setCvData(normalizedData);
@@ -287,7 +288,7 @@ export default function CVGenerator() {
       if (cvId) {
         savedCv = await CV.update(cvId, payload);
       } else {
-        savedCv = await CV.create({ ...payload, user_email: userEmail });
+        savedCv = await CV.create({ ...payload, user_email: userEmail, user_id: user.id });
         setCvId(savedCv.id);
       }
 
