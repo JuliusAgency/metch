@@ -106,6 +106,7 @@ export default function CVGenerator() {
     const draftData = {
       cvData,
       step,
+      userId: user.id, // Bind draft to specific user ID
       timestamp: Date.now()
     };
     localStorage.setItem(draftKey, JSON.stringify(draftData));
@@ -137,9 +138,19 @@ export default function CVGenerator() {
 
         if (savedDraft) {
           try {
-            const { cvData: draftCvData, step: draftStep } = JSON.parse(savedDraft);
-            // Restore draft if it exists
-            if (draftCvData) {
+            const { cvData: draftCvData, step: draftStep, userId: draftUserId } = JSON.parse(savedDraft);
+
+            // Validate that the draft belongs to the current user ID
+            // STRICT CHECK: If draft has no userId (legacy) or mismatch, we invalidate it.
+            let isDraftValid = true;
+            if (!draftUserId || draftUserId !== userData.id) {
+              console.log("Draft invalid (no ID or mismatch), ignoring and clearing.");
+              localStorage.removeItem(draftKey);
+              isDraftValid = false;
+            }
+
+            // Restore draft if it exists and is valid
+            if (isDraftValid && draftCvData) {
               const normalizedData = normalizeCvRecord(draftCvData);
               setCvData(normalizedData);
               setStep(draftStep || 1);
