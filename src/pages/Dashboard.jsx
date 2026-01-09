@@ -295,7 +295,7 @@ const JobSeekerDashboard = ({ user }) => {
 
   const StatCard = ({ icon: Icon, title, value }) => (
     <Card className="bg-white border border-gray-100 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12)] rounded-2xl h-full">
-      <CardContent className="py-4 px-3 text-center flex flex-col items-center justify-center h-full">
+      <CardContent className="py-3 px-3 text-center flex flex-col items-center justify-center h-full">
         <div className="w-[44px] h-[44px] rounded-full border-[1.8px] flex items-center justify-center mb-2" style={{ borderColor: '#2987cd' }}>
           <Icon className="w-[22px] h-[22px] object-contain" style={{ imageRendering: '-webkit-optimize-contrast', filter: 'contrast(1.05)' }} />
         </div>
@@ -372,14 +372,14 @@ const JobSeekerDashboard = ({ user }) => {
 
   return (
     <>
-      <div className="max-w-7xl w-[71%] mx-auto space-y-4 pt-1 px-4 md:px-6 md:pb-6">
+      <div className="max-w-7xl w-[68%] mx-auto space-y-4 pt-1 px-4 md:px-6 md:pb-6">
         <div className="flex justify-between items-center px-4 mt-2">
           <h1 className="text-lg font-bold text-gray-900 mb-1">
             {user.full_name?.trim() ? ` היי ${user.full_name}👋` : 'היי👋'}
           </h1>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-4">
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-12 stats-grid">
             <StatCard icon={JsRelevantJobsIcon} title="משרות רלוונטיות" value={allJobs.length} />
@@ -816,17 +816,17 @@ const EmployerDashboard = ({ user }) => {
 
   return (
     <>
-      <div className="max-w-7xl mx-auto space-y-6 pt-2 p-4 md:p-6">
+      <div className="max-w-7xl w-[72%] mx-auto space-y-4 pt-1 px-4 md:px-6 md:pb-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-right px-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-lg font-bold text-gray-900 mb-1">
             {user.company_name?.trim() ? ` היי ${user.company_name}👋` : 'היי👋'}
           </h1>
 
         </motion.div>
 
-        <div className="space-y-8">
+        <div className="space-y-4">
           {/* Enhanced Stats Grid with Real Analytics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 employer-stats">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 employer-stats">
             <EmployerStatsCard
               icon={ActiveJobsIcon}
               title="משרות פעילות"
@@ -845,11 +845,11 @@ const EmployerDashboard = ({ user }) => {
               value={employerStats?.total_job_views || 0}
               color="bg-blue-50 text-blue-600"
             />
-            <Card className="relative col-span-2 sm:col-span-1 bg-[#84CC9E] text-white border-0 shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl create-job-card">
+            <Card className="relative col-span-2 sm:col-span-1 bg-[#84CC9E] text-white border-0 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12)] hover:shadow-lg transition-all duration-300 rounded-2xl create-job-card">
               <Link to={createPageUrl("CreateJob")}>
-                <CardContent className="p-4 sm:p-6 text-center flex flex-col items-center justify-center h-full">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/30 rounded-full flex items-center justify-center mx-auto mb-3"><Plus className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
-                  <h3 className="font-bold text-base sm:text-lg">פרסום משרה חדשה</h3>
+                <CardContent className="py-3 px-3 text-center flex flex-col items-center justify-center h-full">
+                  <div className="w-[44px] h-[44px] bg-white/30 rounded-full flex items-center justify-center mx-auto mb-2"><Plus className="w-[22px] h-[22px] text-white" /></div>
+                  <h3 className="font-bold text-[15px] mb-0.5">פרסום משרה חדשה</h3>
                 </CardContent>
               </Link>
               {showOnboardingHint && (
