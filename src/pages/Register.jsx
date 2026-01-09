@@ -94,6 +94,14 @@ const Register = () => {
         created_at: new Date().toISOString()
       });
 
+      // Clear any local storage drafts for this email to ensure a fresh start
+      try {
+        localStorage.removeItem(`cv_draft_${signUpData.email}`);
+        localStorage.removeItem(`jobseeker_guide_${signUpData.email}`);
+      } catch (e) {
+        console.error("Failed to clear local storage:", e);
+      }
+
       toast({
         variant: "success",
         title: "נרשמת בהצלחה!",

@@ -46,7 +46,8 @@ const CareerStageModal = ({ isOpen, onComplete }) => {
 
             await updateProfile({
                 career_stage: selected,
-                prefers_no_career_change: prefersNoChange
+                prefers_no_career_change: prefersNoChange,
+                is_onboarding_completed: true
             });
 
             toast({
