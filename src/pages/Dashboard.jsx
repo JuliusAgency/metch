@@ -200,12 +200,12 @@ const JobSeekerDashboard = ({ user }) => {
       try {
         const results = await Promise.allSettled([
           Job.filter({ status: 'active' }, "-created_date", 100),
-          JobView.filter({ user_email: user.email }),
-          Notification.filter({ is_read: false, email: user.email }, "-created_date", 5),
-          UserAnalytics.getUserStats(user.email),
-          CandidateView.filter({ candidate_name: user.full_name }), // Get profile views for this job seeker
-          UserProfile.filter({ email: user.email }).then(profiles => profiles[0] || null), // Get user profile
-          JobApplication.filter({ applicant_email: user.email }) // Get user applications
+          JobView.filter({ viewer_id: user.id }), // Change to viewer_id
+          Notification.filter({ is_read: false, user_id: user.id }, "-created_date", 5), // Change to user_id
+          UserAnalytics.getUserStats(user.email), // Analytics might still need email if ID not supported yet, keep for now or check implementation
+          CandidateView.filter({ candidate_name: user.full_name }), // Keep name based? Or change to candidate_id if available? Name matches profile.
+          UserProfile.filter({ id: user.id }).then(profiles => profiles[0] || null), // Change to ID
+          JobApplication.filter({ applicant_id: user.id }) // Change to applicant_id
         ]);
 
         const jobsData = results[0].status === 'fulfilled' ? results[0].value : [];
@@ -617,7 +617,7 @@ const EmployerDashboard = ({ user }) => {
       setLoading(true);
       try {
         const [viewedCandidatesData, candidatesData, dashboardData, activeJobsData] = await Promise.all([
-          CandidateView.filter({ viewer_email: user.email }, "-viewed_at", 1000),
+          CandidateView.filter({ viewer_id: user.id }, "-viewed_at", 1000), // Change to viewer_id
           UserProfile.filter({ user_type: 'job_seeker' }, null, 100),
           EmployerAnalytics.getDashboardData(user.email),
           Job.filter({ created_by: user.email, status: 'active' })
@@ -730,12 +730,13 @@ const EmployerDashboard = ({ user }) => {
       await CandidateView.create({
         candidate_name: candidate.full_name,
         candidate_role: candidate.experience_level || 'N/A',
-        viewer_email: user.email,
+        viewer_id: user.id, // Use ID
+        viewer_email: user.email, // Keep email for legacy/backup? Or remove if redundant. Keeping for now.
         viewed_at: new Date().toISOString()
       });
 
       // Update local state immediately
-      const updatedViewed = await CandidateView.filter({ viewer_email: user.email }, "-viewed_at", 1000);
+      const updatedViewed = await CandidateView.filter({ viewer_id: user.id }, "-viewed_at", 1000);
       setViewedCandidates(updatedViewed);
     } catch (error) {
       console.error("Error recording candidate view:", error);
