@@ -57,21 +57,38 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
 
         {/* Quantity Selector - Delicate Pill Design */}
         <div className="flex justify-center mb-8">
-          <div className="bg-white border border-gray-200 rounded-full px-4 py-2 flex items-center justify-between w-[220px] shadow-sm">
-            <button
-              onClick={() => handleQuantityChange(-1)}
-              disabled={quantity <= 1}
-              className="w-8 h-8 rounded-full bg-[#f0f4f8] text-[#1E3A8A] flex items-center justify-center hover:bg-[#e1eaf0] transition-colors text-xl font-medium disabled:opacity-50"
-            >
-              -
-            </button>
-            <span className="text-3xl font-bold text-[#1E3A8A] font-['Rubik']">{quantity}</span>
-            <button
+          <div className="bg-white border-[1.5px] border-[#001a6e] rounded-full px-2 py-1 flex items-center gap-2 shadow-sm w-auto">
+            {/* Plus Button - SVG */}
+            <svg
+              width="52"
+              height="52"
+              viewBox="0 0 52 52"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
               onClick={() => handleQuantityChange(1)}
-              className="w-8 h-8 rounded-full bg-[#1e293b] text-white flex items-center justify-center hover:bg-[#0f172a] transition-colors text-xl font-medium"
+              style={{ width: '52px', height: '52px' }}
+              className="cursor-pointer hover:scale-110 transition-transform"
             >
-              +
-            </button>
+              <circle cx="26" cy="26" r="26" fill="#001a6e" />
+              <path d="M26 19V33M19 26H33" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+
+            <span className="text-2xl font-bold text-[#1E3A8A] font-['Rubik']">{quantity}</span>
+
+            {/* Minus Button - SVG */}
+            <svg
+              width="52"
+              height="52"
+              viewBox="0 0 52 52"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              onClick={() => handleQuantityChange(-1)}
+              style={{ width: '52px', height: '52px' }}
+              className={`cursor-pointer transition-transform ${quantity <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'}`}
+            >
+              <circle cx="26" cy="26" r="26" fill="#e2e8f0" />
+              <path d="M19 26H33" stroke="#001a6e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </div>
         </div>
 
