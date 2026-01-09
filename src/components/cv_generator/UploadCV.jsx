@@ -3,7 +3,7 @@ import { UploadFile } from '@/api/integrations';
 import { User } from '@/api/entities';
 import { CV } from '@/api/entities';
 import { Button } from '@/components/ui/button';
-import { UploadCloud, FileText, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { UploadCloud, FileText, Loader2, CheckCircle, AlertCircle, Eye, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function UploadCV({ user, onUploadComplete }) {
@@ -117,23 +117,60 @@ export default function UploadCV({ user, onUploadComplete }) {
         </div>
     );
 
+    const handleView = () => {
+        if (file) {
+            const fileUrl = URL.createObjectURL(file);
+            window.open(fileUrl, '_blank');
+        }
+    };
+
+    const handleDelete = () => {
+        setFile(null);
+        setUploadStatus('idle');
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
     const FilePreview = () => (
-        <div className="border border-gray-200 bg-gray-50 rounded-xl p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3 text-right">
+        <div className="border border-gray-200 bg-gray-50 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3 text-right w-full">
                 <FileText className="w-8 h-8 text-blue-500 flex-shrink-0" />
-                <div>
+                <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-800 truncate" title={file.name}>{file.name}</p>
                     <p className="text-sm text-gray-500">{Math.round(file.size / 1024)} KB</p>
                 </div>
             </div>
-            <Button
-                variant="primary"
-                onClick={handleUpload}
-                disabled={uploadStatus === 'uploading' || uploadStatus === 'success'}
-            >
-                {uploadStatus === 'uploading' && <div className="w-4 h-4 border-t-2 border-current rounded-full animate-spin mr-2"></div>}
-                העלה קובץ
-            </Button>
+
+            <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleView}
+                    title="הצג קובץ"
+                    className="hover:bg-blue-50 text-gray-500 hover:text-blue-600"
+                >
+                    <Eye className="w-5 h-5" />
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDelete}
+                    title="מחק קובץ"
+                    className="hover:bg-red-50 text-gray-500 hover:text-red-600"
+                >
+                    <Trash2 className="w-5 h-5" />
+                </Button>
+                <Button
+                    variant="default"
+                    onClick={handleUpload}
+                    disabled={uploadStatus === 'uploading' || uploadStatus === 'success'}
+                    className="mr-2 bg-[#2589D8] hover:bg-[#1e7bc4] text-white px-6"
+                >
+                    {uploadStatus === 'uploading' && <div className="w-4 h-4 border-t-2 border-current rounded-full animate-spin ml-2"></div>}
+                    העלה קובץ
+                </Button>
+            </div>
         </div>
     );
 
