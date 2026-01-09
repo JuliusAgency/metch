@@ -396,28 +396,72 @@ export default function Settings() {
   const handleDeleteAccount = async () => {
     setDeleteLoading(true);
     try {
-      // 1. Delete UserProfile explicitly to remove all app-specific data
-      // This effectively "resets" the user in our system, even if the Auth User remains active until admin deletion
-      if (user?.id) {
-        try {
-          await UserProfile.delete(user.id);
-        } catch (deleteError) {
-          console.error("Error deleting UserProfile:", deleteError);
-          // Proceed anyway to sign out
-        }
+      if (!user) return;
+      const userId = user.id;
+      const userEmail = user.email;
+
+      // 1. Delete from related tables (Batch deletion using Supabase direct query)
+      // We delete by BOTH id and email where applicable to be safe against legacy data
+
+      const deletions = [
+        // CVs
+        supabase.from('CV').delete().eq('user_id', userId),
+        supabase.from('CV').delete().eq('user_email', userEmail),
+
+        // Job Applications
+        supabase.from('JobApplication').delete().eq('applicant_id', userId),
+        supabase.from('JobApplication').delete().eq('applicant_email', userEmail),
+
+        // Analytics & Stats
+        supabase.from('UserAction').delete().eq('user_id', userId),
+        supabase.from('UserAction').delete().eq('user_email', userEmail),
+        supabase.from('UserStats').delete().eq('user_id', userId),
+        supabase.from('UserStats').delete().eq('user_email', userEmail),
+        supabase.from('JobView').delete().eq('viewer_id', userId),
+        supabase.from('JobView').delete().eq('user_email', userEmail), // Check legacy column name
+        supabase.from('CandidateView').delete().eq('viewer_id', userId),
+        supabase.from('CandidateView').delete().eq('viewer_email', userEmail),
+
+        // Notifications
+        supabase.from('Notification').delete().eq('user_id', userId),
+        supabase.from('Notification').delete().eq('email', userEmail),
+
+        // Employer specific: Jobs
+        // Only delete jobs if user is employer? Or just try anyway.
+        supabase.from('Job').delete().eq('created_by', userEmail), // Jobs usually linked by email
+
+        // Chat/Messages (If tables exist)
+        supabase.from('Message').delete().eq('sender_id', userId),
+        supabase.from('Message').delete().eq('receiver_id', userId)
+      ];
+
+      await Promise.allSettled(deletions);
+
+      // 2. Delete UserProfile explicitly (The root user record in our app)
+      try {
+        await UserProfile.delete(userId);
+      } catch (deleteError) {
+        console.error("Error deleting UserProfile:", deleteError);
       }
 
-      // 2. Mark as deleted in metadata (optional, but good for tracking)
+      // 3. Mark auth user as deleted (in metadata, as we can't hard delete auth user from client)
       await supabase.auth.updateUser({ data: { is_deleted: true } });
 
-      // 3. Clear any local storage guides
-      if (user?.email) {
-        localStorage.removeItem(`jobseeker_guide_${user.email}`);
-        localStorage.removeItem(`employer_guide_${user.email}`);
-      }
+      // 4. Clear ALL local storage to be safe
+      localStorage.clear();
+      // Or selectively:
+      // localStorage.removeItem(`jobseeker_guide_${userEmail}`);
+      // localStorage.removeItem(`employer_guide_${userEmail}`);
+      // localStorage.removeItem(`cv_draft_${userEmail}`);
 
       await signOut();
       navigate(createPageUrl('Login'));
+
+      toast({
+        title: "החשבון נמחק בהצלחה",
+        description: "כל הנתונים נמחקו. נתראה!",
+      });
+
     } catch (error) {
       console.error("Error deleting account:", error);
       toast({
