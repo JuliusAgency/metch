@@ -144,6 +144,11 @@ export default function CVGenerator() {
               setCvData(normalizedData);
               setStep(draftStep || 1);
 
+              // Only override step from draft if NO choice param is present
+              if (!searchParams.get('choice')) {
+                setStep(draftStep || 1);
+              }
+
               // Validate Step 1 data to ensure navigation works
               const isValid = validatePersonalDetails(normalizedData.personal_details);
               setIsStep1Valid(isValid);
@@ -174,7 +179,10 @@ export default function CVGenerator() {
 
           // If we loaded from DB, we might want to start at step 1 or infer progress
           // For now, let's start at step 1 (Personal Details) if loading from DB
-          setStep(1);
+          // CHANGE: Only set step if no choice param
+          if (!searchParams.get('choice')) {
+            setStep(1);
+          }
         } else {
           // Prefill with user data if available
           setCvData((prev) => ({
