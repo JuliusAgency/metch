@@ -18,7 +18,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signUp, signInWithGoogle } = useUser();
+  const { signUp, signInWithGoogle, checkUserExists } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -62,6 +62,30 @@ const Register = () => {
     setLoading(true);
 
     try {
+      // 1. Check if user already exists
+      const exists = await checkUserExists(formData.email);
+
+      if (exists) {
+        toast({
+          variant: "warning",
+          title: "משתמש כבר קיים",
+          description: "כתובת המייל כבר רשומה במערכת. אנא התחברו במקום. במקרה ששכחת סיסמה לחץ על 'שכחתי סיסמה'",
+          duration: 5000,
+          action: (
+            <Link to="/Login" className="text-white underline font-bold">
+              התחברות
+            </Link>
+          ),
+        });
+
+        // Redirect to Login after a short delay
+        setTimeout(() => {
+          navigate('/Login');
+        }, 3000);
+
+        return; // Stop execution
+      }
+
       // eslint-disable-next-line no-unused-vars
       const { confirmPassword, ...signUpData } = formData;
       await signUp({

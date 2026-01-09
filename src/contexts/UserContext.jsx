@@ -321,6 +321,21 @@ export const UserProvider = ({ children }) => {
     updateProfile,
     createUserProfile,
     loadUserProfile,
+    // Check if user exists by email (to prevent duplicate registrations)
+    checkUserExists: async (email) => {
+      try {
+        const { data, error } = await supabase
+          .from('UserProfile')
+          .select('email')
+          .eq('email', email)
+          .maybeSingle(); // Use maybeSingle to avoid 406 on no rows
+
+        if (error) return false;
+        return !!data;
+      } catch {
+        return false;
+      }
+    },
     getUserWithProfile,
     // Backwards compatibility
     setUser: (newUser) => {
