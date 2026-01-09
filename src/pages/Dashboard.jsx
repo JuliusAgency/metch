@@ -202,7 +202,7 @@ const JobSeekerDashboard = ({ user }) => {
           Job.filter({ status: 'active' }, "-created_date", 100),
           JobView.filter({ viewer_id: user.id }), // Change to viewer_id
           Notification.filter({ is_read: false, user_id: user.id }, "-created_date", 5), // Change to user_id
-          UserAnalytics.getUserStats(user.email), // Analytics might still need email if ID not supported yet, keep for now or check implementation
+          UserAnalytics.getUserStats(user.id), // Change to user.id
           CandidateView.filter({ candidate_name: user.full_name }), // Keep name based? Or change to candidate_id if available? Name matches profile.
           UserProfile.filter({ id: user.id }).then(profiles => profiles[0] || null), // Change to ID
           JobApplication.filter({ applicant_id: user.id }) // Change to applicant_id
@@ -477,7 +477,7 @@ const JobSeekerDashboard = ({ user }) => {
                           onClick={() => {
                             // Track job view when user clicks to view details
                             if (user?.email) {
-                              UserAnalytics.trackJobView(user.email, job);
+                              UserAnalytics.trackJobView(user, job); // Pass full user object
                               setViewedJobIds(prev => new Set(prev).add(String(job.id)));
                             }
                           }}
@@ -716,7 +716,7 @@ const EmployerDashboard = ({ user }) => {
     // 1. Track Analytics (Non-blocking)
     try {
       if (user?.email) {
-        await UserAnalytics.trackAction(user.email, 'profile_view', {
+        await UserAnalytics.trackAction(user, 'profile_view', { // Pass full user object
           candidate_name: candidate.full_name,
           candidate_email: candidate.email
         });

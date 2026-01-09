@@ -20,13 +20,13 @@ export class UserAnalytics {
 
   /**
    * Track a user action and update stats
-   * @param {string} userEmail - User's email
+   * @param {Object} user - User object {id, email}
    * @param {string} actionType - Type of action performed
    * @param {Object} actionData - Additional data about the action
    */
-  static async trackAction(userEmail, actionType, actionData = {}) {
-    if (!userEmail) {
-      console.warn('UserAnalytics: No user email provided for tracking');
+  static async trackAction(user, actionType, actionData = {}) {
+    if (!user || (!user.email && !user.id)) {
+      console.warn('UserAnalytics: No valid user provided for tracking');
       return;
     }
 
@@ -35,7 +35,8 @@ export class UserAnalytics {
 
       // Record the action
       const actionRecord = {
-        user_email: userEmail,
+        user_id: user.id, // Prefer ID
+        user_email: user.email,
         action_type: actionType,
         session_id: sessionId,
         user_agent: navigator.userAgent,
@@ -46,7 +47,7 @@ export class UserAnalytics {
       await UserAction.create(actionRecord);
 
       // Update user stats
-      await this.updateUserStats(userEmail, actionType, actionData);
+      await this.updateUserStats(user, actionType, actionData);
 
 
     } catch (error) {
@@ -56,16 +57,24 @@ export class UserAnalytics {
 
   /**
    * Update aggregated user statistics
-   * @param {string} userEmail - User's email
+   * @param {Object} user - User object {id, email}
    * @param {string} actionType - Type of action performed
    * @param {Object} actionData - Additional data about the action
    */
-  static async updateUserStats(userEmail, actionType, actionData = {}) {
+  static async updateUserStats(user, actionType, actionData = {}) {
     try {
       // Get existing stats or create new ones
-      const existingStats = await UserStats.filter({ user_email: userEmail });
+      // Priority: Filter by ID if available
+      let existingStats = [];
+      if (user.id) {
+        existingStats = await UserStats.filter({ user_id: user.id });
+      } else if (user.email) {
+        existingStats = await UserStats.filter({ user_email: user.email });
+      }
+
       let stats = existingStats.length > 0 ? existingStats[0] : {
-        user_email: userEmail,
+        user_id: user.id,
+        user_email: user.email,
         total_job_matches: 0,
         total_job_views: 0,
         total_applications: 0,
@@ -102,6 +111,9 @@ export class UserAnalytics {
       // Update last activity date
       stats.last_activity_date = new Date().toISOString();
 
+      // Ensure ID is set on create
+      if (!stats.user_id && user.id) stats.user_id = user.id;
+
       // Update or create stats record
       if (existingStats.length > 0) {
         await UserStats.update(stats.id, stats);
@@ -117,8 +129,8 @@ export class UserAnalytics {
   /**
    * Track job match when a job is shown to a user
    */
-  static async trackJobMatch(userEmail, job, matchScore = null) {
-    return this.trackAction(userEmail, 'job_match', {
+  static async trackJobMatch(user, job, matchScore = null) {
+    return this.trackAction(user, 'job_match', {
       job_id: job.id,
       job_title: job.title,
       job_company: job.company,
@@ -129,10 +141,10 @@ export class UserAnalytics {
   /**
    * Track job detail view
    */
-  static async trackJobView(userEmail, job) {
+  static async trackJobView(user, job) {
     try {
       // Track the analytics event
-      await this.trackAction(userEmail, 'job_view', {
+      await this.trackAction(user, 'job_view', {
         job_id: job.id,
         job_title: job.title,
         job_company: job.company,
@@ -140,14 +152,24 @@ export class UserAnalytics {
       });
 
       // Create persistent JobView record if it doesn't exist
-      const existingViews = await JobView.filter({
-        user_email: userEmail,
-        job_id: job.id
-      });
+      // Priority: ID
+      let existingViews = [];
+      if (user.id) {
+        existingViews = await JobView.filter({
+          user_id: user.id, // Prefer ID
+          job_id: job.id
+        });
+      } else if (user.email) {
+        existingViews = await JobView.filter({
+          user_email: user.email,
+          job_id: job.id
+        });
+      }
 
       if (existingViews.length === 0) {
         await JobView.create({
-          user_email: userEmail,
+          user_id: user.id, // Prefer ID
+          user_email: user.email,
           job_id: job.id
         });
       }
@@ -166,8 +188,8 @@ export class UserAnalytics {
   /**
    * Track job application
    */
-  static async trackJobApplication(userEmail, job) {
-    return this.trackAction(userEmail, 'job_apply', {
+  static async trackJobApplication(user, job) {
+    return this.trackAction(user, 'job_apply', {
       job_id: job.id,
       job_title: job.title,
       job_company: job.company,
@@ -178,8 +200,8 @@ export class UserAnalytics {
   /**
    * Track job rejection
    */
-  static async trackJobRejection(userEmail, job, reason = null) {
-    return this.trackAction(userEmail, 'job_reject', {
+  static async trackJobRejection(user, job, reason = null) {
+    return this.trackAction(user, 'job_reject', {
       job_id: job.id,
       job_title: job.title,
       job_company: job.company,
@@ -191,8 +213,8 @@ export class UserAnalytics {
   /**
    * Track job save/bookmark
    */
-  static async trackJobSave(userEmail, job) {
-    return this.trackAction(userEmail, 'job_save', {
+  static async trackJobSave(user, job) {
+    return this.trackAction(user, 'job_save', {
       job_id: job.id,
       job_title: job.title,
       job_company: job.company,
@@ -203,8 +225,8 @@ export class UserAnalytics {
   /**
    * Track job unsave/unbookmark
    */
-  static async trackJobUnsave(userEmail, job) {
-    return this.trackAction(userEmail, 'job_unsave', {
+  static async trackJobUnsave(user, job) {
+    return this.trackAction(user, 'job_unsave', {
       job_id: job.id,
       job_title: job.title,
       job_company: job.company,
@@ -217,9 +239,9 @@ export class UserAnalytics {
    * @param {string} userEmail - User's email
    * @returns {Object} User statistics
    */
-  static async getUserStats(userEmail) {
+  static async getUserStats(userId) {
     try {
-      const stats = await UserStats.filter({ user_email: userEmail });
+      const stats = await UserStats.filter({ user_id: userId }); // Change to user_id
       return stats.length > 0 ? stats[0] : null;
     } catch (error) {
       console.error('Error getting user stats:', error);
@@ -233,10 +255,10 @@ export class UserAnalytics {
    * @param {number} limit - Number of actions to retrieve
    * @returns {Array} User action history
    */
-  static async getUserActivity(userEmail, limit = 50) {
+  static async getUserActivity(userId, limit = 50) {
     try {
       const actions = await UserAction.filter(
-        { user_email: userEmail },
+        { user_id: userId }, // Change to user_id
         "-created_at",
         limit
       );

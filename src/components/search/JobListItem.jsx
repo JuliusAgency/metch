@@ -39,7 +39,7 @@ const JobListItem = ({ job, index, savedJobs, toggleSaveJob, user }) => (
                                 to={createPageUrl(`JobDetailsSeeker?id=${job.id}&from=JobSearch`)}
                                 onClick={() => {
                                     if (user?.email) {
-                                        UserAnalytics.trackJobView(user.email, job);
+                                        UserAnalytics.trackJobView(user, job); // Pass full user object
                                     }
                                 }}
                             >
@@ -55,7 +55,7 @@ const JobListItem = ({ job, index, savedJobs, toggleSaveJob, user }) => (
                             <div dir="ltr" className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
                                 <div
                                     className={`h-full transition-all duration-500 ${job.match_score >= 85 ? 'bg-green-400' :
-                                            job.match_score >= 70 ? 'bg-yellow-400' : 'bg-orange-400'
+                                        job.match_score >= 70 ? 'bg-yellow-400' : 'bg-orange-400'
                                         }`}
                                     style={{ width: `${job.match_score}%` }}
                                 ></div>

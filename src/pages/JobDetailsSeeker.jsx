@@ -130,7 +130,7 @@ export default function JobDetailsSeeker() {
           // Check for existing application
           if (userData?.email) {
             try {
-              await UserAnalytics.trackJobView(userData.email, fetchedJob);
+              await UserAnalytics.trackJobView(userData, fetchedJob); // Pass full user object
 
               // Check if user already applied
               const existingApps = await JobApplication.filter({
@@ -204,7 +204,7 @@ export default function JobDetailsSeeker() {
 
     try {
       if (user.email) {
-        await UserAnalytics.trackJobApplication(user.email, job);
+        await UserAnalytics.trackJobApplication(user, job); // Pass full user object
       }
     } catch (error) {
 
@@ -239,7 +239,7 @@ export default function JobDetailsSeeker() {
 
   const handleReject = async () => {
     if (user?.email && job) {
-      await UserAnalytics.trackJobRejection(user.email, job);
+      await UserAnalytics.trackJobRejection(user, job); // Pass full user object
     }
     navigate(createPageUrl("Dashboard"));
   };
