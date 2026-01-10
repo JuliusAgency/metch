@@ -417,10 +417,37 @@ export default function Settings() {
         supabase.from('UserAction').delete().eq('user_email', userEmail),
         supabase.from('UserStats').delete().eq('user_id', userId),
         supabase.from('UserStats').delete().eq('user_email', userEmail),
+
+        // Fallback: Reset stats if delete failed (RLS might allow update but not delete)
+        supabase.from('UserStats').update({
+          total_job_matches: 0,
+          total_job_views: 0,
+          total_applications: 0,
+          total_rejections: 0,
+          total_saves: 0,
+          preferred_job_categories: [],
+          resume_views: 0,
+          profile_views: 0,
+          last_activity_date: null
+        }).eq('user_id', userId),
+        supabase.from('UserStats').update({
+          total_job_matches: 0,
+          total_job_views: 0,
+          total_applications: 0,
+          total_rejections: 0,
+          total_saves: 0,
+          preferred_job_categories: [],
+          resume_views: 0,
+          profile_views: 0,
+          last_activity_date: null
+        }).eq('user_email', userEmail),
+
         supabase.from('JobView').delete().eq('viewer_id', userId),
         supabase.from('JobView').delete().eq('user_email', userEmail), // Check legacy column name
         supabase.from('CandidateView').delete().eq('viewer_id', userId),
         supabase.from('CandidateView').delete().eq('viewer_email', userEmail),
+        // Also try to delete CandidateView where I am the candidate (by ID) - might fail RLS but worth a shot
+        supabase.from('CandidateView').delete().eq('candidate_id', userId),
 
         // Notifications
         supabase.from('Notification').delete().eq('user_id', userId),
@@ -432,7 +459,9 @@ export default function Settings() {
 
         // Chat/Messages (If tables exist)
         supabase.from('Message').delete().eq('sender_id', userId),
-        supabase.from('Message').delete().eq('receiver_id', userId)
+        supabase.from('Message').delete().eq('receiver_id', userId),
+        supabase.from('Conversation').delete().eq('participant1_id', userId),
+        supabase.from('Conversation').delete().eq('participant2_id', userId)
       ];
 
       await Promise.allSettled(deletions);

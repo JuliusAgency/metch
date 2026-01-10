@@ -203,7 +203,7 @@ const JobSeekerDashboard = ({ user }) => {
           JobView.filter({ viewer_id: user.id }), // Change to viewer_id
           Notification.filter({ is_read: false, user_id: user.id }, "-created_date", 5), // Change to user_id
           UserAnalytics.getUserStats(user.id), // Change to user.id
-          CandidateView.filter({ candidate_name: user.full_name }), // Keep name based? Or change to candidate_id if available? Name matches profile.
+          CandidateView.filter({ candidate_id: user.id }), // Change to candidate_id
           UserProfile.filter({ id: user.id }).then(profiles => profiles[0] || null), // Change to ID
           JobApplication.filter({ applicant_id: user.id }) // Change to applicant_id
         ]);
@@ -718,7 +718,8 @@ const EmployerDashboard = ({ user }) => {
       if (user?.email) {
         await UserAnalytics.trackAction(user, 'profile_view', { // Pass full user object
           candidate_name: candidate.full_name,
-          candidate_email: candidate.email
+          candidate_email: candidate.email,
+          candidate_id: candidate.id
         });
       }
     } catch (analyticsError) {
@@ -730,6 +731,7 @@ const EmployerDashboard = ({ user }) => {
       await CandidateView.create({
         candidate_name: candidate.full_name,
         candidate_role: candidate.experience_level || 'N/A',
+        candidate_id: candidate.id, // Add ID
         viewer_id: user.id, // Use ID
         viewer_email: user.email, // Keep email for legacy/backup? Or remove if redundant. Keeping for now.
         viewed_at: new Date().toISOString()
