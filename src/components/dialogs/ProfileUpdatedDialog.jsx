@@ -33,7 +33,7 @@ export function ProfileUpdatedDialog({
 
     const handleClose = () => {
         onOpenChange(false);
-        navigate(redirectUrl || createPageUrl('Dashboard'));
+        navigate(redirectUrl || createPageUrl('Dashboard'), { replace: true });
     };
 
     // Unified logic for both "Updated" and "Completed" popups using full images

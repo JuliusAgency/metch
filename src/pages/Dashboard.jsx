@@ -591,9 +591,10 @@ const EmployerDashboard = ({ user }) => {
   }, [location]);
 
   // Check if user needs onboarding guide
+  // Check if user needs onboarding guide
   useEffect(() => {
     const hasSeenGuide = localStorage.getItem(`employer_guide_${user?.email}`);
-    if (!hasSeenGuide && !user.is_onboarding_completed) {
+    if (!hasSeenGuide) {
       setShowGuide(true);
     }
   }, [user]);

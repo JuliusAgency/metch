@@ -56,6 +56,10 @@ export default function CompanyProfileCompletion() {
     const loadUser = async () => {
       try {
         const user = await User.me();
+        if (user.is_onboarding_completed) {
+          navigate(createPageUrl('Dashboard'), { replace: true });
+          return;
+        }
         setCompanyData(prev => ({
           ...prev,
           company_name: user.company_name || "",
@@ -75,6 +79,38 @@ export default function CompanyProfileCompletion() {
       }
     };
     loadUser();
+  }, []);
+
+  // Prevent browser back navigation
+  useEffect(() => {
+    // Push a new state to history to create a "buffer" that traps the back button
+    window.history.pushState(null, "", window.location.pathname);
+
+    const handlePopState = (event) => {
+      // Prevent leaving the page
+      window.history.pushState(null, "", window.location.pathname);
+
+      setStep((currentStep) => {
+        // Only allow going back from Step 2 to Step 1 (matching UI behavior)
+        if (currentStep === 2) {
+          return 1;
+        }
+
+        // For all other steps (1, 3, 4, 5), block back navigation
+        // Step 1: Start
+        // Step 3: Payment (No back allowed)
+        // Step 4: Profile Completion (Don't go back to payment)
+        // Step 5: Finish
+        toast.error("לא ניתן לחזור אחורה בשלב זה");
+        return currentStep;
+      });
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
   }, []);
 
   const handleSave = async () => {
@@ -148,7 +184,7 @@ export default function CompanyProfileCompletion() {
     } else {
       // Final step action
       await updateProfile({ is_onboarding_completed: true });
-      navigate(`${createPageUrl('Dashboard')}?onboarding=complete`);
+      navigate(`${createPageUrl('Dashboard')}?onboarding=complete`, { replace: true });
     }
   };
 

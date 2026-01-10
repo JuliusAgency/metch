@@ -38,6 +38,31 @@ export default function JobSeekerProfileCompletion() {
     const { toast } = useToast();
     const [searchParams] = useSearchParams();
 
+    // Check if onboarding is already completed
+    useEffect(() => {
+        if (user?.is_onboarding_completed) {
+            navigate(createPageUrl('Dashboard'), { replace: true });
+        }
+    }, [user, navigate]);
+
+    // Prevent browser back navigation
+    useEffect(() => {
+        // Push a new state to history to create a "buffer" that traps the back button
+        window.history.pushState(null, "", window.location.pathname);
+
+        const handlePopState = (event) => {
+            // Prevent leaving the page
+            window.history.pushState(null, "", window.location.pathname);
+            toast({ title: "לא ניתן לחזור אחורה בשלב זה", variant: "destructive" });
+        };
+
+        window.addEventListener("popstate", handlePopState);
+
+        return () => {
+            window.removeEventListener("popstate", handlePopState);
+        };
+    }, []);
+
     useEffect(() => {
         const loadCV = async () => {
             try {
