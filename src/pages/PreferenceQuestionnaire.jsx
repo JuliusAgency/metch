@@ -9,6 +9,7 @@ import Step1 from '@/components/preference-questionnaire/Step1';
 import Step2 from '@/components/preference-questionnaire/Step2';
 import ProgressBar from '@/components/preference-questionnaire/ProgressBar';
 import { Info, ChevronRight } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 const AVAILABILITY_MAPPING = {
   'immediate': 'מיידי',
@@ -107,6 +108,8 @@ export default function PreferenceQuestionnaire() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const { toast } = useToast();
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -132,8 +135,11 @@ export default function PreferenceQuestionnaire() {
       navigate(createPageUrl('Dashboard?onboarding=complete'));
     } catch (error) {
       console.error("Failed to save preferences:", error);
-      // In case of error (e.g. schema mismatch), we might still want to navigate or show distinct error
-      // navigate(createPageUrl('Profile')); // Uncomment to force navigate on error if needed
+      toast({
+        title: "שגיאה בשמירה",
+        description: `שגיאה: ${error.message || "אירעה שגיאה בעת שמירת ההעדפות"}`,
+        variant: "destructive"
+      });
     } finally {
       setSaving(false);
     }

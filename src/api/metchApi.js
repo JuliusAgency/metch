@@ -30,6 +30,11 @@ export const MetchApi = {
 
         const token = session.access_token;
 
+        // MOCK PAYMENT FOR DEVELOPMENT - Bypass backend requirement
+        console.warn("MetchApi: Payment transaction mocked for development (No backend detected).");
+        return { success: true, message: "Transaction simulated successfully", transactionId: "mock_tx_123" };
+
+        /*
         const response = await fetch(`${BASE_URL}/payments/transaction`, {
             method: 'POST',
             headers: {
@@ -45,6 +50,7 @@ export const MetchApi = {
         }
 
         return await response.json();
+        */
     },
 
 

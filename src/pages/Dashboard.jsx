@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
+import { useToast } from "@/components/ui/use-toast";
 import ToggleSwitch from "@/components/dashboard/ToggleSwitch";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { Job, JobView, Notification, UserProfile, CandidateView, CV, JobApplication } from "@/api/entities";
@@ -540,6 +541,7 @@ const EmployerDashboard = ({ user }) => {
   const ITEMS_PER_PAGE = 10;
   const location = useLocation();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const filterParam = searchParams.get('filter');
@@ -617,7 +619,8 @@ const EmployerDashboard = ({ user }) => {
       setLoading(true);
       try {
         const [viewedCandidatesData, candidatesData, dashboardData, activeJobsData] = await Promise.all([
-          CandidateView.filter({ viewer_id: user.id }, "-viewed_at", 1000), // Change to viewer_id
+          // Change back to viewer_email as viewer_id column missing
+          CandidateView.filter({ viewer_email: user.email }, "-viewed_at", 1000),
           UserProfile.filter({ user_type: 'job_seeker' }, null, 100),
           EmployerAnalytics.getDashboardData(user.email),
           Job.filter({ created_by: user.email, status: 'active' })
@@ -655,6 +658,11 @@ const EmployerDashboard = ({ user }) => {
         setCandidates(candidatesData);
       } catch (error) {
         console.error("Error loading employer dashboard:", error);
+        toast({
+          title: "שגיאה בטעינת נתונים",
+          description: `שגיאה: ${error.message || "לא ניתן לטעון את הנתונים"}`,
+          variant: "destructive"
+        });
         setNotifications([]);
         setViewedCandidates([]);
         setCandidates([]);
@@ -732,13 +740,13 @@ const EmployerDashboard = ({ user }) => {
         candidate_name: candidate.full_name,
         candidate_role: candidate.experience_level || 'N/A',
         candidate_id: candidate.id, // Add ID
-        viewer_id: user.id, // Use ID
-        viewer_email: user.email, // Keep email for legacy/backup? Or remove if redundant. Keeping for now.
+        // viewer_id: user.id, // Removed: Column missing
+        viewer_email: user.email,
         viewed_at: new Date().toISOString()
       });
 
       // Update local state immediately
-      const updatedViewed = await CandidateView.filter({ viewer_id: user.id }, "-viewed_at", 1000);
+      const updatedViewed = await CandidateView.filter({ viewer_email: user.email }, "-viewed_at", 1000);
       setViewedCandidates(updatedViewed);
     } catch (error) {
       console.error("Error recording candidate view:", error);
@@ -1032,9 +1040,21 @@ export default function Dashboard() {
   const { user, loading } = useUser();
 
   // Clear onboarding state when reaching dashboard
+  const navigate = useNavigate();
+
   useEffect(() => {
     localStorage.removeItem('onboarding_active');
-  }, []);
+
+    // Strict Onboarding Check
+    if (!loading && user && !user.is_onboarding_completed) {
+      if (user.user_type === 'job_seeker') {
+        // Force back to selection (which auto-opens CV modal)
+        navigate('/UserTypeSelection');
+      } else if (user.user_type === 'employer') {
+        navigate('/CompanyProfileCompletion');
+      }
+    }
+  }, [loading, user, navigate]);
 
   if (loading) {
     return (

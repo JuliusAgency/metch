@@ -125,6 +125,21 @@ export default function CVGenerator() {
     return hasFullName && hasPhone && hasAddress && hasBirthDate && hasGender;
   };
 
+  // Handle URL Choice Param - STRICT PRIORITY
+  useEffect(() => {
+    const choiceParam = searchParams.get('choice');
+    if (choiceParam === 'upload') {
+      setChoice('upload');
+      setStep(-1);
+    } else if (choiceParam === 'create') {
+      setChoice('create');
+      // Only set step to 1 if we are not already on a deeper step (e.g. via draft)
+      // But if user explicitly asks for create via URL, we might want to start fresh or continue?
+      // Let's assume URL 'create' means start flow.
+      setStep((prev) => (prev > 0 ? prev : 1));
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
@@ -136,67 +151,58 @@ export default function CVGenerator() {
         const draftKey = `cv_draft_${userData.email}`;
         const savedDraft = localStorage.getItem(draftKey);
 
+        const urlChoice = searchParams.get('choice'); // Check param directly here
+
         if (savedDraft) {
           try {
             const { cvData: draftCvData, step: draftStep, userId: draftUserId } = JSON.parse(savedDraft);
 
-            // Validate that the draft belongs to the current user ID
-            // STRICT CHECK: If draft has no userId (legacy) or mismatch, we invalidate it.
+            // Validate draft owner
             let isDraftValid = true;
             if (!draftUserId || draftUserId !== userData.id) {
-              console.log("Draft invalid (no ID or mismatch), ignoring and clearing.");
               localStorage.removeItem(draftKey);
               isDraftValid = false;
             }
 
-            // Restore draft if it exists and is valid
             if (isDraftValid && draftCvData) {
               const normalizedData = normalizeCvRecord(draftCvData);
               setCvData(normalizedData);
-              setStep(draftStep || 1);
 
-              // Only override step from draft if NO choice param is present
-              if (!searchParams.get('choice')) {
+              // Restore step ONLY if URL choice is NOT present
+              if (!urlChoice) {
                 setStep(draftStep || 1);
               }
 
-              // Validate Step 1 data to ensure navigation works
               const isValid = validatePersonalDetails(normalizedData.personal_details);
               setIsStep1Valid(isValid);
 
-              // If we have a draft, we also check if there's a saved CV ID to associate
               const existingCvs = await CV.filter({ user_email: userData.email });
               if (existingCvs.length > 0) {
                 setCvId(existingCvs[0].id);
               }
-              return; // Stop here, we loaded the draft
+              return;
             }
           } catch (e) {
             console.error("Error parsing draft:", e);
-            localStorage.removeItem(draftKey); // Clear corrupted draft
+            localStorage.removeItem(draftKey);
           }
         }
 
         // Fallback to DB if no draft
-        // CHANGE: Use user_id for strict association, avoiding email collision with deleted users
-        const existingCvs = await CV.filter({ user_id: userData.id });
+        const existingCvs = await CV.filter({ user_email: userData.email });
         if (existingCvs.length > 0) {
           const normalizedData = normalizeCvRecord(existingCvs[0]);
           setCvData(normalizedData);
           setCvId(existingCvs[0].id);
 
-          // Validate Step 1 data
           const isValid = validatePersonalDetails(normalizedData.personal_details);
           setIsStep1Valid(isValid);
 
-          // If we loaded from DB, we might want to start at step 1 or infer progress
-          // For now, let's start at step 1 (Personal Details) if loading from DB
-          // CHANGE: Only set step if no choice param
-          if (!searchParams.get('choice')) {
+          // Restore step ONLY if URL choice is NOT present
+          if (!urlChoice) {
             setStep(1);
           }
         } else {
-          // Prefill with user data if available
           setCvData((prev) => ({
             ...prev,
             personal_details: {
@@ -212,18 +218,10 @@ export default function CVGenerator() {
         setLoading(false);
       }
     };
-    loadInitialData();
 
-    // Handle search param choice
-    const choiceParam = searchParams.get('choice');
-    if (choiceParam === 'upload') {
-      setChoice('upload');
-      setStep(-1);
-    } else if (choiceParam === 'create') {
-      setChoice('create');
-      setStep(1);
-    }
-  }, [searchParams]);
+    // Call load function
+    loadInitialData();
+  }, [searchParams]); // Keep searchParams dep to reload if URL changes
 
   const [isDirty, setIsDirty] = useState(false);
 
@@ -299,7 +297,7 @@ export default function CVGenerator() {
       if (cvId) {
         savedCv = await CV.update(cvId, payload);
       } else {
-        savedCv = await CV.create({ ...payload, user_email: userEmail, user_id: user.id });
+        savedCv = await CV.create({ ...payload, user_email: userEmail });
         setCvId(savedCv.id);
       }
 

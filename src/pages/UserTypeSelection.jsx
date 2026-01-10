@@ -118,9 +118,8 @@ const UserTypeSelection = () => {
         if (user.user_type === 'employer') {
           navigate('/CompanyProfileCompletion');
         } else if (user.user_type === 'job_seeker') {
-          // For job seekers, if they are here, they might need to see the modal or be redirected.
-          // If we don't redirect, they stay on this page to click "Job Seeker" again which opens modal.
-          // Optionally we could force open modal, but better let them interact.
+          // If user is job seeker but incomplete, force them to choose CV method again
+          setShowCVChoiceModal(true);
         }
       }
     }
