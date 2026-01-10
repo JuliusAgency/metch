@@ -4,6 +4,12 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Job } from '@/api/entities';
 import { User } from '@/api/entities'; // Added User import
 import Stepper from '@/components/job_creation/Stepper';
@@ -46,6 +52,7 @@ export default function CreateJob() {
   const [jobData, setJobData] = useState(initialJobData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const [lastCreatedJob, setLastCreatedJob] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loadingJob, setLoadingJob] = useState(true);
@@ -142,78 +149,83 @@ export default function CreateJob() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // Logic for credits check - ONLY for new jobs
-      if (!isEditing) {
-        const credits = user?.profile?.job_credits || 0;
-        if (credits <= 0) {
-          toast({
-            title: "אין יתרת משרות לפרסום",
-            description: "נגמרה חבילת המשרות שלך. ניתן לרכוש משרות נוספות בעמוד התשלומים.",
-            variant: "destructive",
-            action: <Button variant="outline" className="text-black border-white hover:bg-white/90" onClick={() => navigate('/payments')}>לרכישה</Button>
-          });
-          setIsSubmitting(false);
-          return;
-        }
+      const userData = await User.me();
+      // Use fresh data from server for reliability
+      const credits = userData?.profile?.job_credits || 0;
+
+      let targetStatus = 'active';
+      let showPaymentPrompt = false;
+
+      // force 'draft' if no credits, UNLESS we are resuming a paused job (which is already paid for)
+      if (credits <= 0 && jobData.status !== 'paused') {
+        targetStatus = 'draft';
+        showPaymentPrompt = true;
       }
 
-      // Get user data first to ensure created_by fields are set
-      const userData = await User.me();
       const now = new Date().toISOString();
 
-      // Prepare job data with created_by fields
+      // Prepare job data
       const jobDataToSave = {
         ...jobData,
         created_by: userData.email,
         created_by_id: userData.id,
-        status: 'active', // Ensure status is active when submitting
+        status: targetStatus,
         updated_date: now
       };
 
       let createdOrUpdatedJob;
 
       if (isEditing) {
-        // For updates, preserve created_by if it already exists, otherwise set it
+        // UPDATE
         const updatedJobData = {
           ...jobDataToSave,
-          // Preserve original created_by if editing someone else's job (shouldn't happen, but safety check)
           created_by: jobData.created_by || userData.email,
           created_by_id: jobData.created_by_id || userData.id,
-          // created_date should already exist
         };
         createdOrUpdatedJob = await Job.update(jobData.id, updatedJobData);
-
-        // Track job edit
         await EmployerAnalytics.trackJobEdit(userData.email, createdOrUpdatedJob);
+
+        // Deduct credit for any active job update (per user request), 
+        // UNLESS we are resuming from "paused" (per Rule 4)
+        if (targetStatus === 'active' && jobData.status !== 'paused') {
+          await updateProfile({ job_credits: credits - 1 });
+        }
+
       } else {
-        // For new jobs, always set created_by fields and created_date
+        // CREATE
         const newJobData = {
           ...jobDataToSave,
           created_date: now,
           updated_date: now
         };
         createdOrUpdatedJob = await Job.create(newJobData);
-
-        // Track job creation
         await EmployerAnalytics.trackJobCreate(userData.email, createdOrUpdatedJob);
 
-        // If job is being published (not draft), track publish action too
-        if (newJobData.status === 'active') { // Assuming 'active' means published
-          await EmployerAnalytics.trackJobPublish(userData.email, createdOrUpdatedJob);
+        // Deduct credit if active
+        if (targetStatus === 'active') {
+          await updateProfile({ job_credits: credits - 1 });
         }
+      }
 
-        // Decrement job credits for new jobs
-        const currentCredits = user?.profile?.job_credits || 0;
-        if (currentCredits > 0) {
-          await updateProfile({ job_credits: currentCredits - 1 });
-        }
+      // Track publish only if active
+      if (targetStatus === 'active') {
+        await EmployerAnalytics.trackJobPublish(userData.email, createdOrUpdatedJob);
       }
 
       setLastCreatedJob(createdOrUpdatedJob);
       setIsSubmitted(true);
+
+      if (showPaymentPrompt) {
+        setShowNoCreditsModal(true);
+      }
+
     } catch (error) {
       console.error(`Failed to ${isEditing ? 'update' : 'create'} job:`, error);
-      // Here you might want to show an error to the user
+      toast({
+        title: "שגיאה בשמירת המשרה",
+        description: "אנא נסה שנית מאוחר יותר",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -356,6 +368,37 @@ export default function CreateJob() {
           </div>
         )}
       </div>
-    </div>
+
+      {/* No Credits Modal */}
+      <Dialog open={showNoCreditsModal} onOpenChange={setShowNoCreditsModal}>
+        <DialogContent className="sm:max-w-[425px]" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl font-bold">נגמרה חבילת המשרות</DialogTitle>
+          </DialogHeader>
+          <div className="text-center space-y-4 py-4">
+            <p className="text-gray-600">
+              אין לך יתרת משרות לפרסום, לכן המשרה נשמרה כטיוטה בלבד.
+              <br />
+              כדי לפרסם את המשרה, יש לרכוש חבילת משרות חדשה.
+            </p>
+            <div className="flex flex-col gap-3">
+              <Button
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-full"
+                onClick={() => navigate('/packages')}
+              >
+                לרכישת חבילה
+              </Button>
+              <Button
+                variant="outline"
+                className="rounded-full w-full"
+                onClick={() => setShowNoCreditsModal(false)}
+              >
+                סגור (המשך כטיוטה)
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div >
   );
 }

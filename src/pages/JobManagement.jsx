@@ -161,7 +161,7 @@ export default function JobManagement() {
   };
 
   const handleDuplicateJob = async (job) => {
-    if (!checkCredits()) return;
+    // No credit check needed for duplication (Rule #2) - creates as draft
 
     try {
       // Get current user data to set created_by fields
@@ -182,14 +182,10 @@ export default function JobManagement() {
 
       await Job.create(duplicatedJob);
 
-      // Decrement credits
-      const currentCredits = user?.profile?.job_credits || 0;
-      if (currentCredits > 0) {
-        await updateProfile({ job_credits: currentCredits - 1 });
-      }
+      // No credit deduction - saved as draft.
 
       loadData(); // Reload data
-      toast({ description: "המשרה שוכפלה בהצלחה (ירדה משרה 1 מהיתרה)" });
+      toast({ description: "המשרה שוכפלה בהצלחה כטיוטה" });
 
     } catch (error) {
       console.error("Error duplicating job:", error);
@@ -197,9 +193,7 @@ export default function JobManagement() {
   };
 
   const handleCreateNewJob = () => {
-    if (checkCredits()) {
-      navigate(createPageUrl("CreateJob"));
-    }
+    navigate(createPageUrl("CreateJob"));
   };
 
   // getJobApplicationCount and getJobStats are removed as per outline

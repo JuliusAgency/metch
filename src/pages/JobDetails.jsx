@@ -16,6 +16,8 @@ import { createPageUrl } from "@/utils";
 import { EmployerAnalytics } from "@/components/EmployerAnalytics";
 import JobHeader from "@/components/job/JobHeader";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+import { useUser } from "@/contexts/UserContext";
+import { useToast } from "@/components/ui/use-toast";
 import JobTitle from "@/components/job/JobTitle";
 import JobStats from "@/components/job/JobStats";
 import JobInfo from "@/components/job/JobInfo";
@@ -29,6 +31,8 @@ export default function JobDetails() {
   const [matchesCount, setMatchesCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const { updateProfile } = useUser();
+  const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -72,6 +76,28 @@ export default function JobDetails() {
   const handleStatusChange = async (newStatus) => {
     try {
       const oldStatus = job.status;
+
+      // Credit logic for activation
+      if (newStatus === 'active' && oldStatus !== 'active' && oldStatus !== 'paused') {
+        // Fetch fresh user data to be sure about credits
+        const userData = await User.me();
+        const credits = userData?.profile?.job_credits || 0;
+
+        if (credits <= 0) {
+          toast({
+            title: "אין יתרת משרות לפרסום",
+            description: "נגמרה חבילת המשרות שלך. ניתן לרכוש משרות נוספות בעמוד התשלומים.",
+            variant: "destructive",
+            action: <Button variant="outline" className="text-black border-white hover:bg-white/90" onClick={() => navigate('/packages')}>לרכישה</Button>
+          });
+          return;
+        }
+
+        // Deduct credit
+        await updateProfile({ job_credits: credits - 1 });
+        toast({ description: "המשרה פורסמה בהצלחה (ירדה משרה 1 מהיתרה)" });
+      }
+
       await Job.update(job.id, { status: newStatus });
       setJob(prev => ({ ...prev, status: newStatus }));
 
@@ -80,6 +106,11 @@ export default function JobDetails() {
       }
     } catch (error) {
       console.error("Error updating job status:", error);
+      toast({
+        title: "שגיאה",
+        description: "לא ניתן היה לעדכן את סטטוס המשרה",
+        variant: "destructive"
+      });
     }
   };
 
@@ -101,6 +132,7 @@ export default function JobDetails() {
       delete duplicatedJob.id;
 
       await Job.create(duplicatedJob);
+      toast({ description: "המשרה שוכפלה בהצלחה כטיוטה" });
       navigate(createPageUrl("JobManagement"));
     } catch (error) {
       console.error("Error duplicating job:", error);
