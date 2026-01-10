@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Job } from "@/api/entities";
 import { User } from "@/api/entities";
 import { JobApplication } from "@/api/entities";
 import { QuestionnaireResponse } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import QuestionnaireHeader from "@/components/questionnaire/QuestionnaireHeader";
 import Question from "@/components/questionnaire/Question";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+import { createPageUrl } from "@/utils";
+import ApplicationSuccessModal from "@/components/jobs/ApplicationSuccessModal";
 
 export default function AnswerQuestionnaire() {
     useRequireUserType(); // Ensure user has selected a user type
@@ -17,6 +18,7 @@ export default function AnswerQuestionnaire() {
     const [answers, setAnswers] = useState({});
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [user, setUser] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
@@ -69,10 +71,11 @@ export default function AnswerQuestionnaire() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!job || !user) return;
         setSubmitting(true);
 
         try {
-            const formattedResponses = job.screening_questions.map((q, index) => ({
+            const formattedResponses = (job.screening_questions || []).map((q, index) => ({
                 question: q.text,
                 answer: answers[index] || 'לא נמסרה תשובה'
             }));
@@ -87,10 +90,11 @@ export default function AnswerQuestionnaire() {
             await JobApplication.create({
                 job_id: job.id,
                 applicant_email: user.email,
+                applicant_id: user.id,
                 status: 'pending'
             });
 
-            navigate(createPageUrl("Dashboard"));
+            setShowSuccessModal(true);
 
         } catch (error) {
             console.error("Error submitting application:", error);
@@ -111,42 +115,50 @@ export default function AnswerQuestionnaire() {
         return <div className="text-center py-12">לא נמצאו שאלות לשאלון זה.</div>;
     }
 
-    <div className="h-full relative" dir="rtl">
-        <div className="relative h-full overflow-y-auto">
-            <div className="p-4 sm:p-6 md:p-8 w-full max-w-7xl mx-auto">
+    return (
+        <div className="fixed inset-0 bg-white z-[50] flex flex-col overflow-hidden" dir="rtl">
+            <div className="flex-1 flex flex-col h-full overflow-hidden">
                 <QuestionnaireHeader jobId={job.id} />
-                <div className="text-center mb-10 pt-6">
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900">שאלון סינון</h1>
-                    <p className="text-gray-600 mt-2">עבור המשרה: {job.title}</p>
+                <div className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-8 -mt-6 relative z-10 pb-10">
+                    <div className="max-w-4xl mx-auto w-full">
+                        <div className="text-center mb-6">
+                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">שאלון סינון</h1>
+                            <p className="text-gray-600 mt-0.5 text-sm md:text-base opacity-80">עבור המשרה: {job.title}</p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="w-full">
+                            <div className="bg-white rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm space-y-4 md:space-y-6 mb-6">
+                                {(job.screening_questions || []).map((question, index) => (
+                                    <Question
+                                        key={index}
+                                        index={index}
+                                        text={question.text}
+                                        type={question.type}
+                                        value={answers[index]}
+                                        onAnswer={(val) => handleAnswerChange(index, val)}
+                                    />
+                                ))}
+                            </div>
+
+                            <div className="flex justify-center">
+                                <Button
+                                    type="submit"
+                                    disabled={submitting}
+                                    size="lg"
+                                    className="px-12 h-14 rounded-full font-bold text-lg bg-blue-600 hover:bg-blue-700 shadow-xl transition-all active:scale-95"
+                                >
+                                    {submitting ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : "שלחו קורות חיים"}
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-
-                <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
-                    <div className="space-y-6 mb-8">
-                        {job.screening_questions.map((question, index) => (
-                            <Question
-                                key={index}
-                                index={index}
-                                text={question.text}
-                                type={question.type}
-                                value={answers[index]}
-                                onAnswer={(val) => handleAnswerChange(index, val)}
-                            />
-                        ))}
-                    </div>
-
-                    <div className="flex justify-center">
-                        <Button
-                            type="submit"
-                            disabled={submitting}
-                            size="lg"
-                            className="px-12 h-14 rounded-full font-bold text-lg bg-blue-600 hover:bg-blue-700"
-                        >
-                            {submitting ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : "שלחו קורות חיים"}
-                        </Button>
-                    </div>
-                </form>
             </div>
-        </div>
-    </div>
 
+            <ApplicationSuccessModal
+                isOpen={showSuccessModal}
+                onClose={() => setShowSuccessModal(false)}
+            />
+        </div>
+    );
 }

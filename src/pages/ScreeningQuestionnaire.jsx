@@ -4,8 +4,7 @@ import { Job } from "@/api/entities";
 import { QuestionnaireResponse } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import ScreeningHeader from "@/components/screening/ScreeningHeader";
 import ScreeningQuestion from "@/components/screening/ScreeningQuestion";
@@ -19,6 +18,7 @@ export default function ScreeningQuestionnaire() {
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const loadData = async () => {
@@ -77,7 +77,7 @@ export default function ScreeningQuestionnaire() {
       }
     };
     loadData();
-  }, []);
+  }, [location.search, navigate]);
 
   const handleAnswerChange = (questionId, answer) => {
     setQuestions((prev) => prev.map((q) =>
