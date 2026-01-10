@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { X, ArrowRight, ArrowLeft, Lightbulb } from "lucide-react";
@@ -25,21 +26,22 @@ const GUIDE_STEPS = [
     title: "התראות חדשות",
     content: "התראות על משרות חדשות, תגובות למועמדויות וצפיות בפרופיל שלך מופיעות כאן",
     target: ".notification-carousel",
-    position: "top"
+    position: "bottom"
   },
   {
     id: 4,
     title: "חיפוש משרות",
     content: "שדה החיפוש כאן נועד לעזור לך למצוא משרות שמאצ' התאימה במיוחד עבורך",
     target: ".job-search-input",
-    position: "top"
+    position: "bottom-screen"
   },
   {
     id: 5,
     title: "משרות מותאמות אישית",
     content: "המערכת מציגה לך משרות מותאמות אישית במיוחד עבורך, יש ללחוץ על כפתור כדי לראות פרטים נוספים",
     target: ".job-list",
-    position: "top"
+    position: "top-screen",
+    gap: 200
   },
   {
     id: 6,
@@ -53,6 +55,7 @@ const GUIDE_STEPS = [
 export default function JobSeekerGuide({ isActive, onComplete, onSkip }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [guidePosition, setGuidePosition] = useState({ top: 0, left: 0, transform: '' });
+  const [targetRect, setTargetRect] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
 
   // Check if mobile device
@@ -66,97 +69,105 @@ export default function JobSeekerGuide({ isActive, onComplete, onSkip }) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  const updatePosition = () => {
+    const step = GUIDE_STEPS[currentStep];
+    if (!step.target || isMobile) {
+      setTargetRect(null);
+      return;
+    }
+
+    const element = document.querySelector(step.target);
+    if (element) {
+      const rect = element.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const padding = 20;
+      const cardWidth = 320;
+      const cardHeight = 300;
+
+      let top, left, transform = '';
+
+      switch (step.position) {
+        case 'bottom':
+          top = rect.bottom + (step.gap || 20);
+          left = rect.left + (rect.width / 2);
+          transform = 'translateX(-50%)';
+          break;
+        case 'top':
+          top = rect.top - (step.gap || 700);
+          left = rect.left + (rect.width / 2);
+          transform = 'translate(-50%, -100%)';
+          break;
+        case 'right':
+          top = rect.top + (rect.height / 2);
+          left = rect.right + 20;
+          transform = 'translateY(-50%)';
+          break;
+        case 'left':
+          top = rect.top + (rect.height / 2);
+          left = rect.left - 20;
+          transform = 'translate(-100%, -50%)';
+          break;
+        case 'bottom-screen':
+          top = viewportHeight - cardHeight - 40;
+          left = rect.left + (rect.width / 2) + 190; // Shifted further right (+70px)
+          transform = 'translateX(-50%)';
+          break;
+        case 'top-screen':
+          top = step.gap || 200;
+          left = rect.left + (rect.width / 2);
+          transform = 'translateX(-50%)';
+          break;
+        default:
+          top = rect.top + (rect.height / 2);
+          left = rect.left - 20;
+          transform = 'translate(-100%, -50%)';
+      }
+
+      // Fallback for 'top' position
+      const isOffTop = step.position === 'top' && (rect.top - cardHeight - (step.gap || 700) < 0);
+      if (isOffTop) {
+        if (viewportHeight - rect.bottom > rect.top + 100) {
+          top = rect.bottom + 20;
+          transform = 'translateX(-50%)';
+        } else {
+          top = cardHeight + padding;
+          transform = 'translate(-50%, -100%)';
+        }
+      }
+
+      // Sanity checks
+      if (left < padding) left = padding;
+      if (left + cardWidth > viewportWidth - padding) left = viewportWidth - cardWidth - padding;
+
+      const cardBottom = transform.includes('-100%') ? top : top + cardHeight;
+      if (cardBottom > viewportHeight - padding) {
+        top = viewportHeight - padding - (cardBottom - top);
+      }
+
+      setGuidePosition({ top, left, transform });
+      setTargetRect(rect);
+      element.classList.add('guide-highlight');
+    } else {
+      setTargetRect(null);
+    }
+  };
+
   useEffect(() => {
     if (!isActive) {
-      // When guide is inactive, ensure all highlights are removed.
-      document.querySelectorAll('.guide-highlight').forEach(el => {
-        el.classList.remove('guide-highlight');
-      });
+      document.querySelectorAll('.guide-highlight').forEach(el => el.classList.remove('guide-highlight'));
       return;
     }
 
-    // Always clear highlights from previous step before potentially adding a new one.
-    document.querySelectorAll('.guide-highlight').forEach(el => {
-      el.classList.remove('guide-highlight');
-    });
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
 
-    const step = GUIDE_STEPS[currentStep];
-
-    // On mobile, we don't position relative to elements, we always center
-    if (isMobile) {
-      // Highlighting is not desired on mobile, so we return after clearing.
-      return;
-    }
-
-    // Desktop positioning logic
-    if (step.target) {
-      const element = document.querySelector(step.target);
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-        const cardWidth = 320; // Fixed for desktop
-        const cardHeight = 200; // Fixed for desktop
-
-        let top, left, transform = '';
-
-        switch (step.position) {
-          case 'bottom':
-            top = rect.bottom + scrollTop + 20;
-            left = rect.left + scrollLeft + (rect.width / 2);
-            transform = 'translateX(-50%)';
-            break;
-          case 'top':
-            top = rect.top + scrollTop - cardHeight - 20;
-            left = rect.left + scrollLeft + (rect.width / 2);
-            transform = 'translateX(-50%)';
-            break;
-          case 'right':
-            top = rect.top + scrollTop + (rect.height / 2);
-            left = rect.right + scrollLeft + 20;
-            transform = 'translateY(-50%)';
-            break;
-          case 'left':
-            top = rect.top + scrollTop + (rect.height / 2);
-            left = rect.left + scrollLeft - cardWidth - 20;
-            transform = 'translateY(-50%)';
-            break;
-          default:
-            // Default position for desktop if target exists but position isn't specified
-            top = rect.top + scrollTop + (rect.height / 2);
-            left = rect.left + scrollLeft - cardWidth - 20;
-            transform = 'translateY(-50%)';
-        }
-
-        // Ensure the guide stays within viewport bounds
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        const padding = 20; // Fixed for desktop
-
-        if (left < padding) {
-          left = padding;
-          transform = 'translateY(-50%)'; // Recalculate transform if position changes
-        } else if (left + cardWidth > viewportWidth - padding) {
-          left = viewportWidth - cardWidth - padding;
-          transform = 'translateY(-50%)'; // Recalculate transform if position changes
-        }
-
-        if (top < padding) {
-          top = padding;
-          transform = transform.includes('translateX') ? 'translateX(-50%)' : '';
-        } else if (top + cardHeight > viewportHeight - padding) {
-          top = viewportHeight - cardHeight - padding;
-          transform = transform.includes('translateX') ? 'translateX(-50%)' : '';
-        }
-
-        setGuidePosition({ top, left, transform });
-
-        // Add highlight to target element
-        element.classList.add('guide-highlight');
-        // No explicit cleanup return needed here as all highlights are cleared at the start of the effect.
-      }
-    }
-  }, [currentStep, isActive, isMobile]); // Dependencies are correct.
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [currentStep, isActive, isMobile]);
 
   const nextStep = () => {
     if (currentStep < GUIDE_STEPS.length - 1) {
@@ -181,10 +192,37 @@ export default function JobSeekerGuide({ isActive, onComplete, onSkip }) {
   const step = GUIDE_STEPS[currentStep];
   const isCenter = step.position === "center" || isMobile; // Guide is always centered on mobile
 
-  return (
+  return createPortal(
     <>
-      {/* Overlay */}
-      <div className="fixed inset-0 bg-black/50 z-[100]" />
+      {/* Cutout Overlay */}
+      <div className="fixed inset-0 z-[100] pointer-events-none">
+        {targetRect ? (
+          <>
+            {/* Top mask */}
+            <div
+              className="absolute top-0 left-0 right-0 bg-slate-900/40 backdrop-blur-[0.5px]"
+              style={{ height: `${targetRect.top - 8}px` }}
+            />
+            {/* Bottom mask */}
+            <div
+              className="absolute left-0 right-0 bottom-0 bg-slate-900/40 backdrop-blur-[0.5px]"
+              style={{ top: `${targetRect.bottom + 8}px` }}
+            />
+            {/* Left mask */}
+            <div
+              className="absolute left-0 bg-slate-900/40 backdrop-blur-[0.5px]"
+              style={{ top: `${targetRect.top - 8}px`, bottom: `${window.innerHeight - targetRect.bottom - 8}px`, width: `${targetRect.left - 8}px` }}
+            />
+            {/* Right mask */}
+            <div
+              className="absolute right-0 bg-slate-900/40 backdrop-blur-[0.5px]"
+              style={{ top: `${targetRect.top - 8}px`, bottom: `${window.innerHeight - targetRect.bottom - 8}px`, left: `${targetRect.right + 8}px` }}
+            />
+          </>
+        ) : (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-[0.5px]" />
+        )}
+      </div>
 
       {/* Guide Card */}
       <AnimatePresence>
@@ -193,9 +231,9 @@ export default function JobSeekerGuide({ isActive, onComplete, onSkip }) {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
-          className={`fixed z-[101] ${isCenter // If isCenter is true (which it is for all mobile cases)
-              ? 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'
-              : ''
+          className={`fixed z-[120] ${isCenter // If isCenter is true (which it is for all mobile cases)
+            ? 'inset-0 flex items-center justify-center'
+            : ''
             } ${isMobile ? 'px-4' : ''}`}
           style={!isCenter // Apply dynamic position only if NOT centered (i.e., desktop and not "center" position)
             ? {
@@ -276,22 +314,12 @@ export default function JobSeekerGuide({ isActive, onComplete, onSkip }) {
       {/* Guide Styles - these apply only to desktop elements as mobile highlighting is disabled */}
       <style jsx global>{`
         .guide-highlight {
-          position: relative;
-          z-index: 99;
-          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5) !important; /* Fixed to desktop value */
-          border-radius: 12px !important; /* Fixed to desktop value */
-          animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-          0%, 100% {
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5) !important; /* Fixed to desktop value */
-          }
-          50% {
-            box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.3) !important; /* Fixed to desktop value */
-          }
+          position: relative !important;
+          z-index: 110 !important;
+          border-radius: 8px !important;
         }
       `}</style>
-    </>
+    </>,
+    document.body
   );
 }

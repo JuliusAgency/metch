@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
+
 const CareerStageModal = ({ isOpen, onComplete }) => {
     const [selected, setSelected] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -71,9 +73,9 @@ const CareerStageModal = ({ isOpen, onComplete }) => {
 
     if (!isOpen) return null;
 
-    return (
+    return createPortal(
         <AnimatePresence>
-            <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-[0.5px] z-[100] flex items-center justify-center p-4">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -156,7 +158,8 @@ const CareerStageModal = ({ isOpen, onComplete }) => {
                     </div>
                 </motion.div>
             </div>
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 };
 
