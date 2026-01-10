@@ -720,8 +720,16 @@ export default function CandidateProfile() {
             >
               {/* Avatar - Centered & Overlapping */}
               <div className="relative">
-                <div className="w-24 h-24 md:w-28 md:h-28 bg-[#72C0E8] rounded-full flex items-center justify-center border-[5px] border-white shadow-xl">
-                  <UserIcon className="w-10 h-10 md:w-12 md:h-12 text-white" />
+                <div className="w-24 h-24 md:w-28 md:h-28 bg-[#72C0E8] rounded-full flex items-center justify-center border-[5px] border-white shadow-xl overflow-hidden">
+                  {candidate.profile_picture ? (
+                    <img
+                      src={candidate.profile_picture}
+                      alt={candidate.full_name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <UserIcon className="w-10 h-10 md:w-12 md:h-12 text-white" />
+                  )}
                 </div>
               </div>
 
