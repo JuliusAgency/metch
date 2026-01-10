@@ -4,6 +4,7 @@ import { Conversation } from "@/api/entities";
 import { Message } from "@/api/entities";
 import { UserProfile } from "@/api/entities";
 import { Job } from "@/api/entities";
+import { JobApplication } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -68,9 +69,13 @@ export default function Messages() {
             setUser(userData);
 
             // Load conversations for employer from database
+            let conversationsData = [];
+            const myJobs = await Job.filter({ created_by: userData.email });
+            const myJobIds = myJobs.map(j => String(j.id));
+
             try {
                 // Load conversations for employer - Try ID first, fallback to email
-                let conversationsData = await Conversation.filter(
+                conversationsData = await Conversation.filter(
                     { employer_id: userData.id },
                     "-last_message_time",
                     100
@@ -82,13 +87,15 @@ export default function Messages() {
                     let candidateName = conv.candidate_name || "מועמד לא ידוע";
                     let profileImage = "";
                     let jobStatus = "active";
+                    let jobLocation = "";
+                    let jobTitle = conv.job_title || "";
 
                     // Try to fetch candidate info from UserProfile
                     try {
                         const candidateResults = await UserProfile.filter({ email: conv.candidate_email });
                         if (candidateResults.length > 0) {
                             candidateName = candidateResults[0].full_name || conv.candidate_name || "מועמד לא ידוע";
-                            profileImage = candidateResults[0].profile_image || "";
+                            profileImage = candidateResults[0].profile_picture || "";
                         }
                     } catch (error) {
                         console.error("Error fetching candidate info:", error);
@@ -100,6 +107,8 @@ export default function Messages() {
                             const jobResults = await Job.filter({ id: conv.job_id });
                             if (jobResults.length > 0) {
                                 jobStatus = jobResults[0].status || "active";
+                                jobLocation = jobResults[0].location || "";
+                                jobTitle = jobResults[0].title || jobTitle;
                             }
                         } catch (error) {
                             console.error("Error fetching job status:", error);
@@ -108,6 +117,25 @@ export default function Messages() {
 
                     const isSupport = conv.candidate_email === SUPPORT_EMAIL;
 
+                    // Fallback: If job title is missing/generic, try to find from Applications
+                    if ((!jobTitle || jobTitle === "משרה כללית") && !isSupport) {
+                        try {
+                            const apps = await JobApplication.filter({ applicant_email: conv.candidate_email });
+                            const relevantApp = apps.find(app => myJobIds.includes(String(app.job_id)));
+
+                            if (relevantApp) {
+                                const job = myJobs.find(j => String(j.id) === String(relevantApp.job_id));
+                                if (job) {
+                                    jobTitle = job.title;
+                                    jobLocation = job.location || jobLocation;
+                                    jobStatus = job.status || jobStatus;
+                                }
+                            }
+                        } catch (e) {
+                            console.error("Fallback job lookup failed:", e);
+                        }
+                    }
+
                     return {
                         id: conv.id,
                         candidate_name: isSupport ? "צוות התמיכה" : candidateName,
@@ -115,8 +143,9 @@ export default function Messages() {
                         last_message_time: conv.last_message_time,
                         last_message: conv.last_message || "",
                         profileImage: profileImage,
-                        job_title: isSupport ? "תמיכה עסקית" : (conv.job_title || "משרה כללית"),
+                        job_title: isSupport ? "תמיכה עסקית" : (jobTitle || "משרה כללית"),
                         job_status: jobStatus,
+                        job_location: jobLocation,
                         job_id: conv.job_id,
                         is_support: isSupport
                     };
@@ -389,31 +418,64 @@ export default function Messages() {
                         <AnimatePresence>
                             {!loadingMessages && messages.map((message, index) => {
                                 const isMyMessage = message.sender_email === user?.email;
+                                const messageDate = new Date(message.created_date || message.created_at);
+                                const previousMessage = messages[index - 1];
+                                const previousDate = previousMessage ? new Date(previousMessage.created_date || previousMessage.created_at) : null;
+
+                                const showDateSeparator = !previousDate ||
+                                    messageDate.toDateString() !== previousDate.toDateString();
+
+                                let dateSeparatorText = "";
+                                if (showDateSeparator) {
+                                    const today = new Date();
+                                    const yesterday = new Date();
+                                    yesterday.setDate(today.getDate() - 1);
+
+                                    if (messageDate.toDateString() === today.toDateString()) {
+                                        dateSeparatorText = "היום";
+                                    } else if (messageDate.toDateString() === yesterday.toDateString()) {
+                                        dateSeparatorText = "אתמול";
+                                    } else {
+                                        dateSeparatorText = safeFormatDate(messageDate, "dd.MM.yy");
+                                    }
+                                }
+
                                 return (
-                                    <motion.div
-                                        key={message.id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.3, delay: index * 0.1 }}
-                                        className={`flex ${isMyMessage ? 'justify-start' : 'justify-end'} mb-2`}
-                                    >
-                                        <div className={`flex flex-col max-w-xs lg:max-w-md ${isMyMessage ? 'items-start' : 'items-end'}`}>
-                                            <div className={`px-5 py-3 text-sm font-light shadow-sm break-words ${isMyMessage
-                                                ? 'bg-[#001a6e] text-white rounded-2xl rounded-br-none'
-                                                : 'bg-[#F2F4F7] text-gray-800 rounded-2xl rounded-bl-none'
-                                                }`}>
-                                                {message.content}
+                                    <div key={message.id}>
+                                        {showDateSeparator && (
+                                            <div className="flex items-center justify-center my-6 relative">
+                                                <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                                                    <div className="w-full border-t border-gray-200"></div>
+                                                </div>
+                                                <div className="relative bg-white px-4 text-xs text-gray-500 font-medium border border-gray-200 rounded-full py-1 shadow-sm">
+                                                    {dateSeparatorText}
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-1 mt-1 px-1">
-                                                <span className="text-[10px] text-gray-400">
-                                                    {safeFormatDate(message.created_date || message.created_at, "HH:mm")}
-                                                </span>
-                                                {isMyMessage && (
-                                                    <CheckCheck className="w-3 h-3 text-green-500" />
-                                                )}
+                                        )}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className={`flex ${isMyMessage ? 'justify-start' : 'justify-end'} mb-2`}
+                                        >
+                                            <div className={`flex flex-col max-w-xs lg:max-w-md ${isMyMessage ? 'items-start' : 'items-end'}`}>
+                                                <div className={`px-5 py-3 text-sm font-light shadow-sm break-words ${isMyMessage
+                                                    ? 'bg-[#001a6e] text-white rounded-2xl rounded-br-none'
+                                                    : 'bg-[#F2F4F7] text-gray-800 rounded-2xl rounded-bl-none'
+                                                    }`}>
+                                                    {message.content}
+                                                </div>
+                                                <div className="flex items-center gap-1 mt-1 px-1">
+                                                    <span className="text-[10px] text-gray-400">
+                                                        {safeFormatDate(message.created_date || message.created_at, "HH:mm")}
+                                                    </span>
+                                                    {isMyMessage && (
+                                                        <CheckCheck className="w-3 h-3 text-green-500" />
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                    </motion.div>
+                                        </motion.div>
+                                    </div>
                                 );
                             })}
                         </AnimatePresence>
