@@ -16,8 +16,9 @@ import {
     Sparkles
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
+import { User as UserEntity, Message } from "@/api/entities";
 
-const NavItem = ({ icon: Icon, text, to, isActive, isLast }) => {
+const NavItem = ({ icon: Icon, text, to, isActive, isLast, badge }) => {
     const [isHovered, setIsHovered] = useState(false);
 
     // Determine open state: Active OR Hovered
@@ -38,6 +39,11 @@ const NavItem = ({ icon: Icon, text, to, isActive, isLast }) => {
                             className={`w-6 h-6 transition-colors duration-200 ${isActive ? "text-gray-900" : "text-gray-500 group-hover:text-gray-800"}`}
                             strokeWidth={1.5} // Thin stroke as requested
                         />
+                        {!isActive && badge > 0 && (
+                            <div className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-blue-600 text-[10px] text-white flex items-center justify-center rounded-full px-1 z-20 shadow-sm border border-white">
+                                {badge > 99 ? "99+" : badge}
+                            </div>
+                        )}
                     </div>
 
                     {/* Text Reveal Section */}
@@ -63,6 +69,41 @@ const NavItem = ({ icon: Icon, text, to, isActive, isLast }) => {
 };
 
 export default function Navbar({ currentPageName, isJobSeeker }) {
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+        const fetchUnread = async () => {
+            try {
+                const user = await UserEntity.me();
+                if (user) {
+                    // Fetch by email first (as IDs might be missing in some created messages)
+                    const messagesByEmail = await Message.filter({
+                        recipient_email: user.email
+                    }, "-created_date", 200);
+
+                    // Fetch by ID as well to coverage all bases
+                    const messagesById = await Message.filter({
+                        recipient_id: user.id
+                    }, "-created_date", 200);
+
+                    // Combine and deduplicate by ID
+                    const allMessages = [...messagesByEmail, ...messagesById];
+                    const uniqueMessages = Array.from(new Map(allMessages.map(item => [item.id, item])).values());
+
+                    // Filter for unread in memory to avoid backend boolean parsing issues
+                    const unread = uniqueMessages.filter(m => m.is_read === false || m.is_read === "false" || m.is_read === 0);
+
+                    setUnreadCount(unread.length);
+                }
+            } catch (e) {
+                console.error("Error fetching unread count", e);
+            }
+        };
+
+        fetchUnread();
+        const interval = setInterval(fetchUnread, 5000);
+        return () => clearInterval(interval);
+    }, []);
 
     let navLinks = [];
 
@@ -80,7 +121,7 @@ export default function Navbar({ currentPageName, isJobSeeker }) {
             // Wait, Layout.jsx didn't have Notifications for seeker. Prompt checklist asks for Bell -> Notifications. I will add it.
             { page: "Notifications", icon: Bell, text: "התראות" },
             // 6. Messages
-            { page: "MessagesSeeker", icon: MessageSquareText, text: "הודעות" },
+            { page: "MessagesSeeker", icon: MessageSquareText, text: "הודעות", badge: unreadCount },
             // 7. FAQ 
             { page: "FAQ", icon: HelpCircle, text: "שאלות נפוצות" },
             // 8. Contact
@@ -95,7 +136,7 @@ export default function Navbar({ currentPageName, isJobSeeker }) {
             { page: "Notifications", icon: Bell, text: "התראות" },
             { page: "Payments", icon: CreditCard, text: "תשלומים" },
             { page: "Settings", icon: Settings, text: "הגדרות" },
-            { page: "Messages", icon: MessageSquareText, text: "הודעות" },
+            { page: "Messages", icon: MessageSquareText, text: "הודעות", badge: unreadCount },
             { page: "FAQ", icon: HelpCircle, text: "שאלות נפוצות" },
             { page: "Contact", icon: Headphones, text: "צור קשר" }
         ];
@@ -134,6 +175,7 @@ export default function Navbar({ currentPageName, isJobSeeker }) {
                                 text={link.text}
                                 to={createPageUrl(link.page)}
                                 isActive={isActive}
+                                badge={link.badge}
                                 isLast={index === navLinks.length - 1} // Right-to-Left: last index is leftmost visually? No, flex-row-reverse makes first index rightmost. 
                             // Wait, simple flex row is better for logical RTL.
                             // If parent has dir="rtl", flex-row means First Item is Rightmost.

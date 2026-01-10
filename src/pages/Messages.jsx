@@ -138,6 +138,7 @@ export default function Messages() {
 
                     return {
                         id: conv.id,
+                        candidate_id: conv.candidate_id,
                         candidate_name: isSupport ? "צוות התמיכה" : candidateName,
                         candidate_email: conv.candidate_email,
                         last_message_time: conv.last_message_time,
@@ -188,14 +189,22 @@ export default function Messages() {
                 return;
             }
             // Load real messages from database
+            // Load real messages from database
             const messagesData = await Message.filter(
                 { conversation_id: conversationId },
                 "created_date",
                 100
             );
 
+            // Client-side sort to ensure chronological order (Oldest -> Newest)
+            const sortedMessages = [...messagesData].sort((a, b) => {
+                const tA = new Date(a.created_at || a.created_date || 0).getTime();
+                const tB = new Date(b.created_at || b.created_date || 0).getTime();
+                return tA - tB;
+            });
+
             // Ensure created_date is set for all messages
-            const mappedMessages = messagesData.map(msg => ({
+            const mappedMessages = sortedMessages.map(msg => ({
                 ...msg,
                 created_date: msg.created_date || msg.created_at || new Date().toISOString()
             }));
@@ -342,7 +351,9 @@ export default function Messages() {
             const createdMessage = await Message.create({
                 conversation_id: conversationId,
                 sender_email: user?.email,
+                sender_id: user?.id,
                 recipient_email: recipientEmail,
+                recipient_id: selectedConversation.candidate_id || null,
                 content: newMessage.trim(),
                 is_read: false,
                 created_date: currentDate
@@ -391,7 +402,7 @@ export default function Messages() {
     if (selectedConversation) {
         return (
             <div className="h-full relative flex flex-col" dir="rtl">
-                <div className="relative h-full flex flex-col w-full">
+                <div className="relative h-[calc(100vh-70px)] flex flex-col w-full">
                     <ChatHeader
                         setSelectedConversation={setSelectedConversation}
                         selectedConversation={selectedConversation}
@@ -442,7 +453,7 @@ export default function Messages() {
 
                                 return (
                                     <div key={message.id}>
-                                        {showDateSeparator && (
+                                        {showDateSeparator && dateSeparatorText && (
                                             <div className="flex items-center justify-center my-6 relative">
                                                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
                                                     <div className="w-full border-t border-gray-200"></div>

@@ -36,10 +36,22 @@ const SeekerChatHeader = ({ setSelectedConversation, selectedConversation }) => 
                     <ChevronRight className="w-6 h-6 text-gray-800" />
                 </button>
             </div>
-            <div className="text-center py-4 -mt-6 relative z-10">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">הודעות</h1>
-                <div className="flex items-center justify-center gap-2 mt-1">
-                    <p className="text-gray-600">{selectedConversation.employer_name} - {selectedConversation.job_title}</p>
+            <div className="text-center py-1 -mt-6 relative z-10 space-y-1">
+                <h1 className="text-2xl md:text-3xl font-bold text-[#001a6e]">
+                    {selectedConversation.employer_name || "מעסיק"}
+                </h1>
+                <div className="flex justify-center items-center gap-2 text-sm text-gray-600">
+                    <span>
+                        {selectedConversation.is_support
+                            ? selectedConversation.job_title
+                            : `מגייס לתפקיד: ${selectedConversation.job_title}`}
+                    </span>
+                    {selectedConversation.job_location && (
+                        <>
+                            <span>•</span>
+                            <span>{selectedConversation.job_location}</span>
+                        </>
+                    )}
                     {statusBadge.label && (
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge.color}`}>
                             {statusBadge.label}

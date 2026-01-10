@@ -3,12 +3,14 @@ import { User } from "@/api/entities";
 import { Conversation } from "@/api/entities";
 import { Message } from "@/api/entities";
 import { Job } from "@/api/entities";
+import { JobApplication } from "@/api/entities";
 import { UserProfile } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Headphones, ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
+import { format } from "date-fns";
 import SeekerChatHeader from "@/components/seeker/SeekerChatHeader";
 import SeekerMessageItem from "@/components/seeker/SeekerMessageItem";
 import SeekerMessageInput from "@/components/seeker/SeekerMessageInput";
@@ -20,6 +22,18 @@ import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
 const ITEMS_PER_PAGE = 5;
 const SUPPORT_EMAIL = "support@metch.co.il";
+
+// Helper function to safely format dates
+const safeFormatDate = (dateValue, formatString, fallback = "") => {
+    if (!dateValue) return fallback;
+    try {
+        const date = new Date(dateValue);
+        if (isNaN(date.getTime())) return fallback;
+        return format(date, formatString);
+    } catch {
+        return fallback;
+    }
+};
 
 export default function MessagesSeeker() {
     useRequireUserType(); // Ensure user has selected a user type
@@ -50,7 +64,16 @@ export default function MessagesSeeker() {
 
 
             let mappedConversations = [];
+            let myApplications = [];
+
             try {
+                // Pre-fetch applications for fallback title lookup
+                try {
+                    myApplications = await JobApplication.filter({ applicant_email: userData.email });
+                } catch (e) {
+                    console.error("Error fetching applications:", e);
+                }
+
                 // Load conversations for candidate - Try ID first, fallback to email
                 let conversationsData = await Conversation.filter(
                     { candidate_id: userData.id },
@@ -82,18 +105,23 @@ export default function MessagesSeeker() {
                         const employerResults = await UserProfile.filter({ email: conv.employer_email });
                         if (employerResults.length > 0) {
                             employerName = employerResults[0].full_name || employerResults[0].company_name || "מעסיק לא ידוע";
-                            profileImage = employerResults[0].profile_image || "";
+                            profileImage = employerResults[0].profile_picture || "";
                         }
                     } catch (error) {
                         console.error("Error fetching employer info:", error);
                     }
 
                     let jobStatus = "unknown";
+                    let jobTitle = conv.job_title || "";
+                    let jobLocation = "";
+
                     try {
                         if (conv.job_id) {
                             const jobResults = await Job.filter({ id: conv.job_id });
                             if (jobResults.length > 0) {
                                 jobStatus = jobResults[0].status;
+                                jobTitle = jobResults[0].title || jobTitle;
+                                jobLocation = jobResults[0].location || "";
                             }
                         }
                     } catch (error) {
@@ -102,15 +130,38 @@ export default function MessagesSeeker() {
 
                     const isSupport = conv.employer_email === SUPPORT_EMAIL;
 
+                    // Fallback: If title missing/generic, find from applications
+                    if ((!jobTitle || jobTitle === "משרה כללית") && !isSupport) {
+                        try {
+                            // Fetch jobs posted by this employer
+                            const employerJobs = await Job.filter({ created_by: conv.employer_email });
+
+                            // Find if I applied to any of them
+                            const matchedJob = employerJobs.find(job =>
+                                myApplications.some(app => String(app.job_id) === String(job.id))
+                            );
+
+                            if (matchedJob) {
+                                jobTitle = matchedJob.title;
+                                jobStatus = matchedJob.status || jobStatus;
+                                jobLocation = matchedJob.location || jobLocation;
+                            }
+                        } catch (e) {
+                            console.error("Fallback job lookup failed", e);
+                        }
+                    }
+
                     return {
                         id: conv.id,
+                        employer_id: conv.employer_id,
                         employer_name: isSupport ? "צוות התמיכה" : employerName,
                         employer_email: conv.employer_email,
                         last_message_time: conv.last_message_time,
                         last_message: conv.last_message || "",
                         profileImage: profileImage,
-                        job_title: isSupport ? "תמיכה טכנית" : (conv.job_title || "משרה כללית"),
+                        job_title: isSupport ? "תמיכה טכנית" : (jobTitle || "משרה כללית"),
                         job_status: jobStatus,
+                        job_location: jobLocation,
                         is_unread: unreadConversationIds.has(conv.id),
                         is_support: isSupport
                     };
@@ -154,7 +205,14 @@ export default function MessagesSeeker() {
                 100
             );
 
-            setMessages(messagesData);
+            // Client-side sort to ensure chronological order (Oldest -> Newest)
+            const sortedMessages = [...messagesData].sort((a, b) => {
+                const tA = new Date(a.created_at || a.created_date || 0).getTime();
+                const tB = new Date(b.created_at || b.created_date || 0).getTime();
+                return tA - tB;
+            });
+
+            setMessages(sortedMessages);
         } catch (error) {
             console.error("Error loading messages:", error);
             setMessages([]);
@@ -212,17 +270,22 @@ export default function MessagesSeeker() {
                 }
             }
 
+            const currentDate = new Date().toISOString(); // Define currentDate here
+
             const createdMessage = await Message.create({
                 conversation_id: conversationId,
                 sender_email: user?.email,
+                sender_id: user?.id,
                 recipient_email: recipientEmail,
+                recipient_id: selectedConversation.employer_id || null,
                 content: newMessage.trim(),
-                is_read: false
+                is_read: false,
+                created_date: currentDate
             });
 
             await Conversation.update(conversationId, {
                 last_message: newMessage.trim(),
-                last_message_time: new Date().toISOString()
+                last_message_time: currentDate // Use currentDate for consistency
             });
 
             if (selectedConversation.id === "support") {
@@ -301,7 +364,7 @@ export default function MessagesSeeker() {
     if (selectedConversation) {
         return (
             <div className="h-full relative flex flex-col" dir="rtl">
-                <div className="relative h-full flex flex-col w-full">
+                <div className="relative h-[calc(100vh-70px)] flex flex-col w-full">
                     <SeekerChatHeader
                         setSelectedConversation={setSelectedConversation}
                         selectedConversation={selectedConversation}
@@ -313,14 +376,49 @@ export default function MessagesSeeker() {
                             </div>
                         )}
                         <AnimatePresence>
-                            {!loadingMessages && messages.map((message, index) => (
-                                <SeekerMessageItem
-                                    key={message.id}
-                                    message={message}
-                                    index={index}
-                                    user={user}
-                                />
-                            ))}
+                            {!loadingMessages && messages.map((message, index) => {
+                                const messageDate = new Date(message.created_date || message.created_at);
+                                const previousMessage = messages[index - 1];
+                                const previousDate = previousMessage ? new Date(previousMessage.created_date || previousMessage.created_at) : null;
+
+                                const showDateSeparator = !previousDate ||
+                                    messageDate.toDateString() !== previousDate.toDateString();
+
+                                let dateSeparatorText = "";
+                                if (showDateSeparator) {
+                                    const today = new Date();
+                                    const yesterday = new Date();
+                                    yesterday.setDate(today.getDate() - 1);
+
+                                    if (messageDate.toDateString() === today.toDateString()) {
+                                        dateSeparatorText = "היום";
+                                    } else if (messageDate.toDateString() === yesterday.toDateString()) {
+                                        dateSeparatorText = "אתמול";
+                                    } else {
+                                        dateSeparatorText = safeFormatDate(messageDate, "dd.MM.yy");
+                                    }
+                                }
+
+                                return (
+                                    <div key={message.id}>
+                                        {showDateSeparator && dateSeparatorText && (
+                                            <div className="flex items-center justify-center my-6 relative">
+                                                <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                                                    <div className="w-full border-t border-gray-200"></div>
+                                                </div>
+                                                <div className="relative bg-white px-4 text-xs text-gray-500 font-medium border border-gray-200 rounded-full py-1 shadow-sm">
+                                                    {dateSeparatorText}
+                                                </div>
+                                            </div>
+                                        )}
+                                        <SeekerMessageItem
+                                            message={message}
+                                            index={index}
+                                            user={user}
+                                        />
+                                    </div>
+                                );
+                            })}
                         </AnimatePresence>
 
                         {selectedConversation.is_support && (

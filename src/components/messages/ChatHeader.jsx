@@ -20,12 +20,16 @@ const ChatHeader = ({ setSelectedConversation, selectedConversation, Conversatio
                 <ChevronRight className="w-6 h-6 text-gray-800" />
             </button>
         </div>
-        <div className="text-center py-4 -mt-6 relative z-10 space-y-1">
+        <div className="text-center py-1 -mt-6 relative z-10 space-y-1">
             <h1 className="text-2xl md:text-3xl font-bold text-[#001a6e]">
                 {selectedConversation.candidate_name || "מועמד"}
             </h1>
             <div className="flex justify-center items-center gap-2 text-sm text-gray-600">
-                <span>{selectedConversation.job_title}</span>
+                <span>
+                    {selectedConversation.is_support
+                        ? selectedConversation.job_title
+                        : `מועמד למשרת: ${selectedConversation.job_title}`}
+                </span>
                 {selectedConversation.job_location && (
                     <>
                         <span>•</span>

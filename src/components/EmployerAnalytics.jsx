@@ -2,6 +2,7 @@ import { EmployerAction } from '@/api/entities';
 import { EmployerStats } from '@/api/entities';
 import { Job } from '@/api/entities';
 import { JobApplication } from '@/api/entities';
+import { JobView } from '@/api/entities';
 
 /**
  * Utility class for tracking employer actions and updating analytics
