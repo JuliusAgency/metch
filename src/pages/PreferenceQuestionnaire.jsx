@@ -131,8 +131,13 @@ export default function PreferenceQuestionnaire() {
 
       await updateProfile(updateData);
 
-      // Force onboarding flow (Career Stage -> Guide) explicitly
-      navigate(createPageUrl('Dashboard?onboarding=complete'));
+      const returnTo = searchParams.get('returnTo');
+      if (returnTo) {
+        navigate(returnTo);
+      } else {
+        // Force onboarding flow (Career Stage -> Guide) explicitly
+        navigate(createPageUrl('Dashboard?onboarding=complete'));
+      }
     } catch (error) {
       console.error("Failed to save preferences:", error);
       toast({

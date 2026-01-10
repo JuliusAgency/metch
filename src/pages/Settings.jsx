@@ -473,8 +473,18 @@ export default function Settings() {
         console.error("Error deleting UserProfile:", deleteError);
       }
 
-      // 3. Mark auth user as deleted (in metadata, as we can't hard delete auth user from client)
-      await supabase.auth.updateUser({ data: { is_deleted: true } });
+      // 3. Hard Delete Auth User (Via Edge Function)
+      // NOTE: This requires the 'delete-user' function to be deployed to Supabase.
+      try {
+        const { error: funcError } = await supabase.functions.invoke('delete-user');
+        if (funcError) {
+          console.warn("Auth deletion failed (Function might not be deployed). Standard soft-delete applied.", funcError);
+          // Fallback: Mark as deleted in metadata if function fails
+          await supabase.auth.updateUser({ data: { is_deleted: true } });
+        }
+      } catch (err) {
+        console.warn("Could not invoke delete-user function:", err);
+      }
 
       // 4. Clear ALL local storage to be safe
       localStorage.clear();

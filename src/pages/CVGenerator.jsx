@@ -130,7 +130,8 @@ export default function CVGenerator() {
     const choiceParam = searchParams.get('choice');
     if (choiceParam === 'upload') {
       setChoice('upload');
-      setStep(-1);
+      // setStep(-1); // REMOVED: Now we start at personal details (step 1)
+      setStep((prev) => (prev > 0 ? prev : 1));
     } else if (choiceParam === 'create') {
       setChoice('create');
       // Only set step to 1 if we are not already on a deeper step (e.g. via draft)
@@ -338,6 +339,14 @@ export default function CVGenerator() {
 
       // If not last step, just save and move fast
       if (step < STEPS.length) {
+        // FORK: If choice is 'upload' and we just finished Step 1 (Personal Details),
+        // go to Preference Questionnaire instead of Step 2
+        if (choice === 'upload' && step === 1) {
+          const isOnboarding = searchParams.get('onboarding') === 'true';
+          navigate(`/PreferenceQuestionnaire${isOnboarding ? '?onboarding=true' : ''}&returnTo=/CVGenerator?choice=upload&step=-1`); // using step=-1 for upload
+          return;
+        }
+
         setStep((prev) => prev + 1);
       }
 
@@ -391,8 +400,8 @@ export default function CVGenerator() {
       localStorage.removeItem(`cv_draft_${user.email}`);
     }
     // After upload, user is done with this flow, navigate to profile
-    const isOnboarding = searchParams.get('onboarding') === 'true';
-    navigate(createPageUrl(`PreferenceQuestionnaire${isOnboarding ? '?onboarding=true' : ''}`));
+    // NEW FLOW: Personal -> Pref -> Upload -> Dashboard
+    navigate(createPageUrl('Dashboard?onboarding=complete'));
   };
 
   const renderStep = () => {
