@@ -31,7 +31,7 @@ const SeekerChatHeader = ({ setSelectedConversation, selectedConversation }) => 
                 />
                 <button
                     onClick={() => setSelectedConversation(null)}
-                    className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-20"
+                    className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-[60]"
                 >
                     <ChevronRight className="w-6 h-6 text-gray-800" />
                 </button>

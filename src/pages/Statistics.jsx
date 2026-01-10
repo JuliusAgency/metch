@@ -100,7 +100,7 @@ export default function Statistics() {
                     />
                     <button
                         onClick={() => navigate(-1)}
-                        className="absolute top-8 right-8 p-2 bg-white/80 rounded-full hover:bg-white transition-colors z-20"
+                        className="absolute top-8 right-8 p-2 bg-white/80 rounded-full hover:bg-white transition-colors z-[60]"
                     >
                         <ChevronRight className="w-6 h-6 text-gray-600" />
                     </button>

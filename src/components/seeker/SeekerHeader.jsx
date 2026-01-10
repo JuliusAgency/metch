@@ -22,7 +22,7 @@ const SeekerHeader = ({ company, job, returnUrl }) => {
 
       <Link
         to={targetUrl}
-        className="absolute top-4 right-4 w-9 h-9 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-20"
+        className="absolute top-4 right-4 w-9 h-9 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-[60]"
       >
         <ChevronRight className="w-5 h-5 text-gray-800" />
       </Link>

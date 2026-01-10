@@ -155,7 +155,7 @@ export default function PreferenceQuestionnaire() {
     <div className="h-full relative" dir="rtl">
       <button
         onClick={() => navigate(-1)}
-        className="absolute top-6 right-6 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors z-50 shadow-sm"
+        className="absolute top-6 right-6 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors z-[60] shadow-sm"
         aria-label="חזור"
       >
         <ChevronRight className="w-6 h-6 text-gray-600" />
