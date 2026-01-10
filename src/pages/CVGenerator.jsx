@@ -128,16 +128,25 @@ export default function CVGenerator() {
   // Handle URL Choice Param - STRICT PRIORITY
   useEffect(() => {
     const choiceParam = searchParams.get('choice');
+    const stepParam = searchParams.get('step');
+
     if (choiceParam === 'upload') {
       setChoice('upload');
-      // setStep(-1); // REMOVED: Now we start at personal details (step 1)
-      setStep((prev) => (prev > 0 ? prev : 1));
+      if (stepParam) {
+        setStep(parseInt(stepParam, 10));
+      } else {
+        setStep((prev) => (prev > 0 ? prev : 1));
+      }
     } else if (choiceParam === 'create') {
       setChoice('create');
       // Only set step to 1 if we are not already on a deeper step (e.g. via draft)
       // But if user explicitly asks for create via URL, we might want to start fresh or continue?
       // Let's assume URL 'create' means start flow.
-      setStep((prev) => (prev > 0 ? prev : 1));
+      if (stepParam) {
+        setStep(parseInt(stepParam, 10));
+      } else {
+        setStep((prev) => (prev > 0 ? prev : 1));
+      }
     }
   }, [searchParams]);
 
@@ -253,8 +262,8 @@ export default function CVGenerator() {
   const handleNext = async () => {
     if (step === 0) {
       if (choice === 'upload') {
-        // Go to upload step
-        setStep(-1);
+        // Go to Personal Details step first
+        setStep(1);
       } else if (choice === 'create') {
         setStep(1);
       }
@@ -343,7 +352,8 @@ export default function CVGenerator() {
         // go to Preference Questionnaire instead of Step 2
         if (choice === 'upload' && step === 1) {
           const isOnboarding = searchParams.get('onboarding') === 'true';
-          navigate(`/PreferenceQuestionnaire${isOnboarding ? '?onboarding=true' : ''}&returnTo=/CVGenerator?choice=upload&step=-1`); // using step=-1 for upload
+          const returnUrl = `/CVGenerator?choice=upload&step=-1${isOnboarding ? '&onboarding=true' : ''}`;
+          navigate(`/PreferenceQuestionnaire?onboarding=${isOnboarding}&returnTo=${encodeURIComponent(returnUrl)}`);
           return;
         }
 
@@ -400,8 +410,13 @@ export default function CVGenerator() {
       localStorage.removeItem(`cv_draft_${user.email}`);
     }
     // After upload, user is done with this flow, navigate to profile
-    // NEW FLOW: Personal -> Pref -> Upload -> Dashboard
-    navigate(createPageUrl('Dashboard?onboarding=complete'));
+    // NEW FLOW: Personal -> Pref -> Upload -> JobSeekerProfileCompletion -> Career Stage -> Dashboard
+    const isOnboarding = searchParams.get('onboarding') === 'true' || localStorage.getItem('onboarding_active') === 'true';
+    if (isOnboarding) {
+      navigate('/JobSeekerProfileCompletion?onboarding=true');
+    } else {
+      navigate(createPageUrl('Dashboard'));
+    }
   };
 
   const renderStep = () => {
@@ -411,7 +426,7 @@ export default function CVGenerator() {
 
     switch (step) {
       case -1:
-        return <UploadCV user={user} onUploadComplete={handleUploadComplete} />;
+        return <UploadCV user={user} onUploadComplete={handleUploadComplete} onSkip={handleUploadComplete} />;
       case 0:
         return (
           <motion.div
@@ -461,9 +476,9 @@ export default function CVGenerator() {
   const isNextDisabled = saving || (step === 0 && !choice) || (step === 1 && !isStep1Valid) || (step === STEPS.length && (!cvData.file_name || !cvData.file_name.trim()));
 
   return (
-    <div className="p-4 md:p-8 min-h-screen" dir="rtl">
-      <div className="max-w-6xl mx-auto bg-gradient-to-b from-[#E0F3FF] via-white to-white rounded-[2rem] shadow-xl p-8 md:p-14">
-        {step > 0 && (
+    <div className={`min-h-screen ${choice === 'upload' ? 'p-0 pt-4' : 'p-4 md:p-8'}`} dir="rtl">
+      <div className={`max-w-6xl mx-auto rounded-[2rem] p-8 md:p-14 transition-transform origin-top ${choice === 'upload' ? 'bg-white shadow-none scale-90' : 'bg-gradient-to-b from-[#E0F3FF] via-white to-white shadow-xl'}`}>
+        {step > 0 && choice !== 'upload' && (
           <CVStepper
             currentStep={step - 1}
             steps={STEPS}
@@ -471,6 +486,8 @@ export default function CVGenerator() {
             disabledSteps={disabledStepIndexes}
           />
         )}
+
+
 
         <div className="my-10 min-h-[400px] flex flex-col justify-center">
           {renderStep()}
@@ -483,7 +500,16 @@ export default function CVGenerator() {
               חזור
             </Button>
           )}
-          {step !== -1 && step < STEPS.length + 1 && (
+          {step === -1 ? (
+            <Button
+              variant="outline"
+              onClick={handleUploadComplete}
+              className="px-8 py-3 rounded-full font-semibold text-lg h-auto border-2 border-gray-300 text-gray-500 hover:bg-gray-50 hover:text-gray-700 hover:border-gray-400 transition-all"
+            >
+              דלג על השלב הזה
+              <ArrowLeft className="w-5 h-5 mr-2" />
+            </Button>
+          ) : (step < STEPS.length + 1 && (
             <Button
               onClick={handleNext}
               disabled={isNextDisabled}
@@ -492,7 +518,7 @@ export default function CVGenerator() {
               {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (step === 0 ? 'המשך' : (step === STEPS.length ? 'שמור וסיים' : 'הבא'))}
               {!saving && step !== 0 && <ArrowLeft className="w-5 h-5 mr-2" />}
             </Button>
-          )}
+          ))}
         </div>
       </div>
     </div>);

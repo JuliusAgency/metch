@@ -22,12 +22,18 @@ import popupCompletedFull from '@/assets/popup-completed-full.png';
  * ProfileUpdatedDialog - Success dialog for profile update
  * Matches design: "הפרופיל עודכן !" or "הפרופיל הושלם בהצלחה"
  */
-export function ProfileUpdatedDialog({ open, onOpenChange, title = "הפרופיל עודכן !", description = "עדכון קטן - קפיצה גדולה לקריירה" }) {
+export function ProfileUpdatedDialog({
+    open,
+    onOpenChange,
+    title = "הפרופיל עודכן !",
+    description = "עדכון קטן - קפיצה גדולה לקריירה",
+    redirectUrl = null
+}) {
     const navigate = useNavigate();
 
     const handleClose = () => {
         onOpenChange(false);
-        navigate(createPageUrl('Dashboard'));
+        navigate(redirectUrl || createPageUrl('Dashboard'));
     };
 
     // Unified logic for both "Updated" and "Completed" popups using full images

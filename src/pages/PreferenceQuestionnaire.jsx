@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { User } from '@/api/entities';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useRequireUserType } from '@/hooks/use-require-user-type';
 import Step1 from '@/components/preference-questionnaire/Step1';
@@ -52,6 +52,7 @@ export default function PreferenceQuestionnaire() {
 
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   React.useEffect(() => {
     const loadPreferences = async () => {

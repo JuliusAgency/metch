@@ -1045,8 +1045,12 @@ export default function Dashboard() {
   useEffect(() => {
     localStorage.removeItem('onboarding_active');
 
-    // Strict Onboarding Check
-    if (!loading && user && !user.is_onboarding_completed) {
+    // Check if we are finalizing onboarding via a redirect
+    const params = new URLSearchParams(window.location.search);
+    const isFinalizingOnboarding = params.get('onboarding') === 'complete';
+
+    // Strict Onboarding Check - Allow access if finalizing
+    if (!loading && user && !user.is_onboarding_completed && !isFinalizingOnboarding) {
       if (user.user_type === 'job_seeker') {
         // Force back to selection (which auto-opens CV modal)
         navigate('/UserTypeSelection');

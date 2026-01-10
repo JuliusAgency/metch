@@ -41,8 +41,8 @@ const CareerStageSelection = () => {
             const isOnboarding = localStorage.getItem('onboarding_active') === 'true';
 
             if (isOnboarding) {
-                // Navigate to main CV generator only during onboarding
-                navigate('/CVGenerator');
+                // Navigate to Dashboard to complete onboarding
+                navigate('/Dashboard?onboarding=complete');
             } else {
                 // If accessing from settings/profile, just save and notify
                 toast({

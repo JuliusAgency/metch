@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { UploadCloud, FileText, Loader2, CheckCircle, AlertCircle, Eye, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function UploadCV({ user, onUploadComplete }) {
+export default function UploadCV({ user, onUploadComplete, onSkip }) {
     const [file, setFile] = useState(null);
     const [uploadStatus, setUploadStatus] = useState('idle'); // idle, uploading, success, error
     const [errorMessage, setErrorMessage] = useState('');
@@ -186,17 +186,6 @@ export default function UploadCV({ user, onUploadComplete }) {
 
             <div className="space-y-6">
                 {!file ? <UploadArea /> : <FilePreview />}
-
-                {/* Skip Button */}
-                <div className="flex justify-center mt-4">
-                    <Button
-                        variant="ghost"
-                        onClick={onUploadComplete}
-                        className="text-gray-500 hover:text-gray-700 hover:bg-transparent underline underline-offset-4"
-                    >
-                        דלג על השלב הזה
-                    </Button>
-                </div>
 
                 <AnimatePresence>
                     {uploadStatus === 'success' && (
