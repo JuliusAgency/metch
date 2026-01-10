@@ -103,12 +103,38 @@ const EmployerDashboard = ({ user }) => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [notificationsData, viewedCandidatesData, candidatesData, dashboardData] = await Promise.all([
+        setLoading(true);
+        const [notificationsData, viewedCandidatesData, dashboardData] = await Promise.all([
           Notification.filter({ is_read: false, user_email: user.email }, "-created_date", 5),
           CandidateView.filter({ viewer_email: user.email }, "-created_date", 50),
-          UserProfile.filter({ user_type: 'job_seeker' }, "-created_at", 10),
           EmployerAnalytics.getDashboardData(user.email)
         ]);
+
+        // Fetch actual applicants instead of just recent job seekers
+        // We'll get all jobs by this employer first (already done in getDashboardData, but we need the IDs here)
+        const myJobs = await Job.filter({ created_by: user.email });
+        const myJobIds = myJobs.map(j => j.id);
+
+        let applicantProfiles = [];
+        if (myJobIds.length > 0) {
+          // Fetch all applications for these jobs
+          const appsResults = await Promise.all(myJobIds.map(async (jobId) => {
+            return await JobApplication.filter({ job_id: jobId });
+          }));
+          const allApps = appsResults.flat().sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+
+          // Deduplicate applicant emails
+          const uniqueEmails = [...new Set(allApps.map(a => a.applicant_email))].slice(0, 20); // Limit to 20 for dashboard
+
+          if (uniqueEmails.length > 0) {
+            // Fetch profiles for these applicants
+            const profiles = await Promise.all(uniqueEmails.map(async (email) => {
+              const p = await UserProfile.filter({ email: email });
+              return p.length > 0 ? p[0] : null;
+            }));
+            applicantProfiles = profiles.filter(p => p !== null);
+          }
+        }
 
         // Filter notifications to only show allowed types for Employers
         const filteredNotifications = notificationsData.filter(notif =>
@@ -119,7 +145,7 @@ const EmployerDashboard = ({ user }) => {
         setEmployerActivity(dashboardData.recentActivity);
         setNotifications(filteredNotifications);
         setViewedCandidates(viewedCandidatesData);
-        setCandidates(candidatesData);
+        setCandidates(applicantProfiles);
       } catch (error) {
         console.error("Error loading employer dashboard:", error);
         setNotifications([]);
@@ -127,6 +153,8 @@ const EmployerDashboard = ({ user }) => {
         setCandidates([]);
         setEmployerStats({});
         setEmployerActivity([]);
+      } finally {
+        setLoading(false);
       }
     };
     loadData();
@@ -316,6 +344,7 @@ const EmployerDashboard = ({ user }) => {
               </div>
             </div>
             <div className="space-y-4 candidate-list">
+              <h2 className="text-lg font-bold text-gray-900 mb-2 px-2">מועמדים שהגישו מועמדות</h2>
               {filteredCandidates.length > 0 ? (filteredCandidates.map((candidate, index) => {
                 const match = Math.floor(Math.random() * 24) + 75;
                 const jobAppliedTo = candidateApplications[candidate.email];

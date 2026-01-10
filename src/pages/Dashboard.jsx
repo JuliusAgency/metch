@@ -131,8 +131,9 @@ const JobSeekerDashboard = ({ user }) => {
     const forceOnboarding = params.get('onboarding') === 'complete';
 
     // 1. First priority: Career Stage
-    // Force show if redirected from Preference Questionnaire (forceOnboarding) OR if data is missing
-    if (!user.career_stage || forceOnboarding) {
+    // Force show if redirected from Preference Questionnaire (forceOnboarding) 
+    // OR if data is missing AND user hasn't completed onboarding yet
+    if (forceOnboarding || (!user.career_stage && !user.is_onboarding_completed)) {
       setShowCareerModal(true);
       return; // Wait for career stage before showing guide
     }
@@ -146,7 +147,7 @@ const JobSeekerDashboard = ({ user }) => {
 
     // 2. Second priority: Site Guide
     const hasSeenGuide = localStorage.getItem(`jobseeker_guide_${user?.email}`);
-    if (!hasSeenGuide) {
+    if (!hasSeenGuide && !user.is_onboarding_completed) {
       setShowGuide(true);
     }
   }, [user, loading, hasCV, hasCompletedOnboardingFlow]);
@@ -583,7 +584,7 @@ const EmployerDashboard = ({ user }) => {
   // Check if user needs onboarding guide
   useEffect(() => {
     const hasSeenGuide = localStorage.getItem(`employer_guide_${user?.email}`);
-    if (!hasSeenGuide) {
+    if (!hasSeenGuide && !user.is_onboarding_completed) {
       setShowGuide(true);
     }
   }, [user]);
@@ -618,13 +619,37 @@ const EmployerDashboard = ({ user }) => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const [viewedCandidatesData, candidatesData, dashboardData, activeJobsData] = await Promise.all([
+        const [viewedCandidatesData, dashboardData, activeJobsData] = await Promise.all([
           // Change back to viewer_email as viewer_id column missing
           CandidateView.filter({ viewer_email: user.email }, "-viewed_at", 1000),
-          UserProfile.filter({ user_type: 'job_seeker' }, null, 100),
           EmployerAnalytics.getDashboardData(user.email),
           Job.filter({ created_by: user.email, status: 'active' })
         ]);
+
+        // Fetch actual applicants instead of just recent job seekers
+        const myJobs = await Job.filter({ created_by: user.email });
+        const myJobIds = myJobs.map(j => j.id);
+
+        let applicantProfiles = [];
+        if (myJobIds.length > 0) {
+          // Fetch all applications for these jobs
+          const appsResults = await Promise.all(myJobIds.map(async (jobId) => {
+            return await JobApplication.filter({ job_id: jobId });
+          }));
+          const allApps = appsResults.flat().sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+
+          // Deduplicate applicant emails
+          const uniqueEmails = [...new Set(allApps.map(a => a.applicant_email))].slice(0, 50); // Increased limit slightly for larger dashboards
+
+          if (uniqueEmails.length > 0) {
+            // Fetch profiles for these applicants
+            const profiles = await Promise.all(uniqueEmails.map(async (email) => {
+              const p = await UserProfile.filter({ email: email });
+              return p.length > 0 ? p[0] : null;
+            }));
+            applicantProfiles = profiles.filter(p => p !== null);
+          }
+        }
 
         let notificationsData = [];
         try {
@@ -655,7 +680,7 @@ const EmployerDashboard = ({ user }) => {
         setEmployerActivity(dashboardData.recentActivity);
         setNotifications(filteredNotifications);
         setViewedCandidates(viewedCandidatesData);
-        setCandidates(candidatesData);
+        setCandidates(applicantProfiles);
       } catch (error) {
         console.error("Error loading employer dashboard:", error);
         toast({
@@ -914,6 +939,7 @@ const EmployerDashboard = ({ user }) => {
             </div>
           </div>
           <div className="space-y-4 candidate-list">
+            <h2 className="text-lg font-bold text-gray-900 mb-2 px-2">מועמדים שהגישו מועמדות</h2>
             {displayedCandidates.length > 0 ? (displayedCandidates.map((candidate, index) => {
               // Calculate a stable match score based on candidate ID to ensure consistency
               const getStableMatchScore = (id) => {

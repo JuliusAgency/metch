@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { CV } from '@/api/entities';
 import { UploadFile } from '@/api/integrations';
 import { User as UserEntity } from '@/api/entities';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
@@ -35,6 +35,7 @@ export default function Profile() {
   const [showConfetti, setShowConfetti] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { signOut, user: contextUser } = useUser();
 
   useEffect(() => {
@@ -365,7 +366,7 @@ export default function Profile() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                   {/* Preference Questionnaire Link */}
-                  <Link to={createPageUrl('PreferenceQuestionnaire')}>
+                  <Link to={createPageUrl(`PreferenceQuestionnaire?returnTo=${encodeURIComponent(location.pathname)}`)}>
                     <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center justify-between h-[72px] hover:border-blue-200 transition-colors cursor-pointer group">
                       <span className="font-semibold text-gray-700 text-base">ניהול שאלון העדפה</span>
                       <ChevronLeft className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />

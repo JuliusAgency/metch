@@ -98,16 +98,19 @@ export default function MessagesSeeker() {
                         console.error("Error fetching job info:", error);
                     }
 
+                    const isSupport = conv.employer_email === SUPPORT_EMAIL;
+
                     return {
                         id: conv.id,
-                        employer_name: employerName,
+                        employer_name: isSupport ? "צוות התמיכה" : employerName,
                         employer_email: conv.employer_email,
                         last_message_time: conv.last_message_time,
                         last_message: conv.last_message || "",
                         profileImage: profileImage,
-                        job_title: conv.job_title || "משרה כללית",
+                        job_title: isSupport ? "תמיכה טכנית" : (conv.job_title || "משרה כללית"),
                         job_status: jobStatus,
-                        is_unread: unreadConversationIds.has(conv.id)
+                        is_unread: unreadConversationIds.has(conv.id),
+                        is_support: isSupport
                     };
                 }));
             } catch (error) {
@@ -182,33 +185,50 @@ export default function MessagesSeeker() {
 
         setSendingMessage(true);
         try {
-            if (selectedConversation?.is_support) {
-                const newMsg = {
-                    id: Date.now().toString(),
-                    content: newMessage.trim(),
-                    sender_email: user?.email || "seeker@example.com",
-                    created_date: new Date().toISOString(),
-                    is_read: false
-                };
+            let conversationId = selectedConversation.id;
+            let recipientEmail = selectedConversation.employer_email;
 
-                setMessages(prev => [...prev, newMsg]);
-                setNewMessage("");
-                setSendingMessage(false);
-                return;
+            // Handle first support message - create conversation if it doesn't exist
+            if (selectedConversation.id === "support") {
+                const existingSupport = conversations.find(c => c.employer_email === SUPPORT_EMAIL);
+                if (existingSupport) {
+                    conversationId = existingSupport.id;
+                } else {
+                    const newConv = await Conversation.create({
+                        candidate_email: user.email,
+                        employer_email: SUPPORT_EMAIL,
+                        job_title: "תמיכה טכנית",
+                        last_message: newMessage.trim(),
+                        last_message_time: new Date().toISOString()
+                    });
+                    conversationId = newConv.id;
+                    // Refresh conversations list to include the new support chat
+                    loadData();
+                }
             }
 
             const createdMessage = await Message.create({
-                conversation_id: selectedConversation.id,
+                conversation_id: conversationId,
                 sender_email: user?.email,
-                recipient_email: selectedConversation.employer_email,
+                recipient_email: recipientEmail,
                 content: newMessage.trim(),
                 is_read: false
             });
 
-            await Conversation.update(selectedConversation.id, {
+            await Conversation.update(conversationId, {
                 last_message: newMessage.trim(),
                 last_message_time: new Date().toISOString()
             });
+
+            if (selectedConversation.id === "support") {
+                // If we were in temporary support mode, switch to the real conversation
+                const updatedConv = {
+                    ...selectedConversation,
+                    id: conversationId,
+                    is_support: true
+                };
+                setSelectedConversation(updatedConv);
+            }
 
             setMessages(prev => [...prev, createdMessage]);
             setNewMessage("");
@@ -232,28 +252,35 @@ export default function MessagesSeeker() {
     };
 
     const startSupportConversation = useCallback(() => {
-        const supportConversation = {
-            id: "support",
-            employer_name: "צוות התמיכה",
-            employer_email: SUPPORT_EMAIL,
-            last_message_time: new Date().toISOString(),
-            last_message: "איך אנחנו יכולים לעזור?",
-            profileImage: "",
-            job_title: "תמיכה טכנית",
-            is_support: true
-        };
+        // Check if we already have a support conversation
+        const existingSupport = conversations.find(c => c.is_support || c.employer_email === SUPPORT_EMAIL);
 
-        setSelectedConversation(supportConversation);
-        setMessages([
-            {
-                id: "support_1",
-                content: "שלום! איך אנחנו יכולים לעזור לך היום?",
-                sender_email: SUPPORT_EMAIL,
-                created_date: new Date().toISOString(),
-                is_read: true
-            }
-        ]);
-    }, []);
+        if (existingSupport) {
+            handleConversationSelect(existingSupport);
+        } else {
+            const supportConversation = {
+                id: "support",
+                employer_name: "צוות התמיכה",
+                employer_email: SUPPORT_EMAIL,
+                last_message_time: new Date().toISOString(),
+                last_message: "איך אנחנו יכולים לעזור?",
+                profileImage: "",
+                job_title: "תמיכה טכנית",
+                is_support: true
+            };
+
+            setSelectedConversation(supportConversation);
+            setMessages([
+                {
+                    id: "support_1",
+                    content: "שלום! איך אנחנו יכולים לעזור לך היום?",
+                    sender_email: SUPPORT_EMAIL,
+                    created_date: new Date().toISOString(),
+                    is_read: true
+                }
+            ]);
+        }
+    }, [conversations, handleConversationSelect]);
 
     const handleSupportContact = () => {
         startSupportConversation();

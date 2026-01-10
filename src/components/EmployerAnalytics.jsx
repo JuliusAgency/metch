@@ -268,32 +268,59 @@ export class EmployerAnalytics {
    */
   static async getDashboardData(employerEmail) {
     try {
-      const [stats, recentActivity, activeJobs, applications] = await Promise.all([
+      // 1. Get all jobs by this employer
+      const allJobs = await Job.filter({ created_by: employerEmail });
+      const jobIds = allJobs.map(job => job.id);
+      const activeJobsCount = allJobs.filter(job => job.status === 'active').length;
+
+      // 2. Fetch stats and activity
+      const [stats, recentActivity] = await Promise.all([
         this.getEmployerStats(employerEmail),
-        this.getEmployerActivity(employerEmail, 10),
-        Job.filter({ created_by: employerEmail, status: 'active' }),
-        JobApplication.filter({}, "-created_date", 100) // Get all recent applications
+        this.getEmployerActivity(employerEmail, 10)
       ]);
 
-      // Filter applications for this employer's jobs
-      const jobIds = activeJobs.map(job => job.id);
-      const employerApplications = applications.filter(app =>
-        jobIds.includes(app.job_id)
-      );
+      // 3. Robustly count applications and views by querying and summing if needed
+      let realTotalApplications = 0;
+      let realPendingApplications = 0;
+      let realTotalJobViews = 0;
+
+      if (jobIds.length > 0) {
+        // We fetch per job to stay within filter limits and ensure accuracy
+        const [appsResults, viewsResults] = await Promise.all([
+          Promise.all(jobIds.map(async (jobId) => {
+            return await JobApplication.filter({ job_id: jobId });
+          })),
+          Promise.all(jobIds.map(async (jobId) => {
+            return await JobView.filter({ job_id: jobId });
+          }))
+        ]);
+
+        const allRelevantApps = appsResults.flat();
+        realTotalApplications = allRelevantApps.length;
+        realPendingApplications = allRelevantApps.filter(app => app.status === 'pending').length;
+
+        const allRelevantViews = viewsResults.flat();
+        realTotalJobViews = allRelevantViews.length;
+      }
+
+      // Merge manual stats with real-time counts
+      const mergedStats = {
+        ...(stats || {
+          total_jobs_created: allJobs.length,
+          total_jobs_published: activeJobsCount,
+          total_candidates_viewed: 0,
+        }),
+        total_applications_received: realTotalApplications, // Override with real-time count
+        total_job_views: realTotalJobViews, // Override with real-time count
+        total_jobs_published: activeJobsCount // Ensure this is also accurate
+      };
 
       return {
-        stats: stats || {
-          total_jobs_created: 0,
-          total_jobs_published: 0,
-          total_job_views: 0,
-          total_applications_received: 0,
-          total_candidates_viewed: 0,
-          conversion_rate: 0
-        },
+        stats: mergedStats,
         recentActivity,
-        activeJobs: activeJobs.length,
-        recentApplications: employerApplications.length,
-        pendingApplications: employerApplications.filter(app => app.status === 'pending').length
+        activeJobs: activeJobsCount,
+        recentApplications: realTotalApplications,
+        pendingApplications: realPendingApplications
       };
     } catch (error) {
       console.error('Error getting employer dashboard data:', error);

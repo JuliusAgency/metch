@@ -104,16 +104,19 @@ export default function Messages() {
                         }
                     }
 
+                    const isSupport = conv.candidate_email === SUPPORT_EMAIL;
+
                     return {
                         id: conv.id,
-                        candidate_name: candidateName,
+                        candidate_name: isSupport ? "צוות התמיכה" : candidateName,
                         candidate_email: conv.candidate_email,
                         last_message_time: conv.last_message_time,
                         last_message: conv.last_message || "",
                         profileImage: profileImage,
-                        job_title: conv.job_title || "משרה כללית",
+                        job_title: isSupport ? "תמיכה עסקית" : (conv.job_title || "משרה כללית"),
                         job_status: jobStatus,
-                        job_id: conv.job_id
+                        job_id: conv.job_id,
+                        is_support: isSupport
                     };
                 }));
 
@@ -176,31 +179,38 @@ export default function Messages() {
     }, []);
 
     const startSupportConversation = useCallback(() => {
-        const supportConversation = {
-            id: "support",
-            candidate_name: "צוות התמיכה",
-            candidate_email: SUPPORT_EMAIL,
-            last_message_time: new Date().toISOString(),
-            last_message: "איך אנחנו יכולים לעזור?",
-            profileImage: "",
-            job_title: "תמיכה טכנית",
-            job_status: "active",
-            job_id: null,
-            is_support: true
-        };
+        // Check if we already have a support conversation
+        const existingSupport = conversations.find(c => c.is_support || c.candidate_email === SUPPORT_EMAIL);
 
-        setSelectedConversation(supportConversation);
-        setMessages([
-            {
-                id: "support_1",
-                content: "שלום! איך אנחנו יכולים לעזור לך היום?",
-                sender_email: SUPPORT_EMAIL,
-                created_date: new Date().toISOString(),
-                is_read: true
-            }
-        ]);
-        setLoadingMessages(false);
-    }, []);
+        if (existingSupport) {
+            handleConversationSelect(existingSupport);
+        } else {
+            const supportConversation = {
+                id: "support",
+                candidate_name: "צוות התמיכה",
+                candidate_email: SUPPORT_EMAIL,
+                last_message_time: new Date().toISOString(),
+                last_message: "איך אנחנו יכולים לעזור?",
+                profileImage: "",
+                job_title: "תמיכה עסקית",
+                job_status: "active",
+                job_id: null,
+                is_support: true
+            };
+
+            setSelectedConversation(supportConversation);
+            setMessages([
+                {
+                    id: "support_1",
+                    content: "שלום! איך אנחנו יכולים לעזור לך היום?",
+                    sender_email: SUPPORT_EMAIL,
+                    created_date: new Date().toISOString(),
+                    is_read: true
+                }
+            ]);
+            setLoadingMessages(false);
+        }
+    }, [conversations, handleConversationSelect]);
 
     useEffect(() => {
         if (location.state?.supportChat) {
@@ -265,37 +275,55 @@ export default function Messages() {
 
         setSendingMessage(true);
         try {
-            if (selectedConversation?.is_support) {
-                const newMsg = {
-                    id: Date.now().toString(),
-                    content: newMessage.trim(),
-                    sender_email: user?.email || "employer@example.com",
-                    created_date: new Date().toISOString(),
-                    is_read: false
-                };
+            let conversationId = selectedConversation.id;
+            let recipientEmail = selectedConversation.candidate_email;
 
-                setMessages(prev => [...prev, newMsg]);
-                setNewMessage("");
-                setSendingMessage(false);
-                return;
+            // Handle first support message - create conversation if it doesn't exist
+            if (selectedConversation.id === "support") {
+                const existingSupport = conversations.find(c => c.candidate_email === SUPPORT_EMAIL);
+                if (existingSupport) {
+                    conversationId = existingSupport.id;
+                } else {
+                    const newConv = await Conversation.create({
+                        employer_email: user.email,
+                        candidate_email: SUPPORT_EMAIL,
+                        job_title: "תמיכה עסקית",
+                        last_message: newMessage.trim(),
+                        last_message_time: new Date().toISOString()
+                    });
+                    conversationId = newConv.id;
+                    // Refresh conversations list
+                    loadData();
+                }
             }
+
             const currentDate = new Date().toISOString();
 
             // Create message in database with explicit created_date
             const createdMessage = await Message.create({
-                conversation_id: selectedConversation.id,
+                conversation_id: conversationId,
                 sender_email: user?.email,
-                recipient_email: selectedConversation.candidate_email,
+                recipient_email: recipientEmail,
                 content: newMessage.trim(),
                 is_read: false,
                 created_date: currentDate
             });
 
             // Update conversation with last message info
-            await Conversation.update(selectedConversation.id, {
+            await Conversation.update(conversationId, {
                 last_message: newMessage.trim(),
                 last_message_time: currentDate
             });
+
+            if (selectedConversation.id === "support") {
+                // Switch to real conversation
+                const updatedConv = {
+                    ...selectedConversation,
+                    id: conversationId,
+                    is_support: true
+                };
+                setSelectedConversation(updatedConv);
+            }
 
             // Ensure created_date is set for the UI
             const messageWithDate = {
@@ -309,7 +337,7 @@ export default function Messages() {
 
             // Update conversation in list
             setConversations(prev => prev.map(conv =>
-                conv.id === selectedConversation.id
+                conv.id === conversationId
                     ? { ...conv, last_message: newMessage.trim(), last_message_time: currentDate }
                     : conv
             ));

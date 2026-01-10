@@ -133,11 +133,16 @@ export default function PreferenceQuestionnaire() {
       await updateProfile(updateData);
 
       const returnTo = searchParams.get('returnTo');
+      const isOnboarding = searchParams.get('onboarding') === 'true';
+
       if (returnTo) {
         navigate(returnTo);
-      } else {
-        // Force onboarding flow (Career Stage -> Guide) explicitly
+      } else if (isOnboarding) {
+        // Force onboarding flow (Career Stage -> Guide) explicitly only during real onboarding
         navigate(createPageUrl('Dashboard?onboarding=complete'));
+      } else {
+        // Just go to dashboard normally
+        navigate(createPageUrl('Dashboard'));
       }
     } catch (error) {
       console.error("Failed to save preferences:", error);

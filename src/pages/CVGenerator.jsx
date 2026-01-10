@@ -327,7 +327,9 @@ export default function CVGenerator() {
         setTimeout(() => {
           // Check if we are in onboarding mode
           const isOnboarding = searchParams.get('onboarding') === 'true';
-          navigate(`/PreferenceQuestionnaire${isOnboarding ? '?onboarding=true' : ''}`);
+          const returnTo = isOnboarding ? '' : '/Profile';
+          const target = `PreferenceQuestionnaire?onboarding=${isOnboarding}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`;
+          navigate(createPageUrl(target));
         }, 500);
         return;
       }
@@ -353,7 +355,8 @@ export default function CVGenerator() {
         if (choice === 'upload' && step === 1) {
           const isOnboarding = searchParams.get('onboarding') === 'true';
           const returnUrl = `/CVGenerator?choice=upload&step=-1${isOnboarding ? '&onboarding=true' : ''}`;
-          navigate(`/PreferenceQuestionnaire?onboarding=${isOnboarding}&returnTo=${encodeURIComponent(returnUrl)}`);
+          const target = `PreferenceQuestionnaire?onboarding=${isOnboarding}&returnTo=${encodeURIComponent(returnUrl)}`;
+          navigate(createPageUrl(target));
           return;
         }
 

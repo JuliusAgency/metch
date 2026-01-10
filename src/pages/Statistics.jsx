@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Job, JobView } from '@/api/entities';
+import { User, Job, JobView, JobApplication } from '@/api/entities';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import JobStatsItem from '@/components/JobStatsItem';
@@ -13,6 +13,7 @@ export default function Statistics() {
     const navigate = useNavigate();
     const [jobs, setJobs] = useState([]);
     const [jobViews, setJobViews] = useState({});
+    const [jobApplications, setJobApplications] = useState({});
     const [loading, setLoading] = useState(true);
     const [activeView, setActiveView] = useState('active'); // 'active' or 'expired'
     const [currentPage, setCurrentPage] = useState(1);
@@ -49,16 +50,20 @@ export default function Statistics() {
             // Assuming we can filter JobView by job_id.
 
             const viewsMap = {};
+            const appsMap = {};
 
-            // Parallelize fetching view counts
+            // Parallelize fetching view and application counts
             await Promise.all(userJobs.map(async (job) => {
-                // This is not ideal for many jobs, but sticking to available API patterns
-                // If JobView has a count method or we can filter by job_id
-                const views = await JobView.filter({ job_id: job.id });
+                const [views, apps] = await Promise.all([
+                    JobView.filter({ job_id: job.id }),
+                    JobApplication.filter({ job_id: job.id })
+                ]);
                 viewsMap[job.id] = views.length;
+                appsMap[job.id] = apps.length;
             }));
 
             setJobViews(viewsMap);
+            setJobApplications(appsMap);
 
         } catch (error) {
             console.error("Error loading statistics:", error);
@@ -159,6 +164,7 @@ export default function Statistics() {
                                     key={job.id}
                                     job={job}
                                     viewsCount={jobViews[job.id] || 0}
+                                    applicationsCount={jobApplications[job.id] || 0}
                                 />
                             ))
                         ) : (

@@ -4,7 +4,7 @@ import { he } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
-export default function JobStatsItem({ job, viewsCount }) {
+export default function JobStatsItem({ job, viewsCount, applicationsCount }) {
     const navigate = useNavigate();
 
     return (
@@ -35,7 +35,7 @@ export default function JobStatsItem({ job, viewsCount }) {
 
                 {/* Resumes Count */}
                 <div className="col-span-2 text-center">
-                    <span className="text-gray-900 font-medium">{job.applications_count || 0}</span>
+                    <span className="text-gray-900 font-medium">{applicationsCount || 0}</span>
                 </div>
 
                 {/* Views Count */}
