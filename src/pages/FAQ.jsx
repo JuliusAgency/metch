@@ -137,7 +137,7 @@ export default function FAQ() {
           </Link>
         </div>
 
-        <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-full max-w-7xl mx-auto">
+        <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-full max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -151,12 +151,12 @@ export default function FAQ() {
 
             {/* Search Bar */}
             <div className="relative max-w-md mx-auto">
-              <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 placeholder="חפש בשאלות נפוצות"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pr-12 pl-4 py-3 border-gray-300 focus:border-blue-400 rounded-full h-12 text-right"
+                className="pl-12 pr-4 py-3 bg-[#f8f9fd] border-none focus-visible:ring-1 focus-visible:ring-blue-100 rounded-md h-12 text-right shadow-sm"
                 dir="rtl"
               />
             </div>
@@ -192,9 +192,9 @@ export default function FAQ() {
                       </div>
                       <div className="flex items-center flex-shrink-0">
                         {activeQuestionId === item.id ? (
-                          <img src={faqMinus} alt="סגור" className="w-[30px] h-[30px]" />
+                          <img src={faqMinus} alt="סגור" className="w-3.5 h-3.5" />
                         ) : (
-                          <img src={faqPlus} alt="פתח" className="w-[30px] h-[30px]" />
+                          <img src={faqPlus} alt="פתח" className="w-3.5 h-3.5" />
                         )}
                       </div>
                     </button>
