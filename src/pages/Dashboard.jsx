@@ -312,7 +312,16 @@ const JobSeekerDashboard = ({ user }) => {
 
   // Filter jobs based on the current jobFilter state and search term
   const displayedJobs = allJobs.filter(job => {
-    // Text search filter
+    // 1. Expiration check: Filter out jobs older than 30 days (unless it's the mock job)
+    if (job.id !== 'mock-google-crm' && job.created_date) {
+      const createdDate = new Date(job.created_date);
+      const now = new Date();
+      const diffTime = Math.abs(now - createdDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays > 30) return false;
+    }
+
+    // 2. Text search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       const matchesSearch =

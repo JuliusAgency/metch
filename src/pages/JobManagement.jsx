@@ -86,7 +86,31 @@ export default function JobManagement() {
         return dateB - dateA;
       });
 
-      setJobs(sortedJobs);
+      // Check for expired jobs and update them in database
+      const now = new Date();
+      const expiredJobs = sortedJobs.filter(job => {
+        if (job.status !== 'active' && job.status !== 'paused') return false;
+        const daysSinceCreation = differenceInDays(now, new Date(job.created_date));
+        return daysSinceCreation > 30;
+      });
+
+      if (expiredJobs.length > 0) {
+        console.log("Found expired jobs, updating status to closed:", expiredJobs.map(j => j.id));
+        await Promise.all(expiredJobs.map(job =>
+          Job.update(job.id, { status: 'closed' })
+        ));
+
+        // Update local state to reflect the changes immediately
+        const updatedJobs = sortedJobs.map(job => {
+          if (expiredJobs.find(ej => ej.id === job.id)) {
+            return { ...job, status: 'closed' };
+          }
+          return job;
+        });
+        setJobs(updatedJobs);
+      } else {
+        setJobs(sortedJobs);
+      }
 
       // Removed applications loading as per outline
     } catch (error) {
@@ -194,11 +218,17 @@ export default function JobManagement() {
   const activeStatuses = ['active', 'paused', 'draft']; // New array
   const endedStatuses = ['closed', 'filled', 'filled_via_metch']; // New array
 
-  const filteredJobs = jobs.filter((job) => // New filtered array
-    activeView === 'active' ?
-      activeStatuses.includes(job.status) :
-      endedStatuses.includes(job.status)
-  );
+  const filteredJobs = jobs.filter((job) => {
+    // First, check if the job is actually expired (fallback for UI consistency)
+    const isExpired = differenceInDays(new Date(), new Date(job.created_date)) > 30;
+    const effectiveStatus = (isExpired && (job.status === 'active' || job.status === 'paused')) ? 'closed' : job.status;
+
+    if (activeView === 'active') {
+      return activeStatuses.includes(effectiveStatus);
+    } else {
+      return endedStatuses.includes(effectiveStatus);
+    }
+  });
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
