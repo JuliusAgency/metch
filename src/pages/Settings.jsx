@@ -453,10 +453,6 @@ export default function Settings() {
         supabase.from('Notification').delete().eq('user_id', userId),
         supabase.from('Notification').delete().eq('email', userEmail),
 
-        // Employer specific: Jobs
-        // Only delete jobs if user is employer? Or just try anyway.
-        supabase.from('Job').delete().eq('created_by', userEmail), // Jobs usually linked by email
-
         // Chat/Messages (If tables exist)
         supabase.from('Message').delete().eq('sender_id', userId),
         supabase.from('Message').delete().eq('receiver_id', userId),

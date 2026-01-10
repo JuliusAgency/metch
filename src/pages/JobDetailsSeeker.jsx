@@ -132,11 +132,12 @@ export default function JobDetailsSeeker() {
             try {
               await UserAnalytics.trackJobView(userData, fetchedJob); // Pass full user object
 
-              // Check if user already applied
-              const existingApps = await JobApplication.filter({
+              // Check if user already applied - Try ID first, fallback to email
+              let existingApps = await JobApplication.filter({
                 job_id: jobId,
-                applicant_email: userData.email
+                applicant_id: userData.id
               });
+
               setHasExistingApplication(existingApps.length > 0);
             } catch (error) {
 
@@ -220,6 +221,7 @@ export default function JobDetailsSeeker() {
       await JobApplication.create({
         job_id: job.id,
         applicant_email: user.email,
+        applicant_id: user.id,
         status: 'pending'
       });
 

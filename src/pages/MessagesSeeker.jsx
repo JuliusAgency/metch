@@ -51,17 +51,19 @@ export default function MessagesSeeker() {
 
             let mappedConversations = [];
             try {
-                const conversationsData = await Conversation.filter(
-                    { candidate_email: userData.email },
+                // Load conversations for candidate - Try ID first, fallback to email
+                let conversationsData = await Conversation.filter(
+                    { candidate_id: userData.id },
                     "-last_message_time",
                     100
                 );
+
 
                 // Fetch unread messages for the current user
                 let unreadConversationIds = new Set();
                 try {
                     const unreadMessages = await Message.filter({
-                        recipient_email: userData.email,
+                        recipient_id: userData.id,
                         is_read: false
                     });
 
@@ -190,12 +192,15 @@ export default function MessagesSeeker() {
 
             // Handle first support message - create conversation if it doesn't exist
             if (selectedConversation.id === "support") {
-                const existingSupport = conversations.find(c => c.employer_email === SUPPORT_EMAIL);
+                const existingSupport = conversations.find(c =>
+                    (c.employer_id === "support_team_id" || c.employer_email === SUPPORT_EMAIL)
+                );
                 if (existingSupport) {
                     conversationId = existingSupport.id;
                 } else {
                     const newConv = await Conversation.create({
                         candidate_email: user.email,
+                        candidate_id: user.id,
                         employer_email: SUPPORT_EMAIL,
                         job_title: "תמיכה טכנית",
                         last_message: newMessage.trim(),

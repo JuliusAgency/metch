@@ -89,8 +89,8 @@ export default function CandidateProfile() {
 
         const myJobIds = myJobs.map(j => j.id);
 
-        // 2. Get candidate's applications
-        const apps = await JobApplication.filter({ applicant_email: candidate.email });
+        // 2. Get candidate's applications - Try ID first, then email
+        let apps = await JobApplication.filter({ applicant_id: candidate.id });
 
         // 3. Find match (handling potential string/number mismatches)
         const relevantApp = apps.find(app => myJobIds.some(id => String(id) === String(app.job_id)));
@@ -335,8 +335,8 @@ export default function CandidateProfile() {
       const jobTitle = queryParams.get("title") || "משרה כללית";
 
       const filterParams = {
-        employer_email: user.email,
-        candidate_email: candidate.email,
+        employer_id: user.id,
+        candidate_id: candidate.id,
       };
 
       if (jobId) {
@@ -351,7 +351,9 @@ export default function CandidateProfile() {
       } else {
         const createParams = {
           employer_email: user.email,
+          employer_id: user.id,
           candidate_email: candidate.email,
+          candidate_id: candidate.id,
           candidate_name: candidate.full_name,
           job_title: jobTitle,
           last_message: "",
@@ -365,6 +367,7 @@ export default function CandidateProfile() {
 
         conversation = await Conversation.create(createParams);
       }
+
 
       await EmployerAnalytics.trackAction(
         user.email,

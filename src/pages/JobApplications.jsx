@@ -76,9 +76,20 @@ export default function JobApplications() {
 
     setCreatingConversation(true);
     try {
+      // Find candidate profile to get their ID
+      let candidateId = null;
+      try {
+        const candidateResults = await UserProfile.filter({ email: application.applicant_email });
+        if (candidateResults.length > 0) {
+          candidateId = candidateResults[0].id;
+        }
+      } catch (error) {
+        console.error("Error fetching candidate profile for ID:", error);
+      }
+
       const existingConversations = await Conversation.filter({
-        employer_email: user.email,
-        candidate_email: application.applicant_email,
+        employer_id: user.id,
+        candidate_id: candidateId,
         job_id: job.id,
       });
 
@@ -88,13 +99,17 @@ export default function JobApplications() {
       } else {
         conversation = await Conversation.create({
           employer_email: user.email,
+          employer_id: user.id,
           candidate_email: application.applicant_email,
+          candidate_id: candidateId,
           job_id: job.id,
           job_title: job.title,
           last_message: "",
           last_message_time: new Date().toISOString(),
         });
       }
+
+
 
       toast({
         title: "פתחנו צ'אט עם המועמד",

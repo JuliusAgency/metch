@@ -92,6 +92,8 @@ export default function CompanyProfileCompletion() {
 
   const nextStep = async () => {
     if (step === 1) {
+
+
       if (!companyData.company_name || !companyData.company_name.trim()) {
         toast.error("אנא מלא את שם החברה");
         return;
@@ -205,7 +207,6 @@ export default function CompanyProfileCompletion() {
                 const isStep1Valid = step === 1 && (
                   companyData.company_name?.trim() &&
                   companyData.full_name?.trim() &&
-                  companyData.phone?.trim() &&
                   companyData.cv_reception_email?.trim() &&
                   companyData.company_phone?.trim() &&
                   companyData.is_phone_verified

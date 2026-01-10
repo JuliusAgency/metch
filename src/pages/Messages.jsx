@@ -69,11 +69,13 @@ export default function Messages() {
 
             // Load conversations for employer from database
             try {
-                const conversationsData = await Conversation.filter(
-                    { employer_email: userData.email },
+                // Load conversations for employer - Try ID first, fallback to email
+                let conversationsData = await Conversation.filter(
+                    { employer_id: userData.id },
                     "-last_message_time",
                     100
                 );
+
 
                 // Fetch candidate information and job status for each conversation
                 const mappedConversations = await Promise.all(conversationsData.map(async (conv) => {
@@ -178,6 +180,11 @@ export default function Messages() {
         }
     }, []);
 
+    const handleConversationSelect = useCallback((conversation) => {
+        setSelectedConversation(conversation);
+        loadMessages(conversation.id);
+    }, [loadMessages]);
+
     const startSupportConversation = useCallback(() => {
         // Check if we already have a support conversation
         const existingSupport = conversations.find(c => c.is_support || c.candidate_email === SUPPORT_EMAIL);
@@ -253,7 +260,7 @@ export default function Messages() {
     }, [pendingConversationParams, conversations, loadMessages, location.pathname, location.search, navigate]);
 
     const filteredConversations = conversations.filter(conv =>
-        conv.candidate_name.toLowerCase().includes(searchTerm.toLowerCase())
+        conv && conv.candidate_name && conv.candidate_name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const paginatedConversations = filteredConversations.slice(
@@ -280,12 +287,15 @@ export default function Messages() {
 
             // Handle first support message - create conversation if it doesn't exist
             if (selectedConversation.id === "support") {
-                const existingSupport = conversations.find(c => c.candidate_email === SUPPORT_EMAIL);
+                const existingSupport = conversations.find(c =>
+                    (c.candidate_id === "support_team_id" || c.candidate_email === SUPPORT_EMAIL)
+                );
                 if (existingSupport) {
                     conversationId = existingSupport.id;
                 } else {
                     const newConv = await Conversation.create({
                         employer_email: user.email,
+                        employer_id: user.id,
                         candidate_email: SUPPORT_EMAIL,
                         job_title: "תמיכה עסקית",
                         last_message: newMessage.trim(),
@@ -348,10 +358,6 @@ export default function Messages() {
         }
     };
 
-    const handleConversationSelect = (conversation) => {
-        setSelectedConversation(conversation);
-        loadMessages(conversation.id);
-    };
 
     if (selectedConversation) {
         return (
@@ -511,7 +517,7 @@ export default function Messages() {
                                             </div>
                                         </div>
                                         <span className="text-gray-400 text-xs font-light whitespace-nowrap px-4">
-                                            {format(new Date(conversation.last_message_time), "dd.MM.yy")}
+                                            {safeFormatDate(conversation.last_message_time, "dd.MM.yy")}
                                         </span>
                                     </motion.div>
                                 );
