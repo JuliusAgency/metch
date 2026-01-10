@@ -202,7 +202,7 @@ const JobSeekerDashboard = ({ user }) => {
       try {
         const results = await Promise.allSettled([
           Job.filter({ status: 'active' }, "-created_date", 100),
-          JobView.filter({ viewer_id: user.id }), // Change to viewer_id
+          JobView.filter({ viewer_id: user.id }),
           Notification.filter({ is_read: false, user_id: user.id }, "-created_date", 5), // Change to user_id
           UserAnalytics.getUserStats(user.id), // Change to user.id
           CandidateView.filter({ candidate_id: user.id }), // Change to candidate_id
@@ -256,7 +256,7 @@ const JobSeekerDashboard = ({ user }) => {
         };
 
         const mockJob = {
-          id: 'mock-google-crm',
+          id: 'f0000000-0000-0000-0000-000000000001',
           title: 'מנהלת קשרי לקוחות',
           company: 'Google',
           location: 'מרכז',
@@ -313,7 +313,7 @@ const JobSeekerDashboard = ({ user }) => {
   // Filter jobs based on the current jobFilter state and search term
   const displayedJobs = allJobs.filter(job => {
     // 1. Expiration check: Filter out jobs older than 30 days (unless it's the mock job)
-    if (job.id !== 'mock-google-crm' && job.created_date) {
+    if (job.id !== 'f0000000-0000-0000-0000-000000000001' && job.created_date) {
       const createdDate = new Date(job.created_date);
       const now = new Date();
       const diffTime = Math.abs(now - createdDate);

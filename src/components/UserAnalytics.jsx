@@ -152,11 +152,10 @@ export class UserAnalytics {
       });
 
       // Create persistent JobView record if it doesn't exist
-      // Priority: ID
       let existingViews = [];
       if (user.id) {
         existingViews = await JobView.filter({
-          user_id: user.id, // Prefer ID
+          viewer_id: user.id,
           job_id: job.id
         });
       } else if (user.email) {
@@ -168,7 +167,7 @@ export class UserAnalytics {
 
       if (existingViews.length === 0) {
         await JobView.create({
-          user_id: user.id, // Prefer ID
+          viewer_id: user.id,
           user_email: user.email,
           job_id: job.id
         });

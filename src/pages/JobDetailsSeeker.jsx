@@ -42,9 +42,9 @@ export default function JobDetailsSeeker() {
 
       const jobId = jobIdParam;
 
-      if (jobId === 'mock-google-crm') {
+      if (jobId === 'f0000000-0000-0000-0000-000000000001') {
         const mockJob = {
-          id: 'mock-google-crm',
+          id: 'f0000000-0000-0000-0000-000000000001',
           title: 'מנהלת קשרי לקוחות',
           company: 'Google',
           location: 'מרכז',
@@ -64,6 +64,16 @@ export default function JobDetailsSeeker() {
           created_date: new Date().toISOString()
         };
         setJob(mockJob);
+
+        // Track view for mock job as well
+        if (userData?.email) {
+          try {
+            await UserAnalytics.trackJobView(userData, mockJob);
+          } catch (e) {
+            console.warn("Analytics error for mock job", e);
+          }
+        }
+
         setLoading(false);
         return;
       }
