@@ -57,6 +57,7 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
             is_phone_verified: true
         }));
         toast.success("הטלפון אומת בהצלחה");
+        setIsVerificationOpen(false);
     };
 
     const handleCompanyTypeSelect = (typeId) => {
@@ -170,8 +171,8 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                             </div>
                             <InfoInput
                                 placeholder="טלפון"
-                                name="office_phone"
-                                value={companyData.office_phone || ""}
+                                name="phone"
+                                value={companyData.phone || ""}
                                 onChange={handleInputChange}
                             />
                         </div>
@@ -179,19 +180,7 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                 </div>
             </motion.div>
 
-            <WhatsAppVerificationDialog
-                isOpen={isVerificationOpen}
-                onClose={() => setIsVerificationOpen(false)}
-                initialPhone={companyData.company_phone}
-                onVerified={(phone) => {
-                    setCompanyData(prev => ({
-                        ...prev,
-                        company_phone: phone,
-                        is_phone_verified: true
-                    }));
-                    setIsVerificationOpen(false);
-                }}
-            />
+
         </div >
     );
 }
