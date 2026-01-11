@@ -363,13 +363,13 @@ export default function MessagesSeeker() {
 
     if (selectedConversation) {
         return (
-            <div className="h-full relative flex flex-col" dir="rtl">
-                <div className="relative h-[calc(100vh-70px)] flex flex-col w-full">
+            <div className="h-full relative flex flex-col max-w-7xl w-[75%] mx-auto" dir="rtl">
+                <div className="relative h-[calc(98vh-100px)] flex flex-col w-full bg-white shadow-xl rounded-2xl overflow-hidden mt-0">
                     <SeekerChatHeader
                         setSelectedConversation={setSelectedConversation}
                         selectedConversation={selectedConversation}
                     />
-                    <div className="flex-1 p-6 overflow-y-auto space-y-4">
+                    <div className="flex-1 p-8 overflow-y-auto space-y-6 bg-gray-50/30">
                         {loadingMessages && (
                             <div className="flex justify-center items-center py-8">
                                 <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
@@ -465,24 +465,22 @@ export default function MessagesSeeker() {
                         <ChevronRight className="w-6 h-6 text-gray-800" />
                     </button>
                 </div>
-
-                <div className="p-2 sm:p-4 md:p-6 -mt-12 relative z-10 w-full">
+                <div className="p-2 sm:p-4 md:p-6 -mt-12 relative z-10 max-w-7xl w-[75%] mx-auto bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-lg border border-white/50 mb-8 mt-[-3rem]">
                     <div className="text-center pb-4">
                         <h1 className="text-2xl md:text-3xl font-bold text-[#001a6e]">הודעות</h1>
                     </div>
-
-                    <div className="relative mb-4">
-                        <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <div className="relative mb-8 w-full max-w-md mx-auto">
+                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500 w-5 h-5" />
                         <Input
                             placeholder="חיפוש בהודעות"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pr-12 pl-4 py-3 border-gray-300 focus:border-blue-400 rounded-lg h-12 text-right"
+                            className="pl-12 pr-4 py-3 bg-[#F9FAFB] border-none focus:ring-1 focus:ring-blue-200 rounded-lg h-12 text-right shadow-sm placeholder:text-gray-400"
                             dir="rtl"
                         />
                     </div>
 
-                    <div className="mb-6">
+                    <div className="mb-6 w-full max-w-4xl mx-auto">
                         <Button
                             onClick={handleSupportContact}
                             className="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 rounded-xl h-16 flex items-center justify-between px-6"

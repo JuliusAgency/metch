@@ -401,14 +401,14 @@ export default function Messages() {
 
     if (selectedConversation) {
         return (
-            <div className="h-full relative flex flex-col" dir="rtl">
-                <div className="relative h-[calc(100vh-70px)] flex flex-col w-full">
+            <div className="h-full relative flex flex-col max-w-7xl w-[75%] mx-auto" dir="rtl">
+                <div className="relative h-[calc(98vh-100px)] flex flex-col w-full bg-white shadow-xl rounded-2xl overflow-hidden mt-0">
                     <ChatHeader
                         setSelectedConversation={setSelectedConversation}
                         selectedConversation={selectedConversation}
                         ConversationStatusIndicator={ConversationStatusIndicator}
                     />
-                    <div className="flex-1 p-6 overflow-y-auto space-y-4">
+                    <div className="flex-1 p-8 overflow-y-auto space-y-6 bg-gray-50/30">
                         {loadingMessages && (
                             <div className="flex justify-center items-center py-8">
                                 <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
@@ -523,13 +523,11 @@ export default function Messages() {
                         <ChevronRight className="w-6 h-6 text-gray-800" />
                     </button>
                 </div>
-
-                <div className="p-2 sm:p-4 md:p-6 -mt-12 relative z-10 w-full">
+                <div className="p-2 sm:p-4 md:p-6 -mt-12 relative z-10 max-w-7xl w-[75%] mx-auto bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-lg border border-white/50 mb-8 mt-[-3rem]">
                     <div className="text-center pb-4">
                         <h1 className="text-2xl md:text-3xl font-bold text-[#001a6e]">הודעות</h1>
                     </div>
-
-                    <div className="relative mb-4 w-1/3 mx-auto">
+                    <div className="relative mb-8 w-full max-w-md mx-auto">
                         <Input
                             placeholder="חיפוש בהודעות"
                             value={searchTerm}
@@ -541,7 +539,7 @@ export default function Messages() {
                     </div>
 
                     {/* Conversations List */}
-                    <div className="space-y-2.5 mb-6 w-[858px] mx-auto">
+                    <div className="space-y-3 mb-6 w-full max-w-4xl mx-auto">
                         {loading ? (
                             <div className="flex justify-center items-center py-12">
                                 <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
@@ -562,7 +560,7 @@ export default function Messages() {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ duration: 0.3, delay: index * 0.1 }}
-                                        className="flex items-center justify-between p-3 bg-[#F4F9FF] mb-2 hover:bg-[#EBF5FF] cursor-pointer transition-colors h-14 rounded-lg"
+                                        className="flex items-center justify-between p-4 bg-[#F4F9FF] mb-2 hover:bg-[#EBF5FF] cursor-pointer transition-colors h-16 rounded-xl border border-blue-50"
                                         onClick={() => handleConversationSelect(conversation)}
                                     >
                                         <div className="flex items-center gap-4">
