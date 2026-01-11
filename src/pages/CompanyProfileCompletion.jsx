@@ -116,10 +116,15 @@ export default function CompanyProfileCompletion() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await updateProfile(companyData);
+      // Remove office_phone if it exists (schema mismatch fix)
+      // eslint-disable-next-line no-unused-vars
+      const { office_phone, ...dataToSave } = companyData;
+
+      await updateProfile(dataToSave);
       return true;
     } catch (error) {
       console.error("Failed to save company data", error);
+      toast.error("שגיאה בשמירת הנתונים: " + (error.message || "נא לנסות שנית"));
       return false;
     } finally {
       setSaving(false);
