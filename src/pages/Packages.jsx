@@ -170,7 +170,7 @@ export default function Packages() {
                                 <path d="M16 10V22M10 16H22" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
 
-                            <span className="text-2xl font-bold text-[#1E3A8A] font-['Rubik']">{quantity}</span>
+                            <span className="text-2xl font-bold text-[#1E3A8A] font-['Rubik'] w-6 text-center flex items-center justify-center">{quantity}</span>
 
                             {/* Minus Button - SVG */}
                             <svg
@@ -209,12 +209,12 @@ export default function Packages() {
                                     ) : (
                                         <>
                                             <div className="flex items-baseline gap-1 text-[#003566]">
-                                                <span className="text-[45px] font-normal font-['Rubik']">₪{getPricePerJob(quantity) * quantity}</span>
-                                                <span className="text-2xl font-normal">{quantity === 1 ? '/למשרה' : 'סה״כ'}</span>
+                                                <span className="text-[45px] font-normal font-['Rubik']">₪{getPricePerJob(quantity)}</span>
+                                                <span className="text-2xl font-normal">/למשרה</span>
                                             </div>
                                             {quantity > 1 && (
-                                                <div className="text-sm text-gray-500 mt-1">
-                                                    (₪{getPricePerJob(quantity)} למשרה)
+                                                <div className="text-base text-black mt-1 font-['Rubik'] font-medium">
+                                                    ({(getPricePerJob(quantity) * quantity).toLocaleString()}₪ סה״כ)
                                                 </div>
                                             )}
                                             <div className="w-full h-[3px] bg-[#003566] mt-2 rounded-full"></div>
