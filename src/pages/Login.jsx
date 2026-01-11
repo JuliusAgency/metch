@@ -176,7 +176,7 @@ const Login = () => {
                   className="w-1/2 mx-auto bg-[#2987cd] hover:bg-[#2987cd]/90 text-white rounded-full h-12 text-lg font-bold "
                 >
                   <div className="flex items-center justify-center space-x-3 w-full">
-                    <span className="font-['Secular_One',_sans-serif] text-lg ml-2" dir="auto">
+                    <span className="font-['Rubik',_sans-serif] font-bold text-lg ml-2" dir="auto">
                       התחברו
                     </span>
                     <ArrowLeft className="w-5 h-5 text-white" />
@@ -228,7 +228,7 @@ const Login = () => {
             {/* Register Link */}
             <div className="text-center">
               <p className="text-[#32343d] text-base" dir="auto">
-                <Link to="/Register" className="font-['Secular_One',_sans-serif] text-[#2987cd] hover:underline">
+                <Link to="/Register" className="font-['Rubik',_sans-serif] font-bold text-[#2987cd] hover:underline">
                   הרשמו
                 </Link>
               </p>
