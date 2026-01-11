@@ -178,8 +178,8 @@ export default function Layout({ children, currentPageName }) {
           }
 
           .navbar-custom {
-            background: linear-gradient(90deg, #dde6eb 0%, #f0f8ff 50%, #dde6eb 100%);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(90deg, rgba(221, 230, 235, 0.4) 0%, rgba(240, 248, 255, 0.4) 50%, rgba(221, 230, 235, 0.4) 100%);
+            backdrop-filter: blur(20px) saturate(160%);
           }
         `}
       </style>
@@ -187,7 +187,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Desktop Navbar Wrapper */}
       {!shouldHideHeader && (
         <div className="hidden md:block pt-6 sticky top-0 z-50 pointer-events-none">
-          <header className="navbar-custom w-[98%] md:w-[95%] max-w-7xl mx-auto rounded-full shadow-sm border border-white pointer-events-auto">
+          <header className="navbar-custom w-[75%] md:w-[68%] max-w-7xl mx-auto rounded-full shadow-md border border-white/80 pointer-events-auto transition-all duration-300">
             <div className="flex items-center justify-between px-4 lg:px-8 py-4">
               {/* Icons - Moved to be first for RTL rendering on the right */}
               <div className="flex items-center gap-1">
@@ -339,7 +339,7 @@ export default function Layout({ children, currentPageName }) {
               {/* Logo */}
               {/* Logo with Logout on Hover */}
               <div
-                className="flex items-center gap-2 cursor-pointer min-w-[100px] justify-end"
+                className="flex items-center cursor-pointer w-[140px] h-6 justify-end relative"
                 onMouseEnter={() => setIsLogoHovered(true)}
                 onMouseLeave={() => setIsLogoHovered(false)}
               >
@@ -347,12 +347,12 @@ export default function Layout({ children, currentPageName }) {
                   {isLogoHovered ? (
                     <motion.button
                       key="logout"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 10 }}
                       transition={{ duration: 0.2 }}
                       onClick={handleLogout}
-                      className="flex items-center gap-2 text-gray-900 hover:text-gray-700"
+                      className="flex items-center gap-2 text-gray-900 hover:text-gray-700 whitespace-nowrap"
                     >
                       <span className="text-lg font-medium">התנתקות</span>
                       <LogOut className="w-5 h-5" />
@@ -360,13 +360,13 @@ export default function Layout({ children, currentPageName }) {
                   ) : (
                     <motion.div
                       key="logo"
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 whitespace-nowrap"
                     >
-                      <h1 className="text-gray-800 text-[26px] metch-logo-font">Metch</h1>
+                      <h1 className="text-gray-800 text-[26px] metch-logo-font leading-none">Metch</h1>
                       <img
                         src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png"
                         alt="Metch Logo"
