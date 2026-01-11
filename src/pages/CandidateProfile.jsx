@@ -565,11 +565,25 @@ export default function CandidateProfile() {
       );
     } catch (error) {
       console.error("Error exporting resume:", error);
-      toast({
-        title: "שגיאה בשליחת המייל",
-        description: "לא הצלחנו לשלוח את קורות החיים. נסה שוב מאוחר יותר.",
-        variant: "destructive",
-      });
+
+      const isResendSandboxError = error?.message?.includes("testing emails") ||
+        error?.message?.includes("registered email") ||
+        error?.message?.includes("resend.dev");
+
+      if (isResendSandboxError) {
+        toast({
+          title: "ממתין לאימות דומיין ב-Resend",
+          description: `במצב בדיקה ניתן לשלוח מייל רק לחשבון איתו נרשמת ל-Resend (${user.email}). אם הגדרת מייל קבלה אחר (${user.cv_reception_email}), זה לא יעבוד עד לאימות הדומיין.`,
+          variant: "warning",
+        });
+      } else {
+        toast({
+          title: "שגיאה בשליחת המייל",
+          description: error.message || "לא הצלחנו לשלוח את קורות החיים. נסה שוב מאוחר יותר.",
+          variant: "destructive",
+        });
+      }
+
       await EmployerAnalytics.trackAction(
         user.email,
         "candidate_resume_export_failed",

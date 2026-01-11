@@ -97,7 +97,8 @@ export async function SendEmail({ to, from, subject, html, text, attachments }) 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     console.error('Email Function Error Details:', errorData);
-    throw new Error(`Failed to send email: ${response.statusText}`);
+    const errorMessage = errorData.error || response.statusText;
+    throw new Error(`Failed to send email: ${errorMessage}`);
   }
 
   return await response.json();

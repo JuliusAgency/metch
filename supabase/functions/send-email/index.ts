@@ -33,12 +33,12 @@ serve(async (req) => {
                 'Authorization': `Bearer ${resendApiKey}`
             },
             body: JSON.stringify({
-                from: 'Metch <onboarding@resend.dev>', // Always use this for trial accounts
+                from: 'onboarding@resend.dev', // standard for sandbox
                 to: Array.isArray(to) ? to : [to],
-                reply_to: from, // Employer's email
-                subject,
+                reply_to: from,
+                subject: subject || 'Resume from Metch',
                 html: html || text,
-                text,
+                text: text || 'CV attached',
                 ...(attachments && attachments.length ? { attachments } : {})
             })
         })

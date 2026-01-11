@@ -187,9 +187,9 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Desktop Navbar Wrapper */}
       {!shouldHideHeader && (
-        <div className="hidden md:block pt-6 sticky top-0 z-50 pointer-events-none">
+        <div className="hidden md:block pt-[20px] sticky top-0 z-50 pointer-events-none">
           <header className="navbar-custom w-[75%] md:w-[68%] max-w-7xl mx-auto rounded-full shadow-md border border-white/80 pointer-events-auto transition-all duration-300">
-            <div className="flex items-center justify-between px-4 lg:px-8 py-4">
+            <div className="flex items-center justify-between px-4 lg:px-8 py-3.5">
               {/* Icons - Moved to be first for RTL rendering on the right */}
               <div className="flex items-center gap-1">
                 {/* 1. Home (Both) */}
@@ -433,7 +433,7 @@ export default function Layout({ children, currentPageName }) {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className="flex-1 flex justify-center w-full mt-2 mb-4 px-2">
+      <main className="flex-1 flex justify-center w-full mt-[18px] mb-4 px-2">
         <Card className="w-full max-w-[99%] bg-white/90 shadow-xl border border-gray-100 rounded-[50px] min-h-[92vh] overflow-hidden relative backdrop-blur-sm">
           <div className="h-full">
             {children}

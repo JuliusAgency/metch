@@ -145,8 +145,8 @@ export default function Navbar({ currentPageName, isJobSeeker }) {
     return (
         /* Desktop Navbar Wrapper */
         /* Pill shape, backdrop blur, shadow - matching Figma description */
-        <nav className="hidden md:block pt-6 sticky top-0 z-50 pointer-events-none">
-            <div className="pointer-events-auto w-max max-w-[90vw] mx-auto rounded-full shadow-sm border border-white/50 bg-white/80 backdrop-blur-md px-6 py-3 flex items-center justify-between gap-8" dir="rtl">
+        <nav className="hidden md:block pt-[14px] sticky top-0 z-50 pointer-events-none">
+            <div className="pointer-events-auto w-max max-w-[90vw] mx-auto rounded-full shadow-sm border border-white/50 bg-white/80 backdrop-blur-md px-6 py-2.5 flex items-center justify-between gap-8" dir="rtl">
 
                 {/* Logo Section */}
                 <div className="flex items-center gap-2 select-none">
