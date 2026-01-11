@@ -38,6 +38,7 @@ export default function Layout({ children, currentPageName }) {
   const handleLogout = async () => {
     try {
       await signOut();
+      setIsLogoHovered(false);
       navigate('/Login'); // Or Landing, but Login is standard
     } catch (error) {
       console.error("Error signing out:", error);
