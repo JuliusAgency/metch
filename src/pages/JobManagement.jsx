@@ -68,6 +68,13 @@ export default function JobManagement() {
   }, []);
 
   useEffect(() => {
+    if (user) {
+      const credits = user.job_credits || user.profile?.job_credits || 0;
+      console.log("DEBUG - Remaining Job Credits:", credits);
+    }
+  }, [user]);
+
+  useEffect(() => {
     setCurrentPage(1); // Reset to page 1 when switching views
   }, [activeView]);
 
@@ -413,13 +420,33 @@ export default function JobManagement() {
               </div>
 
               {/* Create New Job Button - Right Side */}
-              <Button
-                onClick={handleCreateNewJob}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg"
-              >
-                <Plus className="w-5 h-5 ml-2" />
-                צור משרה חדשה
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button
+                      onClick={() => {
+                        const hasCredits = (user?.job_credits > 0 || user?.profile?.job_credits > 0);
+                        if (hasCredits) {
+                          handleCreateNewJob();
+                        }
+                      }}
+                      disabled={!(user?.job_credits > 0 || user?.profile?.job_credits > 0)}
+                      className={`px-8 py-3 rounded-full font-bold text-lg shadow-lg ${(user?.job_credits > 0 || user?.profile?.job_credits > 0)
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300'
+                        }`}
+                    >
+                      <Plus className="w-5 h-5 ml-2" />
+                      צור משרה חדשה
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                {!(user?.job_credits > 0 || user?.profile?.job_credits > 0) && (
+                  <TooltipContent>
+                    <p>נגמרה חבילת המשרות שלך</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
             </div>
           </div>
         </div>

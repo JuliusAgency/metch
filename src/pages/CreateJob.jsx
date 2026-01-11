@@ -151,15 +151,19 @@ export default function CreateJob() {
     try {
       const userData = await User.me();
       // Use fresh data from server for reliability
-      const credits = userData?.profile?.job_credits || 0;
+      // Check both locations as structure might vary
+      const credits = userData.job_credits || userData?.profile?.job_credits || 0;
 
       let targetStatus = 'active';
       let showPaymentPrompt = false;
 
       // force 'draft' if no credits, UNLESS we are resuming a paused job (which is already paid for)
+      console.log('DEBUG: Job Submission - Credits:', credits, 'Status:', jobData.status);
+
       if (credits <= 0 && jobData.status !== 'paused') {
         targetStatus = 'draft';
         showPaymentPrompt = true;
+        console.log('DEBUG: No credits, forcing draft');
       }
 
       const now = new Date().toISOString();
@@ -263,7 +267,8 @@ export default function CreateJob() {
 
   const renderStep = () => {
     if (isSubmitted) {
-      return <Success onReset={handleReset} onDuplicate={handleDuplicate} />;
+      const hasCredits = (user?.job_credits > 0 || user?.profile?.job_credits > 0);
+      return <Success onReset={handleReset} onDuplicate={handleDuplicate} hasCredits={hasCredits} />;
     }
 
     switch (step) {

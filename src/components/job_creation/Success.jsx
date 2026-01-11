@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import Lottie from 'lottie-react';
 import confettiAnimation from '../../../Confetti banner.json';
 
-export default function Success({ onReset, onDuplicate }) {
+export default function Success({ onReset, onDuplicate, hasCredits = true }) {
   const navigate = useNavigate();
   return (
     <motion.div
@@ -41,14 +41,18 @@ export default function Success({ onReset, onDuplicate }) {
       <div className="flex justify-center gap-4 mb-8">
         <Button
           onClick={onReset}
-          className="px-8 py-3 h-auto text-lg rounded-full bg-blue-600 hover:bg-blue-700 text-white"
+          disabled={!hasCredits}
+          className={`px-8 py-3 h-auto text-lg rounded-full text-white ${hasCredits ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
+          title={!hasCredits ? "אין יתרת משרות" : "יצירת משרה חדשה"}
         >
           יצירת משרה חדשה
         </Button>
         <Button
           onClick={onDuplicate}
+          disabled={!hasCredits}
           variant="outline"
-          className="px-8 py-3 h-auto text-lg rounded-full border-gray-300 text-gray-700 hover:bg-gray-50"
+          className="px-8 py-3 h-auto text-lg rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          title={!hasCredits ? "אין יתרת משרות" : "שכפול משרה"}
         >
           שכפול משרה
         </Button>

@@ -276,14 +276,37 @@ const EmployerDashboard = ({ user }) => {
           <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
             {/* Enhanced Stats Grid with Real Analytics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 employer-stats">
-              <Card className="relative col-span-2 sm:col-span-1 bg-[#84CC9E] text-white border-0 shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl create-job-card">
-                <Link to={createPageUrl("CreateJob")}>
-                  <CardContent className="p-4 sm:p-6 text-center flex flex-col items-center justify-center h-full">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/30 rounded-full flex items-center justify-center mx-auto mb-3"><Plus className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
-                    <h3 className="font-bold text-base sm:text-lg">פרסום משרה חדשה</h3>
-                  </CardContent>
-                </Link>
-                {showOnboardingHint && (
+              <Card className={`relative col-span-2 sm:col-span-1 border-0 shadow-md transition-all duration-300 rounded-2xl create-job-card ${(user?.job_credits > 0 || user?.profile?.job_credits > 0)
+                  ? 'bg-[#84CC9E] text-white hover:shadow-lg cursor-pointer'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}>
+                <div onClick={(e) => {
+                  if (!(user?.job_credits > 0 || user?.profile?.job_credits > 0)) {
+                    e.preventDefault();
+                    // Optional: Add toast here
+                  }
+                }}>
+                  {(user?.job_credits > 0 || user?.profile?.job_credits > 0) ? (
+                    <Link to={createPageUrl("CreateJob")}>
+                      <CardContent className="p-4 sm:p-6 text-center flex flex-col items-center justify-center h-full">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <Plus className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                        </div>
+                        <h3 className="font-bold text-base sm:text-lg">פרסום משרה חדשה</h3>
+                        <p className="text-sm opacity-90 mt-1">יתרה: {user?.job_credits || user?.profile?.job_credits || 0}</p>
+                      </CardContent>
+                    </Link>
+                  ) : (
+                    <CardContent className="p-4 sm:p-6 text-center flex flex-col items-center justify-center h-full">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Plus className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" />
+                      </div>
+                      <h3 className="font-bold text-base sm:text-lg">פרסום משרה חדשה</h3>
+                      <p className="text-sm mt-1">אין יתרת משרות</p>
+                    </CardContent>
+                  )}
+                </div>
+                {showOnboardingHint && (user?.job_credits > 0 || user?.profile?.job_credits > 0) && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
