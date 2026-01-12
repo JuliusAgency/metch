@@ -31,7 +31,9 @@ export default function CompanyProfileCompletion() {
     company_phone: "",
     full_name: "",
     phone: "",
-    is_phone_verified: false
+    is_phone_verified: false,
+    bio: "",
+    social_links: {}
   });
 
   const [packageData, setPackageData] = useState({
@@ -70,7 +72,16 @@ export default function CompanyProfileCompletion() {
           company_phone: user.company_phone || "",
           full_name: user.full_name || "",
           phone: user.phone || "",
-          is_phone_verified: user.is_phone_verified || false
+          is_phone_verified: user.is_phone_verified || false,
+          bio: user.bio || "",
+          social_links: {
+            website: user.portfolio_url || "",
+            facebook: user.facebook_url || "",
+            instagram: user.instagram_url || "",
+            linkedin: user.linkedin_url || "",
+            twitter: user.twitter_url || "",
+            tiktok: ""
+          }
         }));
       } catch (error) {
         console.error("Error loading user data:", error);
@@ -116,9 +127,18 @@ export default function CompanyProfileCompletion() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Remove office_phone if it exists (schema mismatch fix)
+      // Remove office_phone and social_links (handle separately)
       // eslint-disable-next-line no-unused-vars
-      const { office_phone, ...dataToSave } = companyData;
+      const { office_phone, social_links, ...dataToSave } = companyData;
+
+      // Map social_links back to DB columns
+      if (social_links) {
+        dataToSave.portfolio_url = social_links.website || null;
+        dataToSave.facebook_url = social_links.facebook || null;
+        dataToSave.instagram_url = social_links.instagram || null;
+        dataToSave.linkedin_url = social_links.linkedin || null;
+        dataToSave.twitter_url = social_links.twitter || null;
+      }
 
       await updateProfile(dataToSave);
       return true;
