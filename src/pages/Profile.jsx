@@ -165,7 +165,7 @@ export default function Profile() {
         variant: "warning",
         title: "שגיאה בהעלאת הקובץ",
         description: error.message.includes("Bucket not found")
-          ? "שגיאת מערכת: באקט האחסון לא קיים. אנא פנה לתמיכה."
+          ? "שגיאת מערכת: באקט האחסון לא קיים. אנא לפנות לתמיכה."
           : error.message.includes("row-level security policy")
             ? "שגיאת הרשאה: אין לך הרשאה להעלות קבצים. אנא וודא שהוגדרה מדיניות (Policy) מתאימה ב-Supabase Storage."
             : "אירעה שגיאה בעת העלאת הקובץ. אנא נסה שנית.",
@@ -223,7 +223,7 @@ export default function Profile() {
         onClick={() => fileInputRef.current?.click()}
       >
         <UploadCloud className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900">העלה קורות חיים</h3>
+        <h3 className="text-lg font-medium text-gray-900">העלאת קורות חיים</h3>
         <p className="mt-1 text-sm text-gray-500">גרור קובץ או לחץ כדי לבחור (PDF, DOCX)</p>
       </div>
 
@@ -289,7 +289,7 @@ export default function Profile() {
             className="flex items-center gap-2 text-[#FF4D4D] hover:text-red-700 transition-colors"
           >
             <Trash2 className="w-4 h-4" />
-            מחק קובץ
+            מחיקת קובץ
           </button>
 
           {cvData.personal_details && (

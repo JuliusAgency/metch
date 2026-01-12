@@ -145,7 +145,7 @@ export default function JobManagement() {
       ));
       toast({
         title: "שגיאה",
-        description: "לא ניתן היה לעדכן את סטטוס המשרה",
+        description: "לא ניתן היה לעדכון את סטטוס המשרה",
         variant: "destructive"
       });
     }
@@ -437,7 +437,7 @@ export default function JobManagement() {
                         }`}
                     >
                       <Plus className="w-5 h-5 ml-2" />
-                      צור משרה חדשה
+                      יצירת משרה חדשה
                     </Button>
                   </div>
                 </TooltipTrigger>

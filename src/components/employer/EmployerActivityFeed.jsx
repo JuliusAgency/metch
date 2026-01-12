@@ -32,12 +32,12 @@ const ACTION_CONFIG = {
   },
   job_view: {
     icon: Eye,
-    label: 'צפה במשרה',
+    label: 'צפייה במשרה',
     color: 'bg-gray-100 text-gray-700'
   },
   candidate_view: {
     icon: User,
-    label: 'צפה במועמד',
+    label: 'צפייה במועמד',
     color: 'bg-purple-100 text-purple-700'
   },
   application_review: {
@@ -47,7 +47,7 @@ const ACTION_CONFIG = {
   },
   message_send: {
     icon: MessageCircle,
-    label: 'שלח הודעה',
+    label: 'שליחת הודעה',
     color: 'bg-pink-100 text-pink-700'
   },
   job_pause: {

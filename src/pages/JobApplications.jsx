@@ -242,7 +242,7 @@ export default function JobApplications() {
                               disabled={creatingConversation}
                             >
                               <Mail className="w-4 h-4 ml-1" />
-                              שלח הודעה
+                              שליחת הודעה
                             </Button>
                           </div>
                         </div>

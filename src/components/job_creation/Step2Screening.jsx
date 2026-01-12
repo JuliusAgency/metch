@@ -89,7 +89,7 @@ const DynamicQuestionInput = ({ type, placeholder, questions, onAdd, onRemove })
 
         </div>
         <Button type="button" onClick={handleAddItem} className="bg-slate-50 text-blue-600 px-4 py-2 text-sm font-semibold inline-flex items-center justify-center gap-2 rounded-md ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 hover:text-blue-800 whitespace-nowrap">
-          + הוסף שאלה
+          + הוספת שאלה
         </Button>
       </div>
       {safeQuestions.filter((q) => q.type === type).length > 0 &&

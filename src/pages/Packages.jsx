@@ -80,7 +80,7 @@ export default function Packages() {
         if (!paymentData.cardNumber || !paymentData.expiryDate || !paymentData.cvv) {
             toast({
                 title: "חסרים פרטי תשלום",
-                description: "נא לעדכן את אמצעי התשלום לפני ביצוע הרכישה",
+                description: "נא לעדכון את אמצעי התשלום לפני ביצוע הרכישה",
                 variant: "destructive"
             });
             setShowPaymentModal(true);
@@ -195,7 +195,7 @@ export default function Packages() {
                             {/* Price Section (Right side in RTL) */}
                             <div className="flex-1 flex flex-col items-center justify-start py-4">
                                 <div className="bg-[#EBF5FF] text-[#003566] px-4 py-1.5 rounded-full text-xs font-medium mb-6">
-                                    {quantity >= 10 ? 'פנה לנציג' : 'תשלום חד פעמי'}
+                                    {quantity >= 10 ? 'פנייה לנציג' : 'תשלום חד פעמי'}
                                 </div>
                                 <div className="flex flex-col items-center">
                                     {quantity >= 10 ? (

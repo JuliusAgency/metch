@@ -108,7 +108,7 @@ export default function JobDetails() {
       console.error("Error updating job status:", error);
       toast({
         title: "שגיאה",
-        description: "לא ניתן היה לעדכן את סטטוס המשרה",
+        description: "לא ניתן היה לעדכון את סטטוס המשרה",
         variant: "destructive"
       });
     }
@@ -453,7 +453,7 @@ export default function JobDetails() {
                   <Link to={createPageUrl(`JobApplications?job_id=${job.id}`)}>
                     <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                       <Users className="w-4 h-4 ml-2" />
-                      צפה במועמדים ({applications.length})
+                      צפייה במועמדים ({applications.length})
                     </Button>
                   </Link>
                 </div>

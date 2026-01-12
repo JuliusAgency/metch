@@ -221,7 +221,7 @@ export default function JobSeekerProfileCompletion() {
                 {/* Social Input - Compact */}
                 <div className="mb-6 max-w-md mx-auto relative w-full">
                     <Input
-                        placeholder="הוסף קישור"
+                        placeholder="הוספת קישור"
                         value={socialLinks[activeSocial] || ''}
                         onChange={(e) => handleSocialLinkChange(activeSocial, e.target.value)}
                         onBlur={saveSocials}

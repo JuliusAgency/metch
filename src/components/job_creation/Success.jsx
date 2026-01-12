@@ -35,7 +35,7 @@ export default function Success({ onReset, onDuplicate, hasCredits = true }) {
         <h1 className="text-3xl font-bold text-gray-900 mb-2 relative z-10">משרה פורסמה בהצלחה</h1>
       </div>
       <p className="text-gray-600 text-lg mb-8">
-        תחילת פרסום באפליקטיביט {format(new Date(), 'dd.MM.yy')}
+        המשרה זמינה עבורך בעמוד ׳ניהול משרות׳
       </p>
 
       <div className="flex justify-center gap-4 mb-8">
@@ -62,7 +62,7 @@ export default function Success({ onReset, onDuplicate, hasCredits = true }) {
           className="px-8 py-3 h-auto text-lg rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2"
         >
           <Home className="w-5 h-5" />
-          סיום / לדף הבית
+           לדף הבית
         </Button>
       </div>
     </motion.div>

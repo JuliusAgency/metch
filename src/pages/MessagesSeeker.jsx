@@ -493,7 +493,7 @@ export default function MessagesSeeker() {
                                     <Headphones className="w-6 h-6 text-white" />
                                 </div>
                                 <div className="text-right">
-                                    <p className="font-bold text-blue-800">צור קשר עם התמיכה</p>
+                                    <p className="font-bold text-blue-800">יצירת קשר עם התמיכה</p>
                                     <p className="text-sm text-blue-600">יש לך שאלה? אנחנו כאן לעזור</p>
                                 </div>
                             </div>

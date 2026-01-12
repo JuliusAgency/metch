@@ -99,7 +99,7 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
             {/* Price Section (Right side in RTL) */}
             <div className="flex-1 flex flex-col items-center justify-start py-4">
               <div className="bg-[#EBF5FF] text-[#003566] px-4 py-1.5 rounded-full text-xs font-medium mb-6">
-                {quantity >= 10 ? 'פנה לנציג' : 'תשלום חד פעמי'}
+                {quantity >= 10 ? 'פנייה לנציג' : 'תשלום חד פעמי'}
               </div>
 
               <div className="flex flex-col items-center">
@@ -109,7 +109,7 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
                     className="bg-[#1e293b] hover:bg-[#0f172a] text-white rounded-full px-8 py-6 text-lg font-bold shadow-lg transition-all hover:scale-105"
                   >
                     <MessageCircle className="w-5 h-5 ml-2" />
-                    התחל שיחה עם נציג אישי
+                    התחלת שיחה עם נציג אישי
                   </Button>
                 ) : (
                   <>

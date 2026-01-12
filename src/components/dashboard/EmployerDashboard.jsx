@@ -277,8 +277,8 @@ const EmployerDashboard = ({ user }) => {
             {/* Enhanced Stats Grid with Real Analytics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 employer-stats">
               <Card className={`relative col-span-2 sm:col-span-1 border-0 shadow-md transition-all duration-300 rounded-2xl create-job-card ${(user?.job_credits > 0 || user?.profile?.job_credits > 0)
-                  ? 'bg-[#84CC9E] text-white hover:shadow-lg cursor-pointer'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                ? 'bg-[#84CC9E] text-white hover:shadow-lg cursor-pointer'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}>
                 <div onClick={(e) => {
                   if (!(user?.job_credits > 0 || user?.profile?.job_credits > 0)) {
@@ -362,7 +362,7 @@ const EmployerDashboard = ({ user }) => {
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               </div>
               <div className="flex gap-2 w-full md:w-auto">
-                <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${candidateFilter === 'watched' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`} onClick={() => handleFilterChange('watched')}>מועמדים שצפיתי</Button>
+                <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${candidateFilter === 'watched' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`} onClick={() => handleFilterChange('watched')}>מועמדים שנצפוי</Button>
                 <Button className={`px-6 py-2 rounded-full font-semibold flex-1 md:flex-none transition-colors ${candidateFilter === 'new' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`} onClick={() => handleFilterChange('new')}>מועמדים חדשים</Button>
               </div>
             </div>

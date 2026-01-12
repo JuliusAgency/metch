@@ -126,7 +126,7 @@ export default function ViewQuestionnaire() {
                                     onClick={handleStartConversation}
                                     disabled={actionInProgress}
                                 >
-                                    {actionInProgress ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : "שלח הודעה למועמד"}
+                                    {actionInProgress ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : "שליחת הודעה למועמד"}
                                 </Button>
                                 <Button
                                     size="lg"

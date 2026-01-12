@@ -83,7 +83,7 @@ export default function Step1({
                     </PopoverTrigger>
                     <PopoverContent className="w-[300px] p-0" align="start" dir="rtl">
                         <Command>
-                            <CommandInput placeholder="חפש איזור או עיר..." className="text-right gap-2" />
+                            <CommandInput placeholder="חיפוש איזור או עיר..." className="text-right gap-2" />
                             <CommandList>
                                 <CommandEmpty>לא נמצא מיקום.</CommandEmpty>
                                 <CommandGroup className="max-h-[300px] overflow-y-auto">
@@ -123,13 +123,13 @@ export default function Step1({
                         >
                             {preferences.profession_search
                                 ? preferences.profession_search
-                                : "חפש מקצוע"}
+                                : "חיפוש מקצוע"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[300px] p-0" align="start" dir="rtl">
                         <Command>
-                            <CommandInput placeholder="חפש מקצוע..." className="text-right gap-2" />
+                            <CommandInput placeholder="חיפוש מקצוע..." className="text-right gap-2" />
                             <CommandList>
                                 <CommandEmpty>לא נמצא מקצוע.</CommandEmpty>
                                 <CommandGroup className="max-h-[300px] overflow-y-auto">

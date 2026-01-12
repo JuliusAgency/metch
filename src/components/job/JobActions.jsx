@@ -53,7 +53,7 @@ const JobActions = ({ job, handleStatusChange, applications }) => (
         <Link to={createPageUrl(`JobApplications?job_id=${job.id}`)}>
             <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                 <Users className="w-4 h-4 ml-2" />
-                צפה במועמדים ({applications.length})
+                צפייה במועמדים ({applications.length})
             </Button>
         </Link>
     </div>

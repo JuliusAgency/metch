@@ -317,7 +317,7 @@ export default function CreateJob() {
       // If has questions
       return 'המשך';
     }
-    if (isFinalStep) return isEditing ? 'עדכן משרה' : 'סיום ופרסום';
+    if (isFinalStep) return isEditing ? 'עדכון משרה' : 'סיום וצפייה במשרה';
     return 'המשך';
   };
 

@@ -243,7 +243,7 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
           </PopoverTrigger>
           <PopoverContent className="w-[300px] p-0" align="start" dir="rtl">
             <Command>
-              <CommandInput placeholder="חפש עיר..." className="text-right gap-2" />
+              <CommandInput placeholder="חיפוש עיר..." className="text-right gap-2" />
               <CommandList>
                 <CommandEmpty>לא נמצאה עיר.</CommandEmpty>
                 <CommandGroup className="max-h-[300px] overflow-y-auto">

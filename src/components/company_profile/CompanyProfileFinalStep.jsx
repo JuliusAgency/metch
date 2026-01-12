@@ -176,7 +176,7 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
                                         <Copy className="w-4 h-4 text-gray-400" />
                                     </div>
                                 </div>
-                                <span className="text-sm font-medium text-gray-600 ml-auto mr-0">הוסף קישור</span>
+                                <span className="text-sm font-medium text-gray-600 ml-auto mr-0">הוספת קישור</span>
                             </div>
                         )}
                     </div>

@@ -260,7 +260,7 @@ ET`;
                                                 className="bg-white hover:bg-blue-50 text-[#1E3A8A] border-blue-200 rounded-full px-4 py-1 h-9 flex items-center gap-2 text-xs font-medium whitespace-nowrap order-1"
                                             >
                                                 <FileOutput className="w-3.5 h-3.5 scale-x-[-1]" />
-                                                ייצא
+                                                ייצוא למייל
                                             </Button>
                                             <Button
                                                 variant="outline"
