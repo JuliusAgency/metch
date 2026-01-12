@@ -29,7 +29,7 @@ export default function JobApplications() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creatingConversation, setCreatingConversation] = useState(false);
-  const [user, setUser] = useState(null);
+  const [applicantProfiles, setApplicantProfiles] = useState({});
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -50,6 +50,21 @@ export default function JobApplications() {
 
         const appResults = await JobApplication.filter({ job_id: jobId });
         setApplications(appResults);
+
+        // Fetch profiles for applicants to get their IDs
+        const uniqueEmails = [...new Set(appResults.map(a => a.applicant_email))];
+        const profilesMap = {};
+        await Promise.all(uniqueEmails.map(async (email) => {
+          try {
+            const results = await UserProfile.filter({ email });
+            if (results.length > 0) {
+              profilesMap[email] = results[0];
+            }
+          } catch (e) {
+            console.error(`Error fetching profile for ${email}`, e);
+          }
+        }));
+        setApplicantProfiles(profilesMap);
       }
     } catch (error) {
       console.error("Error loading applications:", error);
@@ -184,20 +199,66 @@ export default function JobApplications() {
                   >
                     <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300">
                       <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <Badge className={config.color}>{config.label}</Badge>
-                            <div className="flex items-center gap-2">
-                              <Star className="w-4 h-4 text-yellow-500" />
-                              <span className="font-bold text-blue-600">{matchScore}%</span>
+                        <div className="flex flex-col gap-4">
+                          {/* Top Row: Info and Buttons */}
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-4 flex-1">
+                              <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0 bg-blue-100 flex items-center justify-center">
+                                <UserIcon className="w-8 h-8 text-blue-500" />
+                              </div>
+                              <div className="text-right">
+                                <h3 className="font-bold text-lg text-gray-900 leading-tight">
+                                  {application.applicant_email}
+                                </h3>
+                                <p className="text-gray-500 text-sm mt-0.5">
+                                  הוגש ב-{format(new Date(application.created_date), "dd/MM/yyyy")}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <Link to={createPageUrl(`CandidateProfile?id=${applicantProfiles[application.applicant_email]?.id || ''}`)}>
+                                <Button
+                                  className={`text-white px-6 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-candidate-button transition-colors duration-300 ${matchScore >= 80 ? 'bg-green-400 hover:bg-green-500' : 'bg-orange-400 hover:bg-orange-500'
+                                    }`}
+                                >
+                                  לצפייה
+                                </Button>
+                              </Link>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="rounded-full border-gray-300 hover:bg-gray-100 px-3 h-9"
+                                onClick={() => handleStartConversation(application)}
+                                disabled={creatingConversation}
+                              >
+                                <Mail className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Middle Row: Status and Selection */}
+                          <div className="flex items-center gap-4 bg-gray-50/50 p-2 rounded-xl border border-gray-100">
+                            <Badge className={`${config.color} px-3 py-1 rounded-lg text-xs font-bold`}>{config.label}</Badge>
+                            <div className="flex-1">
+                              <select
+                                value={application.status}
+                                onChange={(e) => updateApplicationStatus(application.id, e.target.value)}
+                                className="px-3 py-1 border border-gray-200 rounded-lg text-xs bg-white shadow-xs focus:ring-2 focus:ring-blue-500/20 outline-none transition-all w-full max-w-[150px]"
+                              >
+                                {Object.entries(statusConfig).map(([value, config]) => (
+                                  <option key={value} value={value}>{config.label}</option>
+                                ))}
+                              </select>
                             </div>
                             {application.resume_url && (
                               <a
                                 href={application.resume_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                className="flex-shrink-0"
                               >
-                                <Button variant="outline" size="sm">
+                                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 font-bold p-0 px-2 h-8 text-xs">
                                   <FileText className="w-4 h-4 ml-1" />
                                   קורות חיים
                                 </Button>
@@ -205,46 +266,18 @@ export default function JobApplications() {
                             )}
                           </div>
 
-                          <div className="flex-1 px-6 text-right">
-                            <div className="flex items-center justify-end gap-3 mb-2">
-                              <div>
-                                <p className="font-semibold text-gray-900">{application.applicant_email}</p>
-                                <p className="text-sm text-gray-600">
-                                  הוגש ב-{format(new Date(application.created_date), "dd/MM/yyyy")}
-                                </p>
-                              </div>
-                              <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
-                                <UserIcon className="w-6 h-6 text-blue-600" />
+                          {/* Bottom Row: Match Bar */}
+                          {matchScore !== null && (
+                            <div className="relative h-5 bg-gray-200 rounded-full overflow-hidden shadow-inner w-full">
+                              <div
+                                className={`absolute right-0 top-0 h-full transition-all duration-700 ${matchScore >= 80 ? 'bg-green-400/90' : 'bg-orange-400/90'}`}
+                                style={{ width: `${matchScore}%` }}
+                              ></div>
+                              <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-black z-10 pointer-events-none">
+                                {matchScore}% התאמה
                               </div>
                             </div>
-
-                            {application.cover_letter && (
-                              <div className="text-sm text-gray-700 mt-2 max-w-md">
-                                <p className="line-clamp-2">{application.cover_letter}</p>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex flex-col gap-2">
-                            <select
-                              value={application.status}
-                              onChange={(e) => updateApplicationStatus(application.id, e.target.value)}
-                              className="px-3 py-1 border border-gray-300 rounded-lg text-sm"
-                            >
-                              {Object.entries(statusConfig).map(([value, config]) => (
-                                <option key={value} value={value}>{config.label}</option>
-                              ))}
-                            </select>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleStartConversation(application)}
-                              disabled={creatingConversation}
-                            >
-                              <Mail className="w-4 h-4 ml-1" />
-                              שלח הודעה
-                            </Button>
-                          </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
