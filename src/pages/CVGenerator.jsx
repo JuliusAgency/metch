@@ -61,6 +61,36 @@ const normalizeCvRecord = (record = {}) => ({
   skills: ensureArray(record.skills)
 });
 
+const mergeProfileToCv = (cvData, userData) => {
+  console.log("[CVGenerator] Merging Profile to CV", { userData, cvData });
+  if (!userData) return cvData;
+  const normalized = normalizeCvRecord(cvData);
+
+  // Helper to ensure date is in YYYY-MM-DD format for date inputs
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    if (typeof dateStr !== 'string') return '';
+    const formatted = dateStr.split('T')[0];
+    console.log("[CVGenerator] Formatting Date:", { original: dateStr, formatted });
+    return formatted;
+  };
+
+  const birthDate = formatDate(userData.date_of_birth) || normalized.personal_details.birth_date || '';
+  console.log("[CVGenerator] Final Birth Date Choice:", birthDate);
+
+  return {
+    ...normalized,
+    personal_details: {
+      ...normalized.personal_details,
+      full_name: userData.full_name || normalized.personal_details.full_name || '',
+      email: userData.email || normalized.personal_details.email || '',
+      phone: userData.phone || normalized.personal_details.phone || '',
+      gender: userData.gender || normalized.personal_details.gender || '',
+      birth_date: birthDate
+    }
+  };
+};
+
 const ChoiceCard = ({ title, description, imageSrc, onClick, isSelected }) => (
   <motion.div
     whileHover={{ scale: 1.02 }}
@@ -175,15 +205,16 @@ export default function CVGenerator() {
             }
 
             if (isDraftValid && draftCvData) {
-              const normalizedData = normalizeCvRecord(draftCvData);
-              setCvData(normalizedData);
+              console.log("[CVGenerator] Loading Draft for user:", userData.email);
+              const mergedData = mergeProfileToCv(draftCvData, userData);
+              setCvData(mergedData);
 
               // Restore step ONLY if URL choice is NOT present
               if (!urlChoice) {
                 setStep(draftStep || 1);
               }
 
-              const isValid = validatePersonalDetails(normalizedData.personal_details);
+              const isValid = validatePersonalDetails(mergedData.personal_details);
               setIsStep1Valid(isValid);
 
               const existingCvs = await CV.filter({ user_email: userData.email });
@@ -201,11 +232,12 @@ export default function CVGenerator() {
         // Fallback to DB if no draft
         const existingCvs = await CV.filter({ user_email: userData.email });
         if (existingCvs.length > 0) {
-          const normalizedData = normalizeCvRecord(existingCvs[0]);
-          setCvData(normalizedData);
+          console.log("[CVGenerator] Loading existing CV from DB");
+          const mergedData = mergeProfileToCv(existingCvs[0], userData);
+          setCvData(mergedData);
           setCvId(existingCvs[0].id);
 
-          const isValid = validatePersonalDetails(normalizedData.personal_details);
+          const isValid = validatePersonalDetails(mergedData.personal_details);
           setIsStep1Valid(isValid);
 
           // Restore step ONLY if URL choice is NOT present
@@ -213,14 +245,7 @@ export default function CVGenerator() {
             setStep(1);
           }
         } else {
-          setCvData((prev) => ({
-            ...prev,
-            personal_details: {
-              full_name: userData.full_name || '',
-              email: userData.email || '',
-              phone: userData.phone || ''
-            }
-          }));
+          setCvData(mergeProfileToCv({}, userData));
         }
       } catch (error) {
         console.error("Error loading initial data", error);
@@ -337,11 +362,13 @@ export default function CVGenerator() {
       // Sync personal details to UserProfile whenever we save
       if (cvData.personal_details) {
         try {
-          const { full_name, phone, address } = cvData.personal_details;
+          const { full_name, phone, address, gender, birth_date } = cvData.personal_details;
           await User.updateMyUserData({
             ...(full_name && { full_name }),
             ...(phone && { phone }),
             ...(address && { preferred_location: address }),
+            ...(gender && { gender }),
+            ...(birth_date && { date_of_birth: birth_date }),
           });
         } catch (err) {
           console.error("Failed to update user profile with CV details", err);

@@ -34,7 +34,11 @@ const JobListItem = ({ job, index, savedJobs, toggleSaveJob, user }) => (
                         >
                             <Heart className={`w-5 h-5 ${savedJobs.includes(job.id) ? 'fill-current' : ''}`} />
                         </Button>
-                        <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-6 py-2 rounded-full font-bold">
+                        <Button
+                            asChild
+                            className={`text-white px-6 py-2 rounded-full font-bold shadow-sm transition-colors duration-300 ${job.match_score >= 80 ? 'bg-green-400 hover:bg-green-500' : 'bg-orange-400 hover:bg-orange-500'
+                                }`}
+                        >
                             <Link
                                 to={createPageUrl(`JobDetailsSeeker?id=${job.id}&from=JobSearch`)}
                                 onClick={() => {
@@ -50,15 +54,15 @@ const JobListItem = ({ job, index, savedJobs, toggleSaveJob, user }) => (
                     </div>
 
                     {job.match_score !== null && (
-                        <div className="text-center min-w-[120px]">
-                            <div className="text-sm text-gray-600 mb-2">{job.match_score}% התאמה</div>
-                            <div dir="ltr" className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="text-center min-w-[140px]">
+                            <div className="relative h-6 bg-gray-200 rounded-full overflow-hidden shadow-inner w-full">
                                 <div
-                                    className={`h-full transition-all duration-500 ${job.match_score >= 85 ? 'bg-green-400' :
-                                        job.match_score >= 70 ? 'bg-yellow-400' : 'bg-orange-400'
-                                        }`}
+                                    className={`absolute right-0 top-0 h-full transition-all duration-700 ${job.match_score >= 80 ? 'bg-green-400/90' : 'bg-orange-400/90'}`}
                                     style={{ width: `${job.match_score}%` }}
                                 ></div>
+                                <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-black z-10 pointer-events-none">
+                                    {job.match_score}% התאמה
+                                </div>
                             </div>
                         </div>
                     )}

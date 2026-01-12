@@ -114,15 +114,15 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
                 ) : (
                   <>
                     <div className="flex items-baseline gap-1 text-[#003566]">
-                      <span className="text-[45px] font-normal font-['Rubik']">₪{getPricePerJob(quantity) * quantity}</span>
-                      <span className="text-2xl font-normal">{quantity === 1 ? '/למשרה' : 'סה״כ'}</span>
+                      <span className="text-[45px] font-normal font-['Rubik']">₪{getPricePerJob(quantity)}</span>
+                      <span className="text-2xl font-normal">/למשרה</span>
                     </div>
                     {quantity > 1 && (
-                      <div className="text-sm text-gray-500 mt-1">
-                        (₪{getPricePerJob(quantity)} למשרה)
+                      <div className="text-lg text-[#003566] mt-1 font-['Rubik'] font-bold">
+                        ({(getPricePerJob(quantity) * quantity).toLocaleString()}₪ סה״כ)
                       </div>
                     )}
-                    <div className="w-full h-[3px] bg-[#003566] mt-2 rounded-full"></div>
+                    <div className="w-full h-[3px] bg-[#003566] mt-1 rounded-full"></div>
                   </>
                 )}
               </div>

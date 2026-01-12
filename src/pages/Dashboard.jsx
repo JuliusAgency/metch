@@ -401,14 +401,18 @@ const JobSeekerDashboard = ({ user }) => {
 
           {/* Notification Carousel */}
           <Card className="bg-[#E7F2F7] shadow-none border-0 rounded-lg notification-carousel">
-            <CardContent className="p-4">
+            <CardContent className="py-2.5 px-4">
               <div className="flex items-center justify-between">
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handleNextNotification} disabled={notifications.length <= 1}><ChevronRight className="w-6 h-6 text-blue-600" /></Button>
+                <Button variant="ghost" className="rounded-full hover:bg-blue-200/50 flex-shrink-0 w-8 h-8 p-0" onClick={handleNextNotification} disabled={notifications.length <= 1}>
+                  <ChevronRight className="w-5 h-5 text-blue-600" />
+                </Button>
                 <div className="text-center flex items-center gap-3 overflow-hidden">
                   <p className="text-blue-800 font-semibold text-sm sm:text-base whitespace-nowrap">{notifications[currentNotificationIndex]?.message || "אין התראות חדשות"}</p>
-                  {notifications.length > 1 && (<div className="hidden sm:flex gap-1.5">{notifications.map((_, index) => (<div key={index} className={`w-2.5 h-2.5 rounded-full ${index === currentNotificationIndex ? 'bg-blue-600' : 'bg-gray-300'}`} />))}</div>)}
+                  {notifications.length > 1 && (<div className="hidden sm:flex gap-1.5">{notifications.map((_, index) => (<div key={index} className={`w-2 h-2 rounded-full ${index === currentNotificationIndex ? 'bg-blue-600' : 'bg-gray-300'}`} />))}</div>)}
                 </div>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handlePrevNotification} disabled={notifications.length <= 1}><ChevronLeft className="w-6 h-6 text-blue-600" /></Button>
+                <Button variant="ghost" className="rounded-full hover:bg-blue-200/50 flex-shrink-0 w-8 h-8 p-0" onClick={handlePrevNotification} disabled={notifications.length <= 1}>
+                  <ChevronLeft className="w-5 h-5 text-blue-600" />
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -450,56 +454,80 @@ const JobSeekerDashboard = ({ user }) => {
                   transition={{ duration: 0.4 }}
                 >
                   <Card className="bg-white border border-gray-200/90 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12)] hover:shadow-xl transition-all duration-300 rounded-2xl p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">
-                        <img src={job.company_logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=random`} alt={job.company} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="text-right">
-                        <h3 className="font-bold text-lg text-gray-900">{job.title}</h3>
-                        <p className="text-gray-600 text-sm">{job.company}</p>
-                        <div className="flex gap-2 text-xs mt-2 flex-wrap justify-end">
-                          <span className="flex items-center gap-1 bg-[#eaf5fc] text-[#001a6e] px-2.5 py-1 rounded-lg border border-blue-100/50 font-bold">
-                            <MapPin className="w-3 h-3 ml-1 text-[#001a6e]" />{job.location}
-                          </span>
-                          <span className="flex items-center gap-1 bg-[#eaf5fc] text-[#001a6e] px-2.5 py-1 rounded-lg border border-blue-100/50 font-bold">
-                            <Briefcase className="w-3 h-3 ml-1 text-[#001a6e]" />משרה מלאה
-                          </span>
-                          <span className="flex items-center gap-1 bg-[#eaf5fc] text-[#001a6e] px-2.5 py-1 rounded-lg border border-blue-100/50 font-bold">
-                            <Clock className="w-3 h-3 ml-1 text-[#001a6e]" />{job.start_date || 'מיידי'}
-                          </span>
-                        </div>
-                      </div>
-                      {job.match_score !== null && (
-                        <div className="flex-1 text-right">
-                          <div className="text-sm text-gray-600 mb-1.5">{job.match_score}% התאמה</div>
-                          <div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                            <div className={`h-full transition-all duration-500 ${job.match_score >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${job.match_score}%` }}></div>
+                    <div className="flex flex-col gap-4">
+                      {/* Top Row: Info/Logo (left) and Button (right) */}
+                      <div className="flex items-center justify-between gap-4">
+                        {/* Left: Info and Logo */}
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">
+                            <img src={job.company_logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=random`} alt={job.company} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="text-left">
+                            <h3 className="font-bold text-lg text-gray-900 leading-tight">{job.title}</h3>
+                            <p className="text-gray-500 text-sm mt-0.5">{job.company}</p>
                           </div>
                         </div>
-                      )}
-                      <Button asChild className={`${appliedJobIds.has(String(job.id))
-                        ? 'bg-gray-200 text-gray-700 hover:bg-gray-200'
-                        : viewedJobIds.has(String(job.id))
-                          ? 'bg-gray-400 hover:bg-gray-500 text-white'
-                          : 'bg-[#84CC9E] hover:bg-green-500 text-white'
-                        } px-5 py-2 rounded-full font-bold w-36 view-job-button`}>
-                        <Link
-                          to={createPageUrl(`JobDetailsSeeker?id=${job.id}&from=Dashboard`)}
-                          onClick={() => {
-                            // Track job view when user clicks to view details
-                            if (user?.email) {
-                              UserAnalytics.trackJobView(user, job); // Pass full user object
-                              setViewedJobIds(prev => new Set(prev).add(String(job.id)));
-                            }
-                          }}
-                        >
-                          {appliedJobIds.has(String(job.id))
-                            ? "הוגשה מועמדות"
+
+                        {/* Right: Button */}
+                        <div className="flex-shrink-0">
+                          <Button asChild className={`${appliedJobIds.has(String(job.id))
+                            ? 'bg-gray-200 text-gray-700 hover:bg-gray-200'
                             : viewedJobIds.has(String(job.id))
-                              ? "נצפה"
-                              : "צפייה"}
-                        </Link>
-                      </Button>
+                              ? 'bg-gray-400 hover:bg-gray-500 text-white'
+                              : job.match_score >= 80
+                                ? 'bg-green-400 hover:bg-green-500 text-white'
+                                : 'bg-orange-400 hover:bg-orange-500 text-white'
+                            } px-4 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-job-button transition-colors duration-300`}>
+                            <Link
+                              to={createPageUrl(`JobDetailsSeeker?id=${job.id}&from=Dashboard`)}
+                              onClick={() => {
+                                // Track job view when user clicks to view details
+                                if (user?.email) {
+                                  UserAnalytics.trackJobView(user, job); // Pass full user object
+                                  setViewedJobIds(prev => new Set(prev).add(String(job.id)));
+                                }
+                              }}
+                            >
+                              {appliedJobIds.has(String(job.id))
+                                ? "הוגשה מועמדות"
+                                : viewedJobIds.has(String(job.id))
+                                  ? "נצפה"
+                                  : "צפייה"}
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Bottom Row: Chips (left) and Match Bar (right) */}
+                      <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+                        {/* Left: Chips Area */}
+                        <div className="flex gap-2 text-xs flex-wrap">
+                          <span className="flex items-center gap-1 bg-[#eaf5fc] text-[#001a6e] px-2.5 py-1 rounded-lg border border-blue-100/50 font-bold whitespace-nowrap">
+                            <Clock className="w-3 h-3 ml-1 text-[#001a6e]" />{job.start_date || 'מיידי'}
+                          </span>
+                          <span className="flex items-center gap-1 bg-[#eaf5fc] text-[#001a6e] px-2.5 py-1 rounded-lg border border-blue-100/50 font-bold whitespace-nowrap">
+                            <Briefcase className="w-3 h-3 ml-1 text-[#001a6e]" />משרה מלאה
+                          </span>
+                          <span className="flex items-center gap-1 bg-[#eaf5fc] text-[#001a6e] px-2.5 py-1 rounded-lg border border-blue-100/50 font-bold whitespace-nowrap">
+                            <MapPin className="w-3 h-3 ml-1 text-[#001a6e]" />{job.location}
+                          </span>
+                        </div>
+
+                        {/* Right: Match Score Bar */}
+                        {job.match_score !== null && (
+                          <div className="flex-1 relative h-5 bg-gray-200 rounded-full overflow-hidden shadow-inner w-full">
+                            {/* Progress Fill - Right to Left */}
+                            <div
+                              className={`absolute right-0 top-0 h-full transition-all duration-700 ${job.match_score >= 80 ? 'bg-green-400/90' : 'bg-orange-400/90'}`}
+                              style={{ width: `${job.match_score}%` }}
+                            ></div>
+                            {/* Centered Text inside bar */}
+                            <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-black z-10 pointer-events-none">
+                              {job.match_score}% התאמה
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </Card>
                 </motion.div>
@@ -914,14 +942,18 @@ const EmployerDashboard = ({ user }) => {
 
 
           <Card className="bg-[#E7F2F7] shadow-none border-0 rounded-lg notification-carousel">
-            <CardContent className="p-4">
+            <CardContent className="py-2.5 px-4">
               <div className="flex items-center justify-between">
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handleNextNotification} disabled={notifications.length <= 1}><ChevronRight className="w-6 h-6 text-blue-600" /></Button>
+                <Button variant="ghost" className="rounded-full hover:bg-blue-200/50 flex-shrink-0 w-8 h-8 p-0" onClick={handleNextNotification} disabled={notifications.length <= 1}>
+                  <ChevronRight className="w-5 h-5 text-blue-600" />
+                </Button>
                 <div className="text-center flex items-center gap-3 overflow-hidden">
                   <p className="text-blue-800 font-semibold text-sm sm:text-base whitespace-nowrap">{notifications[currentNotificationIndex]?.message || "אין התראות חדשות"}</p>
-                  {notifications.length > 1 && (<div className="hidden sm:flex gap-1.5">{notifications.map((_, index) => (<div key={index} className={`w-2.5 h-2.5 rounded-full ${index === currentNotificationIndex ? 'bg-blue-600' : 'bg-gray-300'}`} />))}</div>)}
+                  {notifications.length > 1 && (<div className="hidden sm:flex gap-1.5">{notifications.map((_, index) => (<div key={index} className={`w-2 h-2 rounded-full ${index === currentNotificationIndex ? 'bg-blue-600' : 'bg-gray-300'}`} />))}</div>)}
                 </div>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handlePrevNotification} disabled={notifications.length <= 1}><ChevronLeft className="w-6 h-6 text-blue-600" /></Button>
+                <Button variant="ghost" className="rounded-full hover:bg-blue-200/50 flex-shrink-0 w-8 h-8 p-0" onClick={handlePrevNotification} disabled={notifications.length <= 1}>
+                  <ChevronLeft className="w-5 h-5 text-blue-600" />
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -985,62 +1017,76 @@ const EmployerDashboard = ({ user }) => {
                 <motion.div key={candidate.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
                   <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl">
                     <CardContent className="p-4">
-                      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                        <div className="flex items-center gap-4 self-start md:self-center">
-                          <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0"><div className="w-full h-full bg-blue-200 flex items-center justify-center"><UserIcon className="w-8 h-8 text-blue-500" /></div></div>
-                          <div className="text-right">
-                            <h3 className="font-bold text-lg text-gray-900">
-                              {(() => {
-                                if (candidate.full_name && candidate.full_name.trim().length > 0) return candidate.full_name;
-                                if (candidate.email) return candidate.email;
-                                return 'מועמד ללא שם';
-                              })()}
-                            </h3>
-                            <p className="text-gray-500 text-sm mb-2">
-                              {jobAppliedTo || candidate.experience_level?.replace('_', ' ') || "ללא ניסיון"}
-                            </p>
-
-                            {/* Info Chips (Location, Type, Availability) */}
-                            <div className="flex flex-wrap gap-2 items-center justify-start">
-                              {/* Location */}
-                              <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium border border-blue-100/50">
-                                <MapPin className="w-3 h-3" />
-                                <span className="truncate max-w-[80px] sm:max-w-none">{candidate.preferred_location || "לא צוין"}</span>
-                              </div>
-
-                              {/* Job Type */}
-                              <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium border border-blue-100/50">
-                                <Briefcase className="w-3 h-3" />
-                                <span>
-                                  {candidate.preferred_job_types?.length > 0
-                                    ? (jobTypeText[candidate.preferred_job_types[0]] || candidate.preferred_job_types[0])
-                                    : "לא צוין"}
-                                </span>
-                              </div>
-
-                              {/* Availability */}
-                              <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium border border-blue-100/50">
-                                <Clock className="w-3 h-3" />
-                                <span>
-                                  {candidate.availability
-                                    ? (availabilityText[candidate.availability] || candidate.availability)
-                                    : "לא צוין"}
-                                </span>
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-4 flex-1">
+                            <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">
+                              <div className="w-full h-full bg-blue-200 flex items-center justify-center">
+                                <UserIcon className="w-8 h-8 text-blue-500" />
                               </div>
                             </div>
+                            <div className="text-right">
+                              <h3 className="font-bold text-lg text-gray-900 leading-tight">
+                                {(() => {
+                                  if (candidate.full_name && candidate.full_name.trim().length > 0) return candidate.full_name;
+                                  if (candidate.email) return candidate.email;
+                                  return 'מועמד ללא שם';
+                                })()}
+                              </h3>
+                              <p className="text-gray-500 text-sm mt-0.5">
+                                {jobAppliedTo || candidate.experience_level?.replace('_', ' ') || "ללא ניסיון"}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex-shrink-0">
+                            <Button
+                              className={`text-white px-6 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-candidate-button transition-colors duration-300 ${match >= 80 ? 'bg-green-400 hover:bg-green-500' : 'bg-orange-400 hover:bg-orange-500'
+                                }`}
+                              onClick={() => handleCandidateClick(candidate, match)}
+                            >
+                              לצפייה
+                            </Button>
                           </div>
                         </div>
 
+                        <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+                          <div className="flex flex-wrap gap-2 items-center justify-start">
+                            <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg border border-blue-100/50 text-xs font-bold">
+                              <MapPin className="w-3.5 h-3.5" />
+                              <span>{candidate.preferred_location || "לא צוין"}</span>
+                            </div>
 
+                            <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg border border-blue-100/50 text-xs font-bold">
+                              <Briefcase className="w-3.5 h-3.5" />
+                              <span>
+                                {candidate.preferred_job_types?.length > 0
+                                  ? (jobTypeText[candidate.preferred_job_types[0]] || candidate.preferred_job_types[0])
+                                  : "לא צוין"}
+                              </span>
+                            </div>
 
-                        <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full md:w-auto justify-end">
-                          <div className="w-full sm:w-48 text-right"><div className="text-sm text-gray-600 mb-1.5">{match}% התאמה</div><div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden"><div className={`h-full transition-all duration-500 ${match >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${match}%` }}></div></div></div>
-                          <Button
-                            className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-full sm:w-auto view-candidate-button"
-                            onClick={() => handleCandidateClick(candidate, match)}
-                          >
-                            לצפייה
-                          </Button>
+                            <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg border border-blue-100/50 text-xs font-bold">
+                              <Clock className="w-3.5 h-3.5" />
+                              <span>
+                                {candidate.availability
+                                  ? (availabilityText[candidate.availability] || candidate.availability)
+                                  : "לא צוין"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {match !== null && (
+                            <div className="flex-1 relative h-5 bg-gray-200 rounded-full overflow-hidden shadow-inner w-full">
+                              <div
+                                className={`absolute right-0 top-0 h-full transition-all duration-700 ${match >= 80 ? 'bg-green-400/90' : 'bg-orange-400/90'}`}
+                                style={{ width: `${match}%` }}
+                              ></div>
+                              <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-black z-10 pointer-events-none">
+                                {match}% התאמה
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </CardContent>

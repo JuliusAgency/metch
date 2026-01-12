@@ -393,65 +393,83 @@ const EmployerDashboard = ({ user }) => {
                     <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl">
                       <CardContent className="p-4">
                         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                          <div className="flex items-center gap-4 self-start md:self-center basis-1/3">
-                            <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0"><div className="w-full h-full bg-blue-200 flex items-center justify-center"><UserIcon className="w-8 h-8 text-blue-500" /></div></div>
-                            <div className="text-right">
-                              <h3 className="font-bold text-lg text-gray-900">
-                                {(() => {
-                                  if (candidate.full_name && candidate.full_name.trim().length > 0) return candidate.full_name;
-                                  if (candidate.email) return candidate.email;
-                                  return 'מועמד ללא שם';
-                                })()}
-                              </h3>
-                              <p className="text-gray-600">{candidate.experience_level?.replace('_', ' ') || "ללא ניסיון"}</p>
-                            </div>
-                          </div>
-
-                          {/* New Info Section */}
-                          <div className="flex flex-wrap md:flex-nowrap gap-x-6 gap-y-2 items-center justify-start md:justify-center text-sm text-gray-600 w-full md:w-auto basis-1/3">
-                            <div className="flex items-center gap-1">
-                              <MapPin className="w-4 h-4 text-blue-500" />
-                              <span>{candidate.preferred_location || "לא צוין"}</span>
-                            </div>
-
-                            {jobAppliedTo && (
-                              <div className="flex items-center gap-1 font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
-                                <FileText className="w-4 h-4" />
-                                <span>{jobAppliedTo}</span>
+                          <div className="flex flex-col gap-4">
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-4 flex-1">
+                                <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">
+                                  <div className="w-full h-full bg-blue-200 flex items-center justify-center">
+                                    <UserIcon className="w-8 h-8 text-blue-500" />
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <h3 className="font-bold text-lg text-gray-900 leading-tight">
+                                    {(() => {
+                                      if (candidate.full_name && candidate.full_name.trim().length > 0) return candidate.full_name;
+                                      if (candidate.email) return candidate.email;
+                                      return 'מועמד ללא שם';
+                                    })()}
+                                  </h3>
+                                  <p className="text-gray-500 text-sm mt-0.5">
+                                    {jobAppliedTo || candidate.experience_level?.replace('_', ' ') || "ללא ניסיון"}
+                                  </p>
+                                </div>
                               </div>
-                            )}
 
-                            <div className="w-full sm:w-auto flex flex-wrap gap-4">
-                              <div className="flex items-center gap-1">
-                                <Briefcase className="w-4 h-4 text-gray-400" />
-                                <span>
-                                  {candidate.preferred_job_types?.length > 0
-                                    ? (jobTypeText[candidate.preferred_job_types[0]] || candidate.preferred_job_types[0])
-                                    : "לא צוין"}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-4 h-4 text-gray-400" />
-                                <span>
-                                  {candidate.availability
-                                    ? (availabilityText[candidate.availability] || candidate.availability)
-                                    : "לא צוין"}
-                                </span>
+                              <div className="flex-shrink-0">
+                                <Button
+                                  asChild
+                                  className={`text-white px-6 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-candidate-button transition-colors duration-300 ${match >= 80 ? 'bg-green-400 hover:bg-green-500' : 'bg-orange-400 hover:bg-orange-500'
+                                    }`}
+                                >
+                                  <Link
+                                    to={createPageUrl(`CandidateProfile?id=${candidate.id}`)}
+                                    state={{ from: `${location.pathname}?filter=${candidateFilter}` }}
+                                    onClick={() => handleViewCandidate(candidate)}
+                                  >
+                                    לצפייה
+                                  </Link>
+                                </Button>
                               </div>
                             </div>
-                          </div>
 
-                          <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full md:w-auto basis-1/3 justify-end">
-                            <div className="w-full sm:w-48 text-right"><div className="text-sm text-gray-600 mb-1.5">{match}% התאמה</div><div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden"><div className={`h-full transition-all duration-500 ${match >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${match}%` }}></div></div></div>
-                            <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-full sm:w-auto view-candidate-button">
-                              <Link
-                                to={createPageUrl(`CandidateProfile?id=${candidate.id}`)}
-                                state={{ from: `${location.pathname}?filter=${candidateFilter}` }}
-                                onClick={() => handleViewCandidate(candidate)}
-                              >
-                                לצפייה
-                              </Link>
-                            </Button>
+                            <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+                              <div className="flex flex-wrap gap-2 items-center justify-start">
+                                <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg border border-blue-100/50 text-xs font-bold">
+                                  <MapPin className="w-3.5 h-3.5" />
+                                  <span>{candidate.preferred_location || "לא צוין"}</span>
+                                </div>
+
+                                <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg border border-blue-100/50 text-xs font-bold">
+                                  <Briefcase className="w-3.5 h-3.5" />
+                                  <span>
+                                    {candidate.preferred_job_types?.length > 0
+                                      ? (jobTypeText[candidate.preferred_job_types[0]] || candidate.preferred_job_types[0])
+                                      : "לא צוין"}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg border border-blue-100/50 text-xs font-bold">
+                                  <Clock className="w-3.5 h-3.5" />
+                                  <span>
+                                    {candidate.availability
+                                      ? (availabilityText[candidate.availability] || candidate.availability)
+                                      : "לא צוין"}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {match !== null && (
+                                <div className="flex-1 relative h-5 bg-gray-200 rounded-full overflow-hidden shadow-inner w-full">
+                                  <div
+                                    className={`absolute right-0 top-0 h-full transition-all duration-700 ${match >= 80 ? 'bg-green-400/90' : 'bg-orange-400/90'}`}
+                                    style={{ width: `${match}%` }}
+                                  ></div>
+                                  <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-black z-10 pointer-events-none">
+                                    {match}% התאמה
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </CardContent>

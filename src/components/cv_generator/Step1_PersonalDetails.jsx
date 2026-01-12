@@ -45,7 +45,7 @@ const PillSelect = ({ name, placeholder, value, onValueChange, children }) => (
   </Select>
 );
 
-const getBirthDateValue = (source) => source?.birth_date || source?.birthDate || '';
+const getBirthDateValue = (source) => source?.birth_date || source?.birthDate || source?.date_of_birth || '';
 const REQUIRED_FIELDS = ['firstName', 'lastName', 'phone', 'address', 'birthDate', 'gender'];
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -80,28 +80,52 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     onValidityChange(isFormComplete(formState));
   }, [onValidityChange]);
 
+  // Helper to ensure date is in YYYY-MM-DD format for date inputs
+  const sanitizeDateForInput = (input) => {
+    if (!input) return '';
+    if (input instanceof Date) {
+      const year = input.getFullYear();
+      const month = `${input.getMonth() + 1}`.padStart(2, '0');
+      const day = `${input.getDate()}`.padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    if (typeof input !== 'string') return '';
+    // If it's Hebrew format (DD/MM/YYYY), convert it
+    if (input.includes('/')) {
+      const parts = input.split('/');
+      if (parts.length === 3 && parts[2].length === 4) {
+        return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      }
+    }
+    return input.split('T')[0];
+  };
+
   useEffect(() => {
-    // Initialize local state from parent data or user data
-    const fullName = data?.full_name || user?.full_name || '';
-    const nameParts = fullName.split(' ');
+    console.log("[Step1] Initializing with data:", { data, user });
+
+    // TRUTH: Always prioritize active user profile for identity fields
+    const fullName = user?.full_name || data?.full_name || '';
+    const nameParts = fullName.split(/\s+/);
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
 
-    const savedAddress = data?.address || user?.preferred_location || '';
+    const savedAddress = user?.preferred_location || data?.address || '';
     const isValidAddress = locationsList.includes(savedAddress);
+
+    const profileBirthDate = getBirthDateValue(user);
+    const cvBirthDate = getBirthDateValue(data);
 
     const initialState = {
       firstName: firstName,
       lastName: lastName,
-      phone: data?.phone || user?.phone || '',
+      phone: user?.phone || data?.phone || '',
       address: isValidAddress ? savedAddress : '',
-      birthDate: getBirthDateValue(data) || '',
-      address: isValidAddress ? savedAddress : '',
-      birthDate: getBirthDateValue(data) || '',
-      gender: data?.gender || '',
+      birthDate: sanitizeDateForInput(profileBirthDate || cvBirthDate),
+      gender: user?.gender || data?.gender || '',
       is_phone_verified: data?.is_phone_verified || false
     };
 
+    console.log("[Step1] Final Initial State:", initialState);
     setLocalData(initialState);
     notifyValidity(initialState);
   }, [data, user, notifyValidity]);
@@ -127,7 +151,8 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     if (name === 'phone' && !/^\d*$/.test(value)) return;
 
     const sanitizedValue = name === 'birthDate' ? value.trim() : value;
-    const nextValue = name === 'birthDate' && sanitizedValue && !DATE_REGEX.test(sanitizedValue)
+    // Lenient validation for the local state to allow ISO strings from DB to pass through before being sliced by the input[type=date]
+    const nextValue = name === 'birthDate' && sanitizedValue && sanitizedValue.length < 10
       ? ''
       : sanitizedValue;
 
@@ -163,16 +188,9 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     });
   };
 
-  const formatDateForInput = (date) => {
-    const year = date.getFullYear();
-    const month = `${date.getMonth() + 1}`.padStart(2, '0');
-    const day = `${date.getDate()}`.padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
   const today = new Date();
-  const maxBirthDate = formatDateForInput(new Date(today.getFullYear() - 15, today.getMonth(), today.getDate()));
-  const minBirthDate = formatDateForInput(new Date(today.getFullYear() - 100, today.getMonth(), today.getDate()));
+  const maxBirthDate = sanitizeDateForInput(new Date(today.getFullYear() - 15, today.getMonth(), today.getDate()));
+  const minBirthDate = sanitizeDateForInput(new Date(today.getFullYear() - 100, today.getMonth(), today.getDate()));
 
   const handleSelectChange = (value) => {
     setLocalData(prev => {

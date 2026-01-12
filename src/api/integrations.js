@@ -71,11 +71,23 @@ export async function InvokeLLM({
  * @param {string} params.subject - Email subject
  * @param {string} params.html - HTML content
  * @param {string} params.text - Plain text content
+ * @param {Array} params.attachments - Array of attachment objects
  * @returns {Promise<Object>} Send result
  */
 export async function SendEmail({ to, from, subject, html, text, attachments }) {
+  const resendKey = import.meta.env.VITE_RESEND_API_KEY;
+  
+  // If we have a direct Resend API key, we can try calling Resend directly
+  // Note: Only works if CORS is handled or via proxy. 
+  // However, usually it's best to use the Edge Function for security.
+  // We'll keep the Edge Function logic as primary but update it to be cleaner.
+
   const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`;
   const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  if (!anonKey) {
+    throw new Error('Supabase configuration missing');
+  }
 
   const response = await fetch(url, {
     method: 'POST',
@@ -86,18 +98,21 @@ export async function SendEmail({ to, from, subject, html, text, attachments }) 
     },
     body: JSON.stringify({
       to,
-      from,
+      from: from || 'onboarding@resend.dev', // Fallback for testing
       subject,
       html,
       text,
-      attachments
+      attachments,
+      // Pass the API key if it's available in frontend (though usually it should be in Edge Function secrets)
+      apiKey: resendKey 
     })
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     console.error('Email Function Error Details:', errorData);
-    throw new Error(`Failed to send email: ${response.statusText}`);
+    const errorMessage = errorData.error || errorData.message || response.statusText;
+    throw new Error(`Failed to send email: ${errorMessage}`);
   }
 
   return await response.json();

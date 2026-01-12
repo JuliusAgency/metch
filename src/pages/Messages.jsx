@@ -401,103 +401,132 @@ export default function Messages() {
 
     if (selectedConversation) {
         return (
-            <div className="h-full relative flex flex-col" dir="rtl">
-                <div className="relative h-[calc(100vh-70px)] flex flex-col w-full">
-                    <ChatHeader
-                        setSelectedConversation={setSelectedConversation}
-                        selectedConversation={selectedConversation}
-                        ConversationStatusIndicator={ConversationStatusIndicator}
+            <div className="h-[98vh] relative flex flex-col w-full mx-auto pt-[4px] pb-[26px]" dir="rtl">
+                {/* Background "Back Card" with Arch */}
+                <div className="absolute inset-0 bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-lg border border-white/50 -z-10 overflow-hidden">
+                    <div
+                        className="absolute top-[-12px] left-0 right-0 h-[112px]"
+                        style={{
+                            backgroundImage: `url(${settingsHeaderBg})`,
+                            backgroundSize: '100% 100%',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
+                        }}
                     />
-                    <div className="flex-1 p-6 overflow-y-auto space-y-4">
-                        {loadingMessages && (
-                            <div className="flex justify-center items-center py-8">
-                                <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
-                            </div>
-                        )}
+                </div>
 
-                        {/* Job Status Message if job is closed/filled */}
-                        {!loadingMessages && selectedConversation.job_status && ['filled', 'filled_via_metch', 'closed'].includes(selectedConversation.job_status) && (
-                            <div className="bg-gray-100 rounded-lg p-4 text-center">
-                                <p className="text-sm text-gray-600">
-                                    {selectedConversation.job_status === 'filled' && "המשרה הזו כבר אוישה"}
-                                    {selectedConversation.job_status === 'filled_via_metch' && "המשרה הזו אוישה דרך המערכת"}
-                                    {selectedConversation.job_status === 'closed' && "המשרה הזו נסגרה על ידי המעסיק"}
-                                </p>
-                            </div>
-                        )}
+                {/* Back Button - Moved out of the background container to ensure it's clickable */}
+                <button
+                    onClick={() => setSelectedConversation(null)}
+                    className="absolute top-6 right-8 w-9 h-9 bg-white/50 rounded-full flex items-center justify-center hover:bg-white/80 transition-all shadow-md z-30 border border-white/50 group"
+                >
+                    <ChevronRight className="w-5 h-5 text-[#348dcf] group-hover:scale-110 transition-transform" />
+                </button>
 
-                        <AnimatePresence>
-                            {!loadingMessages && messages.map((message, index) => {
-                                const isMyMessage = message.sender_email === user?.email;
-                                const messageDate = new Date(message.created_date || message.created_at);
-                                const previousMessage = messages[index - 1];
-                                const previousDate = previousMessage ? new Date(previousMessage.created_date || previousMessage.created_at) : null;
+                {/* Title Above Card - Brought closer to the card and lifted */}
+                <div className="relative z-10 text-center mt-[60px] mb-0">
+                    <h1 className="text-xl md:text-2xl font-bold text-[#001a6e] drop-shadow-sm">הודעות</h1>
+                </div>
 
-                                const showDateSeparator = !previousDate ||
-                                    messageDate.toDateString() !== previousDate.toDateString();
+                {/* Chat Container - Now split for the "cut" effect */}
+                <div className="relative h-[72vh] flex flex-col w-[63%] mx-auto mt-[15px] mb-4">
+                    {/* Message List Area - Sharpened corners (3px) and no border */}
+                    <div className="flex-1 overflow-hidden bg-white shadow-[0_4px_16px_rgba(0,0,0,0.12)] rounded-t-[3px] flex flex-col">
+                        <div className="flex-1 p-8 overflow-y-auto space-y-6 bg-gray-50/30">
+                            {loadingMessages && (
+                                <div className="flex justify-center items-center py-8">
+                                    <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
+                                </div>
+                            )}
 
-                                let dateSeparatorText = "";
-                                if (showDateSeparator) {
-                                    const today = new Date();
-                                    const yesterday = new Date();
-                                    yesterday.setDate(today.getDate() - 1);
+                            {/* Job Status Message if job is closed/filled */}
+                            {!loadingMessages && selectedConversation.job_status && ['filled', 'filled_via_metch', 'closed'].includes(selectedConversation.job_status) && (
+                                <div className="bg-gray-100 rounded-lg p-4 text-center">
+                                    <p className="text-sm text-gray-600">
+                                        {selectedConversation.job_status === 'filled' && "המשרה הזו כבר אוישה"}
+                                        {selectedConversation.job_status === 'filled_via_metch' && "המשרה הזו אוישה דרך המערכת"}
+                                        {selectedConversation.job_status === 'closed' && "המשרה הזו נסגרה על ידי המעסיק"}
+                                    </p>
+                                </div>
+                            )}
 
-                                    if (messageDate.toDateString() === today.toDateString()) {
-                                        dateSeparatorText = "היום";
-                                    } else if (messageDate.toDateString() === yesterday.toDateString()) {
-                                        dateSeparatorText = "אתמול";
-                                    } else {
-                                        dateSeparatorText = safeFormatDate(messageDate, "dd.MM.yy");
+                            <AnimatePresence>
+                                {!loadingMessages && messages.map((message, index) => {
+                                    const isMyMessage = message.sender_email === user?.email;
+                                    const messageDate = new Date(message.created_date || message.created_at);
+                                    const previousMessage = messages[index - 1];
+                                    const previousDate = previousMessage ? new Date(previousMessage.created_date || previousMessage.created_at) : null;
+
+                                    const showDateSeparator = !previousDate ||
+                                        messageDate.toDateString() !== previousDate.toDateString();
+
+                                    let dateSeparatorText = "";
+                                    if (showDateSeparator) {
+                                        const today = new Date();
+                                        const yesterday = new Date();
+                                        yesterday.setDate(today.getDate() - 1);
+
+                                        if (messageDate.toDateString() === today.toDateString()) {
+                                            dateSeparatorText = "היום";
+                                        } else if (messageDate.toDateString() === yesterday.toDateString()) {
+                                            dateSeparatorText = "אתמול";
+                                        } else {
+                                            dateSeparatorText = safeFormatDate(messageDate, "dd.MM.yy");
+                                        }
                                     }
-                                }
 
-                                return (
-                                    <div key={message.id}>
-                                        {showDateSeparator && dateSeparatorText && (
-                                            <div className="flex items-center justify-center my-6 relative">
-                                                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                                                    <div className="w-full border-t border-gray-200"></div>
+                                    return (
+                                        <div key={message.id}>
+                                            {showDateSeparator && dateSeparatorText && (
+                                                <div className="flex items-center justify-center my-6 relative">
+                                                    <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                                                        <div className="w-full border-t border-gray-200"></div>
+                                                    </div>
+                                                    <div className="relative bg-white px-4 text-xs text-gray-500 font-medium border border-gray-200 rounded-full py-1 shadow-sm">
+                                                        {dateSeparatorText}
+                                                    </div>
                                                 </div>
-                                                <div className="relative bg-white px-4 text-xs text-gray-500 font-medium border border-gray-200 rounded-full py-1 shadow-sm">
-                                                    {dateSeparatorText}
+                                            )}
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.2 }}
+                                                className={`flex ${isMyMessage ? 'justify-start' : 'justify-end'} mb-2`}
+                                            >
+                                                <div className={`flex flex-col max-w-xs lg:max-w-md ${isMyMessage ? 'items-start' : 'items-end'}`}>
+                                                    <div className={`px-5 py-3 text-sm font-light shadow-sm break-words ${isMyMessage
+                                                        ? 'bg-[#001a6e] text-white rounded-2xl rounded-br-none'
+                                                        : 'bg-[#F2F4F7] text-gray-800 rounded-2xl rounded-bl-none'
+                                                        }`}>
+                                                        {message.content}
+                                                    </div>
+                                                    <div className="flex items-center gap-1 mt-1 px-1">
+                                                        <span className="text-[10px] text-gray-400">
+                                                            {safeFormatDate(message.created_date || message.created_at, "HH:mm")}
+                                                        </span>
+                                                        {isMyMessage && (
+                                                            <CheckCheck className="w-3 h-3 text-green-500" />
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.2 }}
-                                            className={`flex ${isMyMessage ? 'justify-start' : 'justify-end'} mb-2`}
-                                        >
-                                            <div className={`flex flex-col max-w-xs lg:max-w-md ${isMyMessage ? 'items-start' : 'items-end'}`}>
-                                                <div className={`px-5 py-3 text-sm font-light shadow-sm break-words ${isMyMessage
-                                                    ? 'bg-[#001a6e] text-white rounded-2xl rounded-br-none'
-                                                    : 'bg-[#F2F4F7] text-gray-800 rounded-2xl rounded-bl-none'
-                                                    }`}>
-                                                    {message.content}
-                                                </div>
-                                                <div className="flex items-center gap-1 mt-1 px-1">
-                                                    <span className="text-[10px] text-gray-400">
-                                                        {safeFormatDate(message.created_date || message.created_at, "HH:mm")}
-                                                    </span>
-                                                    {isMyMessage && (
-                                                        <CheckCheck className="w-3 h-3 text-green-500" />
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    </div>
-                                );
-                            })}
-                        </AnimatePresence>
+                                            </motion.div>
+                                        </div>
+                                    );
+                                })}
+                            </AnimatePresence>
+                        </div>
                     </div>
-                    <MessageInput
-                        newMessage={newMessage}
-                        setNewMessage={setNewMessage}
-                        sendMessage={sendMessage}
-                        sendingMessage={sendingMessage}
-                        selectedConversation={selectedConversation}
-                    />
+
+                    {/* Input Area - Separate card with 12px gap, sharpened corners (3px), and no border */}
+                    <div className="mt-3 bg-white shadow-[0_4px_16px_rgba(0,0,0,0.12)] rounded-b-[3px] overflow-hidden">
+                        <MessageInput
+                            newMessage={newMessage}
+                            setNewMessage={setNewMessage}
+                            sendMessage={sendMessage}
+                            sendingMessage={sendingMessage}
+                            selectedConversation={selectedConversation}
+                        />
+                    </div>
                 </div>
             </div>
         );
@@ -506,7 +535,7 @@ export default function Messages() {
     return (
         <div className="h-full relative" dir="rtl">
             <div className="relative">
-                <div className="relative h-24 overflow-hidden w-full">
+                <div className="relative h-[92px] overflow-hidden w-full">
                     <div
                         className="absolute inset-0 w-full h-full"
                         style={{
@@ -523,13 +552,11 @@ export default function Messages() {
                         <ChevronRight className="w-6 h-6 text-gray-800" />
                     </button>
                 </div>
-
-                <div className="p-2 sm:p-4 md:p-6 -mt-12 relative z-10 w-full">
+                <div className="p-2 sm:p-4 md:p-6 -mt-[50px] relative z-10 max-w-7xl w-[75%] mx-auto bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-lg border border-white/50 mb-8 mt-[-3.125rem]">
                     <div className="text-center pb-4">
                         <h1 className="text-2xl md:text-3xl font-bold text-[#001a6e]">הודעות</h1>
                     </div>
-
-                    <div className="relative mb-4 w-1/3 mx-auto">
+                    <div className="relative mb-8 w-full max-w-md mx-auto">
                         <Input
                             placeholder="חיפוש בהודעות"
                             value={searchTerm}
@@ -541,7 +568,7 @@ export default function Messages() {
                     </div>
 
                     {/* Conversations List */}
-                    <div className="space-y-2.5 mb-6 w-[858px] mx-auto">
+                    <div className="space-y-3 mb-6 w-full max-w-4xl mx-auto">
                         {loading ? (
                             <div className="flex justify-center items-center py-12">
                                 <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
@@ -562,7 +589,7 @@ export default function Messages() {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ duration: 0.3, delay: index * 0.1 }}
-                                        className="flex items-center justify-between p-3 bg-[#F4F9FF] mb-2 hover:bg-[#EBF5FF] cursor-pointer transition-colors h-14 rounded-lg"
+                                        className="flex items-center justify-between p-4 bg-[#F4F9FF] mb-2 hover:bg-[#EBF5FF] cursor-pointer transition-colors h-16 rounded-xl border border-blue-50"
                                         onClick={() => handleConversationSelect(conversation)}
                                     >
                                         <div className="flex items-center gap-4">
@@ -608,4 +635,4 @@ export default function Messages() {
             </div>
         </div>
     );
-}
+};
