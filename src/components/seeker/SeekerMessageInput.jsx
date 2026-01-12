@@ -1,23 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send } from "lucide-react";
+import sendIcon from "../../assets/send-icon.png";
 
 const SeekerMessageInput = ({ newMessage, setNewMessage, sendMessage, sendingMessage }) => (
-    <div className="border-t border-gray-200 p-6">
+    <div className="p-3">
         <form onSubmit={sendMessage} className="flex flex-row-reverse gap-2 items-center">
             <Button
                 type="submit"
                 disabled={!newMessage.trim() || sendingMessage}
-                className="bg-[#E6F4FF] hover:bg-blue-100 rounded-full w-10 h-10 flex-shrink-0 transition-colors"
+                className="bg-[#dbecf3] hover:bg-[#c6e1ed] rounded-xl w-[52px] h-[52px] flex-shrink-0 transition-all shadow-sm flex items-center justify-center"
                 size="icon"
             >
-                <Send className="w-4 h-4 text-blue-600" />
+                <img src={sendIcon} alt="שלח" className="w-5 h-5 object-contain" />
             </Button>
             <Input
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="הקלד כאן..."
-                className="flex-1 rounded-full h-10 pr-4 pl-4 text-right border-gray-200 focus:border-blue-400 text-sm font-light shadow-sm"
+                className="flex-1 rounded-[3px] h-9 pr-4 pl-4 text-right border-0 focus:ring-1 focus:ring-blue-100 text-sm font-light shadow-none bg-white"
                 dir="rtl"
                 disabled={sendingMessage}
             />

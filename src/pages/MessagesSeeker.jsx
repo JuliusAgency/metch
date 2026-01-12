@@ -363,83 +363,114 @@ export default function MessagesSeeker() {
 
     if (selectedConversation) {
         return (
-            <div className="h-full relative flex flex-col max-w-7xl w-[75%] mx-auto" dir="rtl">
-                <div className="relative h-[calc(98vh-100px)] flex flex-col w-full bg-white shadow-xl rounded-2xl overflow-hidden mt-0">
-                    <SeekerChatHeader
-                        setSelectedConversation={setSelectedConversation}
-                        selectedConversation={selectedConversation}
+            <div className="h-[98vh] relative flex flex-col w-full mx-auto pt-[4px] pb-[26px]" dir="rtl">
+                {/* Background "Back Card" with Arch */}
+                <div className="absolute inset-0 bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-lg border border-white/50 -z-10 overflow-hidden">
+                    <div
+                        className="absolute top-[-12px] left-0 right-0 h-[112px]"
+                        style={{
+                            backgroundImage: `url(${settingsHeaderBg})`,
+                            backgroundSize: '100% 100%',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
+                        }}
                     />
-                    <div className="flex-1 p-8 overflow-y-auto space-y-6 bg-gray-50/30">
-                        {loadingMessages && (
-                            <div className="flex justify-center items-center py-8">
-                                <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
-                            </div>
-                        )}
-                        <AnimatePresence>
-                            {!loadingMessages && messages.map((message, index) => {
-                                const messageDate = new Date(message.created_date || message.created_at);
-                                const previousMessage = messages[index - 1];
-                                const previousDate = previousMessage ? new Date(previousMessage.created_date || previousMessage.created_at) : null;
+                </div>
 
-                                const showDateSeparator = !previousDate ||
-                                    messageDate.toDateString() !== previousDate.toDateString();
+                {/* Back Button - Moved out of the background container to ensure it's clickable */}
+                <button
+                    onClick={() => setSelectedConversation(null)}
+                    className="absolute top-6 right-8 w-9 h-9 bg-white/50 rounded-full flex items-center justify-center hover:bg-white/80 transition-all shadow-md z-30 border border-white/50 group"
+                >
+                    <ChevronRight className="w-5 h-5 text-[#348dcf] group-hover:scale-110 transition-transform" />
+                </button>
 
-                                let dateSeparatorText = "";
-                                if (showDateSeparator) {
-                                    const today = new Date();
-                                    const yesterday = new Date();
-                                    yesterday.setDate(today.getDate() - 1);
+                {/* Title Above Card - Brought closer to the card and lifted */}
+                <div className="relative z-10 text-center mt-[60px] mb-0">
+                    <h1 className="text-xl md:text-2xl font-bold text-[#001a6e] drop-shadow-sm">הודעות</h1>
+                </div>
 
-                                    if (messageDate.toDateString() === today.toDateString()) {
-                                        dateSeparatorText = "היום";
-                                    } else if (messageDate.toDateString() === yesterday.toDateString()) {
-                                        dateSeparatorText = "אתמול";
-                                    } else {
-                                        dateSeparatorText = safeFormatDate(messageDate, "dd.MM.yy");
-                                    }
-                                }
-
-                                return (
-                                    <div key={message.id}>
-                                        {showDateSeparator && dateSeparatorText && (
-                                            <div className="flex items-center justify-center my-6 relative">
-                                                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                                                    <div className="w-full border-t border-gray-200"></div>
-                                                </div>
-                                                <div className="relative bg-white px-4 text-xs text-gray-500 font-medium border border-gray-200 rounded-full py-1 shadow-sm">
-                                                    {dateSeparatorText}
-                                                </div>
-                                            </div>
-                                        )}
-                                        <SeekerMessageItem
-                                            message={message}
-                                            index={index}
-                                            user={user}
-                                        />
-                                    </div>
-                                );
-                            })}
-                        </AnimatePresence>
-
-                        {selectedConversation.is_support && (
-                            <div className="flex justify-start">
-                                <div className="bg-gray-100 px-4 py-3 rounded-2xl">
-                                    <div className="flex gap-1">
-                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                    </div>
-                                    <div className="text-xs text-gray-500 mt-1 text-right">הקלד/ת...</div>
+                {/* Chat Container - Now split for the "cut" effect */}
+                <div className="relative h-[72vh] flex flex-col w-[63%] mx-auto mt-[15px] mb-4">
+                    {/* Message List Area - Sharpened corners (3px) and no border */}
+                    <div className="flex-1 overflow-hidden bg-white shadow-[0_4px_16px_rgba(0,0,0,0.12)] rounded-t-[3px] flex flex-col">
+                        <div className="flex-1 p-8 overflow-y-auto space-y-6 bg-gray-50/30">
+                            {loadingMessages && (
+                                <div className="flex justify-center items-center py-8">
+                                    <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
                                 </div>
-                            </div>
-                        )}
+                            )}
+
+                            <AnimatePresence>
+                                {!loadingMessages && messages.map((message, index) => {
+                                    const messageDate = new Date(message.created_date || message.created_at);
+                                    const previousMessage = messages[index - 1];
+                                    const previousDate = previousMessage ? new Date(previousMessage.created_date || previousMessage.created_at) : null;
+
+                                    const showDateSeparator = !previousDate ||
+                                        messageDate.toDateString() !== previousDate.toDateString();
+
+                                    let dateSeparatorText = "";
+                                    if (showDateSeparator) {
+                                        const today = new Date();
+                                        const yesterday = new Date();
+                                        yesterday.setDate(today.getDate() - 1);
+
+                                        if (messageDate.toDateString() === today.toDateString()) {
+                                            dateSeparatorText = "היום";
+                                        } else if (messageDate.toDateString() === yesterday.toDateString()) {
+                                            dateSeparatorText = "אתמול";
+                                        } else {
+                                            dateSeparatorText = safeFormatDate(messageDate, "dd.MM.yy");
+                                        }
+                                    }
+
+                                    return (
+                                        <div key={message.id}>
+                                            {showDateSeparator && dateSeparatorText && (
+                                                <div className="flex items-center justify-center my-6 relative">
+                                                    <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                                                        <div className="w-full border-t border-gray-200"></div>
+                                                    </div>
+                                                    <div className="relative bg-white px-4 text-xs text-gray-500 font-medium border border-gray-200 rounded-full py-1 shadow-sm">
+                                                        {dateSeparatorText}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <SeekerMessageItem
+                                                message={message}
+                                                index={index}
+                                                user={user}
+                                            />
+                                        </div>
+                                    );
+                                })}
+                            </AnimatePresence>
+
+                            {selectedConversation.is_support && (
+                                <div className="flex justify-start">
+                                    <div className="bg-gray-100 px-4 py-3 rounded-2xl">
+                                        <div className="flex gap-1">
+                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                        </div>
+                                        <div className="text-xs text-gray-500 mt-1 text-right">הקלד/ת...</div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    <SeekerMessageInput
-                        newMessage={newMessage}
-                        setNewMessage={setNewMessage}
-                        sendMessage={sendMessage}
-                        sendingMessage={sendingMessage}
-                    />
+
+                    {/* Input Area - Separate card with 12px gap, sharpened corners, and subtle gray shadow */}
+                    <div className="mt-3 bg-white shadow-[0_4px_16px_rgba(0,0,0,0.12)] rounded-b-[3px] overflow-hidden">
+                        <SeekerMessageInput
+                            newMessage={newMessage}
+                            setNewMessage={setNewMessage}
+                            sendMessage={sendMessage}
+                            sendingMessage={sendingMessage}
+                        />
+                    </div>
                 </div>
             </div>
         );
@@ -448,7 +479,7 @@ export default function MessagesSeeker() {
     return (
         <div className="h-full relative" dir="rtl">
             <div className="relative">
-                <div className="relative h-24 overflow-hidden w-full">
+                <div className="relative h-[92px] overflow-hidden w-full">
                     <div
                         className="absolute inset-0 w-full h-full"
                         style={{
@@ -465,7 +496,7 @@ export default function MessagesSeeker() {
                         <ChevronRight className="w-6 h-6 text-gray-800" />
                     </button>
                 </div>
-                <div className="p-2 sm:p-4 md:p-6 -mt-12 relative z-10 max-w-7xl w-[75%] mx-auto bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-lg border border-white/50 mb-8 mt-[-3rem]">
+                <div className="p-2 sm:p-4 md:p-6 -mt-[50px] relative z-10 max-w-7xl w-[75%] mx-auto bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-lg border border-white/50 mb-8 mt-[-3.125rem]">
                     <div className="text-center pb-4">
                         <h1 className="text-2xl md:text-3xl font-bold text-[#001a6e]">הודעות</h1>
                     </div>
