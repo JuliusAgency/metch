@@ -213,11 +213,11 @@ export default function Packages() {
                                                 <span className="text-2xl font-normal">/למשרה</span>
                                             </div>
                                             {quantity > 1 && (
-                                                <div className="text-base text-black mt-1 font-['Rubik'] font-medium">
+                                                <div className="text-lg md:text-xl text-[#003566] mt-1 font-['Rubik'] font-bold">
                                                     ({(getPricePerJob(quantity) * quantity).toLocaleString()}₪ סה״כ)
                                                 </div>
                                             )}
-                                            <div className="w-full h-[3px] bg-[#003566] mt-2 rounded-full"></div>
+                                            <div className="w-full h-[3px] bg-[#003566] mt-3 rounded-full opacity-20"></div>
                                         </>
                                     )}
                                 </div>
