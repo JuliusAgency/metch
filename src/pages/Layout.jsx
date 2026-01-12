@@ -179,8 +179,8 @@ export default function Layout({ children, currentPageName }) {
           }
 
           .navbar-custom {
-            background: linear-gradient(90deg, rgba(221, 230, 235, 0.4) 0%, rgba(240, 248, 255, 0.4) 50%, rgba(221, 230, 235, 0.4) 100%);
-            backdrop-filter: blur(20px) saturate(160%);
+            background: rgba(221, 238, 244, 0.4); /* #ddeef4 with 40% opacity */
+            backdrop-filter: blur(4px) saturate(180%);
           }
         `}
       </style>
@@ -188,7 +188,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Desktop Navbar Wrapper */}
       {!shouldHideHeader && (
         <div className="hidden md:block pt-[20px] sticky top-0 z-50 pointer-events-none">
-          <header className="navbar-custom w-[75%] md:w-[68%] max-w-7xl mx-auto rounded-full shadow-md border border-white/80 pointer-events-auto transition-all duration-300">
+          <header className="navbar-custom w-[75%] md:w-[68%] max-w-7xl mx-auto rounded-full shadow-sm border border-white/60 pointer-events-auto transition-all duration-300">
             <div className="flex items-center justify-between px-4 lg:px-8 py-3.5">
               {/* Icons - Moved to be first for RTL rendering on the right */}
               <div className="flex items-center gap-1">
