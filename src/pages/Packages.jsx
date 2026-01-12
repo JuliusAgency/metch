@@ -217,7 +217,7 @@ export default function Packages() {
                                                     ({(getPricePerJob(quantity) * quantity).toLocaleString()}₪ סה״כ)
                                                 </div>
                                             )}
-                                            <div className="w-full h-[3px] bg-[#003566] mt-3 rounded-full opacity-20"></div>
+                                            <div className="w-full h-[3px] bg-[#003566] mt-1 rounded-full"></div>
                                         </>
                                     )}
                                 </div>
