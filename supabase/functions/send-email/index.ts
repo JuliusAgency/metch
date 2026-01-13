@@ -17,7 +17,10 @@ serve(async (req) => {
 
         console.log(`Attempting to send email to: ${to}`)
 
-        const resendApiKey = Deno.env.get('RESEND_API_KEY')
+        // Prioritize RESEND_API_KEY_TWO as requested, fallback to RESEND_API_KEY
+        const resendApiKey = Deno.env.get('RESEND_API_KEY_TWO') || Deno.env.get('RESEND_API_KEY')
+
+        console.log('Using Resend key starting with:', resendApiKey?.substring(0, 7) + '...')
         if (!resendApiKey) {
             console.error('RESEND_API_KEY is missing')
             return new Response(
@@ -33,7 +36,7 @@ serve(async (req) => {
                 'Authorization': `Bearer ${resendApiKey}`
             },
             body: JSON.stringify({
-                from: 'onboarding@resend.dev', // standard for sandbox
+                from: from || 'noreply@noreply.metch.co.il',
                 to: Array.isArray(to) ? to : [to],
                 reply_to: from,
                 subject: subject || 'Resume from Metch',

@@ -75,12 +75,8 @@ export async function InvokeLLM({
  * @returns {Promise<Object>} Send result
  */
 export async function SendEmail({ to, from, subject, html, text, attachments }) {
-  const resendKey = import.meta.env.VITE_RESEND_API_KEY;
-  
-  // If we have a direct Resend API key, we can try calling Resend directly
-  // Note: Only works if CORS is handled or via proxy. 
-  // However, usually it's best to use the Edge Function for security.
-  // We'll keep the Edge Function logic as primary but update it to be cleaner.
+  // We rely on the Supabase Edge Function's environment secrets for the Resend API key.
+  // This ensures the key is never exposed to the frontend.
 
   const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`;
   const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -90,11 +86,8 @@ export async function SendEmail({ to, from, subject, html, text, attachments }) 
   }
 
   // Resend requires that the 'from' address is a verified domain.
-  // In sandbox/test mode (most common for new API keys), you MUST use 'onboarding@resend.dev'.
-  // We will prioritize 'onboarding@resend.dev' unless the user has explicitly verified a domain.
-  const senderEmail = (from && !from.includes('gmail.com') && !from.includes('outlook.com') && !from.includes('walla.co.il')) 
-    ? from 
-    : 'onboarding@resend.dev';
+  // Use the verified domain 'noreply.metch.co.il'
+  const senderEmail = 'noreply@noreply.metch.co.il';
 
   const response = await fetch(url, {
     method: 'POST',
@@ -109,9 +102,7 @@ export async function SendEmail({ to, from, subject, html, text, attachments }) 
       subject,
       html,
       text,
-      attachments,
-      // Pass the API key if it's available in frontend
-      apiKey: resendKey 
+      attachments
     })
   });
 
