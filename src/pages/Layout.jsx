@@ -434,11 +434,17 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Main Content */}
       <main className="flex-1 flex justify-center w-full mt-[18px] mb-4 px-2">
-        <Card className="w-full max-w-[99%] bg-white/90 shadow-xl border border-gray-100 rounded-[50px] min-h-[92vh] overflow-hidden relative backdrop-blur-sm">
-          <div className="h-full">
+        {currentPageName === 'CreateJob' ? (
+          <div className="w-full h-full">
             {children}
           </div>
-        </Card>
+        ) : (
+          <Card className="w-full max-w-[99%] bg-white/90 shadow-xl border border-gray-100 rounded-[50px] min-h-[92vh] overflow-hidden relative backdrop-blur-sm">
+            <div className="h-full">
+              {children}
+            </div>
+          </Card>
+        )}
       </main>
     </div>
   );

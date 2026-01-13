@@ -1,11 +1,15 @@
-
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, Info } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
-export default function DynamicRequirementInput({ label, placeholder, items = [], setItems }) {
+export default function DynamicRequirementInput({ label, placeholder, items = [], setItems, infoText }) {
   const [inputValue, setInputValue] = useState("");
   const [currentType, setCurrentType] = useState("required");
 
@@ -44,11 +48,34 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
     <div className="space-y-4">
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <div className="flex bg-gray-100 p-1 rounded-full">
+          {infoText && (
+            <div className="shrink-0">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Info className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
+                </PopoverTrigger>
+                <PopoverContent className="max-w-xs bg-black text-white p-3 text-right border-none" side="left">
+                  <p className="text-sm leading-relaxed">{infoText}</p>
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+          <Input
+            type="text"
+            placeholder={placeholder}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="h-11 rounded-xl border-gray-300 text-right"
+            dir="rtl"
+          />
+          <div className="flex items-center gap-3 shrink-0">
             <Button
               type="button"
               onClick={() => setCurrentType("required")}
-              className={`px-4 h-9 rounded-full text-sm font-semibold transition-colors ${currentType === 'required' ? 'bg-blue-600 text-white shadow' : 'bg-transparent text-gray-600'
+              className={`px-6 h-9 rounded-full text-base font-normal transition-all border ${currentType === 'required'
+                ? 'bg-[#1a73e8] text-white border-[#1a73e8] hover:bg-[#1557b0]'
+                : 'bg-white text-[#5f6368] border-[#1a73e8] hover:bg-blue-50'
                 }`}
             >
               חובה
@@ -56,21 +83,14 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
             <Button
               type="button"
               onClick={() => setCurrentType("advantage")}
-              className={`px-4 h-9 rounded-full text-sm font-semibold transition-colors ${currentType === 'advantage' ? 'bg-blue-600 text-white shadow' : 'bg-transparent text-gray-600'
+              className={`px-6 h-9 rounded-full text-base font-normal transition-all border ${currentType === 'advantage'
+                ? 'bg-[#1a73e8] text-white border-[#1a73e8] hover:bg-[#1557b0]'
+                : 'bg-white text-[#5f6368] border-[#1a73e8] hover:bg-blue-50'
                 }`}
             >
               יתרון
             </Button>
           </div>
-          <Input
-            type="text"
-            placeholder={placeholder}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="h-11 rounded-full border-gray-300 text-right"
-            dir="rtl"
-          />
         </div>
       </div>
       <button

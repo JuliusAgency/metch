@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Job } from '@/api/entities';
 import { User } from '@/api/entities'; // Added User import
-import Stepper from '@/components/job_creation/Stepper';
+
 import Step1Details from '@/components/job_creation/Step1Details';
 import Step2Screening from '@/components/job_creation/Step2Screening';
 import Step3Company from '@/components/job_creation/Step3Company';
@@ -25,7 +25,7 @@ import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/components/ui/use-toast";
 
-const STEPS = ["פרטי המשרה", "פרטי החברה", "שאלון סינון", "תצוגה מקדימה"]; // Removed "חבילות"
+const STEPS = ["פרטי המשרה", "פרטי החברה", "חבילות", "שאלון סינון", "תצוגה מקדימה"];
 
 const initialJobData = {
   title: "",
@@ -146,7 +146,7 @@ export default function CreateJob() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (forceDraft = false) => {
     setIsSubmitting(true);
     try {
       const userData = await User.me();
@@ -160,7 +160,9 @@ export default function CreateJob() {
       // force 'draft' if no credits, UNLESS we are resuming a paused job (which is already paid for)
       console.log('DEBUG: Job Submission - Credits:', credits, 'Status:', jobData.status);
 
-      if (credits <= 0 && jobData.status !== 'paused') {
+      if (forceDraft) {
+        targetStatus = 'draft';
+      } else if (credits <= 0 && jobData.status !== 'paused') {
         targetStatus = 'draft';
         showPaymentPrompt = true;
         console.log('DEBUG: No credits, forcing draft');
@@ -217,7 +219,16 @@ export default function CreateJob() {
       }
 
       setLastCreatedJob(createdOrUpdatedJob);
-      setIsSubmitted(true);
+
+      if (forceDraft) {
+        toast({
+          title: "המשרה נשמרה כטיוטה",
+          description: "תוכל להמשיך את העריכה מאוחר יותר",
+        });
+        navigate('/JobManagement'); // Redirect to JobManagement
+      } else {
+        setIsSubmitted(true);
+      }
 
       if (showPaymentPrompt) {
         setShowNoCreditsModal(true);
@@ -274,8 +285,9 @@ export default function CreateJob() {
     switch (step) {
       case 1: return <Step1Details jobData={jobData} setJobData={setJobData} />;
       case 2: return <Step3Company jobData={jobData} setJobData={setJobData} />;
-      case 3: return <Step2Screening jobData={jobData} setJobData={setJobData} onSave={() => setIsScreeningSaved(true)} />;
-      case 4: return <Step5Preview jobData={jobData} setJobData={setJobData} />;
+      case 3: return <Step4Packages />;
+      case 4: return <Step2Screening jobData={jobData} setJobData={setJobData} onSave={() => setIsScreeningSaved(true)} onNext={nextStep} />;
+      case 5: return <Step5Preview jobData={jobData} setJobData={setJobData} />;
       default: return <Step1Details jobData={jobData} setJobData={setJobData} />;
     }
   };
@@ -307,12 +319,15 @@ export default function CreateJob() {
       // Step 2 is Step3Company, requires exactly 3 success factors
       return jobData.success_factors && jobData.success_factors.length === 3;
     }
+    if (step === 3) {
+      return true; // Packages step
+    }
     return true;
   };
 
   const getNextButtonText = () => {
     if (isSubmitting) return <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div>;
-    if (step === 3) {
+    if (step === 4) {
       if (!jobData.screening_questions || jobData.screening_questions.length === 0) return 'דלג';
       // If has questions
       return 'המשך';
@@ -324,18 +339,24 @@ export default function CreateJob() {
   const isNextDisabled = () => {
     if (isSubmitting) return true;
     if (!isStepValid()) return true;
-    if (step === 3 && jobData.screening_questions?.length > 0 && !isScreeningSaved) return true;
+    if (step === 4 && jobData.screening_questions?.length > 0 && !isScreeningSaved) return true;
     return false;
   };
 
   return (
-    <div className="h-full p-4 md:p-8" dir="rtl">
+    <div className="h-full p-2 md:p-4" dir="rtl">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-4">
-          <h1 className="text-3xl font-bold text-gray-900">{isEditing ? 'עריכת משרה' : 'יצירת משרה חדשה'}</h1>
-        </div>
-
-        {!isSubmitted && <Stepper currentStep={step} steps={STEPS} />}
+        {!isSubmitted && (
+          <div className="flex gap-2 mb-4 w-full max-w-sm mx-auto" dir="rtl">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div
+                key={index}
+                className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${index + 1 <= step ? "bg-[#34d399]" : "bg-gray-200"
+                  }`}
+              />
+            ))}
+          </div>
+        )}
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -350,19 +371,18 @@ export default function CreateJob() {
           </motion.div>
         </AnimatePresence>
 
-        {!isSubmitted && (
-          <div className="flex justify-between items-center mt-12 pb-8">
+        {!isSubmitted && step !== 4 && (
+          <div className="flex justify-center items-center gap-6 mt-4 pb-2">
             <Button
               variant="outline"
-              className="px-6 py-3 rounded-full font-bold text-lg"
-              onClick={prevStep}
+              className="px-8 py-3 rounded-full font-bold text-lg border-gray-300 text-[#001a6e] bg-white hover:bg-gray-50"
+              onClick={() => handleSubmit(true)}
               disabled={isSubmitting}
             >
-              חזור
-              <ArrowRight className="w-5 h-5 mr-2" />
+              לפרסם מאוחר יותר
             </Button>
             <Button
-              className={`text-white px-12 py-3 rounded-full font-bold text-lg shadow-lg ${step === 3 && isScreeningSaved ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'
+              className={`text-white px-12 py-3 rounded-full font-bold text-lg shadow-lg ${step === 4 && isScreeningSaved ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'
                 }`}
               onClick={nextStep}
               disabled={isNextDisabled()}
