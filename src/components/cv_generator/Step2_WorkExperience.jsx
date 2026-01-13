@@ -145,7 +145,7 @@ export default function Step2_WorkExperience({ data, setData, onDirtyChange }) {
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0" align="start" dir="rtl">
               <Command>
-                <CommandInput placeholder="חפש עיר..." className="text-right gap-2" />
+                <CommandInput placeholder="חיפוש עיר..." className="text-right gap-2" />
                 <CommandList>
                   <CommandEmpty>לא נמצאה עיר.</CommandEmpty>
                   <CommandGroup className="max-h-[300px] overflow-y-auto">
@@ -193,7 +193,7 @@ export default function Step2_WorkExperience({ data, setData, onDirtyChange }) {
       <div className="mt-6 flex justify-between gap-4">
         <Button variant="link" className="text-blue-600 font-semibold" onClick={handleSave}>
           <Plus className="w-4 h-4 ml-2" />
-          {data.find((i) => i.id === currentItem.id) ? 'עדכן ניסיון' : 'הוסף ניסיון'}
+          {data.find((i) => i.id === currentItem.id) ? 'עדכון ניסיון' : 'הוספת ניסיון'}
         </Button>
         <Button
           onClick={handleSave}

@@ -58,7 +58,7 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
 
     const handleFinishClick = () => {
         // Check if profile is incomplete (no description AND no social links)
-        const hasDescription = companyData.company_description && companyData.company_description.trim().length > 0;
+        const hasDescription = companyData.bio && companyData.bio.trim().length > 0;
         const hasSocialLinks = Object.values(socialLinks).some(link => link && link.trim().length > 0);
 
         if (!hasDescription && !hasSocialLinks) {
@@ -176,7 +176,7 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
                                         <Copy className="w-4 h-4 text-gray-400" />
                                     </div>
                                 </div>
-                                <span className="text-sm font-medium text-gray-600 ml-auto mr-0">הוסף קישור</span>
+                                <span className="text-sm font-medium text-gray-600 ml-auto mr-0">הוספת קישור</span>
                             </div>
                         )}
                     </div>
@@ -186,8 +186,8 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
                 <div className="space-y-1 text-right max-w-sm mx-auto w-full">
                     <label className="text-xs font-medium text-gray-700 mr-1">תיאור החברה</label>
                     <Textarea
-                        name="company_description"
-                        value={companyData.company_description || ""}
+                        name="bio"
+                        value={companyData.bio || ""}
                         onChange={handleInputChange}
                         placeholder="ספר/י קצת על החברה..."
                         className="min-h-[80px] rounded-xl resize-none border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm"

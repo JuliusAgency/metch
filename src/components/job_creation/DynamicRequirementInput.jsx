@@ -78,7 +78,7 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
         onClick={handleAddItem}
         className="text-sm font-semibold text-blue-600 hover:text-blue-800"
       >
-        + הוסף {label}
+        + הוספת {label}
       </button>
 
       {safeItems.length > 0 && (

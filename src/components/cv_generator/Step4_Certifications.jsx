@@ -177,7 +177,7 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
                         </PopoverTrigger>
                         <PopoverContent className="w-[400px] p-0" align="start" dir="rtl">
                             <Command>
-                                <CommandInput placeholder="חפש הסמכה..." className="text-right" />
+                                <CommandInput placeholder="חיפוש הסמכה..." className="text-right" />
                                 <CommandList>
                                     <CommandEmpty>לא נמצאה הסמכה.</CommandEmpty>
                                     <CommandGroup className="max-h-[300px] overflow-y-auto">
@@ -214,7 +214,7 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
             <div className="mt-6 flex justify-between gap-4">
                 <Button variant="link" className="text-blue-600 font-semibold" onClick={handleSave}>
                     <Plus className="w-4 h-4 ml-2" />
-                    {(data || []).find(i => i.id === currentItem.id) ? 'עדכן הסמכה' : 'הוסף הסמכה'}
+                    {(data || []).find(i => i.id === currentItem.id) ? 'עדכון הסמכה' : 'הוספת הסמכה'}
                 </Button>
                 <Button
                     onClick={handleSave}

@@ -422,7 +422,7 @@ const JobSeekerDashboard = ({ user }) => {
             <div className="flex justify-end w-full md:w-auto job-filter-buttons order-2 md:order-1">
               <ToggleSwitch
                 options={[
-                  { value: 'viewed', label: 'משרות שצפית' },
+                  { value: 'viewed', label: 'משרות שנצפו' },
                   { value: 'new', label: 'משרות חדשות' },
                 ]}
                 value={jobFilter}
@@ -970,7 +970,7 @@ const EmployerDashboard = ({ user }) => {
             <div className="flex justify-end w-full md:w-auto">
               <ToggleSwitch
                 options={[
-                  { value: 'watched', label: 'מועמדים שצפית' },
+                  { value: 'watched', label: 'מועמדים שנצפו' },
                   { value: 'new', label: 'מועמדים חדשים' },
                 ]}
                 value={candidateFilter}

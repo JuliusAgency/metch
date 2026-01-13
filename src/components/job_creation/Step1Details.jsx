@@ -103,7 +103,7 @@ export default function Step1Details({ jobData, setJobData }) {
             onChange={(value) => handleSelectChange('location', value)}
             options={locations}
             placeholder="מיקום המשרה"
-            searchPlaceholder="חפש מיקום..."
+            searchPlaceholder="חיפוש מיקום..."
           />
           <Textarea
             name="description"

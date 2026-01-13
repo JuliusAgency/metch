@@ -149,7 +149,7 @@ export default function Step3_Education({ data, setData, onDirtyChange }) {
       <div className="mt-6 flex justify-between gap-4">
         <Button variant="link" className="text-blue-600 font-semibold" onClick={handleSave}>
           <Plus className="w-4 h-4 ml-2" />
-          {data.find((i) => i.id === currentItem.id) ? 'עדכן השכלה' : 'הוסף השכלה'}
+          {data.find((i) => i.id === currentItem.id) ? 'עדכון השכלה' : 'הוספת השכלה'}
         </Button>
         <Button
           onClick={handleSave}

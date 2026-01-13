@@ -156,7 +156,7 @@ export default function UploadCV({ user, onUploadComplete, onSkip }) {
                     variant="ghost"
                     size="icon"
                     onClick={handleDelete}
-                    title="מחק קובץ"
+                    title="מחיקת קובץ"
                     className="hover:bg-red-50 text-gray-500 hover:text-red-600"
                 >
                     <Trash2 className="w-5 h-5" />
@@ -168,7 +168,7 @@ export default function UploadCV({ user, onUploadComplete, onSkip }) {
                     className="mr-2 bg-[#2589D8] hover:bg-[#1e7bc4] text-white px-6"
                 >
                     {uploadStatus === 'uploading' && <div className="w-4 h-4 border-t-2 border-current rounded-full animate-spin ml-2"></div>}
-                    העלה קובץ
+                    העלאת קובץ
                 </Button>
             </div>
         </div>

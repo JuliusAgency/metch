@@ -81,7 +81,7 @@ export default function Contact() {
                 className="bg-[#3B82F6] hover:bg-[#2563EB] text-white px-6 py-2 rounded-full font-bold h-12 text-base"
               >
                 <Mail className="w-4 h-4 ml-2" />
-                שלח מייל
+                שליחת מייל
               </Button>
               <Button
                 onClick={handleSupportChat}
@@ -91,7 +91,7 @@ export default function Contact() {
                 {chatLoading ? 'מתחבר...' : (
                   <>
                     <MessageCircle className="w-4 h-4 ml-2" />
-                    התחל צ'אט
+                    התחלת צ'אט
                   </>
                 )}
               </Button>

@@ -8,7 +8,7 @@ const SearchBar = ({ searchTerm, setSearchTerm, handleSearch }) => (
         <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
             <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <Input
-                placeholder="חפש משרות, חברות או מקצועות..."
+                placeholder="חיפוש משרות, חברות או מקצועות..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pr-12 pl-4 py-3 border-gray-300 focus:border-blue-400 rounded-full h-12 text-right text-lg"

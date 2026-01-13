@@ -977,7 +977,7 @@ export default function Settings() {
                         </PopoverTrigger>
                         <PopoverContent className="w-[300px] md:w-[400px] p-0" align="start" dir="rtl">
                           <Command>
-                            <CommandInput placeholder="חפש עיר..." className="text-right gap-2" />
+                            <CommandInput placeholder="חיפוש עיר..." className="text-right gap-2" />
                             <CommandList>
                               <CommandEmpty>לא נמצאה עיר.</CommandEmpty>
                               <CommandGroup className="max-h-[300px] overflow-y-auto">
@@ -1052,7 +1052,7 @@ export default function Settings() {
                       שומר...
                     </>
                   ) : (
-                    isOnboarding ? 'עדכן' : 'שמור שינויים'
+                    isOnboarding ? 'עדכון' : 'שמור שינויים'
                   )}
                 </Button>
 
@@ -1083,7 +1083,7 @@ export default function Settings() {
                       className="text-gray-500 hover:text-red-600 font-medium"
                       onClick={() => setShowDeleteConfirm(true)}
                     >
-                      מחק חשבון
+                      מחיקת חשבון
                     </Button>
 
                     <Button
@@ -1093,7 +1093,7 @@ export default function Settings() {
                       className="w-full md:w-96 h-12 rounded-[50px] border-2 border-red-400 bg-white text-red-600 hover:bg-red-50 hover:border-red-500 font-semibold text-base px-6 shadow-sm"
                     >
                       <LogOut className="w-5 h-5 ml-2" />
-                      התנתק
+                      התנתקות
                     </Button>
                   </>
                 )}

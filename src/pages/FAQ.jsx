@@ -57,8 +57,8 @@ const FAQ_DATA = [
   },
   {
     id: 8,
-    question: "איך אני יכול לעדכן את הקורות חיים שלי?",
-    answer: "לחץ על אייקון הפרופיל ובחר 'עדכון פרטים אישיים' כדי לעדכן את הקורות חיים והפרטים שלך."
+    question: "איך אני יכול לעדכון את הקורות חיים שלי?",
+    answer: "לחץ על אייקון הפרופיל ובחר 'עדכון פרטים אישיים' כדי לעדכון את הקורות חיים והפרטים שלך."
   }
 ];
 
@@ -153,7 +153,7 @@ export default function FAQ() {
             <div className="relative max-w-md mx-auto">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
-                placeholder="חפש בשאלות נפוצות"
+                placeholder="חיפוש בשאלות נפוצות"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-12 pr-4 py-3 bg-[#f8f9fd] border-none focus-visible:ring-1 focus-visible:ring-blue-100 rounded-md h-12 text-right shadow-sm"
@@ -241,7 +241,7 @@ export default function FAQ() {
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full inline-flex items-center gap-2"
               >
                 <HelpCircle className="w-5 h-5" />
-                פנה לתמיכה
+                פנייה לתמיכה
               </Button>
             </div>
           </motion.div>

@@ -278,6 +278,12 @@ export default function JobApplications() {
                               </div>
                             </div>
                           )}
+
+                          {application.cover_letter && (
+                            <div className="text-sm text-gray-700 mt-2 max-w-md">
+                              <p className="line-clamp-2">{application.cover_letter}</p>
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

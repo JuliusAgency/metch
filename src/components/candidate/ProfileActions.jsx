@@ -23,7 +23,7 @@ const ProfileActions = ({
                     variant="outline"
                     className="w-auto px-8 h-12 rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
                 >
-                    צפה בשאלון סינון
+                    צפייה בשאלון סינון
                 </Button>
             </Link>
         )}
@@ -48,7 +48,7 @@ const ProfileActions = ({
             disabled={creatingConversation}
         >
             {creatingConversation && <div className="w-4 h-4 border-t-2 border-current rounded-full animate-spin ml-2"></div>}
-            שלח הודעה למועמד
+            שליחת הודעה
         </Button>
 
         {/* Far Left Button: Not Relevant */}
