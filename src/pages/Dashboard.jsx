@@ -907,8 +907,8 @@ const EmployerDashboard = ({ user }) => {
             />
             <EmployerStatsCard
               icon={ApplicationsIcon}
-              title="מועמדויות שהתקבלו"
-              value={employerStats?.total_applications_received || 0}
+              title="מועמדים שהגישו"
+              value={employerStats?.unique_candidates_count || 0}
               color="bg-green-50 text-green-600"
             />
             <EmployerStatsCard
@@ -958,15 +958,6 @@ const EmployerDashboard = ({ user }) => {
 
 
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between candidate-filter-buttons">
-            <div className="relative w-full md:w-96 candidate-search-input">
-              <Input
-                placeholder="אפשר גם לחפש"
-                className="pl-12 pr-4 py-2 border-gray-300 focus:border-blue-400 rounded-full h-11"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            </div>
             <div className="flex justify-end w-full md:w-auto">
               <ToggleSwitch
                 options={[
@@ -977,9 +968,17 @@ const EmployerDashboard = ({ user }) => {
                 onChange={handleFilterChange}
               />
             </div>
+            <div className="relative w-full md:w-96 candidate-search-input">
+              <Input
+                placeholder="אפשר גם לחפש"
+                className="pl-12 pr-4 py-2 border-gray-300 focus:border-blue-400 rounded-full h-11"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            </div>
           </div>
           <div className="space-y-4 candidate-list">
-            <h2 className="text-lg font-bold text-gray-900 mb-2 px-2">מועמדים שהגישו מועמדות</h2>
             {displayedCandidates.length > 0 ? (displayedCandidates.map((candidate, index) => {
               // Calculate a stable match score based on candidate ID to ensure consistency
               const getStableMatchScore = (id) => {
@@ -1039,8 +1038,7 @@ const EmployerDashboard = ({ user }) => {
 
                           <div className="flex-shrink-0">
                             <Button
-                              className={`text-white px-6 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-candidate-button transition-colors duration-300 ${match >= 80 ? 'bg-green-400 hover:bg-green-500' : 'bg-orange-400 hover:bg-orange-500'
-                                }`}
+                              className={`text-black px-6 py-1.5 h-9 rounded-full font-medium text-base w-32 view-candidate-button transition-colors duration-300 bg-[#59df8a] hover:bg-[#4bc77b]`}
                               onClick={() => handleCandidateClick(candidate, match)}
                             >
                               לצפייה

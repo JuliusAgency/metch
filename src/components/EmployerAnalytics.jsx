@@ -298,7 +298,12 @@ export class EmployerAnalytics {
 
         const allRelevantApps = appsResults.flat();
         realTotalApplications = allRelevantApps.length;
+
         realPendingApplications = allRelevantApps.filter(app => app.status === 'pending').length;
+
+        // Calculate unique candidates count
+        const uniqueCandidateEmails = new Set(allRelevantApps.map(app => app.applicant_email));
+        var realUniqueCandidates = uniqueCandidateEmails.size;
 
         const allRelevantViews = viewsResults.flat();
         realTotalJobViews = allRelevantViews.length;
@@ -312,6 +317,7 @@ export class EmployerAnalytics {
           total_candidates_viewed: 0,
         }),
         total_applications_received: realTotalApplications, // Override with real-time count
+        unique_candidates_count: realUniqueCandidates, // Add unique candidates count
         total_job_views: realTotalJobViews, // Override with real-time count
         total_jobs_published: activeJobsCount // Ensure this is also accurate
       };
