@@ -552,11 +552,11 @@ export default function Messages() {
                         <ChevronRight className="w-6 h-6 text-gray-800" />
                     </button>
                 </div>
-                <div className="p-2 sm:p-4 md:p-6 -mt-[50px] relative z-10 max-w-7xl w-[75%] mx-auto bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-lg border border-white/50 mb-8 mt-[-3.125rem]">
+                <div className="p-2 sm:p-4 md:p-6 -mt-[50px] relative z-10 max-w-7xl w-[75%] mx-auto mb-8 mt-[-3.125rem]">
                     <div className="text-center pb-4">
                         <h1 className="text-2xl md:text-3xl font-bold text-[#001a6e]">הודעות</h1>
                     </div>
-                    <div className="relative mb-8 w-full max-w-md mx-auto">
+                    <div className="relative mb-4 w-full max-w-md mx-auto">
                         <Input
                             placeholder="חיפוש בהודעות"
                             value={searchTerm}
@@ -567,8 +567,10 @@ export default function Messages() {
                         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500 w-5 h-5" />
                     </div>
 
+                    <div className="w-full max-w-3xl mx-auto h-px bg-gray-200 mb-3" />
+
                     {/* Conversations List */}
-                    <div className="space-y-3 mb-6 w-full max-w-4xl mx-auto">
+                    <div className="space-y-3 mb-6 w-full max-w-3xl mx-auto">
                         {loading ? (
                             <div className="flex justify-center items-center py-12">
                                 <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
@@ -584,42 +586,46 @@ export default function Messages() {
                                 const lastInitial = names.length > 1 ? names[names.length - 1].charAt(0) : "";
 
                                 return (
-                                    <motion.div
-                                        key={conversation.id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.3, delay: index * 0.1 }}
-                                        className="flex items-center justify-between p-4 bg-[#F4F9FF] mb-2 hover:bg-[#EBF5FF] cursor-pointer transition-colors h-16 rounded-xl border border-blue-50"
-                                        onClick={() => handleConversationSelect(conversation)}
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className={`w-10 h-10 rounded-full overflow-hidden ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'grayscale opacity-75' : ''
-                                                }`}>
-                                                {conversation.profileImage && conversation.profileImage !== "" ? (
-                                                    <img
-                                                        src={conversation.profileImage}
-                                                        alt={conversation.candidate_name}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
-                                                        <span className="text-xs font-bold text-gray-600">
-                                                            {conversation.candidate_name.slice(0, 2)}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="text-right">
-                                                <span className={`text-base text-gray-900 font-bold ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'text-gray-500' : ''
+                                    <div key={conversation.id}>
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.3, delay: index * 0.1 }}
+                                            className="flex items-center justify-between p-3 bg-[#F4F9FF] hover:bg-[#EBF5FF] cursor-pointer transition-colors h-[60px] rounded-xl border border-blue-50 mb-1"
+                                            onClick={() => handleConversationSelect(conversation)}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-9 h-9 rounded-full overflow-hidden ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'grayscale opacity-75' : ''
                                                     }`}>
-                                                    {firstName} {lastInitial && <span>{lastInitial}</span>}
-                                                </span>
+                                                    {conversation.profileImage && conversation.profileImage !== "" ? (
+                                                        <img
+                                                            src={conversation.profileImage}
+                                                            alt={conversation.candidate_name}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
+                                                            <span className="text-xs font-bold text-gray-600">
+                                                                {conversation.candidate_name.slice(0, 2)}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className={`text-base text-gray-900 font-bold ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'text-gray-500' : ''
+                                                        }`}>
+                                                        {firstName} {lastInitial && <span>{lastInitial}</span>}
+                                                    </span>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <span className="text-gray-400 text-xs font-light whitespace-nowrap px-4">
-                                            {safeFormatDate(conversation.last_message_time, "dd.MM.yy")}
-                                        </span>
-                                    </motion.div>
+                                            <span className="text-gray-400 text-xs font-light whitespace-nowrap px-4">
+                                                {safeFormatDate(conversation.last_message_time, "dd.MM.yy")}
+                                            </span>
+                                        </motion.div>
+                                        {index < paginatedConversations.length - 1 && (
+                                            <div className="h-[1px] bg-gray-300 w-[95%] mx-auto my-1" />
+                                        )}
+                                    </div>
                                 );
                             })
                         )}

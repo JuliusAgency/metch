@@ -496,11 +496,11 @@ export default function MessagesSeeker() {
                         <ChevronRight className="w-6 h-6 text-gray-800" />
                     </button>
                 </div>
-                <div className="p-2 sm:p-4 md:p-6 -mt-[50px] relative z-10 max-w-7xl w-[75%] mx-auto bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-lg border border-white/50 mb-8 mt-[-3.125rem]">
+                <div className="p-2 sm:p-4 md:p-6 -mt-[50px] relative z-10 max-w-7xl w-[75%] mx-auto mb-8 mt-[-3.125rem]">
                     <div className="text-center pb-4">
                         <h1 className="text-2xl md:text-3xl font-bold text-[#001a6e]">הודעות</h1>
                     </div>
-                    <div className="relative mb-8 w-full max-w-md mx-auto">
+                    <div className="relative mb-4 w-full max-w-md mx-auto">
                         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500 w-5 h-5" />
                         <Input
                             placeholder="חיפוש בהודעות"
@@ -511,10 +511,12 @@ export default function MessagesSeeker() {
                         />
                     </div>
 
-                    <div className="mb-6 w-full max-w-4xl mx-auto">
+                    <div className="w-full max-w-3xl mx-auto h-px bg-gray-200 mb-3" />
+
+                    <div className="mb-6 w-full max-w-3xl mx-auto">
                         <Button
                             onClick={handleSupportContact}
-                            className="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 rounded-xl h-16 flex items-center justify-between px-6"
+                            className="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 rounded-xl h-[60px] flex items-center justify-between px-6"
                             variant="outline"
                         >
                             <div className="flex items-center gap-3">
@@ -539,10 +541,48 @@ export default function MessagesSeeker() {
                             <p>אין הודעות כרגע</p>
                         </div>
                     ) : (
-                        <SeekerConversationList
-                            conversations={paginatedConversations}
-                            handleConversationSelect={handleConversationSelect}
-                        />
+                        paginatedConversations.map((conversation, index) => {
+                            const names = conversation.employer_name ? conversation.employer_name.split(' ') : [];
+                            const firstName = names[0] || "";
+
+                            return (
+                                <div key={conversation.id} className="max-w-3xl mx-auto w-full">
+                                    <div
+                                        className="flex items-center justify-between p-3 bg-[#F4F9FF] hover:bg-[#EBF5FF] cursor-pointer transition-colors h-[60px] rounded-xl border border-blue-50 mb-1"
+                                        onClick={() => handleConversationSelect(conversation)}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-9 h-9 rounded-full overflow-hidden">
+                                                {conversation.profileImage && conversation.profileImage !== "" ? (
+                                                    <img
+                                                        src={conversation.profileImage}
+                                                        alt={conversation.employer_name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
+                                                        <span className="text-xs font-bold text-gray-600">
+                                                            {conversation.employer_name.slice(0, 2)}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="text-base text-gray-900 font-bold">
+                                                    {conversation.employer_name}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <span className="text-gray-400 text-xs font-light whitespace-nowrap px-4">
+                                            {safeFormatDate(conversation.last_message_time, "dd.MM.yy")}
+                                        </span>
+                                    </div>
+                                    {index < paginatedConversations.length - 1 && (
+                                        <div className="h-[1px] bg-gray-300 w-[95%] mx-auto my-1" />
+                                    )}
+                                </div>
+                            );
+                        })
                     )}
 
                     <SeekerPagination
