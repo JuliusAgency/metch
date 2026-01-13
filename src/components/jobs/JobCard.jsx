@@ -64,10 +64,10 @@ export default function JobCard({ job, onView, userType = "job_seeker", classNam
                     asChild
                     disabled={isUnavailable}
                     className={`px-5 py-2 rounded-full font-bold w-32 h-9 text-sm shadow-sm transition-colors duration-300 ${isUnavailable
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300'
-                        : job.match_score >= 80
-                          ? 'bg-green-400 hover:bg-green-500 text-white'
-                          : 'bg-orange-400 hover:bg-orange-500 text-white'
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300'
+                      : job.match_score >= 80
+                        ? 'bg-green-400 hover:bg-green-500 text-white'
+                        : 'bg-orange-400 hover:bg-orange-500 text-white'
                       }`}
                   >
                     {isUnavailable ? (

@@ -163,7 +163,7 @@ const JobSeekerDashboard = ({ user }) => {
                             </div>
                           </div>
                         )}
-                        <Button asChild className="bg-[#84CC9E] hover:bg-green-500 text-white px-5 py-2 rounded-full font-bold w-28 view-job-button">
+                        <Button asChild className="bg-[#59df8a] hover:bg-[#4bc77b] text-black px-5 py-2 rounded-full font-medium text-base w-28 view-job-button">
                           <Link
                             to={createPageUrl(`JobDetailsSeeker?id=${job.id}`)}
                             onClick={() => {

@@ -89,6 +89,13 @@ export async function SendEmail({ to, from, subject, html, text, attachments }) 
     throw new Error('Supabase configuration missing');
   }
 
+  // Resend requires that the 'from' address is a verified domain.
+  // In sandbox/test mode (most common for new API keys), you MUST use 'onboarding@resend.dev'.
+  // We will prioritize 'onboarding@resend.dev' unless the user has explicitly verified a domain.
+  const senderEmail = (from && !from.includes('gmail.com') && !from.includes('outlook.com') && !from.includes('walla.co.il')) 
+    ? from 
+    : 'onboarding@resend.dev';
+
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -98,12 +105,12 @@ export async function SendEmail({ to, from, subject, html, text, attachments }) 
     },
     body: JSON.stringify({
       to,
-      from: from || 'onboarding@resend.dev', // Fallback for testing
+      from: senderEmail,
       subject,
       html,
       text,
       attachments,
-      // Pass the API key if it's available in frontend (though usually it should be in Edge Function secrets)
+      // Pass the API key if it's available in frontend
       apiKey: resendKey 
     })
   });

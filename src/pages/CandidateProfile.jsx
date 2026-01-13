@@ -571,9 +571,12 @@ export default function CandidateProfile() {
         error?.message?.includes("resend.dev");
 
       if (isResendSandboxError) {
+        const verifiedEmailMatch = error?.message?.match(/\(([^)]+)\)/);
+        const verifiedEmail = verifiedEmailMatch ? verifiedEmailMatch[1] : user.email;
+
         toast({
           title: "ממתין לאימות דומיין ב-Resend",
-          description: `במצב בדיקה ניתן לשלוח מייל רק לחשבון איתו נרשמת ל-Resend (${user.email}). אם הגדרת מייל קבלה אחר (${user.cv_reception_email}), זה לא יעבוד עד לאימות הדומיין.`,
+          description: `במצב בדיקה ניתן לשלוח מייל רק לחשבון שאליו משויך המפתח (${verifiedEmail}). המייל nagosa... לא מאומת ב-Resend.`,
           variant: "warning",
         });
       } else {

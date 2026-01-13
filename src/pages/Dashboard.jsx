@@ -473,11 +473,9 @@ const JobSeekerDashboard = ({ user }) => {
                           <Button asChild className={`${appliedJobIds.has(String(job.id))
                             ? 'bg-gray-200 text-gray-700 hover:bg-gray-200'
                             : viewedJobIds.has(String(job.id))
-                              ? 'bg-gray-400 hover:bg-gray-500 text-white'
-                              : job.match_score >= 80
-                                ? 'bg-green-400 hover:bg-green-500 text-white'
-                                : 'bg-orange-400 hover:bg-orange-500 text-white'
-                            } px-4 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-job-button transition-colors duration-300`}>
+                              ? 'bg-gray-400 hover:bg-gray-500 text-white font-bold text-sm'
+                              : 'bg-[#59df8a] hover:bg-[#4bc77b] text-black font-medium text-base'
+                            } px-4 py-1.5 h-9 rounded-full w-32 view-job-button transition-colors duration-300`}>
                             <Link
                               to={createPageUrl(`JobDetailsSeeker?id=${job.id}&from=Dashboard`)}
                               onClick={() => {
