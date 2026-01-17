@@ -222,8 +222,9 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
             <Button
               type="button"
               onClick={() => setIsVerificationOpen(true)}
+              disabled={localData.is_phone_verified}
               className={`absolute left-1.5 top-1/2 -translate-y-1/2 h-8 px-4 text-xs font-medium rounded-full transition-all ${localData.is_phone_verified
-                ? 'bg-green-500 hover:bg-green-600 text-white'
+                ? 'bg-green-500 text-white cursor-default'
                 : 'bg-[#1e88e5] text-white hover:bg-[#1565c0]'
                 }`}
             >

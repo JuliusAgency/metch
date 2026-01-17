@@ -25,11 +25,13 @@ import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
 export default function JobApplications() {
   useRequireUserType(); // Ensure user has selected a user type
+  const [user, setUser] = useState(null);
   const [job, setJob] = useState(null);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creatingConversation, setCreatingConversation] = useState(false);
   const [applicantProfiles, setApplicantProfiles] = useState({});
+  const [profilesByEmail, setProfilesByEmail] = useState({});
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -51,20 +53,35 @@ export default function JobApplications() {
         const appResults = await JobApplication.filter({ job_id: jobId });
         setApplications(appResults);
 
-        // Fetch profiles for applicants to get their IDs
-        const uniqueEmails = [...new Set(appResults.map(a => a.applicant_email))];
-        const profilesMap = {};
-        await Promise.all(uniqueEmails.map(async (email) => {
-          try {
-            const results = await UserProfile.filter({ email });
-            if (results.length > 0) {
-              profilesMap[email] = results[0];
+        // Fetch profiles for applicants using both ID and Email
+        const uniqueIds = [...new Set(appResults.map(a => a.applicant_id).filter(Boolean))];
+        const uniqueEmails = [...new Set(appResults.map(a => a.applicant_email?.toLowerCase()).filter(Boolean))];
+
+        const idMap = {};
+        const emailMap = {};
+
+        await Promise.all([
+          ...uniqueIds.map(async (id) => {
+            try {
+              const results = await UserProfile.filter({ id });
+              if (results.length > 0) idMap[id] = results[0];
+            } catch (e) {
+              console.error(`Error fetching profile for ID ${id}`, e);
             }
-          } catch (e) {
-            console.error(`Error fetching profile for ${email}`, e);
-          }
-        }));
-        setApplicantProfiles(profilesMap);
+          }),
+          ...uniqueEmails.map(async (email) => {
+            if (Object.values(idMap).some(p => p.email?.toLowerCase() === email)) return;
+            try {
+              const results = await UserProfile.filter({ email });
+              if (results.length > 0) emailMap[email] = results[0];
+            } catch (e) {
+              console.error(`Error fetching profile for ${email}`, e);
+            }
+          })
+        ]);
+
+        setApplicantProfiles(idMap);
+        setProfilesByEmail(emailMap);
       }
     } catch (error) {
       console.error("Error loading applications:", error);
@@ -204,7 +221,18 @@ export default function JobApplications() {
                           <div className="flex items-center justify-between gap-4">
                             <div className="flex items-center gap-4 flex-1">
                               <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0 bg-blue-100 flex items-center justify-center">
-                                <UserIcon className="w-8 h-8 text-blue-500" />
+                                {(() => {
+                                  const profile = applicantProfiles[application.applicant_id] || profilesByEmail[application.applicant_email?.toLowerCase()];
+                                  return profile?.profile_picture ? (
+                                    <img
+                                      src={profile.profile_picture}
+                                      alt="Profile"
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <UserIcon className="w-8 h-8 text-blue-500" />
+                                  );
+                                })()}
                               </div>
                               <div className="text-right">
                                 <h3 className="font-bold text-lg text-gray-900 leading-tight">
@@ -217,7 +245,7 @@ export default function JobApplications() {
                             </div>
 
                             <div className="flex items-center gap-2 flex-shrink-0">
-                              <Link to={createPageUrl(`CandidateProfile?id=${applicantProfiles[application.applicant_email]?.id || ''}`)}>
+                              <Link to={createPageUrl(`CandidateProfile?id=${applicantProfiles[application.applicant_id]?.id || profilesByEmail[application.applicant_email?.toLowerCase()]?.id || ''}`)}>
                                 <Button
                                   className={`text-white px-6 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-candidate-button transition-colors duration-300 ${matchScore >= 80 ? 'bg-green-400 hover:bg-green-500' : 'bg-orange-400 hover:bg-orange-500'
                                     }`}

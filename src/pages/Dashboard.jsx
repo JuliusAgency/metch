@@ -422,7 +422,7 @@ const JobSeekerDashboard = ({ user }) => {
             <div className="flex justify-end w-full md:w-auto job-filter-buttons order-2 md:order-1">
               <ToggleSwitch
                 options={[
-                  { value: 'viewed', label: 'משרות שנצפו' },
+                  { value: 'viewed', label: 'משרות שצפית' },
                   { value: 'new', label: 'משרות חדשות' },
                 ]}
                 value={jobFilter}
@@ -473,9 +473,11 @@ const JobSeekerDashboard = ({ user }) => {
                           <Button asChild className={`${appliedJobIds.has(String(job.id))
                             ? 'bg-gray-200 text-gray-700 hover:bg-gray-200'
                             : viewedJobIds.has(String(job.id))
-                              ? 'bg-gray-400 hover:bg-gray-500 text-white font-bold text-sm'
-                              : 'bg-[#59df8a] hover:bg-[#4bc77b] text-black font-medium text-base'
-                            } px-4 py-1.5 h-9 rounded-full w-32 view-job-button transition-colors duration-300`}>
+                              ? 'bg-gray-400 hover:bg-gray-500 text-white'
+                              : job.match_score >= 80
+                                ? 'bg-green-400 hover:bg-green-500 text-white'
+                                : 'bg-orange-400 hover:bg-orange-500 text-white'
+                            } px-4 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-job-button transition-colors duration-300`}>
                             <Link
                               to={createPageUrl(`JobDetailsSeeker?id=${job.id}&from=Dashboard`)}
                               onClick={() => {
@@ -674,16 +676,54 @@ const EmployerDashboard = ({ user }) => {
           }));
           const allApps = appsResults.flat().sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
 
-          // Deduplicate applicant emails
-          const uniqueEmails = [...new Set(allApps.map(a => a.applicant_email))].slice(0, 50); // Increased limit slightly for larger dashboards
+          console.log('🎯 Dashboard: Total applications found:', allApps.length);
 
-          if (uniqueEmails.length > 0) {
-            // Fetch profiles for these applicants
-            const profiles = await Promise.all(uniqueEmails.map(async (email) => {
-              const p = await UserProfile.filter({ email: email });
-              return p.length > 0 ? p[0] : null;
+          // Build unique candidate list using ID or Email
+          const candidateRefs = [];
+          const seenIds = new Set();
+          const seenEmails = new Set();
+
+          for (const app of allApps) {
+            const email = app.applicant_email?.toLowerCase();
+            // Prioritize ID
+            if (app.applicant_id && !seenIds.has(app.applicant_id)) {
+              candidateRefs.push({ id: app.applicant_id, email: email });
+              seenIds.add(app.applicant_id);
+              if (email) seenEmails.add(email);
+            }
+            // Fallback to Email
+            else if (email && !seenEmails.has(email) && !app.applicant_id) {
+              candidateRefs.push({ email: email });
+              seenEmails.add(email);
+            }
+            if (candidateRefs.length >= 50) break;
+          }
+
+          if (candidateRefs.length > 0) {
+            // Fetch profiles
+            const profiles = await Promise.all(candidateRefs.map(async (ref) => {
+              try {
+                // Try ID first
+                if (ref.id) {
+                  const p = await UserProfile.filter({ id: ref.id });
+                  if (p.length > 0) {
+                    console.log('✅ Found profile by ID:', ref.id, p[0].profile_picture ? 'HAS PIC' : 'NO PIC');
+                    return p[0];
+                  }
+                }
+                // Try Email second
+                if (ref.email) {
+                  const p = await UserProfile.filter({ email: ref.email });
+                  if (p.length > 0) {
+                    console.log('✅ Found profile by Email:', ref.email, p[0].profile_picture ? 'HAS PIC' : 'NO PIC');
+                    return p[0];
+                  }
+                }
+              } catch (e) { console.error('Error fetching profile:', e); }
+              return null;
             }));
             applicantProfiles = profiles.filter(p => p !== null);
+            console.log('📊 Dashboard: Final profiles:', applicantProfiles);
           }
         }
 
@@ -907,8 +947,8 @@ const EmployerDashboard = ({ user }) => {
             />
             <EmployerStatsCard
               icon={ApplicationsIcon}
-              title="מועמדים שהגישו"
-              value={employerStats?.unique_candidates_count || 0}
+              title="מועמדויות שהתקבלו"
+              value={employerStats?.total_applications_received || 0}
               color="bg-green-50 text-green-600"
             />
             <EmployerStatsCard
@@ -958,16 +998,6 @@ const EmployerDashboard = ({ user }) => {
 
 
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between candidate-filter-buttons">
-            <div className="flex justify-end w-full md:w-auto">
-              <ToggleSwitch
-                options={[
-                  { value: 'watched', label: 'מועמדים שנצפו' },
-                  { value: 'new', label: 'מועמדים חדשים' },
-                ]}
-                value={candidateFilter}
-                onChange={handleFilterChange}
-              />
-            </div>
             <div className="relative w-full md:w-96 candidate-search-input">
               <Input
                 placeholder="אפשר גם לחפש"
@@ -977,8 +1007,19 @@ const EmployerDashboard = ({ user }) => {
               />
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             </div>
+            <div className="flex justify-end w-full md:w-auto">
+              <ToggleSwitch
+                options={[
+                  { value: 'watched', label: 'מועמדים שצפית' },
+                  { value: 'new', label: 'מועמדים חדשים' },
+                ]}
+                value={candidateFilter}
+                onChange={handleFilterChange}
+              />
+            </div>
           </div>
           <div className="space-y-4 candidate-list">
+            <h2 className="text-lg font-bold text-gray-900 mb-2 px-2">מועמדים שהגישו מועמדות</h2>
             {displayedCandidates.length > 0 ? (displayedCandidates.map((candidate, index) => {
               // Calculate a stable match score based on candidate ID to ensure consistency
               const getStableMatchScore = (id) => {
@@ -1018,9 +1059,17 @@ const EmployerDashboard = ({ user }) => {
                         <div className="flex items-center justify-between gap-4">
                           <div className="flex items-center gap-4 flex-1">
                             <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">
-                              <div className="w-full h-full bg-blue-200 flex items-center justify-center">
-                                <UserIcon className="w-8 h-8 text-blue-500" />
-                              </div>
+                              {candidate.profile_picture ? (
+                                <img
+                                  src={candidate.profile_picture}
+                                  alt={candidate.full_name || "Profile"}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-blue-200 flex items-center justify-center">
+                                  <UserIcon className="w-8 h-8 text-blue-500" />
+                                </div>
+                              )}
                             </div>
                             <div className="text-right">
                               <h3 className="font-bold text-lg text-gray-900 leading-tight">
@@ -1038,7 +1087,8 @@ const EmployerDashboard = ({ user }) => {
 
                           <div className="flex-shrink-0">
                             <Button
-                              className={`text-black px-6 py-1.5 h-9 rounded-full font-medium text-base w-32 view-candidate-button transition-colors duration-300 bg-[#59df8a] hover:bg-[#4bc77b]`}
+                              className={`text-white px-6 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-candidate-button transition-colors duration-300 ${match >= 80 ? 'bg-green-400 hover:bg-green-500' : 'bg-orange-400 hover:bg-orange-500'
+                                }`}
                               onClick={() => handleCandidateClick(candidate, match)}
                             >
                               לצפייה

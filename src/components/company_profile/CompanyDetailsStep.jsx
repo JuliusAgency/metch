@@ -111,8 +111,9 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                         <Button
                             type="button"
                             onClick={() => setIsVerificationOpen(true)}
+                            disabled={companyData.is_phone_verified}
                             className={`absolute left-1.5 top-1/2 -translate-y-1/2 h-6 px-3 text-[10px] font-medium rounded-full transition-all ${companyData.is_phone_verified
-                                ? 'bg-green-500 hover:bg-green-600 text-white'
+                                ? 'bg-green-500 text-white cursor-default'
                                 : 'bg-[#1e88e5] text-white hover:bg-[#1565c0]'
                                 }`}
                         >

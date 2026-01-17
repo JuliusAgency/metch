@@ -271,9 +271,8 @@ export default function JobManagement() {
           </div>
 
           <div className="p-2 sm:p-4 md:p-6 -mt-16 relative z-10 w-[70%] mx-auto">
-            {/* Toggle Buttons - with Stats Icon on right edge */}
-            <div className="flex justify-between items-center mb-4">
-              <div className="w-6"></div> {/* Spacer for symmetry */}
+            {/* Toggle Buttons - Centered */}
+            <div className="flex justify-center items-center mb-4">
               <ToggleSwitch
                 options={[
                   { value: 'ended', label: 'משרות שהסתיימו' },
@@ -282,20 +281,6 @@ export default function JobManagement() {
                 value={activeView}
                 onChange={setActiveView}
               />
-              <Link to={createPageUrl("Statistics")}>
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="text-blue-600 hover:text-blue-700 cursor-pointer transition-colors"
-                >
-                  <rect x="3" y="14" width="3" height="7" rx="1" fill="currentColor" />
-                  <rect x="8" y="10" width="3" height="11" rx="1" fill="currentColor" />
-                  <rect x="13" y="6" width="3" height="15" rx="1" fill="currentColor" />
-                  <rect x="18" y="3" width="3" height="18" rx="1" fill="currentColor" />
-                </svg>
-              </Link>
             </div>
 
             {/* Jobs List */}

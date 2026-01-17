@@ -62,7 +62,7 @@ export default function Success({ onReset, onDuplicate, hasCredits = true }) {
           className="px-8 py-3 h-auto text-lg rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2"
         >
           <Home className="w-5 h-5" />
-           לדף הבית
+          לדף הבית
         </Button>
       </div>
     </motion.div>

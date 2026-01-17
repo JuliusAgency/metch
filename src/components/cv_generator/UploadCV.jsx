@@ -39,7 +39,7 @@ export default function UploadCV({ user, onUploadComplete, onSkip }) {
             const { publicUrl, file_url } = await UploadFile({
                 file,
                 bucket: 'public-files',
-                path: `${Date.now()}-${cleanFileName}`
+                path: `${Date.now()} -${cleanFileName} `
             });
 
             const resumeUrl = publicUrl || file_url;

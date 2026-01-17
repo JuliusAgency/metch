@@ -123,16 +123,41 @@ const EmployerDashboard = ({ user }) => {
           }));
           const allApps = appsResults.flat().sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
 
-          // Deduplicate applicant emails
-          const uniqueEmails = [...new Set(allApps.map(a => a.applicant_email))].slice(0, 20); // Limit to 20 for dashboard
+          // Build unique candidate list using ID or Email
+          const candidateRefs = [];
+          const seenIds = new Set();
+          const seenEmails = new Set();
 
-          if (uniqueEmails.length > 0) {
-            // Fetch profiles for these applicants
-            const profiles = await Promise.all(uniqueEmails.map(async (email) => {
-              const p = await UserProfile.filter({ email: email });
-              return p.length > 0 ? p[0] : null;
+          console.log('🎯 Total apps:', allApps.length);
+          for (const app of allApps) {
+            const email = app.applicant_email?.toLowerCase();
+            if (app.applicant_id && !seenIds.has(app.applicant_id)) {
+              candidateRefs.push({ id: app.applicant_id, email: email });
+              seenIds.add(app.applicant_id);
+              if (email) seenEmails.add(email);
+            } else if (email && !seenEmails.has(email) && !app.applicant_id) {
+              candidateRefs.push({ email: email });
+              seenEmails.add(email);
+            }
+            if (candidateRefs.length >= 20) break;
+          }
+
+          if (candidateRefs.length > 0) {
+            const profiles = await Promise.all(candidateRefs.map(async (ref) => {
+              try {
+                if (ref.id) {
+                  const p = await UserProfile.filter({ id: ref.id });
+                  if (p.length > 0) return p[0];
+                }
+                if (ref.email) {
+                  const p = await UserProfile.filter({ email: ref.email });
+                  if (p.length > 0) return p[0];
+                }
+              } catch (e) { console.error(e); }
+              return null;
             }));
             applicantProfiles = profiles.filter(p => p !== null);
+            console.log('📊 Loaded profiles:', applicantProfiles.length, applicantProfiles.map(p => ({ name: p.full_name, hasPic: !!p.profile_picture })));
           }
         }
 
@@ -398,7 +423,15 @@ const EmployerDashboard = ({ user }) => {
                               <div className="flex items-center gap-4 flex-1">
                                 <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">
                                   <div className="w-full h-full bg-blue-200 flex items-center justify-center">
-                                    <UserIcon className="w-8 h-8 text-blue-500" />
+                                    {candidate.profile_picture ? (
+                                      <img
+                                        src={candidate.profile_picture}
+                                        alt={candidate.full_name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <UserIcon className="w-8 h-8 text-blue-500" />
+                                    )}
                                   </div>
                                 </div>
                                 <div className="text-right">

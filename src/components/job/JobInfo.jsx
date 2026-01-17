@@ -1,7 +1,7 @@
 import {
-  MapPin,
-  DollarSign,
-  Clock,
+    MapPin,
+    DollarSign,
+    Clock,
 } from "lucide-react";
 import { format } from "date-fns";
 
