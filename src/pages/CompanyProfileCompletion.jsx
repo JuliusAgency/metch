@@ -15,12 +15,13 @@ import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useUser } from "@/contexts/UserContext";
 import { MetchApi } from "@/api/metchApi";
 import { toast } from "sonner";
+import { UploadFile } from "@/api/integrations";
 
 const STEPS = ["פרטי חברה", "בחירת חבילה", "תשלום", "השלמת פרופיל", "סיום"];
 
 export default function CompanyProfileCompletion() {
   useRequireUserType(); // Ensure user has selected a user type
-  const { updateProfile } = useUser();
+  const { updateProfile, user } = useUser();
   const [step, setStep] = useState(1);
   const [companyData, setCompanyData] = useState({
     company_name: "",
@@ -65,6 +66,7 @@ export default function CompanyProfileCompletion() {
         setCompanyData(prev => ({
           ...prev,
           company_name: user.company_name || "",
+          logo_url: user.profile_picture || "", // Map profile_picture to logo_url state
           company_type: user.company_type || "business",
           field_of_activity: user.field_of_activity || "",
           main_address: user.main_address || "",
@@ -127,9 +129,43 @@ export default function CompanyProfileCompletion() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Remove office_phone and social_links (handle separately)
-      // eslint-disable-next-line no-unused-vars
-      const { office_phone, social_links, ...dataToSave } = companyData;
+      // Extract specific fields to handle separately or exclude
+      // We exclude logo_url as well because we map it to profile_picture
+      const { office_phone, social_links, logo_file, logo_url, ...dataToSave } = companyData;
+
+      // Handle Logo Upload
+      if (logo_file instanceof File) {
+        try {
+          const userId = user?.id;
+          if (!userId) throw new Error("User ID not found");
+
+          const fileExt = logo_file.name.split('.').pop();
+          const fileName = `logo_${Date.now()}.${fileExt}`;
+
+          const uploadResult = await UploadFile({
+            file: logo_file,
+            bucket: 'public-files',
+            path: `company-logos/${userId}/${fileName}`
+          });
+
+          dataToSave.profile_picture = uploadResult.publicUrl; // Save to profile_picture
+        } catch (uploadError) {
+          console.error("Logo upload failed", uploadError);
+          toast.error("שגיאה בהעלאת הלוגו: " + (uploadError.message || "נא לנסות שנית"));
+          setSaving(false);
+          return false;
+        }
+      } else if (logo_url) {
+        // If we have a URL but no new file, ensure it's saved/persisted if needed
+        // (Usually updates merge, but good to be explicit if we want to support editing logic later)
+        // However, if we didn't change it, we might not need to send it.
+        // But for safety, if we have it in state, we can ensure it's in the DB.
+        // Actually, let's only send it if we are sure.
+        // If it's just a string and no file, it means it's already there or loaded from DB.
+        // We can skip adding it to dataToSave unless we want to overwrite.
+        // To be safe against "clearing" it by accident, we can add it if desired.
+        // dataToSave.profile_picture = logo_url; 
+      }
 
       // Map social_links back to DB columns
       if (social_links) {
