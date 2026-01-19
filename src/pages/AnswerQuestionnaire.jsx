@@ -147,7 +147,7 @@ export default function AnswerQuestionnaire() {
                                     size="lg"
                                     className="px-12 h-14 rounded-full font-bold text-lg bg-blue-600 hover:bg-blue-700 shadow-xl transition-all active:scale-95"
                                 >
-                                    {submitting ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : "שלחו קורות חיים"}
+                                    {submitting ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : "שליחת קורות חיים"}
                                 </Button>
                             </div>
                         </form>

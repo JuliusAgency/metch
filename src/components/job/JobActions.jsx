@@ -15,7 +15,7 @@ const JobActions = ({ job, handleStatusChange, applications }) => (
         <Link to={createPageUrl(`CreateJob?id=${job.id}`)}>
             <Button variant="outline" className="border-gray-300 hover:bg-gray-100">
                 <Edit className="w-4 h-4 ml-2" />
-                ערוך משרה
+                עריכת משרה
             </Button>
         </Link>
         {job.status === 'active' ? (

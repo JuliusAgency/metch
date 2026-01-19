@@ -288,7 +288,7 @@ export default function Packages() {
                                     onClick={handleSavePaymentMethod}
                                     className="bg-[#1E3A8A] text-white rounded-full px-8 w-full md:w-1/2"
                                 >
-                                    שמור אמצעי תשלום
+                                    שמירת אמצעי תשלום
                                 </Button>
                             </div>
                         </div>

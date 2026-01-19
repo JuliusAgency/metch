@@ -57,7 +57,7 @@ export default function Step2({ preferences, setPreferences, onSave, onBack, sav
         <div className="flex flex-col items-center text-center space-y-10 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
 
             <div className="space-y-2">
-                <h2 className="text-3xl font-bold text-gray-900">בחר את 3 התכונות שהכי מאפיינות אותך</h2>
+                <h2 className="text-3xl font-bold text-gray-900"> 3 התכונות שהכי מאפיינות אותך</h2>
                 <p className="text-gray-500 text-sm">מידע זה פנימי על מנת שנמצא את המאץ' המושלם בלי לרמות</p>
             </div>
 
@@ -96,7 +96,7 @@ export default function Step2({ preferences, setPreferences, onSave, onBack, sav
                 >
                     {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (
                         <>
-                            המשך
+                            הבא
                             <ArrowLeft className="w-5 h-5" />
                         </>
                     )}

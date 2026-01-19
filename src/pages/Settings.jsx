@@ -1049,7 +1049,7 @@ export default function Settings() {
                       שומר...
                     </>
                   ) : (
-                    isOnboarding ? 'עדכון' : 'שמור שינויים'
+                    isOnboarding ? 'עדכון' : 'שמירת שינויים'
                   )}
                 </Button>
 

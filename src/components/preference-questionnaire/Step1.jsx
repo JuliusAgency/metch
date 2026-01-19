@@ -161,7 +161,7 @@ export default function Step1({
 
             {/* Job Type Section */}
             <div className="w-full space-y-6">
-                <h3 className="text-xl font-bold text-gray-900">סוג משרה</h3>
+                <h3 className="text-xl font-bold text-gray-900">סוג המשרה</h3>
                 <div className="flex flex-wrap justify-center gap-4">
                     {JOB_TYPES.map(type => (
                         <PillButton
@@ -196,7 +196,7 @@ export default function Step1({
                     disabled={!preferences.location || !preferences.profession_search || !preferences.job_type || !preferences.availability}
                     className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-12 py-6 text-lg font-bold flex items-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    המשך
+                    הבא
                     <ArrowLeft className="w-5 h-5" />
                 </Button>
             </div>

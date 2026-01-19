@@ -248,7 +248,7 @@ export default function JobSeekerProfileCompletion() {
                         </div>
                         <Button variant="ghost" className="text-blue-500 hover:text-blue-700 flex items-center gap-1 text-xs h-8 px-2" onClick={handleReplaceCV}>
                             <RefreshCw className="w-3 h-3" />
-                            החלף קובץ
+                            החלפת קובץ
                         </Button>
                     </div>
                 )}

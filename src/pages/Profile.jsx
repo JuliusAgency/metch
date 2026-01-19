@@ -301,7 +301,7 @@ export default function Profile() {
                 className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
               >
                 <img src="/edit_icon.png" alt="Edit" className="w-4 h-4" />
-                ערוך קובץ
+                עריכת קובץ
               </Link>
             </>
           )}
@@ -313,7 +313,7 @@ export default function Profile() {
             className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
           >
             <img src="/replace_icon.png" alt="Replace" className="w-4 h-4" />
-            החלף קובץ
+            החלפת קובץ
           </button>
         </div>
       </div>
@@ -385,7 +385,7 @@ export default function Profile() {
                   <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center justify-between h-[72px]">
                     <div className="flex items-center gap-3 w-full justify-between">
                       <label htmlFor="looking-for-job" className="font-semibold text-gray-700 text-base cursor-pointer select-none">
-                        אני מחפש עבודה
+                        אני מחפש/ת עבודה
                       </label>
                       <Switch
                         checked={isLookingForJob}

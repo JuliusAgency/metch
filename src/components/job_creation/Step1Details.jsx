@@ -80,7 +80,7 @@ export default function Step1Details({ jobData, setJobData }) {
               <SelectValue placeholder="תחילת עבודה" />
             </SelectTrigger>
             <SelectContent align="end">
-              <SelectItem value="flexible" className="justify-end">גמיש</SelectItem>
+              <SelectItem value="flexible" className="justify-end">גמיש/ה</SelectItem>
               <SelectItem value="immediate" className="justify-end">מיידית</SelectItem>
               <SelectItem value="1_2_weeks" className="justify-end">שבוע עד שבועיים</SelectItem>
               <SelectItem value="1_2_months" className="justify-end">חודש עד חודשיים</SelectItem>
@@ -94,7 +94,7 @@ export default function Step1Details({ jobData, setJobData }) {
             onValueChange={(value) => handleSelectChange('employment_type', value)}
           >
             <SelectTrigger className="h-10 rounded-full border-gray-300 text-right flex flex-row-reverse">
-              <SelectValue placeholder="סוג משרה" />
+              <SelectValue placeholder="סוג המשרה" />
             </SelectTrigger>
             <SelectContent align="end">
               {jobTypes.map(type => (

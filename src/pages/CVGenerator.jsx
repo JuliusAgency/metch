@@ -308,7 +308,7 @@ export default function CVGenerator() {
         console.error("Cannot save CV: user email is not available");
         toast({
           title: "שגיאה בשמירה",
-          description: "לא ניתן לשמור את קורות החיים: אימייל משתמש חסר. נא לרענן את הדף.",
+          description: "לא ניתן לשמירהאת קורות החיים: אימייל משתמש חסר. נא לרענן את הדף.",
           variant: "destructive"
         });
         setSaving(false);
@@ -536,7 +536,7 @@ export default function CVGenerator() {
               onClick={handleUploadComplete}
               className="px-8 py-3 rounded-full font-semibold text-lg h-auto border-2 border-gray-300 text-gray-500 hover:bg-gray-50 hover:text-gray-700 hover:border-gray-400 transition-all"
             >
-              דלג על השלב הזה
+              דילוג על השלב הזה
               <ArrowLeft className="w-5 h-5 mr-2" />
             </Button>
           ) : (step < STEPS.length + 1 && (
@@ -545,7 +545,7 @@ export default function CVGenerator() {
               disabled={isNextDisabled}
               className="px-16 py-3 rounded-full font-bold text-lg h-auto bg-[#2589D8] hover:bg-[#1e7bc4] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all"
             >
-              {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (step === 0 ? 'המשך' : (step === STEPS.length ? 'שמור וסיים' : 'הבא'))}
+              {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (step === 0 ? 'הבא' : (step === STEPS.length ? 'שמירה וסיום' : 'הבא'))}
               {!saving && step !== 0 && <ArrowLeft className="w-5 h-5 mr-2" />}
             </Button>
           ))}

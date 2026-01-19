@@ -313,12 +313,12 @@ export default function CreateJob() {
   const getNextButtonText = () => {
     if (isSubmitting) return <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div>;
     if (step === 3) {
-      if (!jobData.screening_questions || jobData.screening_questions.length === 0) return 'דלג';
+      if (!jobData.screening_questions || jobData.screening_questions.length === 0) return 'דילוג';
       // If has questions
-      return 'המשך';
+      return 'הבא';
     }
     if (isFinalStep) return isEditing ? 'עדכון משרה' : 'סיום וצפייה במשרה';
-    return 'המשך';
+    return 'הבא';
   };
 
   const isNextDisabled = () => {

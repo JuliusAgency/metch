@@ -15,7 +15,7 @@ const AVAILABILITY_MAPPING = {
   'immediate': 'מיידי',
   'two_weeks': 'שבוע עד שבועיים',
   'one_month': 'חודש עד חודשיים',
-  'negotiable': 'גמישה'
+  'negotiable': 'גמיש/ה'
 };
 
 const REVERSE_AVAILABILITY_MAPPING = Object.fromEntries(
@@ -27,7 +27,7 @@ const JOB_TYPE_MAPPING = {
   'full_time': 'מלאה',
   'part_time': 'חלקית',
   'shifts': 'משמרות',
-  'flexible': 'גמישה'
+  'flexible': 'גמיש/ה'
 };
 
 const REVERSE_JOB_TYPE_MAPPING = Object.fromEntries(

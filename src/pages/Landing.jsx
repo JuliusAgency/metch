@@ -24,7 +24,7 @@ const Landing = () => {
           <Card className="shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl text-gray-800">
-                מחפש עבודה?
+                מחפש/ת עבודה?
               </CardTitle>
               <CardDescription className="text-gray-600">
                 מצא את העבודה המושלמת עבורך

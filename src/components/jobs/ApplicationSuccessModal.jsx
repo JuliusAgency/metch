@@ -99,7 +99,7 @@ const ApplicationSuccessModal = ({ isOpen, onClose }) => {
                         transition={{ delay: 0.4, duration: 0.5 }}
                         className="text-[#0a1f44]/80 text-xl mb-10 relative z-10 font-medium"
                     >
-                        מועמדותך הוגשה בהצלחה!
+                       אנו נעדכן אותך על סטטוס המועמדות שהגשת
                     </motion.p>
 
                     {/* Button */}

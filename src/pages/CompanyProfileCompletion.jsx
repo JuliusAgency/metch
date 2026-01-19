@@ -321,7 +321,7 @@ export default function CompanyProfileCompletion() {
                     onClick={nextStep}
                     disabled={saving || (step === 1 && !isStep1Valid)}
                   >
-                    {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (step === 3 ? 'לתשלום' : step === STEPS.length ? 'מעבר לדאשבורד' : 'המשך')}
+                    {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (step === 3 ? 'לתשלום' : step === STEPS.length ? 'מעבר לדאשבורד' : 'הבא')}
                     {!saving && <ArrowLeft className="w-5 h-5 ml-2" />}
                   </Button>
                 );

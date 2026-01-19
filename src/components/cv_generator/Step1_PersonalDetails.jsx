@@ -236,7 +236,7 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
               onClick={() => setIsVerificationOpen(true)}
               className="text-xs text-[#1e88e5] font-medium cursor-pointer mt-2 text-right w-full hover:underline mr-4"
             >
-              לא קיבלתי שלח שוב
+              לא קיבלתי שליחה מחדש
             </p>
           )}
         </div>

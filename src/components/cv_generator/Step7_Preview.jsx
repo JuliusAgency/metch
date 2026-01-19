@@ -34,8 +34,8 @@ export default function Step7_Preview({ cvData, setData, onEdit }) {
         <>
             <div className="max-w-4xl mx-auto text-center" dir="rtl">
                 <div className="mb-10">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-3">צפייה בקורות חיים</h2>
-                    <p className="text-gray-600 max-w-lg mx-auto">בחלק הזה תעברו על קורות החיים ותוכלו לערוך במידת הצורך או לחזור אחורה ולתקן את אחד מהחלקים</p>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-3">קורות החיים נוצרו בהצלחה!</h2>
+                    <p className="text-gray-600 max-w-lg mx-auto">עכשיו ניתן לעבור על קורות החיים ובמידת הצורך לערוך את הפרטים ע׳׳י חזרה לאחור</p>
                 </div>
 
                 <div className="mb-8 max-w-md mx-auto text-right">

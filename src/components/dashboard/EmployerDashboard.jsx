@@ -402,7 +402,7 @@ const EmployerDashboard = ({ user }) => {
                   immediate: "מיידי",
                   two_weeks: "תוך שבועיים",
                   one_month: "תוך חודש",
-                  negotiable: "גמיש",
+                  negotiable: "גמיש/ה",
                 };
 
                 const jobTypeText = {

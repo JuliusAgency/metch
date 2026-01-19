@@ -227,7 +227,7 @@ const UserTypeSelection = () => {
                     : 'bg-[#2987cd] text-white hover:bg-[#1f6ba8]'
                   } ${loading ? 'opacity-70 cursor-wait' : ''}`}
               >
-                אני מחפש עבודה
+                אני מחפש/ת עבודה
               </button>
 
               <button

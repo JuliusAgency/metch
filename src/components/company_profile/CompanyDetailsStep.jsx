@@ -124,7 +124,7 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                                 onClick={() => setIsVerificationOpen(true)}
                                 className="text-xs text-[#1e88e5] font-medium cursor-pointer mt-1 text-right w-full hover:underline absolute top-full right-0"
                             >
-                                לא קיבלתי שלח שוב
+                                לא קיבלתי שליחה מחדש
                             </p>
                         )}
                     </div>

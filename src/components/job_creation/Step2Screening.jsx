@@ -42,8 +42,8 @@ const HelpTooltip = ({ isOpen, onClose }) => {
             <div className="flex-1 text-right pt-1">
               <h3 className="text-2xl font-bold text-[#001a6e] mb-3">שאלון סינון</h3>
               <p className="text-gray-700 text-base leading-relaxed font-medium">
-                שאלון זה נועד לקבל מידע נוסף מהמועמד בעת הגשת קורות חיים,
-                השאלון יכול לעזור לכם לקבל פרטים שלא מופיעים בדרישות משרה או בקורות חיים - זכרו, השאלון הוא לא מבחן אלא כלי לקבלת מידע נוסף.
+                שאלון זה נועד לקבל מידע נוסף מהמועמד/ת בעת הגשת קורות חיים,
+                השאלון יכול לעזור לכם לקבל פרטים שלא מופיעים בדרישות משרה או בקורות חיים - זכרו, השאלון הוא לא מבחן אלא כלי עבור קבלת מידע נוסף.
               </p>
             </div>
           </div>
@@ -155,7 +155,7 @@ export default function Step2Screening({ jobData, setJobData, onSave, onNext }) 
                 className="text-blue-500 hover:text-blue-600 font-medium text-sm flex items-center gap-1 pr-2"
               >
                 <Plus className="w-4 h-4" />
-                הוסף שאלה
+                הוספת שאלה
               </button>
             </div>
           </div>
@@ -181,7 +181,7 @@ export default function Step2Screening({ jobData, setJobData, onSave, onNext }) 
                 className="text-blue-500 hover:text-blue-600 font-medium text-sm flex items-center gap-1 pr-2"
               >
                 <Plus className="w-4 h-4" />
-                הוסף שאלה
+                הוספת שאלה
               </button>
             </div>
           </div>
