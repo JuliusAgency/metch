@@ -191,7 +191,7 @@ const Login = () => {
               <div className="flex items-center justify-center">
                 <div className="w-16 h-px bg-gray-300"></div>
                 <span className="px-4 text-[#6a6a6a] text-sm" dir="auto">
-                  או הרשמו באמצעות
+                  או התחברות באמצעות
                 </span>
                 <div className="w-16 h-px bg-gray-300"></div>
               </div>

@@ -262,7 +262,7 @@ const JobSeekerDashboard = ({ user }) => {
           location: 'מרכז',
           company_logo_url: 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png',
           match_score: 90,
-          start_date: 'מיידי',
+          start_date: 'מיידית',
           description: 'אנחנו מחפשים רכז/ת גיוס טכנולוגי/ת יצירתי/ת שיצטרפו לצוות שלנו...',
           requirements: ['ניסיון של שנתיים לפחות בגיוס טכנולוגי - חובה', 'אנגלית ברמה גבוהה'],
           responsibilities: ['אחריות מלאה על תהליך הגיוס מקצה לקצה'],
@@ -503,7 +503,7 @@ const JobSeekerDashboard = ({ user }) => {
                         {/* Left: Chips Area */}
                         <div className="flex gap-2 text-xs flex-wrap">
                           <span className="flex items-center gap-1 bg-[#eaf5fc] text-[#001a6e] px-2.5 py-1 rounded-lg border border-blue-100/50 font-bold whitespace-nowrap">
-                            <Clock className="w-3 h-3 ml-1 text-[#001a6e]" />{job.start_date || 'מיידי'}
+                            <Clock className="w-3 h-3 ml-1 text-[#001a6e]" />{job.start_date || 'מיידית'}
                           </span>
                           <span className="flex items-center gap-1 bg-[#eaf5fc] text-[#001a6e] px-2.5 py-1 rounded-lg border border-blue-100/50 font-bold whitespace-nowrap">
                             <Briefcase className="w-3 h-3 ml-1 text-[#001a6e]" />משרה מלאה
@@ -1037,7 +1037,7 @@ const EmployerDashboard = ({ user }) => {
 
               // Helper Maps
               const availabilityText = {
-                immediate: "מיידי",
+                immediate: "מיידית",
                 two_weeks: "תוך שבועיים",
                 one_month: "תוך חודש",
                 negotiable: "גמיש/ה",

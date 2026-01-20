@@ -168,7 +168,7 @@ const Register = () => {
                 ברוכים הבאים למאצ׳ 👋
               </h1>
               <p className="font-['Rubik',_sans-serif] font-normal text-xl text-[#32343d]" dir="auto">
-                רק כמה פרטים – ואפשר להתחיל
+                רק כמה פרטים – ומתחילים
               </p>
             </div>
 
@@ -207,7 +207,7 @@ const Register = () => {
                   onChange={handleInputChange}
                   required
                   className="w-full bg-transparent border-none outline-none text-right text-lg text-[#32343d] placeholder-[#6a6a6a] py-2 pl-10 focus-visible:ring-0 shadow-none px-0"
-                  placeholder="צור סיסמה"
+                  placeholder="יצירת סיסמה"
                   dir="rtl"
                 />
               </div>
@@ -258,7 +258,7 @@ const Register = () => {
               <div className="flex items-center justify-center">
                 <div className="w-16 h-px bg-gray-300"></div>
                 <span className="px-4 text-[#6a6a6a] text-sm" dir="auto">
-                  או הרשמו באמצעות
+                  או הרשמה באמצעות
                 </span>
                 <div className="w-16 h-px bg-gray-300"></div>
               </div>

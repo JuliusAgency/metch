@@ -174,18 +174,18 @@ function scoreSpecialization(candidate_profile, job_posting) {
   const jobDescription = (job_posting.description || '').toLowerCase();
 
   // Full match
-  if (candidateSpecialization && 
-      (candidateSpecialization === jobCategory || 
-       jobTitle.includes(candidateSpecialization) ||
-       jobDescription.includes(candidateSpecialization))) {
+  if (candidateSpecialization &&
+    (candidateSpecialization === jobCategory ||
+      jobTitle.includes(candidateSpecialization) ||
+      jobDescription.includes(candidateSpecialization))) {
     return 90;
   }
 
   // Close skills - check for related terms
   const relatedTerms = getRelatedSpecializationTerms(candidateSpecialization);
-  const hasRelatedTerm = relatedTerms.some(term => 
-    jobCategory.includes(term) || 
-    jobTitle.includes(term) || 
+  const hasRelatedTerm = relatedTerms.some(term =>
+    jobCategory.includes(term) ||
+    jobTitle.includes(term) ||
     jobDescription.includes(term)
   );
 
@@ -211,7 +211,7 @@ function scoreExperience(candidate_profile, job_posting) {
 
   // Extract key experience terms from job
   const jobExperienceTerms = extractExperienceTerms(jobRequirements, jobDescription);
-  
+
   // Check candidate experience
   let fullMatches = 0;
   let similarMatches = 0;
@@ -281,8 +281,8 @@ function scoreSkills(candidate_profile, job_posting) {
   }
 
   // Count matches
-  const matchedSkills = jobSkills.filter(jobSkill => 
-    candidateSkills.some(candidateSkill => 
+  const matchedSkills = jobSkills.filter(jobSkill =>
+    candidateSkills.some(candidateSkill =>
       candidateSkill.includes(jobSkill) || jobSkill.includes(candidateSkill)
     )
   );
@@ -387,7 +387,7 @@ function scoreProfession(candidate_profile, job_posting) {
 
   // Check for similar professions
   const similarProfessions = getSimilarProfessions(candidateProfession);
-  const isSimilar = similarProfessions.some(similar => 
+  const isSimilar = similarProfessions.some(similar =>
     jobTitle.includes(similar) || jobCategory.includes(similar)
   );
 
@@ -407,15 +407,15 @@ function scoreLocation(candidate_profile, job_posting) {
   }
 
   // Full match
-  if (candidateLocation === jobLocation || 
-      candidateLocation.includes(jobLocation) || 
-      jobLocation.includes(candidateLocation)) {
+  if (candidateLocation === jobLocation ||
+    candidateLocation.includes(jobLocation) ||
+    jobLocation.includes(candidateLocation)) {
     return 100;
   }
 
   // Check for nearby areas (e.g., Tel Aviv -> Ramat Gan)
   const nearbyAreas = getNearbyAreas(candidateLocation);
-  const isNearby = nearbyAreas.some(area => 
+  const isNearby = nearbyAreas.some(area =>
     jobLocation.includes(area) || area.includes(jobLocation)
   );
 
@@ -435,9 +435,9 @@ function scoreAvailability(candidate_profile, job_posting) {
   }
 
   // Parse availability
-  const isImmediate = candidateAvailability.includes('מיידי') || 
-                      candidateAvailability.includes('immediate') ||
-                      candidateAvailability.includes('מיד');
+  const isImmediate = candidateAvailability.includes('מיידית') ||
+    candidateAvailability.includes('immediate') ||
+    candidateAvailability.includes('מיד');
 
   if (isImmediate) {
     if (!jobStartDate || isDateWithinMonth(jobStartDate)) {
@@ -449,7 +449,7 @@ function scoreAvailability(candidate_profile, job_posting) {
 
   // Check if candidate can start within 1 month
   const canStartWithinMonth = candidateAvailability.includes('חודש') ||
-                              candidateAvailability.includes('month');
+    candidateAvailability.includes('month');
 
   if (canStartWithinMonth) {
     if (!jobStartDate || isDateWithinMonth(jobStartDate)) {
@@ -527,10 +527,10 @@ function calculateCandidateExperience(experience) {
 
 function checkCertificationsMatch(candidateCertifications, requiredCertifications) {
   const candidateCerts = (candidateCertifications || []).map(c => (c.name || c || '').toLowerCase());
-  
+
   return requiredCertifications.every(requiredCert => {
     const requiredValue = (requiredCert.value || '').toLowerCase();
-    return candidateCerts.some(candidateCert => 
+    return candidateCerts.some(candidateCert =>
       candidateCert.includes(requiredValue) || requiredValue.includes(candidateCert)
     );
   });
@@ -539,7 +539,7 @@ function checkCertificationsMatch(candidateCertifications, requiredCertification
 function extractLanguageRequirements(requirements) {
   const languages = [];
   const languageKeywords = ['עברית', 'אנגלית', 'ערבית', 'hebrew', 'english', 'arabic', 'רוסית', 'russian'];
-  
+
   requirements.forEach(req => {
     const value = (req.value || '').toLowerCase();
     languageKeywords.forEach(keyword => {
@@ -554,9 +554,9 @@ function extractLanguageRequirements(requirements) {
 
 function checkLanguagesMatch(candidateLanguages, requiredLanguages) {
   const candidateLangs = (candidateLanguages || []).map(l => (l.name || l || '').toLowerCase());
-  
+
   return requiredLanguages.every(requiredLang => {
-    return candidateLangs.some(candidateLang => 
+    return candidateLangs.some(candidateLang =>
       candidateLang.includes(requiredLang) || requiredLang.includes(candidateLang)
     );
   });
@@ -577,7 +577,7 @@ function getRelatedSpecializationTerms(specialization) {
 function extractExperienceTerms(requirements, description) {
   const terms = [];
   const commonRoles = ['מנהל', 'מפתח', 'מכירות', 'manager', 'developer', 'sales'];
-  
+
   [...requirements, { value: description }].forEach(item => {
     const value = (item.value || '').toLowerCase();
     commonRoles.forEach(role => {
@@ -593,7 +593,7 @@ function extractExperienceTerms(requirements, description) {
 function extractSkillsFromJob(requirements, description) {
   const skills = [];
   const commonSkills = ['excel', 'word', 'sap', 'מחשב', 'office', 'powerpoint'];
-  
+
   [...requirements.map(r => r.value || ''), description].forEach(text => {
     const lowerText = text.toLowerCase();
     commonSkills.forEach(skill => {
@@ -609,7 +609,7 @@ function extractSkillsFromJob(requirements, description) {
 function extractTraitKeywords(description, requirements) {
   const keywords = [];
   const traitTerms = ['מנהיגות', 'leadership', 'עבודת צוות', 'teamwork', 'יצירתיות', 'creativity'];
-  
+
   [...requirements.map(r => r.value || ''), description].forEach(text => {
     const lowerText = text.toLowerCase();
     traitTerms.forEach(term => {
@@ -625,7 +625,7 @@ function extractTraitKeywords(description, requirements) {
 function extractKeywords(text) {
   // Simple keyword extraction - remove common words
   const stopWords = ['את', 'של', 'על', 'או', 'the', 'a', 'an', 'and', 'or', 'is', 'are'];
-  const words = text.toLowerCase().split(/\s+/).filter(word => 
+  const words = text.toLowerCase().split(/\s+/).filter(word =>
     word.length > 2 && !stopWords.includes(word)
   );
   return [...new Set(words)];
@@ -653,11 +653,11 @@ function getNearbyAreas(location) {
 
 function isDateWithinMonth(dateString) {
   if (!dateString) return true;
-  
+
   const date = new Date(dateString);
   const now = new Date();
   const oneMonthFromNow = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
-  
+
   return date <= oneMonthFromNow;
 }
 

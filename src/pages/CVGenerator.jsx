@@ -467,7 +467,7 @@ export default function CVGenerator() {
 
             <div className="mb-12">
               <h1 className="text-3xl font-bold text-gray-800 mb-2">נרשמת בהצלחה</h1>
-              <h2 className="text-4xl font-extrabold text-blue-500 mb-6">המאצ' המושלם מחכה לך</h2>
+              <h2 className="text-4xl font-extrabold text-blue-500 mb-6">המאצ׳ המושלם מחכה לך!</h2>
               <p className="text-gray-500 text-lg">רק עוד כמה צעדים ואנחנו נמצא בשבילך את העבודה<br />שהכי מתאימה לדרישות שלך</p>
             </div>
 
@@ -481,7 +481,7 @@ export default function CVGenerator() {
 
               <ChoiceCard
                 title="יש לי קורות חיים"
-                description="זה אומר שתוכל להעלות את הקובץ ולקבל הצעות עבודה מדויקות כבר עכשיו!"
+                description="מעולה! זה אומר שאפשר להעלות קובץ קו׳׳ח עדכני ולקבל הצעות עבודה מדוייקות כבר עכשיו."
                 imageSrc={cvExistsIcon}
                 onClick={() => setChoice('upload')}
                 isSelected={choice === 'upload'} />

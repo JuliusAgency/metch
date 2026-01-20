@@ -124,7 +124,7 @@ export default function Step2_WorkExperience({ data, setData, onDirtyChange }) {
   return (
     <div className="max-w-4xl mx-auto text-center" dir="rtl">
       <h2 className="text-3xl font-bold text-gray-900 mb-3">ניסיון תעסוקתי וצבאי</h2>
-      <p className="text-gray-600 mb-12 max-w-lg mx-auto">בחלק הזה תפרטו על הניסיון התעסוקתי שלכם</p>
+      <p className="text-gray-600 mb-12 max-w-lg mx-auto">בחלק זה יש לפרט על הניסיון התעסוקתי שלך</p>
 
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

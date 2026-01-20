@@ -29,7 +29,7 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, sendingMessage, 
                         disabled={!newMessage.trim() || sendingMessage}
                         className="bg-[#dbecf3] hover:bg-[#c6e1ed] rounded-xl w-[52px] h-[52px] flex-shrink-0 transition-all shadow-sm flex items-center justify-center"
                         size="icon"
-                        aria-label="שלח הודעה"
+                        aria-label="שליחת הודעה"
                     >
                         <img src={sendIcon} alt="שלח" className="w-5 h-5 object-contain" />
                     </Button>

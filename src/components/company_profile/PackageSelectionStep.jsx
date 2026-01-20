@@ -134,7 +134,7 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
 
             {/* Features Section (Left side in RTL) */}
             <div className="flex-1 text-right py-4">
-              <h3 className="text-lg font-bold text-[#003566] mb-6">מה כולל?</h3>
+              <h3 className="text-lg font-bold text-[#003566] mb-6">מה זה כולל?</h3>
               <ul className="space-y-4">
                 {[
                   'פרסום למשך 30 ימים',

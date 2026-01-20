@@ -228,7 +228,7 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
                 : 'bg-[#1e88e5] text-white hover:bg-[#1565c0]'
                 }`}
             >
-              {localData.is_phone_verified ? 'אומת ✓' : 'שלח קוד'}
+              {localData.is_phone_verified ? 'אומת ✓' : 'שליחה מחדש'}
             </Button>
           </div>
           {!localData.is_phone_verified && (

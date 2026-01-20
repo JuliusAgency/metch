@@ -179,7 +179,7 @@ export default function Step5Preview({ jobData, setJobData }) {
                 variant="outline"
                 className="flex items-center gap-2 text-blue-600 border-blue-300 px-4 py-2"
               >
-                <span>מיידי</span>
+                <span>מיידית</span>
                 <Clock className="w-4 h-4" />
               </Badge>
               <Badge

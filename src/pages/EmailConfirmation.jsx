@@ -102,7 +102,7 @@ const EmailConfirmation = () => {
               className="font-['Assistant:Bold',_sans-serif] font-bold text-[14px] text-[#2987cd] hover:underline disabled:opacity-50"
               dir="auto"
             >
-              <span className="font-['Rubik:Regular',_sans-serif] font-normal text-[#32343d]">{`לא קיבלתם את הקוד? `}</span>
+              <span className="font-['Rubik:Regular',_sans-serif] font-normal text-[#32343d]">{`לא קיבלת את הקוד? `}</span>
               <span className="font-['Rubik:Bold',_sans-serif]">שלח שוב</span>
             </button>
           </div>

@@ -116,7 +116,7 @@ export default function Step3_Education({ data, setData, onDirtyChange }) {
   return (
     <div className="max-w-4xl mx-auto text-center" dir="rtl">
       <h2 className="text-3xl font-bold text-gray-900 mb-3">השכלה</h2>
-      <p className="text-gray-600 mb-12 max-w-lg mx-auto">בחלק הזה תציגו את ההשכלה הבסיסית והאקדמית שלכם</p>
+      <p className="text-gray-600 mb-12 max-w-lg mx-auto">בחלק זה ניתן לציין הסמכות מקצועיות</p>
 
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -152,7 +152,7 @@ const JobSeekerDashboard = ({ user }) => {
                           <div className="flex gap-4 text-xs text-gray-500 mt-1">
                             <span className="flex items-center gap-1"><MapPin className="w-3 h-3 ml-1" />{job.location}</span>
                             <span className="flex items-center gap-1"><Briefcase className="w-3 h-3 ml-1" />משרה מלאה</span>
-                            <span className="flex items-center gap-1"><Clock className="w-3 h-3 ml-1" />{job.start_date || 'מיידי'}</span>
+                            <span className="flex items-center gap-1"><Clock className="w-3 h-3 ml-1" />{job.start_date || 'מיידית'}</span>
                           </div>
                         </div>
                         {job.match_score !== null && (

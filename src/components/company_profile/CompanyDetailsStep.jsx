@@ -117,7 +117,7 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                                 : 'bg-[#1e88e5] text-white hover:bg-[#1565c0]'
                                 }`}
                         >
-                            {companyData.is_phone_verified ? 'אומת ✓' : 'שלח קוד'}
+                            {companyData.is_phone_verified ? 'אומת ✓' : 'שליחה מחדש'}
                         </Button>
                         {!companyData.is_phone_verified && (
                             <p

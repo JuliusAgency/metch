@@ -209,7 +209,7 @@ const UserTypeSelection = () => {
             {/* Headlines */}
             <div className="space-y-4 text-center">
               <h1 className="text-[40px] font-bold text-[#1a1f36] leading-tight">
-                איך תשתמש במאצ'?
+               ברוכים הבאים למאצ׳!
               </h1>
               <p className="text-xl text-gray-500 font-normal">
                 יש לבחור את האפשרות המתאימה עבורך
@@ -227,7 +227,7 @@ const UserTypeSelection = () => {
                     : 'bg-[#2987cd] text-white hover:bg-[#1f6ba8]'
                   } ${loading ? 'opacity-70 cursor-wait' : ''}`}
               >
-                אני מחפש/ת עבודה
+                חיפוש עבודה
               </button>
 
               <button
@@ -239,7 +239,7 @@ const UserTypeSelection = () => {
                     : 'bg-white text-[#1a1f36] hover:bg-gray-50'
                   } ${loading ? 'opacity-70 cursor-wait' : ''}`}
               >
-                אני מפרסם משרה
+                פרסום משרה
               </button>
             </div>
 

@@ -12,7 +12,7 @@ import { Info, ChevronRight } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 const AVAILABILITY_MAPPING = {
-  'immediate': 'מיידי',
+  'immediate': 'מיידית',
   'two_weeks': 'שבוע עד שבועיים',
   'one_month': 'חודש עד חודשיים',
   'negotiable': 'גמיש/ה'

@@ -21,7 +21,7 @@ import locationsList from '../../../locations.json';
 // Option constants
 // Option constants
 const JOB_TYPES = ["משמרות", "חלקית", "מלאה", "גמישה"];
-const AVAILABILITIES = ["חודש עד חודשיים", "שבוע עד שבועיים", "מיידי", "גמישה"];
+const AVAILABILITIES = ["חודש עד חודשיים", "שבוע עד שבועיים", "מיידית", "גמישה"];
 
 const PillButton = ({ label, isSelected, onClick }) => (
     <button
@@ -176,7 +176,7 @@ export default function Step1({
 
             {/* Availability Section */}
             <div className="w-full space-y-6">
-                <h3 className="text-xl font-bold text-gray-900">זמינות</h3>
+                <h3 className="text-xl font-bold text-gray-900">הזמינות שלי לתחילת העבודה</h3>
                 <div className="flex flex-wrap justify-center gap-4">
                     {AVAILABILITIES.map(avail => (
                         <PillButton

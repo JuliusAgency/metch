@@ -707,7 +707,7 @@ export default function CandidateProfile() {
   const matchScore = matchFromUrl ? parseInt(matchFromUrl, 10) : (candidate ? getStableMatchScore(candidate.id) : 90);
 
   const availabilityText = {
-    immediate: "מיידי",
+    immediate: "מיידית",
     two_weeks: "תוך שבועיים",
     one_month: "תוך חודש",
     negotiable: "גמיש/ה",

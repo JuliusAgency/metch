@@ -399,7 +399,7 @@ const EmployerDashboard = ({ user }) => {
 
                 // Helper Maps
                 const availabilityText = {
-                  immediate: "מיידי",
+                  immediate: "מיידית",
                   two_weeks: "תוך שבועיים",
                   one_month: "תוך חודש",
                   negotiable: "גמיש/ה",

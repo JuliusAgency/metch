@@ -1132,7 +1132,7 @@ export default function Settings() {
                         className="flex-1 h-12 bg-red-600 hover:bg-red-700 rounded-full"
                         disabled={deleteLoading}
                       >
-                        {deleteLoading ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : 'מחק חשבון'}
+                        {deleteLoading ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : 'מחיקת חשבון'}
                       </Button>
                     </div>
                   </div>
