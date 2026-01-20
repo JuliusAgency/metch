@@ -287,7 +287,7 @@ const EmployerDashboard = ({ user }) => {
       <div className="p-4 md:p-6" dir="rtl">
         <div className="max-w-7xl mx-auto space-y-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-right px-2 flex justify-between items-center">
-            <h1 className="text-xl font-bold text-gray-900 mb-2">👋 היי {user.full_name?.split(' ')[0] || 'רפאל'}!</h1>
+            <h1 className="text-xl font-bold text-gray-900 mb-2 mt-2">👋 היי {user.full_name?.split(' ')[0] || 'רפאל'}!</h1>
             <Button
               variant="outline"
               size="sm"

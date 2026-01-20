@@ -385,8 +385,8 @@ const JobSeekerDashboard = ({ user }) => {
     <>
       <div className="max-w-7xl w-[68%] mx-auto space-y-4 pt-1 px-4 md:px-6 md:pb-6">
         <div className="flex justify-between items-center px-4 mt-2">
-          <h1 className="text-lg font-bold text-gray-900 mb-1">
-            {user.full_name?.trim() ? ` היי ${user.full_name}👋` : 'היי👋'}
+          <h1 className="text-lg font-bold text-gray-900 mb-1 mt-2">
+            {user.full_name?.trim() ? ` היי ${user.full_name} 👋` : 'היי 👋'}
           </h1>
         </div>
 
@@ -930,8 +930,8 @@ const EmployerDashboard = ({ user }) => {
     <>
       <div className="max-w-7xl w-[72%] mx-auto space-y-4 pt-1 px-4 md:px-6 md:pb-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-right px-4 flex justify-between items-center">
-          <h1 className="text-lg font-bold text-gray-900 mb-1">
-            {user.company_name?.trim() ? ` היי ${user.company_name}👋` : 'היי👋'}
+          <h1 className="text-lg font-bold text-gray-900 mb-1 mt-2">
+            {user.company_name?.trim() ? ` היי ${user.company_name} 👋` : 'היי 👋'}
           </h1>
 
         </motion.div>

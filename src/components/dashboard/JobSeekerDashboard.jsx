@@ -94,7 +94,7 @@ const JobSeekerDashboard = ({ user }) => {
       <div className="p-4 md:p-6" dir="rtl">
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex justify-between items-center px-2">
-            <h1 className="text-xl font-bold text-gray-900 mb-2">👋 היי {user.full_name?.split(' ')[0]}!</h1>
+            <h1 className="text-xl font-bold text-gray-900 mb-2 mt-2">👋 היי {user.full_name?.split(' ')[0]}!</h1>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
