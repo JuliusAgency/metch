@@ -5,6 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import VectorLogo from '@/assets/Vector.svg';
 
 // Figma design assets
 const imgGoogleFrame = "https://www.svgrepo.com/show/475656/google-color.svg";
@@ -107,7 +108,7 @@ const Login = () => {
                 <p className="font-['Poppins',_sans-serif] text-xl text-black font-light">
                   Metch
                 </p>
-                <img src="/sparkle_logo.png" alt="Sparkle" className="w-6 h-6 object-contain" />
+                <img src={VectorLogo} alt="Metch Logo" className="w-4 h-4 object-contain mr-1" />
               </div>
             </div>
           </div>
@@ -176,7 +177,7 @@ const Login = () => {
                   className="w-1/2 mx-auto bg-[#2987cd] hover:bg-[#2987cd]/90 text-white rounded-full h-12 text-lg font-bold "
                 >
                   <div className="flex items-center justify-center space-x-3 w-full">
-                    <span className="font-['Rubik',_sans-serif] font-bold text-lg ml-2" dir="auto">
+                    <span className="font-['Rubik',_sans-serif] font-bold text-lg ml-2 mr-3" dir="auto">
                       התחברו
                     </span>
                     <ArrowLeft className="w-5 h-5 text-white" />
