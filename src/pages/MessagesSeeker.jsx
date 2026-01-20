@@ -391,7 +391,7 @@ export default function MessagesSeeker() {
                 </div>
 
                 {/* Chat Container - Now split for the "cut" effect */}
-                <div className="relative h-[72vh] flex flex-col w-[63%] mx-auto mt-[15px] mb-4">
+                <div className="relative h-[65vh] flex flex-col w-[63%] mx-auto mt-[15px] mb-4">
                     {/* Message List Area - Sharpened corners (3px) and no border */}
                     <div className="flex-1 overflow-hidden bg-white shadow-[0_4px_16px_rgba(0,0,0,0.12)] rounded-t-[3px] flex flex-col">
                         <div className="flex-1 p-8 overflow-y-auto space-y-6 bg-gray-50/30">
