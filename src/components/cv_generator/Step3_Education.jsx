@@ -155,7 +155,7 @@ export default function Step3_Education({ data, setData, onDirtyChange }) {
           onClick={handleSave}
           className="bg-green-600 hover:bg-green-700 text-white rounded-full px-6"
         >
-          שמור
+          שמירה
         </Button>
       </div>
 

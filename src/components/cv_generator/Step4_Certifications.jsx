@@ -220,7 +220,7 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
                     onClick={handleSave}
                     className="bg-green-600 hover:bg-green-700 text-white rounded-full px-6"
                 >
-                    שמור
+                    שמירה
                 </Button>
             </div>
 
