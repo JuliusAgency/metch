@@ -256,13 +256,22 @@ const JobSeekerDashboard = ({ user }) => {
           total_applications: 0
         };
 
+        // Filter: Match >= 60%
+        const qualifiedJobs = jobsWithScores.filter(job => job.match_score >= 60);
+
+        // Sort by match score (descending)
+        qualifiedJobs.sort((a, b) => b.match_score - a.match_score);
+
+        // Apply Limits: Max 30 
+        const limitedJobs = qualifiedJobs.slice(0, 30);
+
         const mockJob = {
           id: 'f0000000-0000-0000-0000-000000000001',
           title: 'מנהלת קשרי לקוחות',
           company: 'Google',
           location: 'מרכז',
           company_logo_url: 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png',
-          match_score: 90,
+          match_score: 96,
           start_date: 'מיידית',
           description: 'אנחנו מחפשים רכז/ת גיוס טכנולוגי/ת יצירתי/ת שיצטרפו לצוות שלנו...',
           requirements: ['ניסיון של שנתיים לפחות בגיוס טכנולוגי - חובה', 'אנגלית ברמה גבוהה'],
@@ -271,7 +280,8 @@ const JobSeekerDashboard = ({ user }) => {
         };
 
         setUserStats(enhancedStats);
-        setAllJobs([mockJob, ...jobsWithScores]);
+        // Prepend mock job to the list
+        setAllJobs([mockJob, ...limitedJobs]);
         // Use String for ID sets to ensure consistent matching
         setViewedJobIds(new Set(jobViewsData.map(view => String(view.job_id))));
         setAppliedJobIds(new Set(applicationsData.map(app => String(app.job_id))));
@@ -751,7 +761,7 @@ const EmployerDashboard = ({ user }) => {
           total_jobs_published: activeJobsData.length, // Use actual active jobs count
           total_candidates_viewed: viewedCandidatesData.length, // Use actual viewed candidates count
           total_job_views: dashboardData.stats?.total_job_views || 0,
-          total_applications_received: dashboardData.stats?.total_applications_received || 0,
+          total_applications_received: applicantProfiles.length, // Synchronized with actual candidates list
           conversion_rate: dashboardData.stats?.conversion_rate || 0
         };
 

@@ -583,8 +583,8 @@ export default function CVGenerator() {
       <div className={`max-w-6xl mx-auto rounded-[2rem] p-8 md:p-14 transition-transform origin-top ${choice === 'upload' ? 'bg-white shadow-none scale-90' : 'bg-white shadow-none'}`}>
         {step !== 0 && (
           <StepIndicator
-            totalSteps={5}
-            currentStep={step === -1 ? 4 : (step > 5 ? 5 : step)}
+            totalSteps={6}
+            currentStep={step === -1 ? 5 : (step > 6 ? 6 : step)}
           />
         )}
 
