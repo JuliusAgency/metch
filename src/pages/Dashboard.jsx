@@ -208,7 +208,8 @@ const JobSeekerDashboard = ({ user }) => {
           UserAnalytics.getUserStats(user.id), // Change to user.id
           CandidateView.filter({ candidate_id: user.id }), // Change to candidate_id
           UserProfile.filter({ id: user.id }).then(profiles => profiles[0] || null), // Change to ID
-          JobApplication.filter({ applicant_id: user.id }) // Change to applicant_id
+          JobApplication.filter({ applicant_id: user.id }), // Change to applicant_id
+          CV.filter({ user_email: user.email }).then(cvs => cvs[0] || null) // Fetch user CV
         ]);
 
         const jobsData = results[0].status === 'fulfilled' ? results[0].value : [];
@@ -222,18 +223,25 @@ const JobSeekerDashboard = ({ user }) => {
         const profileViewsData = results[4].status === 'fulfilled' ? results[4].value : [];
         const userProfile = results[5].status === 'fulfilled' ? results[5].value : null;
         const applicationsData = results[6].status === 'fulfilled' ? results[6].value : [];
+        const userCv = results[7].status === 'fulfilled' ? results[7].value : null;
+
+        // Merge CV data into profile for matching
+        const enhancedProfile = {
+          ...userProfile,
+          ...(userCv || {})
+        };
 
         // Calculate match scores for each job
         const jobsWithScores = await Promise.all(
           jobsData.map(async (job) => {
             let matchScore = null;
-            if (userProfile) {
+            if (enhancedProfile) {
               try {
                 const userSettings = {
-                  prefers_no_career_change: userProfile.prefers_no_career_change || false
+                  prefers_no_career_change: enhancedProfile.prefers_no_career_change || false
                 };
-                const score = await calculate_match_score(userProfile, job, userSettings);
-                matchScore = score !== null ? Math.round(score * 100) : null; // Convert to percentage
+                const score = await calculate_match_score(enhancedProfile, job, userSettings);
+                matchScore = score !== null ? Math.round(score * 100) : null;
               } catch (error) {
                 console.error(`Error calculating match score for job ${job.id}:`, error);
               }

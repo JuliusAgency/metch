@@ -168,7 +168,7 @@ function calculateBottomPartScore(candidate_profile, job_posting) {
  * 90: Full match, 60: Close skills, 0: Irrelevant
  */
 function scoreSpecialization(candidate_profile, job_posting) {
-  const candidateSpecialization = candidate_profile.specialization?.toLowerCase() || '';
+  const candidateSpecialization = (candidate_profile.specialization || candidate_profile.profession || '').toLowerCase();
   const jobCategory = job_posting.category?.toLowerCase() || '';
   const jobTitle = job_posting.title?.toLowerCase() || '';
   const jobDescription = (job_posting.description || '').toLowerCase();
@@ -177,6 +177,7 @@ function scoreSpecialization(candidate_profile, job_posting) {
   if (candidateSpecialization &&
     (candidateSpecialization === jobCategory ||
       jobTitle.includes(candidateSpecialization) ||
+      jobCategory.includes(candidateSpecialization) ||
       jobDescription.includes(candidateSpecialization))) {
     return 90;
   }
