@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2, Compass, ChevronRight, Eye, X } from 'lucide-react';
+import { FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2, Compass, ChevronRight, Eye, X, Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -292,19 +292,24 @@ export default function Profile() {
             מחיקת קובץ
           </button>
 
-          {cvData.personal_details && (
-            <>
-              <div className="w-px h-4 bg-gray-300"></div>
+          <div className="w-px h-4 bg-gray-300"></div>
 
-              <Link
-                to={createPageUrl('CVGenerator')}
-                className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
-              >
+          <Link
+            to={createPageUrl('CVGenerator')}
+            className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
+          >
+            {(cvData.personal_details && Object.keys(cvData.personal_details).length > 0) ? (
+              <>
                 <img src="/edit_icon.png" alt="Edit" className="w-4 h-4" />
                 עריכת קובץ
-              </Link>
-            </>
-          )}
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4" />
+                ליצירת קו״ח
+              </>
+            )}
+          </Link>
 
           <div className="w-px h-4 bg-gray-300"></div>
 

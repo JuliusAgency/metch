@@ -389,15 +389,6 @@ const JobSeekerDashboard = ({ user }) => {
           <h1 className="text-lg font-bold text-gray-900 mb-1 mt-2">
             {user.full_name?.trim() ? ` היי ${user.full_name} 👋` : 'היי 👋'}
           </h1>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowGuide(true)}
-            className="rounded-full px-3 py-1 text-xs"
-          >
-            מדריך (זמני)
-            <HelpCircle className="w-3 h-3 mr-1" />
-          </Button>
         </div>
 
         <div className="space-y-4">
