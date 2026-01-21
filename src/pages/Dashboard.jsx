@@ -143,11 +143,12 @@ const JobSeekerDashboard = ({ user }) => {
 
     // We access userProfile inside the effect or rely on 'user' object if it has merged profile data?
     // 'user' from useUser() has merged profile data.
-    if (!user.specialization) return; // Will be redirected
+    // Removed specialization check to ensure guide shows
+    // if (!user.specialization) return;
 
     // 2. Second priority: Site Guide
     const hasSeenGuide = localStorage.getItem(`jobseeker_guide_${user?.email}`);
-    if (!hasSeenGuide && !user.is_onboarding_completed) {
+    if (!hasSeenGuide) {
       setShowGuide(true);
     }
   }, [user, loading, hasCV, hasCompletedOnboardingFlow]);
@@ -388,6 +389,15 @@ const JobSeekerDashboard = ({ user }) => {
           <h1 className="text-lg font-bold text-gray-900 mb-1 mt-2">
             {user.full_name?.trim() ? ` היי ${user.full_name} 👋` : 'היי 👋'}
           </h1>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowGuide(true)}
+            className="rounded-full px-3 py-1 text-xs"
+          >
+            מדריך (זמני)
+            <HelpCircle className="w-3 h-3 mr-1" />
+          </Button>
         </div>
 
         <div className="space-y-4">
