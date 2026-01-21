@@ -242,7 +242,7 @@ export default function UserActivity() {
                                                                     <p className="text-sm text-gray-600">{action.job_company}</p>
                                                                 )}
                                                                 {action.match_score && (
-                                                                    <p className="text-xs text-blue-600">{action.match_score}% התאמה</p>
+                                                                    <p className={`text-xs ${action.match_score >= 70 ? 'text-green-600' : action.match_score >= 40 ? 'text-orange-600' : 'text-red-600'}`}>{action.match_score}% התאמה</p>
                                                                 )}
                                                             </div>
                                                         </motion.div>

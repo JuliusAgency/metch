@@ -475,9 +475,11 @@ const JobSeekerDashboard = ({ user }) => {
                             ? 'bg-gray-200 text-gray-700 hover:bg-gray-200'
                             : viewedJobIds.has(String(job.id))
                               ? 'bg-gray-400 hover:bg-gray-500 text-white'
-                              : job.match_score >= 80
+                              : job.match_score >= 70
                                 ? 'bg-green-400 hover:bg-green-500 text-white'
-                                : 'bg-orange-400 hover:bg-orange-500 text-white'
+                                : job.match_score >= 40
+                                  ? 'bg-orange-400 hover:bg-orange-500 text-white'
+                                  : 'bg-red-500 hover:bg-red-600 text-white'
                             } px-4 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-job-button transition-colors duration-300`}>
                             <Link
                               to={createPageUrl(`JobDetailsSeeker?id=${job.id}&from=Dashboard`)}
@@ -519,7 +521,7 @@ const JobSeekerDashboard = ({ user }) => {
                           <div className="flex-1 relative h-5 bg-gray-200 rounded-full overflow-hidden shadow-inner w-full">
                             {/* Progress Fill - Right to Left */}
                             <div
-                              className={`absolute right-0 top-0 h-full transition-all duration-700 ${job.match_score >= 80 ? 'bg-green-400/90' : 'bg-orange-400/90'}`}
+                              className={`absolute right-0 top-0 h-full transition-all duration-700 ${job.match_score >= 70 ? 'bg-green-400/90' : job.match_score >= 40 ? 'bg-orange-400/90' : 'bg-red-500/90'}`}
                               style={{ width: `${job.match_score}%` }}
                             ></div>
                             {/* Centered Text inside bar */}

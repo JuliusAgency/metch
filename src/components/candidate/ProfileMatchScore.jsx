@@ -2,7 +2,7 @@ const ProfileMatchScore = ({ matchScore }) => (
     <div className="w-full max-w-4xl pt-6">
         <div dir="ltr" className="relative w-full h-5 bg-gray-200 rounded-full overflow-hidden">
             <div
-                className={`absolute top-0 left-0 h-full flex items-center justify-center transition-all duration-500 ${matchScore >= 70 ? 'bg-green-400' : matchScore >= 40 ? 'bg-orange-400' : 'bg-red-400'}`}
+                className={`absolute top-0 left-0 h-full flex items-center justify-center transition-all duration-500 ${matchScore >= 70 ? 'bg-green-400' : matchScore >= 40 ? 'bg-orange-400' : 'bg-red-500'}`}
                 style={{ width: `${matchScore}%` }}
             >
             </div>
