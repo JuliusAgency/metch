@@ -81,7 +81,7 @@ export default function JobDetails() {
       if (newStatus === 'active' && oldStatus !== 'active' && oldStatus !== 'paused') {
         // Fetch fresh user data to be sure about credits
         const userData = await User.me();
-        const credits = userData?.profile?.job_credits || 0;
+        const credits = userData?.job_credits || 0;
 
         if (credits <= 0) {
           toast({
@@ -95,7 +95,7 @@ export default function JobDetails() {
 
         // Deduct credit
         await updateProfile({ job_credits: credits - 1 });
-        toast({ description: "המשרה פורסמה בהצלחה (ירדה משרה 1 מהיתרה)" });
+        toast({ description: `המשרה פורסמה בהצלחה. יתרת משרות מעודכנת: ${credits - 1}` });
       }
 
       await Job.update(job.id, { status: newStatus });
