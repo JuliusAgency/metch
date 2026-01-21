@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { CV } from '@/api/entities';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { User } from '@/api/entities';
-import CVStepper from '@/components/cv_generator/CVStepper';
+import StepIndicator from '@/components/ui/StepIndicator';
 import Step1PersonalDetails from '@/components/cv_generator/Step1_PersonalDetails';
 import Step2WorkExperience from '@/components/cv_generator/Step2_WorkExperience';
 import Step3Education from '@/components/cv_generator/Step3_Education';
@@ -19,6 +19,8 @@ import { motion } from 'framer-motion';
 import { useRequireUserType } from '@/hooks/use-require-user-type';
 import cvCreateIcon from '@/assets/cv_create_icon.png';
 import cvExistsIcon from '@/assets/cv_exists_icon.png';
+import CVChoiceModal from '@/components/CVChoiceModal';
+import globeGrid from '@/assets/globe_grid.png';
 
 const STEPS = ["פרטים אישיים", "ניסיון תעסוקתי", "השכלה", "הסמכות", "תמצית", "תצוגה מקדימה"];
 
@@ -121,8 +123,13 @@ export default function CVGenerator() {
   const [cvId, setCvId] = useState(null);
   const [choice, setChoice] = useState(null); // 'upload' or 'create'
   const [isStep1Valid, setIsStep1Valid] = useState(false);
+  const [showSkipDisclaimer, setShowSkipDisclaimer] = useState(false); // New state for skip disclaimer
+  const [uploadSuccess, setUploadSuccess] = useState(false); // New state to track if CV was uploaded but user hasn't clicked continue
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+
+
 
   const handleStep1ValidityChange = useCallback((isValid) => {
     setIsStep1Valid(isValid);
@@ -177,6 +184,11 @@ export default function CVGenerator() {
       } else {
         setStep((prev) => (prev > 0 ? prev : 1));
       }
+    } else if (stepParam) {
+      setStep(parseInt(stepParam, 10));
+      if (stepParam === '0') {
+        setChoice(null);
+      }
     }
   }, [searchParams]);
 
@@ -211,7 +223,13 @@ export default function CVGenerator() {
 
               // Restore step ONLY if URL choice is NOT present
               if (!urlChoice) {
-                setStep(draftStep || 1);
+                // If URL specifically asks for step 0 (e.g. back button), respect it.
+                if (searchParams.get('step') === '0') {
+                  setStep(0);
+                  setChoice(null);
+                } else {
+                  setStep(draftStep || 1);
+                }
               }
 
               const isValid = validatePersonalDetails(mergedData.personal_details);
@@ -242,7 +260,13 @@ export default function CVGenerator() {
 
           // Restore step ONLY if URL choice is NOT present
           if (!urlChoice) {
-            setStep(1);
+            // If URL specifically asks for step 0 (e.g. back button), respect it.
+            if (searchParams.get('step') === '0') {
+              setStep(0);
+              setChoice(null);
+            } else {
+              setStep(1);
+            }
           }
         } else {
           setCvData(mergeProfileToCv({}, userData));
@@ -256,7 +280,7 @@ export default function CVGenerator() {
 
     // Call load function
     loadInitialData();
-  }, [searchParams]); // Keep searchParams dep to reload if URL changes
+  }, []); // Only run on mount. URL changes are handled by the other useEffect.
 
   const [isDirty, setIsDirty] = useState(false);
 
@@ -413,6 +437,21 @@ export default function CVGenerator() {
   };
 
   const handleBack = () => {
+    // If upload success, user can technically go back but state is weird. 
+    // Let's assume Back just resets uploadSuccess? Or goes back to previous step.
+    // If user presses Back after upload, maybe they want to re-upload.
+    // So reset success state.
+    if (uploadSuccess) {
+      setUploadSuccess(false);
+      return;
+    }
+
+    // If showing skip disclaimer, just go back to upload screen
+    if (showSkipDisclaimer) {
+      setShowSkipDisclaimer(false);
+      return;
+    }
+
     // Check for unsaved changes before going back
     if (!confirmUnsavedChanges()) return;
     setIsDirty(false);
@@ -420,14 +459,26 @@ export default function CVGenerator() {
     if (step > 1) {
       setStep((prev) => prev - 1);
     } else if (step === 1 || step === -1 || step === 0) {
-      // If we have a choice param, go back to selection page
-      if (searchParams.get('choice')) {
-        navigate('/UserTypeSelection');
-      } else {
-        setStep(0); // Regular fallback
-        setChoice(null);
+      if (step === -1 && choice === 'upload') {
+        const isOnboarding = searchParams.get('onboarding') === 'true';
+        const returnUrl = `/CVGenerator?choice=upload&step=-1${isOnboarding ? '&onboarding=true' : ''}`;
+        const target = `PreferenceQuestionnaire?step=2&onboarding=${isOnboarding}&returnTo=${encodeURIComponent(returnUrl)}`;
+        navigate(createPageUrl(target), { replace: true });
+        return;
       }
+      // If we have a choice param, we used to go back to selection page /UserTypeSelection.
+      // BUT UserTypeSelection might redirect to Dashboard if onboarding is done.
+      // So instead, we stay in CVGenerator and show Step 0 (Choice Cards).
+      const isOnboarding = searchParams.get('onboarding') === 'true';
+
+      // FORCE STATE UPDATE IMMEDIATELY
+      setStep(0);
+      setChoice(null);
+
+      navigate(`/CVGenerator?step=0${isOnboarding ? '&onboarding=true' : ''}`);
     }
+    // Perform cleanup of disclaimer state if navigating back
+    setShowSkipDisclaimer(false);
   };
 
   const handleEdit = () => {
@@ -445,8 +496,23 @@ export default function CVGenerator() {
     if (isOnboarding) {
       navigate('/JobSeekerProfileCompletion?onboarding=true');
     } else {
-      navigate(createPageUrl('Dashboard'));
+      // Even if not strictly "onboarding" by param, force the onboarding flow to ensure user lands on completion page
+      // and isn't redirected to Dashboard if they are re-testing.
+      navigate('/JobSeekerProfileCompletion?onboarding=true');
     }
+  };
+
+  const handleSkip = () => {
+    if (!showSkipDisclaimer) {
+      setShowSkipDisclaimer(true);
+    } else {
+      handleUploadComplete();
+    }
+  };
+
+  const handleUploadSuccess = () => {
+    setUploadSuccess(true);
+    setShowSkipDisclaimer(false);
   };
 
   const renderStep = () => {
@@ -456,38 +522,13 @@ export default function CVGenerator() {
 
     switch (step) {
       case -1:
-        return <UploadCV user={user} onUploadComplete={handleUploadComplete} onSkip={handleUploadComplete} />;
-      case 0:
-        return (
-          <motion.div
-            className="max-w-4xl mx-auto text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}>
+        return <UploadCV
+          user={user}
+          onUploadSuccess={handleUploadSuccess}
+          onSkip={handleSkip}
+          showSkipDisclaimer={showSkipDisclaimer}
+        />;
 
-            <div className="mb-12">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">נרשמת בהצלחה</h1>
-              <h2 className="text-4xl font-extrabold text-blue-500 mb-6">המאצ׳ המושלם מחכה לך!</h2>
-              <p className="text-gray-500 text-lg">רק עוד כמה צעדים ואנחנו נמצא בשבילך את העבודה<br />שהכי מתאימה לדרישות שלך</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 px-4">
-              <ChoiceCard
-                title="צרו לי קורות חיים"
-                description="אל דאגה, נבנה יחד איתך קורות חיים שיעזרו לך למצוא את מאצ' מדויק - בעזרת הבינה המלאכותית שלנו ובחינם לגמרי."
-                imageSrc={cvCreateIcon}
-                onClick={() => setChoice('create')}
-                isSelected={choice === 'create'} />
-
-              <ChoiceCard
-                title="יש לי קורות חיים"
-                description="מעולה! זה אומר שאפשר להעלות קובץ קו׳׳ח עדכני ולקבל הצעות עבודה מדוייקות כבר עכשיו."
-                imageSrc={cvExistsIcon}
-                onClick={() => setChoice('upload')}
-                isSelected={choice === 'upload'} />
-
-            </div>
-          </motion.div>);
 
       case 1: return <Step1PersonalDetails data={cvData.personal_details} setData={(d) => setCvData((prev) => ({ ...prev, personal_details: d(prev.personal_details) }))} user={user} onValidityChange={handleStep1ValidityChange} />;
       case 2: return <Step2WorkExperience data={cvData.work_experience || []} setData={(updater) => setCvData((prev) => ({ ...prev, work_experience: updater(prev.work_experience || []) }))} onDirtyChange={handleDirtyChange} />;
@@ -505,15 +546,45 @@ export default function CVGenerator() {
 
   const isNextDisabled = saving || (step === 0 && !choice) || (step === 1 && !isStep1Valid) || (step === STEPS.length && (!cvData.file_name || !cvData.file_name.trim()));
 
+  // Handle choice selection from Modal
+  const handleChoiceSelect = (selectedChoice) => {
+    setChoice(selectedChoice);
+    // Mimic handleNext logic:
+    setStep(1);
+  };
+
+  // If step is 0 (Choice), render the Modal view over Globe bg like UserTypeSelection
+  if (step === 0) {
+    return (
+      <div className="min-h-screen w-full bg-[#f0f9ff] flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
+        {/* Globe Background - Bottom Left */}
+        <div className="absolute bottom-[-5vh] left-[-5vh] w-[77vh] h-[77vh] pointer-events-none z-20">
+          <img
+            src={globeGrid}
+            alt="Globe Grid"
+            className="w-full h-full object-contain object-bottom-left opacity-90"
+            style={{
+              filter: 'brightness(0) saturate(100%) invert(56%) sepia(65%) saturate(2469%) hue-rotate(184deg) brightness(96%) contrast(91%)'
+            }}
+          />
+        </div>
+
+        <CVChoiceModal
+          isOpen={true}
+          onSelect={handleChoiceSelect}
+          loading={loading}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen ${choice === 'upload' ? 'p-0 pt-4' : 'p-4 md:p-8'}`} dir="rtl">
-      <div className={`max-w-6xl mx-auto rounded-[2rem] p-8 md:p-14 transition-transform origin-top ${choice === 'upload' ? 'bg-white shadow-none scale-90' : 'bg-gradient-to-b from-[#E0F3FF] via-white to-white shadow-xl'}`}>
-        {step > 0 && choice !== 'upload' && (
-          <CVStepper
-            currentStep={step - 1}
-            steps={STEPS}
-            onStepSelect={handleStepSelect}
-            disabledSteps={disabledStepIndexes}
+      <div className={`max-w-6xl mx-auto rounded-[2rem] p-8 md:p-14 transition-transform origin-top ${choice === 'upload' ? 'bg-white shadow-none scale-90' : 'bg-white shadow-none'}`}>
+        {step !== 0 && (
+          <StepIndicator
+            totalSteps={5}
+            currentStep={step === -1 ? 4 : (step > 5 ? 5 : step)}
           />
         )}
 
@@ -532,11 +603,14 @@ export default function CVGenerator() {
           )}
           {step === -1 ? (
             <Button
-              variant="outline"
-              onClick={handleUploadComplete}
-              className="px-8 py-3 rounded-full font-semibold text-lg h-auto border-2 border-gray-300 text-gray-500 hover:bg-gray-50 hover:text-gray-700 hover:border-gray-400 transition-all"
+              variant={uploadSuccess ? "default" : "outline"}
+              onClick={uploadSuccess ? handleUploadComplete : handleSkip}
+              className={`px-8 py-3 rounded-full font-semibold text-lg h-auto border-2 transition-all ${uploadSuccess
+                ? 'bg-[#2589D8] hover:bg-[#1e7bc4] text-white shadow-lg hover:shadow-xl border-transparent'
+                : (showSkipDisclaimer ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700 hover:border-red-300' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700 hover:border-gray-400')
+                }`}
             >
-              דילוג על השלב הזה
+              {uploadSuccess ? "להמשך" : (showSkipDisclaimer ? "להמשך" : "דילוג על השלב הזה")}
               <ArrowLeft className="w-5 h-5 mr-2" />
             </Button>
           ) : (step < STEPS.length + 1 && (
@@ -551,6 +625,6 @@ export default function CVGenerator() {
           ))}
         </div>
       </div>
-    </div>);
+    </div >);
 
 }

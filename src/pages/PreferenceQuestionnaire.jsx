@@ -7,7 +7,8 @@ import { createPageUrl } from '@/utils';
 import { useRequireUserType } from '@/hooks/use-require-user-type';
 import Step1 from '@/components/preference-questionnaire/Step1';
 import Step2 from '@/components/preference-questionnaire/Step2';
-import ProgressBar from '@/components/preference-questionnaire/ProgressBar';
+
+import StepIndicator from '@/components/ui/StepIndicator';
 import { Info, ChevronRight } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -40,7 +41,9 @@ export default function PreferenceQuestionnaire() {
   useRequireUserType();
   const { updateProfile } = useUser();
 
-  const [step, setStep] = useState(1);
+  const [searchParams] = useSearchParams();
+  const initialStep = parseInt(searchParams.get('step') || '1', 10);
+  const [step, setStep] = useState(initialStep);
   const [preferences, setPreferences] = useState({
     field: '',
     profession_search: '',
@@ -52,7 +55,6 @@ export default function PreferenceQuestionnaire() {
 
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
   React.useEffect(() => {
     const loadPreferences = async () => {
@@ -159,7 +161,13 @@ export default function PreferenceQuestionnaire() {
   return (
     <div className="h-full relative" dir="rtl">
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => {
+          if (step > 1) {
+            handleBack();
+          } else {
+            navigate(-1);
+          }
+        }}
         className="absolute top-6 right-6 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors z-[60] shadow-sm"
         aria-label="חזור"
       >
@@ -173,7 +181,7 @@ export default function PreferenceQuestionnaire() {
       >
         <div className="p-8 md:p-12 flex flex-col items-center w-full max-w-4xl mx-auto">
 
-          <ProgressBar currentStep={step} />
+          <StepIndicator totalSteps={5} currentStep={step + 1} />
 
           {step === 1 && (
             <Step1

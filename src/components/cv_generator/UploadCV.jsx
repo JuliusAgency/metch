@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { UploadCloud, FileText, Loader2, CheckCircle, AlertCircle, Eye, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function UploadCV({ user, onUploadComplete, onSkip }) {
+export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onSkip, showSkipDisclaimer }) {
     const [file, setFile] = useState(null);
     const [uploadStatus, setUploadStatus] = useState('idle'); // idle, uploading, success, error
     const [errorMessage, setErrorMessage] = useState('');
@@ -17,11 +17,13 @@ export default function UploadCV({ user, onUploadComplete, onSkip }) {
         if (selectedFile) {
             setUploadStatus('idle');
             setFile(selectedFile);
+            handleUpload(selectedFile);
         }
     };
 
-    const handleUpload = async () => {
-        if (!file || !user) return;
+    const handleUpload = async (fileToUpload) => {
+        const fileProcess = fileToUpload || file;
+        if (!fileProcess || !user) return;
 
         setUploadStatus('uploading');
         setErrorMessage('');
@@ -35,9 +37,9 @@ export default function UploadCV({ user, onUploadComplete, onSkip }) {
 
             // 1. Upload the file
             // Sanitize filename to avoid "Invalid key" errors with special characters
-            const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+            const cleanFileName = fileProcess.name.replace(/[^a-zA-Z0-9.-]/g, '_');
             const { publicUrl, file_url } = await UploadFile({
-                file,
+                file: fileProcess,
                 bucket: 'public-files',
                 path: `${Date.now()} -${cleanFileName} `
             });
@@ -57,8 +59,8 @@ export default function UploadCV({ user, onUploadComplete, onSkip }) {
             const existingCvs = await CV.filter({ user_email: userEmail });
             const cvMetadata = {
                 user_email: userEmail,
-                file_name: file.name,
-                file_size_kb: String(Math.round(file.size / 1024)),
+                file_name: fileProcess.name,
+                file_size_kb: String(Math.round(fileProcess.size / 1024)),
                 last_modified: new Date().toISOString(),
             };
 
@@ -70,10 +72,10 @@ export default function UploadCV({ user, onUploadComplete, onSkip }) {
 
             setUploadStatus('success');
 
-            // Notify parent component after a short delay
-            setTimeout(() => {
-                onUploadComplete();
-            }, 1500);
+            // Notify parent about success but DO NOT navigate automatically
+            if (onUploadSuccess) {
+                onUploadSuccess();
+            }
 
         } catch (error) {
             console.error("Error during CV upload process:", error);
@@ -89,6 +91,7 @@ export default function UploadCV({ user, onUploadComplete, onSkip }) {
         if (droppedFile) {
             setUploadStatus('idle');
             setFile(droppedFile);
+            handleUpload(droppedFile);
         }
     };
 
@@ -161,15 +164,10 @@ export default function UploadCV({ user, onUploadComplete, onSkip }) {
                 >
                     <Trash2 className="w-5 h-5" />
                 </Button>
-                <Button
-                    variant="default"
-                    onClick={handleUpload}
-                    disabled={uploadStatus === 'uploading' || uploadStatus === 'success'}
-                    className="mr-2 bg-[#2589D8] hover:bg-[#1e7bc4] text-white px-6"
-                >
-                    {uploadStatus === 'uploading' && <div className="w-4 h-4 border-t-2 border-current rounded-full animate-spin ml-2"></div>}
-                    העלאת קובץ
-                </Button>
+                <div className="text-green-500 font-medium flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5" />
+                    הועלה בהצלחה
+                </div>
             </div>
         </div>
     );
@@ -181,8 +179,20 @@ export default function UploadCV({ user, onUploadComplete, onSkip }) {
             className="max-w-xl mx-auto text-center"
             dir="rtl"
         >
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">העלאת קורות חיים</h2>
-            <p className="text-gray-600 mb-12">צרף את קובץ קורות החיים שלך כדי שנוכל להתחיל למצוא לך משרות.</p>
+            {showSkipDisclaimer ? (
+                <div className="mb-12">
+                    <h2 className="text-3xl font-bold text-gray-800 mb-3">שים לב</h2>
+                    <div className="flex items-center justify-center gap-2 text-lg font-bold text-[#FF4D4D] py-3 px-6 rounded-xl inline-block">
+                        <AlertCircle className="w-5 h-5 fill-red-500 text-white" />
+                        <span>הצעות עבודה לא יתקבלו ללא קובץ קורות החיים שלך</span>
+                    </div>
+                </div>
+            ) : (
+                <>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-3">העלאת קורות חיים</h2>
+                    <p className="text-gray-600 mb-12">צרף את קובץ קורות החיים שלך כדי שנוכל להתחיל למצוא לך משרות.</p>
+                </>
+            )}
 
             <div className="space-y-6">
                 {!file ? <UploadArea /> : <FilePreview />}
