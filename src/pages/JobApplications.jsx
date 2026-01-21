@@ -247,7 +247,7 @@ export default function JobApplications() {
                             <div className="flex items-center gap-2 flex-shrink-0">
                               <Link to={createPageUrl(`CandidateProfile?id=${applicantProfiles[application.applicant_id]?.id || profilesByEmail[application.applicant_email?.toLowerCase()]?.id || ''}`)}>
                                 <Button
-                                  className={`text-white px-6 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-candidate-button transition-colors duration-300 ${matchScore >= 80 ? 'bg-green-400 hover:bg-green-500' : 'bg-orange-400 hover:bg-orange-500'
+                                  className={`text-white px-6 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-candidate-button transition-colors duration-300 ${matchScore >= 70 ? 'bg-green-400 hover:bg-green-500 text-white' : matchScore >= 40 ? 'bg-orange-400 hover:bg-orange-500 text-white' : 'bg-red-500 hover:bg-red-600 text-white'
                                     }`}
                                 >
                                   לצפייה
@@ -298,7 +298,7 @@ export default function JobApplications() {
                           {matchScore !== null && (
                             <div className="relative h-5 bg-gray-200 rounded-full overflow-hidden shadow-inner w-full">
                               <div
-                                className={`absolute right-0 top-0 h-full transition-all duration-700 ${matchScore >= 80 ? 'bg-green-400/90' : 'bg-orange-400/90'}`}
+                                className={`absolute right-0 top-0 h-full transition-all duration-700 ${matchScore >= 70 ? 'bg-green-400/90' : matchScore >= 40 ? 'bg-orange-400/90' : 'bg-red-500/90'}`}
                                 style={{ width: `${matchScore}%` }}
                               ></div>
                               <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-black z-10 pointer-events-none">

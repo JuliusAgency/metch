@@ -256,13 +256,22 @@ const JobSeekerDashboard = ({ user }) => {
           total_applications: 0
         };
 
+        // Filter: Match >= 60%
+        const qualifiedJobs = jobsWithScores.filter(job => job.match_score >= 60);
+
+        // Sort by match score (descending)
+        qualifiedJobs.sort((a, b) => b.match_score - a.match_score);
+
+        // Apply Limits: Max 30 
+        const limitedJobs = qualifiedJobs.slice(0, 30);
+
         const mockJob = {
           id: 'f0000000-0000-0000-0000-000000000001',
           title: 'מנהלת קשרי לקוחות',
           company: 'Google',
           location: 'מרכז',
           company_logo_url: 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png',
-          match_score: 90,
+          match_score: 96,
           start_date: 'מיידית',
           description: 'אנחנו מחפשים רכז/ת גיוס טכנולוגי/ת יצירתי/ת שיצטרפו לצוות שלנו...',
           requirements: ['ניסיון של שנתיים לפחות בגיוס טכנולוגי - חובה', 'אנגלית ברמה גבוהה'],
@@ -271,7 +280,8 @@ const JobSeekerDashboard = ({ user }) => {
         };
 
         setUserStats(enhancedStats);
-        setAllJobs([mockJob, ...jobsWithScores]);
+        // Prepend mock job to the list
+        setAllJobs([mockJob, ...limitedJobs]);
         // Use String for ID sets to ensure consistent matching
         setViewedJobIds(new Set(jobViewsData.map(view => String(view.job_id))));
         setAppliedJobIds(new Set(applicationsData.map(app => String(app.job_id))));
@@ -475,9 +485,11 @@ const JobSeekerDashboard = ({ user }) => {
                             ? 'bg-gray-200 text-gray-700 hover:bg-gray-200'
                             : viewedJobIds.has(String(job.id))
                               ? 'bg-gray-400 hover:bg-gray-500 text-white'
-                              : job.match_score >= 80
+                              : job.match_score >= 70
                                 ? 'bg-green-400 hover:bg-green-500 text-white'
-                                : 'bg-orange-400 hover:bg-orange-500 text-white'
+                                : job.match_score >= 40
+                                  ? 'bg-orange-400 hover:bg-orange-500 text-white'
+                                  : 'bg-red-500 hover:bg-red-600 text-white'
                             } px-4 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-job-button transition-colors duration-300`}>
                             <Link
                               to={createPageUrl(`JobDetailsSeeker?id=${job.id}&from=Dashboard`)}
@@ -519,7 +531,7 @@ const JobSeekerDashboard = ({ user }) => {
                           <div className="flex-1 relative h-5 bg-gray-200 rounded-full overflow-hidden shadow-inner w-full">
                             {/* Progress Fill - Right to Left */}
                             <div
-                              className={`absolute right-0 top-0 h-full transition-all duration-700 ${job.match_score >= 80 ? 'bg-green-400/90' : 'bg-orange-400/90'}`}
+                              className={`absolute right-0 top-0 h-full transition-all duration-700 ${job.match_score >= 70 ? 'bg-green-400/90' : job.match_score >= 40 ? 'bg-orange-400/90' : 'bg-red-500/90'}`}
                               style={{ width: `${job.match_score}%` }}
                             ></div>
                             {/* Centered Text inside bar */}
@@ -749,7 +761,7 @@ const EmployerDashboard = ({ user }) => {
           total_jobs_published: activeJobsData.length, // Use actual active jobs count
           total_candidates_viewed: viewedCandidatesData.length, // Use actual viewed candidates count
           total_job_views: dashboardData.stats?.total_job_views || 0,
-          total_applications_received: dashboardData.stats?.total_applications_received || 0,
+          total_applications_received: applicantProfiles.length, // Synchronized with actual candidates list
           conversion_rate: dashboardData.stats?.conversion_rate || 0
         };
 
@@ -1088,7 +1100,7 @@ const EmployerDashboard = ({ user }) => {
 
                           <div className="flex-shrink-0">
                             <Button
-                              className={`text-white px-6 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-candidate-button transition-colors duration-300 ${match >= 80 ? 'bg-green-400 hover:bg-green-500' : 'bg-orange-400 hover:bg-orange-500'
+                              className={`text-white px-6 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-candidate-button transition-colors duration-300 ${match >= 70 ? 'bg-green-400 hover:bg-green-500' : match >= 40 ? 'bg-orange-400 hover:bg-orange-500' : 'bg-red-400 hover:bg-red-500'
                                 }`}
                               onClick={() => handleCandidateClick(candidate, match)}
                             >
@@ -1126,7 +1138,7 @@ const EmployerDashboard = ({ user }) => {
                           {match !== null && (
                             <div className="flex-1 relative h-5 bg-gray-200 rounded-full overflow-hidden shadow-inner w-full">
                               <div
-                                className={`absolute right-0 top-0 h-full transition-all duration-700 ${match >= 80 ? 'bg-green-400/90' : 'bg-orange-400/90'}`}
+                                className={`absolute right-0 top-0 h-full transition-all duration-700 ${match >= 70 ? 'bg-green-400/90' : match >= 40 ? 'bg-orange-400/90' : 'bg-red-400/90'}`}
                                 style={{ width: `${match}%` }}
                               ></div>
                               <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-black z-10 pointer-events-none">

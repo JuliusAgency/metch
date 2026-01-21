@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Job } from "@/api/entities";
+import { Job, CV } from "@/api/entities";
 import { JobView } from "@/api/entities";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -59,12 +59,40 @@ const JobSeekerDashboard = ({ user }) => {
       if (!user) return;
 
       try {
-        const [jobsData, jobViewsData] = await Promise.all([
-          Job.filter({ status: 'active' }, "-created_date", 50),
-          JobView.filter({ user_email: user.email })
+        const [jobsData, jobViewsData, cvList] = await Promise.all([
+          Job.filter({ status: 'active' }, "-created_date", 100), // Fetch more to filter down
+          JobView.filter({ user_email: user.email }),
+          CV.filter({ user_email: user.email })
         ]);
 
-        setAllJobs(jobsData);
+        const userCv = cvList.length > 0 ? cvList[0] : {};
+        // Use CV data for matching if available, otherwise fallback to user object
+        // The calculate_match_score utility expects a flat profile structure somewhat, 
+        // or a structure matching what CVGenerator produces. 
+        // We'll pass the merged profile to be safe.
+        // But calculate_match_score expects e.g. 'education' as array. 
+        // If userCv is empty, matching might be poor. 
+
+        const candidateProfile = userCv.id ? userCv : user;
+
+        // Calculate matches and filter
+        const scoredJobs = await Promise.all(jobsData.map(async (job) => {
+          const score = await import('@/utils/matchScore').then(m => m.calculate_match_score(candidateProfile, job, user));
+          return { ...job, match_score: Math.round(score * 100) };
+        }));
+
+        // Filter: Match >= 60%
+        const qualifiedJobs = scoredJobs.filter(job => job.match_score >= 60);
+
+        // Sort by match score (descending)
+        qualifiedJobs.sort((a, b) => b.match_score - a.match_score);
+
+        // Apply Limits: Max 30 displayed (we can limit the 'allJobs' state effectively)
+        // If we strictly follow "Max 30 matches per day", we should ideally only show 30.
+        // Let's cap at 30 for now as requested.
+        const limitedJobs = qualifiedJobs.slice(0, 30);
+
+        setAllJobs(limitedJobs);
         setViewedJobIds(new Set(jobViewsData.map(view => view.job_id)));
 
       } catch (error) {
@@ -159,7 +187,7 @@ const JobSeekerDashboard = ({ user }) => {
                           <div className="flex-1 text-right">
                             <div className="text-sm text-gray-600 mb-1.5">{job.match_score}% התאמה</div>
                             <div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                              <div className={`h-full transition-all duration-500 ${job.match_score >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${job.match_score}%` }}></div>
+                              <div className={`h-full transition-all duration-500 ${job.match_score >= 70 ? 'bg-green-400' : job.match_score >= 40 ? 'bg-orange-400' : 'bg-red-500'}`} style={{ width: `${job.match_score}%` }}></div>
                             </div>
                           </div>
                         )}

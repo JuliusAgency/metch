@@ -40,10 +40,11 @@ export default function JobSeekerProfileCompletion() {
 
     // Check if onboarding is already completed
     useEffect(() => {
-        if (user?.is_onboarding_completed) {
+        const forceOnboarding = searchParams.get('onboarding') === 'true';
+        if (user?.is_onboarding_completed && !forceOnboarding) {
             navigate(createPageUrl('Dashboard'), { replace: true });
         }
-    }, [user, navigate]);
+    }, [user, navigate, searchParams]);
 
     // Prevent browser back navigation
     useEffect(() => {
