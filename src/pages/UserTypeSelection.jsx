@@ -7,6 +7,8 @@ import cvCreateIcon from '@/assets/cv_create_icon.png';
 import cvExistsIcon from '@/assets/cv_exists_icon.png';
 import astronautWindow from '@/assets/astronaut_window.png';
 import globeGrid from '@/assets/globe_grid.png';
+import VectorLogo from '@/assets/Vector.svg';
+
 
 // Figma design assets - Desktop
 const img00113000X30003 = "http://localhost:3845/assets/0c77918b0496d6d12dc8f3e62185bd5639b2a24f.png";
@@ -56,8 +58,8 @@ const CVChoiceModal = ({ isOpen, onSelect, loading }) => {
           <div className="flex flex-col items-center w-full">
             {/* Header with Logo */}
             <div className="flex items-center gap-2 mb-6">
-              <img src="/sparkle_logo.png" alt="Sparkle" className="w-6 h-6 object-contain" />
               <p className="font-['Poppins',_sans-serif] text-2xl text-black font-light">Metch</p>
+              <img src={VectorLogo} alt="Metch Logo" className="w-5 h-5 object-contain" />
             </div>
 
             <h1 className="text-[#003566] text-2xl md:text-3xl font-['Rubik',_sans-serif] font-bold mb-3 text-center">
@@ -209,7 +211,7 @@ const UserTypeSelection = () => {
             {/* Headlines */}
             <div className="space-y-4 text-center">
               <h1 className="text-[40px] font-bold text-[#1a1f36] leading-tight">
-               ברוכים הבאים למאצ׳!
+                ברוכים הבאים למאצ׳!
               </h1>
               <p className="text-xl text-gray-500 font-normal">
                 יש לבחור את האפשרות המתאימה עבורך
