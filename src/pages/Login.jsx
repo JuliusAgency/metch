@@ -105,10 +105,22 @@ const Login = () => {
           <div className="flex justify-center mb-8">
             <div className="backdrop-blur-[43px] backdrop-filter bg-[rgba(204,229,248,0.3)] border border-solid border-white rounded-full p-5 px-10">
               <div className="flex items-center">
-                <p className="font-['Poppins',_sans-serif] text-xl text-black font-light">
+                <p className="font-['Poppins',_sans-serif] text-2xl text-black font-normal">
                   Metch
                 </p>
-                <img src={VectorLogo} alt="Metch Logo" className="w-4 h-4 object-contain mr-1" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 15 15"
+                  fill="none"
+                  className="w-5 h-5 mr-1 text-black"
+                >
+                  <path
+                    d="M7.375 0.5L6.86821 1.86911C6.20429 3.66446 5.87232 4.56214 5.21723 5.21723C4.56214 5.87232 3.66446 6.20429 1.86911 6.86821L0.5 7.375L1.86911 7.88179C3.66446 8.54571 4.56214 8.87866 5.21723 9.53277C5.87232 10.1869 6.20429 11.0855 6.86821 12.8809L7.375 14.25L7.88179 12.8809C8.54571 11.0855 8.87866 10.1879 9.53277 9.53277C10.1869 8.87768 11.0855 8.54571 12.8809 7.88179L14.25 7.375L12.8809 6.86821C11.0855 6.20429 10.1879 5.87232 9.53277 5.21723C8.87768 4.56214 8.54571 3.66446 7.88179 1.86911L7.375 0.5Z"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </div>
             </div>
           </div>
