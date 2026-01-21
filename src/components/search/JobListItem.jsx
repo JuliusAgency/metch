@@ -36,7 +36,7 @@ const JobListItem = ({ job, index, savedJobs, toggleSaveJob, user }) => (
                         </Button>
                         <Button
                             asChild
-                            className={`text-white px-6 py-2 rounded-full font-bold shadow-sm transition-colors duration-300 ${job.match_score >= 80 ? 'bg-green-400 hover:bg-green-500' : 'bg-orange-400 hover:bg-orange-500'
+                            className={`text-white px-6 py-2 rounded-full font-bold shadow-sm transition-colors duration-300 ${job.match_score >= 70 ? 'bg-green-400 hover:bg-green-500' : job.match_score >= 40 ? 'bg-orange-400 hover:bg-orange-500' : 'bg-red-400 hover:bg-red-500'
                                 }`}
                         >
                             <Link
@@ -57,7 +57,7 @@ const JobListItem = ({ job, index, savedJobs, toggleSaveJob, user }) => (
                         <div className="text-center min-w-[140px]">
                             <div className="relative h-6 bg-gray-200 rounded-full overflow-hidden shadow-inner w-full">
                                 <div
-                                    className={`absolute right-0 top-0 h-full transition-all duration-700 ${job.match_score >= 80 ? 'bg-green-400/90' : 'bg-orange-400/90'}`}
+                                    className={`absolute right-0 top-0 h-full transition-all duration-700 ${job.match_score >= 70 ? 'bg-green-400/90' : job.match_score >= 40 ? 'bg-orange-400/90' : 'bg-red-400/90'}`}
                                     style={{ width: `${job.match_score}%` }}
                                 ></div>
                                 <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-black z-10 pointer-events-none">

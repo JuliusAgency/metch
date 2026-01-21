@@ -65,9 +65,11 @@ export default function JobCard({ job, onView, userType = "job_seeker", classNam
                     disabled={isUnavailable}
                     className={`px-5 py-2 rounded-full font-bold w-32 h-9 text-sm shadow-sm transition-colors duration-300 ${isUnavailable
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300'
-                      : job.match_score >= 80
+                      : job.match_score >= 70
                         ? 'bg-green-400 hover:bg-green-500 text-white'
-                        : 'bg-orange-400 hover:bg-orange-500 text-white'
+                        : job.match_score >= 40
+                          ? 'bg-orange-400 hover:bg-orange-500 text-white'
+                          : 'bg-red-400 hover:bg-red-500 text-white'
                       }`}
                   >
                     {isUnavailable ? (
@@ -87,7 +89,7 @@ export default function JobCard({ job, onView, userType = "job_seeker", classNam
               ) : (
                 <Button
                   asChild
-                  className={`px-5 py-2 rounded-full font-bold w-32 h-9 text-sm shadow-sm transition-colors duration-300 ${job.match_score >= 80 ? 'bg-green-400 hover:bg-green-500 text-white' : 'bg-orange-400 hover:bg-orange-500 text-white'
+                  className={`px-5 py-2 rounded-full font-bold w-32 h-9 text-sm shadow-sm transition-colors duration-300 ${job.match_score >= 70 ? 'bg-green-400 hover:bg-green-500 text-white' : job.match_score >= 40 ? 'bg-orange-400 hover:bg-orange-500 text-white' : 'bg-red-400 hover:bg-red-500 text-white'
                     }`}
                 >
                   <Link to={createPageUrl(`JobDetails?id=${job.id}`)}>
@@ -103,7 +105,7 @@ export default function JobCard({ job, onView, userType = "job_seeker", classNam
               {userType === "job_seeker" && job.match_score !== null && (
                 <div className="relative h-5 bg-gray-200 rounded-full overflow-hidden shadow-inner w-full mb-3">
                   <div
-                    className={`absolute right-0 top-0 h-full transition-all duration-700 ${job.match_score >= 80 ? 'bg-green-400/90' : 'bg-orange-400/90'} ${isUnavailable ? 'opacity-50' : ''}`}
+                    className={`absolute right-0 top-0 h-full transition-all duration-700 ${job.match_score >= 70 ? 'bg-green-400/90' : job.match_score >= 40 ? 'bg-orange-400/90' : 'bg-red-400/90'} ${isUnavailable ? 'opacity-50' : ''}`}
                     style={{ width: `${job.match_score}%` }}
                   ></div>
                   <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-black z-10 pointer-events-none">

@@ -1088,7 +1088,7 @@ const EmployerDashboard = ({ user }) => {
 
                           <div className="flex-shrink-0">
                             <Button
-                              className={`text-white px-6 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-candidate-button transition-colors duration-300 ${match >= 80 ? 'bg-green-400 hover:bg-green-500' : 'bg-orange-400 hover:bg-orange-500'
+                              className={`text-white px-6 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-candidate-button transition-colors duration-300 ${match >= 70 ? 'bg-green-400 hover:bg-green-500' : match >= 40 ? 'bg-orange-400 hover:bg-orange-500' : 'bg-red-400 hover:bg-red-500'
                                 }`}
                               onClick={() => handleCandidateClick(candidate, match)}
                             >
@@ -1126,7 +1126,7 @@ const EmployerDashboard = ({ user }) => {
                           {match !== null && (
                             <div className="flex-1 relative h-5 bg-gray-200 rounded-full overflow-hidden shadow-inner w-full">
                               <div
-                                className={`absolute right-0 top-0 h-full transition-all duration-700 ${match >= 80 ? 'bg-green-400/90' : 'bg-orange-400/90'}`}
+                                className={`absolute right-0 top-0 h-full transition-all duration-700 ${match >= 70 ? 'bg-green-400/90' : match >= 40 ? 'bg-orange-400/90' : 'bg-red-400/90'}`}
                                 style={{ width: `${match}%` }}
                               ></div>
                               <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-black z-10 pointer-events-none">

@@ -159,7 +159,7 @@ const JobSeekerDashboard = ({ user }) => {
                           <div className="flex-1 text-right">
                             <div className="text-sm text-gray-600 mb-1.5">{job.match_score}% התאמה</div>
                             <div dir="ltr" className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                              <div className={`h-full transition-all duration-500 ${job.match_score >= 80 ? 'bg-green-400' : 'bg-orange-400'}`} style={{ width: `${job.match_score}%` }}></div>
+                              <div className={`h-full transition-all duration-500 ${job.match_score >= 70 ? 'bg-green-400' : job.match_score >= 40 ? 'bg-orange-400' : 'bg-red-400'}`} style={{ width: `${job.match_score}%` }}></div>
                             </div>
                           </div>
                         )}

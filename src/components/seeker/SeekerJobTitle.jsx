@@ -31,7 +31,7 @@ const SeekerJobTitle = ({ job, employmentTypeText }) => (
             </div>
             <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                    className="h-full bg-green-500 transition-all duration-1000 rounded-full"
+                    className={`h-full transition-all duration-1000 rounded-full ${(!job.match_score && job.match_score !== 0 || job.match_score >= 70) ? 'bg-green-500' : job.match_score >= 40 ? 'bg-orange-500' : 'bg-red-500'}`}
                     style={{ width: `${job.match_score || 90}%` }}
                 ></div>
             </div>
