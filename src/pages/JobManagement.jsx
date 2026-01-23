@@ -128,6 +128,14 @@ export default function JobManagement() {
   };
 
   const handleStatusChange = async (jobId, checked) => {
+    // Determine current job status to check if we need to validate credits
+    const job = jobs.find(j => j.id === jobId);
+
+    // If activating a draft, check for credits
+    if (job?.status === 'draft' && checked) {
+      if (!checkCredits()) return;
+    }
+
     const newStatus = checked ? 'active' : 'paused';
 
     // Optimistic update
@@ -316,7 +324,7 @@ export default function JobManagement() {
                               onCheckedChange={(checked) =>
                                 handleStatusChange(job.id, checked)
                               }
-                              disabled={job.status !== 'active' && job.status !== 'paused'}
+                              disabled={job.status !== 'active' && job.status !== 'paused' && job.status !== 'draft'}
                             />
                             <Tooltip>
                               <TooltipTrigger asChild>
