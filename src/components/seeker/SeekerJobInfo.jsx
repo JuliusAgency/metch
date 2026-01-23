@@ -1,66 +1,65 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
 
 const SeekerJobInfo = ({ job }) => (
-    <Card className="bg-white border border-gray-200/90 shadow-sm rounded-2xl overflow-hidden mb-6">
-        <CardContent className="p-8 space-y-8 text-right" dir="rtl">
-            {/* Metch Analysis: Summary */}
-            {job.metch_analysis?.summary && (
-                <div className="space-y-3">
-                    <h3 className="font-bold text-lg text-blue-900 flex items-center gap-2 justify-start">
-                        <Sparkles className="w-4 h-4 text-blue-500" /> מה מאצ' חושב על ההתאמה?
-                    </h3>
-                    <p className="text-gray-700 text-sm leading-relaxed">
-                        {job.metch_analysis.summary}
-                    </p>
-                </div>
-            )}
-
-            {/* Job Description */}
-            <div className="space-y-3">
-                <h3 className="font-bold text-lg text-blue-900">תיאור משרה</h3>
-                <p className="text-gray-700 text-sm leading-relaxed">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        {/* About Card */}
+        <Card className="bg-white border border-gray-100 shadow-sm rounded-2xl h-full">
+            <CardContent className="p-5 space-y-3 text-right" dir="rtl">
+                <h3 className="font-bold text-lg text-blue-900">על המשרה</h3>
+                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
                     {job.description}
                 </p>
-            </div>
+            </CardContent>
+        </Card>
 
-            {/* Responsibilities */}
-            <div className="space-y-3">
-                <h3 className="font-bold text-lg text-blue-900">תחומי אחריות</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-700 text-sm">
-                    {Array.isArray(job.responsibilities) ? (
-                        job.responsibilities.map((res, i) => <li key={i} className="leading-relaxed">{res}</li>)
-                    ) : Array.isArray(job.structured_education) ? (
-                        job.structured_education.map((edu, i) => <li key={i} className="leading-relaxed">{edu.value}</li>)
-                    ) : null}
-                </ul>
-            </div>
-
-            {/* Requirements */}
-            <div className="space-y-3">
+        {/* Requirements Card */}
+        <Card className="bg-white border border-gray-100 shadow-sm rounded-2xl h-full">
+            <CardContent className="p-5 space-y-3 text-right" dir="rtl">
                 <h3 className="font-bold text-lg text-blue-900">דרישות</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-700 text-sm">
+                <ul className="space-y-1.5">
                     {Array.isArray(job.requirements) ? (
-                        job.requirements.map((req, i) => <li key={i} className="leading-relaxed">{req}</li>)
+                        job.requirements.map((req, i) => (
+                            <li key={i} className="flex items-start gap-2 text-gray-700 text-sm">
+                                <span className="text-black mt-1.5">•</span>
+                                <span className="leading-relaxed">{req}</span>
+                            </li>
+                        ))
                     ) : Array.isArray(job.structured_requirements) ? (
-                        job.structured_requirements.map((req, i) => <li key={i} className="leading-relaxed">{req.value}</li>)
+                        job.structured_requirements.map((req, i) => (
+                            <li key={i} className="flex items-start gap-2 text-gray-700 text-sm">
+                                <span className="text-black mt-1.5">•</span>
+                                <span className="leading-relaxed">{req.value}</span>
+                            </li>
+                        ))
                     ) : null}
                 </ul>
-            </div>
+            </CardContent>
+        </Card>
 
-            {/* Metch Analysis: Reasoning */}
-            {job.metch_analysis?.reasoning && (
-                <div className="space-y-3">
-                    <h3 className="font-bold text-lg text-blue-900 flex items-center gap-2 justify-start">
-                        <Sparkles className="w-4 h-4 text-blue-500" /> למה המשרה מתאימה לך?
-                    </h3>
-                    <p className="text-gray-700 text-sm leading-relaxed italic py-2">
-                        {job.metch_analysis.reasoning}
-                    </p>
-                </div>
-            )}
-        </CardContent>
-    </Card>
+        {/* Responsibilities Card */}
+        <Card className="bg-white border border-gray-100 shadow-sm rounded-2xl h-full">
+            <CardContent className="p-5 space-y-3 text-right" dir="rtl">
+                <h3 className="font-bold text-lg text-blue-900">תחומי אחריות</h3>
+                <ul className="space-y-1.5">
+                    {Array.isArray(job.responsibilities) ? (
+                        job.responsibilities.map((res, i) => (
+                            <li key={i} className="flex items-start gap-2 text-gray-700 text-sm">
+                                <span className="text-black mt-1.5">•</span>
+                                <span className="leading-relaxed">{res}</span>
+                            </li>
+                        ))
+                    ) : Array.isArray(job.structured_education) ? (
+                        job.structured_education.map((edu, i) => (
+                            <li key={i} className="flex items-start gap-2 text-gray-700 text-sm">
+                                <span className="text-black mt-1.5">•</span>
+                                <span className="leading-relaxed">{edu.value}</span>
+                            </li>
+                        ))
+                    ) : null}
+                </ul>
+            </CardContent>
+        </Card>
+    </div>
 );
 
 export default SeekerJobInfo;

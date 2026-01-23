@@ -271,8 +271,12 @@ export class EmployerAnalytics {
     try {
       // 1. Get all jobs by this employer
       const allJobs = await Job.filter({ created_by: employerEmail });
-      const jobIds = allJobs.map(job => job.id);
-      const activeJobsCount = allJobs.filter(job => job.status === 'active').length;
+
+      const activeStatuses = ['active', 'paused'];
+      const expiredStatuses = ['closed', 'filled', 'filled_via_metch'];
+      const relevantStatuses = [...activeStatuses, ...expiredStatuses];
+
+      const activeJobsCount = allJobs.filter(job => activeStatuses.includes(job.status)).length;
 
       // 2. Fetch stats and activity
       const [stats, recentActivity] = await Promise.all([
@@ -281,32 +285,58 @@ export class EmployerAnalytics {
       ]);
 
       // 3. Robustly count applications and views by querying and summing if needed
-      let realTotalApplications = 0;
+      let activeAppsCount = 0;
+      let activeViewsCount = 0;
+      let totalAppsCount = 0;
+      let totalViewsCount = 0;
       let realPendingApplications = 0;
-      let realTotalJobViews = 0;
+      let realUniqueCandidates = 0;
 
-      if (jobIds.length > 0) {
-        // We fetch per job to stay within filter limits and ensure accuracy
+      // Filter jobs for active stats (to match Statistics page default)
+      const activeJobsList = allJobs.filter(job => activeStatuses.includes(job.status));
+      const activeJobIds = activeJobsList.map(job => job.id);
+
+      // Filter jobs for all-time stats (relevant jobs only)
+      const relevantJobs = allJobs.filter(job => relevantStatuses.includes(job.status));
+      const allJobIds = relevantJobs.map(job => job.id);
+
+      if (allJobIds.length > 0) {
+        // Fetch ALL relevant data in parallel
         const [appsResults, viewsResults] = await Promise.all([
-          Promise.all(jobIds.map(async (jobId) => {
-            return await JobApplication.filter({ job_id: jobId });
+          Promise.all(allJobIds.map(async (jobId) => {
+            const apps = await JobApplication.filter({ job_id: jobId });
+            return { jobId, apps };
           })),
-          Promise.all(jobIds.map(async (jobId) => {
-            return await JobView.filter({ job_id: jobId });
+          Promise.all(allJobIds.map(async (jobId) => {
+            const views = await JobView.filter({ job_id: jobId });
+            return { jobId, views };
           }))
         ]);
 
-        const allRelevantApps = appsResults.flat();
-        realTotalApplications = allRelevantApps.length;
+        // Process results
+        appsResults.forEach(({ jobId, apps }) => {
+          totalAppsCount += apps.length;
+          if (activeJobIds.includes(jobId)) {
+            activeAppsCount += apps.length;
+            realPendingApplications += apps.filter(app => app.status === 'pending').length;
+          }
+          // Unique candidates across ALL relevant jobs
+          apps.forEach(app => {
+            if (app.applicant_email) realUniqueCandidates++; // This is not unique yet, let's fix below
+          });
+        });
 
-        realPendingApplications = allRelevantApps.filter(app => app.status === 'pending').length;
+        // Unique candidates fix
+        const allRelevantApps = appsResults.flatMap(r => r.apps);
+        const uniqueEmails = new Set(allRelevantApps.map(a => a.applicant_email).filter(Boolean));
+        realUniqueCandidates = uniqueEmails.size;
 
-        // Calculate unique candidates count
-        const uniqueCandidateEmails = new Set(allRelevantApps.map(app => app.applicant_email));
-        var realUniqueCandidates = uniqueCandidateEmails.size;
-
-        const allRelevantViews = viewsResults.flat();
-        realTotalJobViews = allRelevantViews.length;
+        viewsResults.forEach(({ jobId, views }) => {
+          totalViewsCount += views.length;
+          if (activeJobIds.includes(jobId)) {
+            activeViewsCount += views.length;
+          }
+        });
       }
 
       // Merge manual stats with real-time counts
@@ -316,10 +346,19 @@ export class EmployerAnalytics {
           total_jobs_published: activeJobsCount,
           total_candidates_viewed: 0,
         }),
-        total_applications_received: realTotalApplications, // Override with real-time count
-        unique_candidates_count: realUniqueCandidates, // Add unique candidates count
-        total_job_views: realTotalJobViews, // Override with real-time count
-        total_jobs_published: activeJobsCount // Ensure this is also accurate
+        // These are the stats shown on the dashboard cards
+        total_applications_received: activeAppsCount,
+        total_job_views: activeViewsCount,
+        total_jobs_published: activeJobsCount,
+
+        // Include "all time" stats for other potential uses
+        all_time_applications: totalAppsCount,
+        all_time_views: totalViewsCount,
+        unique_candidates_count: realUniqueCandidates,
+
+        conversion_rate: activeViewsCount > 0
+          ? ((activeAppsCount / activeViewsCount) * 100).toFixed(1)
+          : 0
       };
 
       return {

@@ -4,7 +4,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/components/ui/use-toast";
 import ToggleSwitch from "@/components/dashboard/ToggleSwitch";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
-import { Job, JobView, Notification, UserProfile, CandidateView, CV, JobApplication } from "@/api/entities";
+import { Job, JobView, Notification, UserProfile, CandidateView, CV, JobApplication, User as UserApi } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -678,99 +678,128 @@ const EmployerDashboard = ({ user }) => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const [viewedCandidatesData, dashboardData, activeJobsData] = await Promise.all([
-          // Change back to viewer_email as viewer_id column missing
-          CandidateView.filter({ viewer_email: user.email }, "-viewed_at", 1000),
-          EmployerAnalytics.getDashboardData(user.email),
-          Job.filter({ created_by: user.email, status: 'active' })
+        // 1. Get current user data directly to ensure fresh email
+        const userData = await UserApi.me();
+        if (!userData) return;
+
+        console.log('📊 Dashboard: Loading stats for', userData.email);
+
+        // 2. Fetch all jobs for user (like Statistics.jsx)
+        const allUserJobs = await Job.filter({ created_by: userData.email });
+
+        // 3. Filter for Active/Paused jobs (like Statistics.jsx)
+        const activeStatuses = ['active', 'paused'];
+        const activeJobs = allUserJobs.filter(job => activeStatuses.includes(job.status));
+
+        console.log(`📊 Dashboard: Found ${allUserJobs.length} total jobs, ${activeJobs.length} active/paused`);
+
+        // 4. Calculate Views and Applications specifically for these Active Jobs
+        // We do this precisely to match the "Active Jobs" view in Statistics
+        let realTotalApps = 0;
+        let realTotalViews = 0;
+
+        await Promise.all(activeJobs.map(async (job) => {
+          const [jobApps, jobViews] = await Promise.all([
+            JobApplication.filter({ job_id: job.id }),
+            JobView.filter({ job_id: job.id })
+          ]);
+          realTotalApps += jobApps.length;
+          realTotalViews += jobViews.length;
+        }));
+
+        console.log(`📊 Dashboard: Calculated - Apps: ${realTotalApps}, Views: ${realTotalViews}`);
+
+        // 5. Get other dashboard data (Activity, etc.)
+        const [viewedCandidatesData, dashboardData] = await Promise.all([
+          CandidateView.filter({ viewer_email: userData.email }, "-viewed_at", 1000),
+          EmployerAnalytics.getDashboardData(userData.email) // Still needed for activity and other stats
         ]);
 
-        // Fetch actual applicants instead of just recent job seekers
-        const myJobs = await Job.filter({ created_by: user.email });
-        const myJobIds = myJobs.map(j => j.id);
+        // 6. Fetch actual candidate profiles for the "Candidates" tab/list below (retaining previous logic)
+        // We can reuse allUserJobs or fetch again. Let's reuse activeJobs for the "Recent Applications" list context if preferred, 
+        // OR fetch for ALL jobs if we want to show all candidates. 
+        // Typically the candidates list shows *recent* applicants across all jobs.
+        // Let's keep the broad fetch for the list but use the focused counts for the cards.
 
+        const myJobIds = allUserJobs.map(j => j.id);
         let applicantProfiles = [];
         if (myJobIds.length > 0) {
-          // Fetch all applications for these jobs
           const appsResults = await Promise.all(myJobIds.map(async (jobId) => {
             return await JobApplication.filter({ job_id: jobId });
           }));
-          const allApps = appsResults.flat().sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+          // ... (rest of applicant processing logic remains similar but simplified if needed)
+          // For now, retaining the heavy logic below via existing code flow, 
+          // but we MUST ensure the counters at the top use our `realTotalApps` and `realTotalViews`.
+        }
 
-          console.log('🎯 Dashboard: Total applications found:', allApps.length);
+        // ... (Existing applicant processing logic continues below in the file, we just need to ensure we don't break it)
+        // But since we are replacing a block, we need to be careful to reconnect variables.
 
-          // Build unique candidate list using ID or Email
-          const candidateRefs = [];
-          const seenIds = new Set();
-          const seenEmails = new Set();
+        // Re-implementing the Applicant Profile Fetching needed for the list (lines 692-748 original)
+        // because we are replacing the start of the block.
 
-          for (const app of allApps) {
-            const email = app.applicant_email?.toLowerCase();
-            // Prioritize ID
-            if (app.applicant_id && !seenIds.has(app.applicant_id)) {
-              candidateRefs.push({ id: app.applicant_id, email: email });
-              seenIds.add(app.applicant_id);
-              if (email) seenEmails.add(email);
-            }
-            // Fallback to Email
-            else if (email && !seenEmails.has(email) && !app.applicant_id) {
-              candidateRefs.push({ email: email });
-              seenEmails.add(email);
-            }
-            if (candidateRefs.length >= 50) break;
+        const allAppsFlat = (await Promise.all(myJobIds.map(async (jobId) => {
+          return await JobApplication.filter({ job_id: jobId });
+        }))).flat().sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+
+        // Build unique candidate list for the TABLE display (not the stats card)
+        const candidateRefs = [];
+        const seenIds = new Set();
+        const seenEmails = new Set();
+
+        for (const app of allAppsFlat) {
+          const email = app.applicant_email?.toLowerCase();
+          if (app.applicant_id && !seenIds.has(app.applicant_id)) {
+            candidateRefs.push({ id: app.applicant_id, email: email });
+            seenIds.add(app.applicant_id);
+            if (email) seenEmails.add(email);
+          } else if (email && !seenEmails.has(email) && !app.applicant_id) {
+            candidateRefs.push({ email: email });
+            seenEmails.add(email);
           }
+          if (candidateRefs.length >= 50) break;
+        }
 
-          if (candidateRefs.length > 0) {
-            // Fetch profiles
-            const profiles = await Promise.all(candidateRefs.map(async (ref) => {
-              try {
-                // Try ID first
-                if (ref.id) {
-                  const p = await UserProfile.filter({ id: ref.id });
-                  if (p.length > 0) {
-                    console.log('✅ Found profile by ID:', ref.id, p[0].profile_picture ? 'HAS PIC' : 'NO PIC');
-                    return p[0];
-                  }
-                }
-                // Try Email second
-                if (ref.email) {
-                  const p = await UserProfile.filter({ email: ref.email });
-                  if (p.length > 0) {
-                    console.log('✅ Found profile by Email:', ref.email, p[0].profile_picture ? 'HAS PIC' : 'NO PIC');
-                    return p[0];
-                  }
-                }
-              } catch (e) { console.error('Error fetching profile:', e); }
-              return null;
-            }));
-            applicantProfiles = profiles.filter(p => p !== null);
-            console.log('📊 Dashboard: Final profiles:', applicantProfiles);
-          }
+        if (candidateRefs.length > 0) {
+          const profiles = await Promise.all(candidateRefs.map(async (ref) => {
+            try {
+              if (ref.id) {
+                const p = await UserProfile.filter({ id: ref.id });
+                if (p.length > 0) return p[0];
+              }
+              if (ref.email) {
+                const p = await UserProfile.filter({ email: ref.email });
+                if (p.length > 0) return p[0];
+              }
+            } catch (e) { console.error('Error fetching profile:', e); }
+            return null;
+          }));
+          applicantProfiles = profiles.filter(p => p !== null);
         }
 
         let notificationsData = [];
         try {
-          notificationsData = await Notification.filter({ is_read: false, user_id: user.id }, "-created_date", 5);
+          notificationsData = await Notification.filter({ is_read: false, user_id: userData.id }, "-created_date", 5);
         } catch (err) {
-          console.warn("Retrying notifications with email...", err);
           try {
-            notificationsData = await Notification.filter({ is_read: false, email: user.email }, "-created_date", 5);
-          } catch (err2) { console.error("Notification fetch failed", err2); }
+            notificationsData = await Notification.filter({ is_read: false, email: userData.email }, "-created_date", 5);
+          } catch (err2) { }
         }
 
-        // Filter notifications to only show allowed types for Employers
         const filteredNotifications = notificationsData.filter(notif =>
           EMPLOYER_ALLOWED_NOTIFICATION_TYPES.includes(notif.type)
         );
 
-        // Enhance stats with real-time data
+        // Construct the stats object using our DIRECTLY CALCULATED values
         const enhancedStats = {
           ...dashboardData.stats,
-          total_jobs_published: activeJobsData.length, // Use actual active jobs count
-          total_candidates_viewed: viewedCandidatesData.length, // Use actual viewed candidates count
-          total_job_views: dashboardData.stats?.total_job_views || 0,
-          total_applications_received: applicantProfiles.length, // Synchronized with actual candidates list
-          conversion_rate: dashboardData.stats?.conversion_rate || 0
+          total_jobs_published: activeJobs.length,      // Active + Paused jobs
+          total_applications_received: realTotalApps,   // Sum of apps for Active/Paused jobs
+          total_job_views: realTotalViews,              // Sum of views for Active/Paused jobs
+          total_candidates_viewed: viewedCandidatesData.length,
+          conversion_rate: realTotalViews > 0
+            ? ((realTotalApps / realTotalViews) * 100).toFixed(1)
+            : 0
         };
 
         setEmployerStats(enhancedStats);

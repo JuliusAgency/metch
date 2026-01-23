@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,11 +14,14 @@ import {
   Image,
   File,
   Video,
+  CheckCircle2,
+  Check,
+  ArrowLeft,
 } from "lucide-react";
 import { UploadFile } from "@/api/integrations";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
-export default function Step5Preview({ jobData, setJobData }) {
+export default function Step5Preview({ jobData, setJobData, onNext, onPrev, isSubmitting, isNextDisabled, nextLabel }) {
   const [uploadedFiles, setUploadedFiles] = useState(
     Array.isArray(jobData.attachments) ? jobData.attachments : []
   );
@@ -143,11 +147,11 @@ export default function Step5Preview({ jobData, setJobData }) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto" dir="rtl" onDragEnter={handleDrag}>
+    <div className="w-full mx-auto" dir="rtl" onDragEnter={handleDrag}>
       {/* Job Preview Card */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
         {/* Header with curved background - matching other pages */}
-        <div className="relative h-32">
+        <div className="relative h-24">
           <div
             className="absolute inset-0 w-full h-full"
             style={{
@@ -159,201 +163,172 @@ export default function Step5Preview({ jobData, setJobData }) {
           />
 
           {/* User Icon in center */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-            <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center shadow-lg border-4 border-white">
-              <User className="w-8 h-8 text-white" />
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+            <div className="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center shadow-lg border-4 border-white">
+              <User className="w-7 h-7 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="px-8 py-6 mt-4">
+        <div className="px-6 py-4 mt-2 max-w-[65%] mx-auto">
           {/* Job Title */}
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-bold text-gray-900 mb-3">
               {jobData.title || "מנהלת קישורי לקוחות"}
             </h2>
 
             {/* Main Job Info Badges */}
-            <div className="flex justify-center items-center gap-4 mb-4">
+            <div className="flex justify-center items-center gap-4 mb-3">
               <Badge
                 variant="outline"
-                className="flex items-center gap-2 text-blue-600 border-blue-300 px-4 py-2"
+                className="flex items-center gap-2 text-[#001a6e] font-bold border-0 bg-[#e5f1fb] px-4 py-2"
               >
-                <span>מיידית</span>
                 <Clock className="w-4 h-4" />
+                <span className="text-sm">מיידית</span>
               </Badge>
               <Badge
                 variant="outline"
-                className="flex items-center gap-2 text-blue-600 border-blue-300 px-4 py-2"
+                className="flex items-center gap-2 text-[#001a6e] font-bold border-0 bg-[#e5f1fb] px-4 py-2"
               >
-                <span>
+                <Briefcase className="w-4 h-4" />
+                <span className="text-sm">
                   {employmentTypeText[jobData.employment_type] || "משרה מלאה"}
                 </span>
-                <Briefcase className="w-4 h-4" />
               </Badge>
               <Badge
                 variant="outline"
-                className="flex items-center gap-2 text-blue-600 border-blue-300 px-4 py-2"
+                className="flex items-center gap-2 text-[#001a6e] font-bold border-0 bg-[#e5f1fb] px-4 py-2"
               >
-                <span>{jobData.location || "מרכז"}</span>
                 <MapPin className="w-4 h-4" />
+                <span className="text-sm">{jobData.location || "מרכז"}</span>
               </Badge>
             </div>
 
-            {/* Company Perks Badges */}
-            <div className="flex justify-center gap-2 mb-8 flex-wrap">
+            {/* Company Perks Badges - New Design */}
+            <div className="flex justify-center gap-3 mb-6 flex-wrap">
               {Array.isArray(jobData.company_perks) && jobData.company_perks.length > 0 ? (
-                jobData.company_perks.slice(0, 4).map((perk, index) => {
-                  const colors = [
-                    "bg-green-100 text-green-800",
-                    "bg-blue-100 text-blue-800",
-                    "bg-purple-100 text-purple-800",
-                    "bg-orange-100 text-orange-800",
-                  ];
-
-                  return (
-                    <Badge
-                      key={index}
-                      className={`${colors[index % colors.length]
-                        } border-0 px-4 py-2`}
-                    >
-                      {perk}
-                    </Badge>
-                  );
-                })
+                jobData.company_perks.slice(0, 4).map((perk, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-gray-100 bg-white shadow-sm"
+                  >
+                    <div className="bg-green-500 rounded-full p-0.5 flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="text-gray-700 font-medium text-sm">{perk}</span>
+                  </div>
+                ))
               ) : (
                 <>
-                  <Badge className="bg-green-100 text-green-800 border-0 px-4 py-2">
-                    משרה מעניין
-                  </Badge>
-                  <Badge className="bg-blue-100 text-blue-800 border-0 px-4 py-2">
-                    בנק חבילת
-                  </Badge>
-                  <Badge className="bg-purple-100 text-purple-800 border-0 px-4 py-2">
-                    עבודה במשמרות
-                  </Badge>
-                  <Badge className="bg-orange-100 text-orange-800 border-0 px-4 py-2">
-                    סביבה
-                  </Badge>
+                  <div className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-gray-100 bg-white shadow-sm">
+                    <div className="bg-green-500 rounded-full p-0.5 flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="text-gray-700 font-medium text-sm">משרה מעניין</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-gray-100 bg-white shadow-sm">
+                    <div className="bg-green-500 rounded-full p-0.5 flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="text-gray-700 font-medium text-sm">בנק חבילת</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-gray-100 bg-white shadow-sm">
+                    <div className="bg-green-500 rounded-full p-0.5 flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="text-gray-700 font-medium text-sm">עבודה במשמרות</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-gray-100 bg-white shadow-sm">
+                    <div className="bg-green-500 rounded-full p-0.5 flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="text-gray-700 font-medium text-sm">משרד מפנק</span>
+                  </div>
                 </>
               )}
             </div>
           </div>
 
-          {/* Job Details in Three Columns */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            {/* חומרי אימון */}
-            <div className="text-right">
-              <h3 className="font-bold text-lg mb-4 text-gray-900">
-                חומרי אימון
-              </h3>
-              <div className="space-y-2 text-gray-700">
-                {Array.isArray(jobData.structured_education) &&
-                  jobData.structured_education.length > 0 ? (
-                  jobData.structured_education.map((edu, index) => (
-                    <p key={index} className="text-sm">
-                      • {edu.value}
-                    </p>
-                  ))
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-sm">
-                      • ניסיון של שנתיים לפחות בחברת הפקות מומלץ -יתרון
-                    </p>
-                    <p className="text-sm">
-                      • ניסיון קודם בתחום הרפואה או הביטוח או בתחום סמוך -יתרון
-                    </p>
-                    <p className="text-sm">
-                      • יכולת עבודה במסגרת הקשרת מורכבת (אופציה באטלבוקס)
-                    </p>
-                    <p className="text-sm">
-                      • עבודה בצוותי בעלות (אופציה באטלבוקס)
-                    </p>
-                    <p className="text-sm">• שליטת פרמדים</p>
-                  </div>
-                )}
-              </div>
-            </div>
+          {/* Job Details Cards - Matching Seeker View */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {/* About Card (Right in RTL) */}
+            <Card className="bg-white border border-gray-100 shadow-sm rounded-2xl h-full">
+              <CardContent className="p-4 space-y-2 text-right" dir="rtl">
+                <h3 className="font-bold text-base text-blue-900">על המשרה</h3>
+                <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                  {jobData.description ? (
+                    jobData.description
+                  ) : (
+                    "פרטי המשרה יופיעו כאן..."
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* דרישות */}
-            <div className="text-right">
-              <h3 className="font-bold text-lg mb-4 text-gray-900">דרישות</h3>
-              <div className="space-y-2 text-gray-700">
-                {Array.isArray(jobData.structured_requirements) &&
-                  jobData.structured_requirements.length > 0 ? (
-                  jobData.structured_requirements.map((req, index) => (
-                    <p key={index} className="text-sm">
-                      • {req.value}
-                    </p>
-                  ))
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-sm">
-                      • ניסיון של שנתיים לפחות בחברת הפקות מומלץ -יתרון
-                    </p>
-                    <p className="text-sm">
-                      • ניסיון קודם בתחום הרפואה או הביטוח או בתחום סמוך -יתרון
-                    </p>
-                    <p className="text-sm">
-                      • יכולת עבודה במסגרת הקשרת מורכבת (אופציה באטלבוקס)
-                    </p>
-                    <p className="text-sm">
-                      • עבודה בצוותי בעלות (אופציה באטלבוקס)
-                    </p>
-                    <p className="text-sm">• שליטת פרמדים</p>
-                  </div>
-                )}
-              </div>
-            </div>
+            {/* Requirements Card (Center in RTL) */}
+            <Card className="bg-white border border-gray-100 shadow-sm rounded-2xl h-full">
+              <CardContent className="p-4 space-y-2 text-right" dir="rtl">
+                <h3 className="font-bold text-base text-blue-900">דרישות</h3>
+                <div className="space-y-1">
+                  {Array.isArray(jobData.structured_requirements) &&
+                    jobData.structured_requirements.length > 0 ? (
+                    jobData.structured_requirements.map((req, index) => (
+                      <div key={index} className="flex items-start gap-2 text-gray-700 text-sm">
+                        <span className="text-black mt-1.5">•</span>
+                        <span className="leading-relaxed">{req.value}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-sm">אין דרישות מוגדרים</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* על המשרה */}
-            <div className="text-right">
-              <h3 className="font-bold text-lg mb-4 text-gray-900">על המשרה</h3>
-              <div className="space-y-2 text-gray-700">
-                {jobData.description ? (
-                  <p className="text-sm leading-relaxed">
-                    {jobData.description}
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-sm">
-                      ובאברחי ה Techwise-מאיתנו ה מתפטמויות רב/חלק נקיות
-                      מכלבובלוצאות ביחידו/הו לשמתר לצברת מטוני
-                    </p>
-                    <p className="text-sm">
-                      התפקיד כולל ניהולת האמצאי של המידתי ברחמרקני במקומם,
-                      התמחות בטכנולוגיות וההוצאות במטלגיטכיולג יחרבמן ראלויות
-                      מחירות פיקיותולחי. המטמלות לחנותיות ו חתמות המניוחדות
-                      עווין ווית פרויקטים
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
+            {/* Responsibilities/Materials Card (Left in RTL) */}
+            <Card className="bg-white border border-gray-100 shadow-sm rounded-2xl h-full">
+              <CardContent className="p-4 space-y-2 text-right" dir="rtl">
+                <h3 className="font-bold text-base text-blue-900">תחומי אחריות</h3>
+                <div className="space-y-1">
+                  {Array.isArray(jobData.structured_education) &&
+                    jobData.structured_education.length > 0 ? (
+                    jobData.structured_education.map((edu, index) => (
+                      <div key={index} className="flex items-start gap-2 text-gray-700 text-sm">
+                        <span className="text-black mt-1.5">•</span>
+                        <span className="leading-relaxed">{edu.value}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-sm">אין תחומי אחריות מוגדרים</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Enhanced File Upload Section */}
           <div className="mb-8">
             {dragActive ? (
               <div
-                className="border-2 border-dashed rounded-lg p-8 text-center transition-colors border-blue-400 bg-blue-50 h-52 flex flex-col justify-center items-center"
+                className="border-2 border-dashed rounded-lg p-4 text-center transition-colors border-blue-400 bg-blue-50 h-32 flex flex-col justify-center items-center"
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
               >
-                <Upload className="w-10 h-10 text-blue-500 mx-auto mb-4" />
-                <p className="text-lg font-semibold text-blue-600">
+                <Upload className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                <p className="text-base font-semibold text-blue-600">
                   שחרר קבצים כאן
                 </p>
               </div>
             ) : (
               <div
-                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors border-gray-300`}
+                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors border-gray-300 bg-[#f9f9f9] cursor-pointer hover:bg-gray-100/50`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
+                onClick={handleButtonClick}
               >
                 <input
                   ref={fileInputRef}
@@ -365,18 +340,10 @@ export default function Step5Preview({ jobData, setJobData }) {
                   accept="image/*,video/*,application/pdf,.doc,.docx"
                 />
 
-                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-600 mb-2">גרור קבצים להעלאה על המשרה</p>
-                <p className="text-sm text-gray-500 mb-4">או</p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="cursor-pointer"
-                  onClick={handleButtonClick}
-                  disabled={uploading}
-                >
-                  {uploading ? "מעלה..." : "בחר קבצים"}
-                </Button>
+                <div className="flex flex-col items-center justify-center py-2">
+                  <Upload className="w-6 h-6 text-gray-400 mb-2" />
+                  <p className="text-gray-500 text-sm">ניתן להוסיף תמונות של המשרד</p>
+                </div>
               </div>
             )}
 
@@ -389,40 +356,52 @@ export default function Step5Preview({ jobData, setJobData }) {
                 {uploadedFiles.map((file, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100"
                   >
-                    <button
-                      onClick={() => removeFile(index)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                    <div className="flex items-center gap-3 text-right">
-                      <div>
-                        <p className="font-medium text-gray-900">{file.name}</p>
-                        <p className="text-sm text-gray-500">
-                          {formatFileSize(file.size)}
+                    <div className="flex items-center gap-3">
+                      {getFileIcon(file.type || "")}
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-700 truncate max-w-[200px] text-right">
+                          {file.name}
+                        </p>
+                        <p className="text-xs text-gray-400 text-right">
+                          {formatFileSize(file.size || 0)}
                         </p>
                       </div>
-                      {getFileIcon(file.type)}
                     </div>
+                    <button
+                      onClick={() => removeFile(index)}
+                      disabled={uploading}
+                      className="p-1 hover:bg-red-50 rounded-full transition-colors group"
+                      title="הסר קובץ"
+                    >
+                      <X className="w-5 h-5 text-gray-400 group-hover:text-red-500" />
+                    </button>
                   </div>
                 ))}
               </div>
             )}
-          </div>
 
-          {/* Bottom Buttons */}
-          <div className="flex justify-center gap-4 hidden">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-bold">
-              פרסום משרה
-            </Button>
-            <Button
-              variant="outline"
-              className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-3 rounded-full font-bold"
-            >
-              חזרה
-            </Button>
+            {/* Navigation Buttons inside Card */}
+            <div className="flex justify-center items-center gap-4 mt-8 pb-4">
+              <Button
+                variant="outline"
+                className="px-8 py-3 rounded-full font-bold text-lg border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
+                onClick={onPrev}
+                disabled={isSubmitting}
+              >
+                חזור
+              </Button>
+
+              <Button
+                className={`text-white px-12 py-3 rounded-full font-bold text-lg shadow-lg ${nextLabel !== 'הבא' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                onClick={onNext}
+                disabled={isNextDisabled}
+              >
+                {nextLabel}
+                {!isSubmitting && <ArrowLeft className="w-5 h-5 ml-2" />}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

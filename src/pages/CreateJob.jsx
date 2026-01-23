@@ -275,7 +275,17 @@ export default function CreateJob() {
       case 1: return <Step1Details jobData={jobData} setJobData={setJobData} />;
       case 2: return <Step3Company jobData={jobData} setJobData={setJobData} />;
       case 3: return <Step2Screening jobData={jobData} setJobData={setJobData} onSave={() => setIsScreeningSaved(true)} />;
-      case 4: return <Step5Preview jobData={jobData} setJobData={setJobData} />;
+      case 4: return (
+        <Step5Preview
+          jobData={jobData}
+          setJobData={setJobData}
+          onNext={nextStep}
+          onPrev={prevStep}
+          isSubmitting={isSubmitting}
+          isNextDisabled={isNextDisabled()}
+          nextLabel={getNextButtonText()}
+        />
+      );
       default: return <Step1Details jobData={jobData} setJobData={setJobData} />;
     }
   };
@@ -304,7 +314,7 @@ export default function CreateJob() {
       return !!isValid;
     }
     if (step === 2) {
-      // Step 2 is Step3Company, requires exactly 3 success factors
+      // Step 2: Step3Company, requires exactly 3 success factors
       return jobData.success_factors && jobData.success_factors.length === 3;
     }
     return true;
@@ -330,9 +340,9 @@ export default function CreateJob() {
 
   return (
     <div className="h-full p-4 md:p-8" dir="rtl">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-4">
-          <h1 className="text-3xl font-bold text-gray-900">{isEditing ? 'עריכת משרה' : 'יצירת משרה חדשה'}</h1>
+      <div className={`mx-auto ${step === 4 && !isSubmitted ? 'w-full' : 'max-w-7xl'}`}>
+        <div className="text-center mb-2">
+          <h1 className="text-xl font-bold text-gray-900">{isEditing ? 'עריכת משרה' : 'יצירת משרה חדשה'}</h1>
         </div>
 
         {!isSubmitted && <Stepper currentStep={step} steps={STEPS} />}
@@ -344,25 +354,25 @@ export default function CreateJob() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
-            className="my-8"
+            className="mt-1 mb-4"
           >
             {renderStep()}
           </motion.div>
         </AnimatePresence>
 
-        {!isSubmitted && (
-          <div className="flex justify-between items-center mt-12 pb-8">
+        {!isSubmitted && step !== 4 && (
+          <div className="flex justify-center items-center gap-4 mt-8 pb-8">
             <Button
               variant="outline"
-              className="px-6 py-3 rounded-full font-bold text-lg"
+              className="px-8 py-3 rounded-full font-bold text-lg border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
               onClick={prevStep}
               disabled={isSubmitting}
             >
               חזור
-              <ArrowRight className="w-5 h-5 mr-2" />
             </Button>
+
             <Button
-              className={`text-white px-12 py-3 rounded-full font-bold text-lg shadow-lg ${step === 3 && isScreeningSaved ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'
+              className={`text-white px-12 py-3 rounded-full font-bold text-lg shadow-lg ${isFinalStep ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'
                 }`}
               onClick={nextStep}
               disabled={isNextDisabled()}

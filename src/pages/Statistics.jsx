@@ -34,7 +34,7 @@ export default function Statistics() {
             if (!userData) return;
 
             // Fetch all jobs for the user
-            const userJobs = await Job.filter({ created_by: userData.email }, "-created_date", 100);
+            const userJobs = await Job.filter({ created_by: userData.email }, "-created_date");
 
             // Sort in memory to ensure newest jobs are first
             const sortedJobs = userJobs.sort((a, b) => {
