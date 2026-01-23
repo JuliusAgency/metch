@@ -101,12 +101,12 @@ export default function Contact() {
             <div className="space-y-4">
               <p className="text-gray-600 font-medium">עקבו אחרינו ברשתות</p>
               <div className="flex items-center gap-4" dir="ltr">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-[#3B82F6] rounded-full hover:bg-blue-50 transition-colors"><Facebook className="w-6 h-6 text-[#3B82F6]" /></a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-[#3B82F6] rounded-full hover:bg-blue-50 transition-colors"><Instagram className="w-6 h-6 text-[#3B82F6]" /></a>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-[#3B82F6] rounded-full hover:bg-blue-50 transition-colors"><Linkedin className="w-6 h-6 text-[#3B82F6]" /></a>
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-[#3B82F6] rounded-full hover:bg-blue-50 transition-colors">
-                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-[#3B82F6]">
-                    <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+                <a href="https://www.facebook.com/metchjobs" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-[#3B82F6] rounded-full hover:bg-blue-50 transition-colors"><Facebook className="w-6 h-6 text-[#3B82F6]" /></a>
+                <a href="https://www.instagram.com/metchofficial/" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-[#3B82F6] rounded-full hover:bg-blue-50 transition-colors"><Instagram className="w-6 h-6 text-[#3B82F6]" /></a>
+                <a href="https://www.linkedin.com/company/metch-%D7%9E%D7%90%D7%A6%D7%B3" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-[#3B82F6] rounded-full hover:bg-blue-50 transition-colors"><Linkedin className="w-6 h-6 text-[#3B82F6]" /></a>
+                <a href="https://www.tiktok.com/@metchofficial?_r=1&_t=ZS-93Awd5fSaua" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-[#3B82F6] rounded-full hover:bg-blue-50 transition-colors">
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-[#3B82F6]">
+                    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.86-.6-4.12-1.31a8.134 8.134 0 0 1-1.88-1.42v6.24a8.13 8.13 0 0 1-2.43 5.75c-1.57 1.56-3.73 2.4-5.96 2.4-2.22 0-4.39-.84-5.94-2.4-1.55-1.55-2.39-3.71-2.39-5.93 0-2.22.84-4.38 2.4-5.93 1.55-1.55 3.72-2.39 5.94-2.39.45 0 .9.02 1.35.08v4.07c-.45-.07-.9-.09-1.35-.08-1.11.02-2.19.46-2.97 1.24s-1.21 1.88-1.21 3c0 1.12.44 2.21 1.22 2.99s1.88 1.22 3 1.22c1.13 0 2.21-.44 2.99-1.22s1.22-1.87 1.22-3V.02z" />
                   </svg>
                 </a>
               </div>
