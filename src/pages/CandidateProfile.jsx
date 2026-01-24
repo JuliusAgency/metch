@@ -719,105 +719,104 @@ export default function CandidateProfile() {
     contract: "חוזה",
     freelance: "פרילנס",
     internship: "התמחות",
+    shifts: "משמרות",
   };
 
   return (
-    <div className="p-4 md:p-6" dir="rtl">
-      <div className="w-[95%] md:w-[80%] mx-auto">
-        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden min-h-[85vh] flex flex-col">
-          {/* Header Background */}
-          <ProfileHeader />
+    <div className="w-full" dir="rtl">
+      <Card className="text-card-foreground bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden min-h-[85vh] flex flex-col w-full">
+        {/* Header Background */}
+        <ProfileHeader />
 
-          <CardContent className="p-4 sm:p-6 md:p-8 -mt-20 relative z-10 flex-grow">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="flex flex-col items-center text-center space-y-6"
-            >
-              {/* Avatar - Centered & Overlapping */}
-              <div className="relative">
-                <div className="w-24 h-24 md:w-28 md:h-28 bg-[#72C0E8] rounded-full flex items-center justify-center border-[5px] border-white shadow-xl overflow-hidden">
-                  {candidate.profile_picture ? (
-                    <img
-                      src={candidate.profile_picture}
-                      alt={candidate.full_name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <UserIcon className="w-10 h-10 md:w-12 md:h-12 text-white" />
-                  )}
-                </div>
+        <CardContent className="p-4 sm:p-6 md:p-8 -mt-20 relative z-10 flex-grow">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-center text-center space-y-6"
+          >
+            {/* Avatar - Centered & Overlapping */}
+            <div className="relative">
+              <div className="w-24 h-24 md:w-28 md:h-28 bg-[#72C0E8] rounded-full flex items-center justify-center border-[5px] border-white shadow-xl overflow-hidden">
+                {candidate.profile_picture ? (
+                  <img
+                    src={candidate.profile_picture}
+                    alt={candidate.full_name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <UserIcon className="w-10 h-10 md:w-12 md:h-12 text-white" />
+                )}
               </div>
+            </div>
 
-              {/* Name */}
-              <h1 className="text-3xl md:text-4xl font-bold text-[#003566]">
-                {(() => {
-                  if (candidate.full_name && candidate.full_name.trim().length > 0) return candidate.full_name;
-                  if (candidate.email) return candidate.email;
-                  return 'מועמד ללא שם';
-                })()}
-              </h1>
+            {/* Name */}
+            <h1 className="text-3xl md:text-4xl font-bold text-[#003566]">
+              {(() => {
+                if (candidate.full_name && candidate.full_name.trim().length > 0) return candidate.full_name;
+                if (candidate.email) return candidate.email;
+                return 'מועמד ללא שם';
+              })()}
+            </h1>
 
-              {/* Badges */}
-              <ProfileBadges
-                jobTypeText={jobTypeText}
-                preferred_job_types={candidate.preferred_job_types}
-                preferred_location={candidate.preferred_location}
-                availabilityText={availabilityText}
-                availability={candidate.availability}
-              />
-
-              {/* Job Applied For */}
-              {appliedJob && (
-                <div className="text-lg text-gray-700 font-medium mt-2">
-                  עבור <span className="text-[#003566] font-bold">{appliedJob.title},</span> {appliedJob.location}.
-                </div>
-              )}
-
-              {/* Match Score */}
-              <ProfileMatchScore matchScore={matchScore} />
-
-              {/* Info Cards */}
-              <ProfileInfo
-                looking_for_summary={candidate.looking_for_summary}
-                bio={candidate.bio}
-                aiSummary={aiInsights.summary}
-                aiThoughts={aiInsights.thoughts}
-                isLoading={generatingInsights}
-              />
-
-              {/* Resume */}
-              <ProfileResume
-                resume_url={candidate.resume_url}
-                full_name={candidate.full_name}
-                cvData={cvData}
-                onViewCv={() => setIsCvPreviewOpen(true)}
-              />
-
-              {/* Socials */}
-              <ProfileSocials
-                facebook_url={candidate.facebook_url}
-                instagram_url={candidate.instagram_url}
-                linkedin_url={candidate.linkedin_url}
-                twitter_url={candidate.twitter_url}
-              />
-            </motion.div>
-          </CardContent>
-          <CardFooter className="p-6 md:p-8">
-            {/* Actions */}
-            <ProfileActions
-              handleStartConversation={handleStartConversation}
-              creatingConversation={creatingConversation}
-              handleExportToEmail={handleExportToEmail}
-              exportingResume={exportingResume}
-              questionnaireResponse={questionnaireResponse}
-              handleNotRelevant={handleNotRelevant}
-              markingNotRelevant={markingNotRelevant}
+            {/* Badges */}
+            <ProfileBadges
+              jobTypeText={jobTypeText}
+              preferred_job_types={candidate.preferred_job_types}
+              preferred_location={candidate.preferred_location}
+              availabilityText={availabilityText}
+              availability={candidate.availability}
             />
-          </CardFooter>
-        </Card>
-      </div>
+
+            {/* Job Applied For */}
+            {appliedJob && (
+              <div className="text-lg text-gray-700 font-medium mt-2">
+                עבור <span className="text-[#003566] font-bold">{appliedJob.title},</span> {appliedJob.location}.
+              </div>
+            )}
+
+            {/* Match Score */}
+            <ProfileMatchScore matchScore={matchScore} />
+
+            {/* Info Cards */}
+            <ProfileInfo
+              looking_for_summary={candidate.looking_for_summary}
+              bio={candidate.bio}
+              aiSummary={aiInsights.summary}
+              aiThoughts={aiInsights.thoughts}
+              isLoading={generatingInsights}
+            />
+
+            {/* Resume */}
+            <ProfileResume
+              resume_url={candidate.resume_url}
+              full_name={candidate.full_name}
+              cvData={cvData}
+              onViewCv={() => setIsCvPreviewOpen(true)}
+            />
+
+            {/* Socials */}
+            <ProfileSocials
+              facebook_url={candidate.facebook_url}
+              instagram_url={candidate.instagram_url}
+              linkedin_url={candidate.linkedin_url}
+              twitter_url={candidate.twitter_url}
+            />
+          </motion.div>
+        </CardContent>
+        <CardFooter className="p-6 md:p-8">
+          {/* Actions */}
+          <ProfileActions
+            handleStartConversation={handleStartConversation}
+            creatingConversation={creatingConversation}
+            handleExportToEmail={handleExportToEmail}
+            exportingResume={exportingResume}
+            questionnaireResponse={questionnaireResponse}
+            handleNotRelevant={handleNotRelevant}
+            markingNotRelevant={markingNotRelevant}
+          />
+        </CardFooter>
+      </Card>
 
       <AnimatePresence>
         {isCvPreviewOpen && cvData && (
