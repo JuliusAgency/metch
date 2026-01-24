@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Job } from "@/api/entities";
+import { Job, UserProfile, CV } from "@/api/entities";
 import { JobApplication } from "@/api/entities";
 import { User } from "@/api/entities";
+import { BrainCircuit, Sparkles, CheckCircle2 } from "lucide-react";
+import { Core } from "@/api/integrations";
 import { Card, CardContent } from "@/components/ui/card";
 import { createPageUrl } from "@/utils";
 import { UserAnalytics } from "@/components/UserAnalytics";
@@ -24,6 +26,10 @@ export default function JobDetailsSeeker() {
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [cvData, setCvData] = useState(null);
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const [hasExistingApplication, setHasExistingApplication] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const location = useLocation();
@@ -39,6 +45,16 @@ export default function JobDetailsSeeker() {
     try {
       const userData = await User.me();
       setUser(userData);
+
+      if (userData?.id) {
+        // Fetch Profile and CV for AI context
+        const [profiles, cvs] = await Promise.all([
+          UserProfile.filter({ id: userData.id }),
+          CV.filter({ user_email: userData.email })
+        ]);
+        setProfile(profiles[0] || null);
+        setCvData(cvs[0] || null);
+      }
 
       const jobId = jobIdParam;
 
@@ -174,6 +190,91 @@ export default function JobDetailsSeeker() {
     loadData();
   }, [loadData]);
 
+  // AI Analysis Effect
+  useEffect(() => {
+    const generateAnalysis = async () => {
+      if (!job || !user || !profile || !cvData || aiAnalysis || isAiLoading) return;
+
+      // If mock job, use partial mock data but structured correctly if possible, or skip matches
+      if (job.id === 'f0000000-0000-0000-0000-000000000001' && job.metch_analysis) {
+        // Adapt mock structure to our new expected structure
+        setAiAnalysis({
+          why_suitable: job.metch_analysis.reasoning || job.metch_analysis.summary,
+          match_analysis: [
+            "התאמה מלאה בדרישות הליבה (Python, Java)",
+            "מיקום המשרה תואם את העדפותיך (מרכז)",
+            "השכלה רלוונטית מהטכניון",
+            "חפיפה בסוג המשרה (מלאה, מיידית)"
+          ]
+        });
+        return;
+      }
+
+      setIsAiLoading(true);
+      try {
+        const assistantId = import.meta.env.VITE_JOB_SUMMARY;
+        if (!assistantId) {
+          console.warn("VITE_JOB_SUMMARY env var is missing");
+          setIsAiLoading(false);
+          return;
+        }
+
+        const prompt = `
+          Analyze the match between the candidate and the job.
+          
+          Candidate CV Data:
+          ${cvData.raw_text || cvData.summary || "No CV text available"}
+          
+          Candidate Preferences:
+          Role: ${profile.job_titles ? profile.job_titles.join(', ') : 'Not specified'}
+          Location: ${profile.preferred_locations ? profile.preferred_locations.join(', ') : 'Not specified'}
+          Job Type: ${profile.job_types ? profile.job_types.join(', ') : 'Not specified'}
+          Career Stage: ${profile.career_stage || 'Not specified'}
+          Availability: ${profile.availability || 'Not specified'}
+          
+          Job Details:
+          Title: ${job.title}
+          Company: ${job.company}
+          Description: ${job.description}
+          Requirements: ${Array.isArray(job.requirements) ? job.requirements.join(', ') : job.requirements}
+          Location: ${job.location}
+          
+          Please output a valid JSON object with exactly two keys:
+          1. "why_suitable": A string (paragraph) in Hebrew explaining why this job is a good fit for the candidate.
+          2. "match_analysis": An array of strings (bullet points) in Hebrew describing Metch's thoughts on the match highlights.
+          
+          Ensure the response is strictly valid JSON without Markdown formatting.
+        `;
+
+        const response = await Core.InvokeAssistant({
+          assistantId,
+          prompt
+        });
+
+        if (response.content) {
+          let clean = response.content.trim();
+          // Cleanup markdown code blocks if present
+          clean = clean.replace(/^```json\s*/g, '').replace(/^```\s*/g, '').replace(/\s*```$/g, '');
+
+          try {
+            const parsed = JSON.parse(clean);
+            if (parsed.why_suitable && parsed.match_analysis) {
+              setAiAnalysis(parsed);
+            }
+          } catch (e) {
+            console.error("Failed to parse AI response", e);
+          }
+        }
+      } catch (error) {
+        console.error("Error generating AI analysis:", error);
+      } finally {
+        setIsAiLoading(false);
+      }
+    };
+
+    generateAnalysis();
+  }, [job, user, profile, cvData]);
+
   const handleApply = async () => {
     if (!job || !user) {
       toast({
@@ -293,6 +394,60 @@ export default function JobDetailsSeeker() {
           )}
           <SeekerJobTitle job={job} employmentTypeText={employmentTypeText} />
           <SeekerJobPerks perks={job.company_perks} />
+
+          {/* AI Analysis Cards */}
+          {(aiAnalysis || isAiLoading) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 mb-6">
+              {/* Card 1: Why it suits you */}
+              <Card className="bg-gradient-to-br from-indigo-50 to-white border-indigo-100 shadow-sm opacity-100 transition-all duration-300">
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <h3 className="font-bold text-gray-900 text-lg">למה המשרה מתאימה לך?</h3>
+                  </div>
+                  {isAiLoading ? (
+                    <div className="space-y-2 animate-pulse">
+                      <div className="h-4 bg-indigo-100 rounded w-3/4"></div>
+                      <div className="h-4 bg-indigo-100 rounded w-full"></div>
+                      <div className="h-4 bg-indigo-100 rounded w-5/6"></div>
+                    </div>
+                  ) : (
+                    <p className="text-gray-700 leading-relaxed text-sm">
+                      {aiAnalysis?.why_suitable || "אנו מעבדים את הנתונים..."}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Card 2: Metch Thoughts */}
+              <Card className="bg-gradient-to-br from-blue-50 to-white border-blue-100 shadow-sm opacity-100 transition-all duration-300">
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <h3 className="font-bold text-gray-900 text-lg">מה מאצ' חושב על ההתאמה?</h3>
+                  </div>
+                  {isAiLoading ? (
+                    <div className="space-y-3 animate-pulse">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="flex gap-2">
+                          <div className="w-4 h-4 rounded-full bg-blue-100 shrink-0"></div>
+                          <div className="h-4 bg-blue-100 rounded w-full"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <ul className="space-y-2.5">
+                      {aiAnalysis?.match_analysis?.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-2.5">
+                          <CheckCircle2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
+                          <span className="text-gray-700 text-sm">{item}</span>
+                        </li>
+                      )) || <li className="text-gray-500 text-sm">מעבד נתונים...</li>}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           <SeekerJobInfo job={job} />
           <SeekerJobImages images={attachments} />
           <SeekerJobActions
