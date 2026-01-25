@@ -9,6 +9,7 @@ import { JobApplication, CandidateView, CV } from "@/api/entities";
 import { Core } from "@/api/integrations";
 import { useUser } from "@/contexts/UserContext";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+import logo from "@/assets/Vector.svg";
 
 export default function Insights() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -55,48 +56,85 @@ export default function Insights() {
     return data;
   };
 
-  const generateAIInsights = async (stats, userProfile, cvText) => {
+  const generateAIInsights = async (stats, userProfile, cvText, cvDataRaw) => {
+    // Check cache first
+    const cacheKey = `metch_insights_v2_${userProfile?.id}`;
+    const cachedData = localStorage.getItem(cacheKey);
+    if (cachedData) {
+      try {
+        const parsedCache = JSON.parse(cachedData);
+        // Optional: Expiry check (e.g., 7 days)
+        // For now, valid implies "exists" to solve "re-fetching every time"
+        console.log("Using cached insights");
+        return parsedCache;
+      } catch (e) {
+        localStorage.removeItem(cacheKey);
+      }
+    }
+
     setAnalyzing(true);
     try {
+      // Calculate derived data
+      const age = userProfile?.birth_date
+        ? Math.floor((new Date() - new Date(userProfile.birth_date)) / 31557600000)
+        : "N/A";
+
+      const specialization = userProfile?.specialization || "Not specified";
+      const preferences = {
+        locations: userProfile?.preferred_locations || [],
+        availability: userProfile?.availability || [],
+        job_types: userProfile?.job_types || [],
+        flexibility: userProfile?.is_flexible || false
+      };
+
       const prompt = `
-      Analyze the following job seeker profile and data to provide personalized career recommendations.
+      Analyze the following job seeker profile and data to provide a comprehensive career insight report.
       
       User Profile:
-      - Name: ${userProfile?.full_name || 'N/A'}
-      - Title/Bio: ${userProfile?.bio || 'N/A'}
+      - Age: ${age}
+      - Specialization: ${specialization}
+      - Preferences: ${JSON.stringify(preferences)}
       
-      Stats:
+      CV Content & Experience:
+      "${cvText ? cvText.substring(0, 4000).replace(/"/g, "'") : 'No CV content available'}"
+      
+      Match History Stats:
       - Total Applications: ${stats.totalApplications}
       - Responses: ${stats.responses}
-      - Conversion Rate: ${stats.conversionRate}%
-      - Profile Views by Employers: ${stats.profileViews}
+      - Profile Views: ${stats.profileViews}
       
-      CV Content:
-      "${cvText ? cvText.substring(0, 3000).replace(/"/g, "'") : 'No CV content available'}"
-      
-      Act as an expert career coach. Analyze the profile and stats.
+      Act as an expert career coach. Analyze the profile deeply.
       Return a STRICT VALID JSON object in Hebrew with the following keys:
       {
-        "cv_improvements": ["Tip 1", "Tip 2", "Tip 3"],
-        "missing_skills": ["Skill 1", "Skill 2"],
-        "linkedin_optimization": ["Tip 1", "Tip 2"],
-        "interview_tips": ["Tip 1", "Tip 2"]
+        "general_summary": "Paragraph summarizing the candidate's profile, tone: professional & empowering.",
+        "key_strengths": ["Strength 1 (bullet)", "Strength 2 (bullet)", "Strength 3 (bullet)"],
+        "interview_strength": "A specific strength to highlight in interviews.",
+        "improvements": ["Point for improvement 1", "Point for improvement 2 (e.g. detailed projects, skills)"],
+        "practical_recommendation": "One actionable recommendation.",
+        "resume_tips": ["Tip 1 for CV", "Tip 2 for CV"],
+        "career_path_status": "A concluding encouraging sentence about their process state (e.g., 'You are on the right path...')."
       }
       
       Guidelines:
-      - cv_improvements: 3 concrete improvements for the CV.
-      - missing_skills: 3-5 hard/soft skills that are crucial but missing/weak.
-      - linkedin_optimization: 2-3 specific tips for LinkedIn visibility.
-      - interview_tips: 2-3 preparation tips for their role level.
+      - general_summary: ~2 sentences. Professional.
+      - key_strengths: 3 bullets. Focus on concrete skills/traits.
+      - interview_strength: 1 sentence explaining what to sell in interviews.
+      - improvements: 2-3 bullets. Constructive.
+      - practical_recommendation: 1 sentence.
+      - resume_tips: 1-2 bullets.
+      - career_path_status: 1 inspiring sentence.
       
       Do not format as markdown. Do not include newlines in strings. Return ONLY the JSON.
       `;
 
       // Use the Assistant API with the provided ID
+      // If VITE_MY_INSIGHTS_EMPLOYEE_KEY is meant for this page, use it. Otherwise, use a general assistant or create one. 
+      // Assuming VITE_MY_INSIGHTS_EMPLOYEE_KEY is correct for "My Insights".
       const INSIGHTS_ASSISTANT_ID = import.meta.env.VITE_MY_INSIGHTS_EMPLOYEE_KEY;
 
       if (!INSIGHTS_ASSISTANT_ID) {
         console.warn("VITE_MY_INSIGHTS_EMPLOYEE_KEY is missing from env");
+        return null;
       }
 
       const response = await Core.InvokeAssistant({
@@ -108,14 +146,18 @@ export default function Insights() {
 
       let parsed = null;
       try {
-        // Clean potential markdown code blocks if the model adds them
         let cleanContent = response.content.replace(/```json/g, '').replace(/```/g, '').trim();
-        // Sometimes the model might return text before or after, try to extract JSON object
         const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           cleanContent = jsonMatch[0];
         }
         parsed = JSON.parse(cleanContent);
+
+        // Cache the result
+        if (parsed && userProfile?.id) {
+          localStorage.setItem(cacheKey, JSON.stringify(parsed));
+        }
+
       } catch (e) {
         console.error("Failed to parse AI response", e);
       }
@@ -180,7 +222,7 @@ export default function Insights() {
           avgCvOpeningTime = (totalDays / applicationsWithResponses.length).toFixed(1);
         }
 
-        // Basic Logic-based insights
+        // Basic Logic-based insights (kept for backward compatibility or simple status)
         const insights = [];
         const applicationsWithScores = allApplications.filter(app => app.match_score);
         if (applicationsWithScores.length > 0) {
@@ -200,32 +242,33 @@ export default function Insights() {
 
         // Construct CV Text from all possible fields
         let cvText = "";
+        let cvDataRaw = null;
         if (cvData && cvData.length > 0) {
-          const record = cvData[0];
+          cvDataRaw = cvData[0];
           // Try parsed content first (from upload), then detailed fields (from builder)
-          if (record.parsed_content) {
-            cvText = record.parsed_content;
+          if (cvDataRaw.parsed_content) {
+            cvText = cvDataRaw.parsed_content;
           } else {
             // Build text from structured fields
             const parts = [];
-            if (record.summary) parts.push(`Summary: ${record.summary}`);
+            if (cvDataRaw.summary) parts.push(`Summary: ${cvDataRaw.summary}`);
 
-            if (record.work_experience && Array.isArray(record.work_experience)) {
+            if (cvDataRaw.work_experience && Array.isArray(cvDataRaw.work_experience)) {
               parts.push("Work Experience:");
-              record.work_experience.forEach(exp => {
+              cvDataRaw.work_experience.forEach(exp => {
                 parts.push(`- ${exp.title} at ${exp.company} (${exp.start_date} - ${exp.is_current ? 'Present' : exp.end_date}): ${exp.description || ''}`);
               });
             }
 
-            if (record.education && Array.isArray(record.education)) {
+            if (cvDataRaw.education && Array.isArray(cvDataRaw.education)) {
               parts.push("Education:");
-              record.education.forEach(edu => {
+              cvDataRaw.education.forEach(edu => {
                 parts.push(`- ${edu.degree} in ${edu.field_of_study} at ${edu.institution}`);
               });
             }
 
-            if (record.skills && Array.isArray(record.skills)) {
-              parts.push(`Skills: ${record.skills.join(', ')}`);
+            if (cvDataRaw.skills && Array.isArray(cvDataRaw.skills)) {
+              parts.push(`Skills: ${cvDataRaw.skills.join(', ')}`);
             }
 
             cvText = parts.join("\n\n");
@@ -234,7 +277,7 @@ export default function Insights() {
 
         console.log("Constructed CV Text for AI:", cvText.length > 0 ? "Yes (" + cvText.length + " chars)" : "No");
 
-        const aiRecommendations = await generateAIInsights(statsForAI, profile, cvText);
+        const aiRecommendations = await generateAIInsights(statsForAI, profile, cvText, cvDataRaw);
 
         setInsightsData({
           totalApplications,
@@ -301,10 +344,9 @@ export default function Insights() {
             transition={{ duration: 0.6 }}
             className="space-y-8"
           >
-            <div className="text-center flex items-center justify-center gap-2">
-              <Sparkles className="w-6 h-6 text-yellow-500" />
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">המלצות מאצ'</h1>
-              <Sparkles className="w-6 h-6 text-yellow-500" />
+            <div className="text-center flex items-center justify-center gap-3">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">התובנות שלי</h1>
+              <img src={logo} alt="Metch" className="w-6 h-6 mb-1" />
             </div>
             {loading ? (
               <div className="text-center py-8">

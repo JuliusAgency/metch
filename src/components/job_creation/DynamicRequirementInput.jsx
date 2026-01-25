@@ -91,6 +91,17 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
               יתרון
             </Button>
           </div>
+          <Button
+            type="button"
+            onClick={handleAddItem}
+            disabled={!inputValue.trim()}
+            className={`px-6 h-9 rounded-full text-base font-normal transition-all duration-200 ${inputValue.trim()
+              ? 'bg-[#34A853] hover:bg-[#2d9147] text-white shadow-sm'
+              : 'bg-gray-200 text-gray-400 border border-gray-200 cursor-not-allowed hover:bg-gray-200'
+              }`}
+          >
+            שמירה
+          </Button>
         </div>
       </div>
       <button

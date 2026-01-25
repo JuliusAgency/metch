@@ -264,8 +264,8 @@ const JobSeekerDashboard = ({ user }) => {
           total_applications: 0
         };
 
-        // Filter: Match >= 60%
-        const qualifiedJobs = jobsWithScores.filter(job => job.match_score >= 60);
+        // Filter: Match >= 0% (Temporary debugging change)
+        const qualifiedJobs = jobsWithScores.filter(job => job.match_score >= 0);
 
         // Sort by match score (descending)
         qualifiedJobs.sort((a, b) => b.match_score - a.match_score);

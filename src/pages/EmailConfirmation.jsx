@@ -3,8 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/api/supabaseClient';
 
-// Figma design assets
-const imgHugeiconsAiMagic = "http://localhost:3845/assets/289919713a3bb46a7fa4929734053736f1a07e8a.svg";
+
 
 const EmailConfirmation = () => {
   const [loading, setLoading] = useState(false);
@@ -56,63 +55,69 @@ const EmailConfirmation = () => {
 
 
   return (
-    <div className="bg-gradient-to-b from-[#dbedf3] from-[12.35%] to-[#ffffff] via-[#ffffff] via-[32.336%] min-h-screen flex items-center justify-center p-4" data-name="אימות מייל הרשמה" data-node-id="418:1596">
-      {/* Background Card */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="bg-[rgba(255,255,255,0.5)] rounded-[40px] shadow-[0px_0px_17.611px_0px_rgba(0,0,0,0.2)] w-full max-w-4xl h-full max-h-[90vh]" data-node-id="678:3185" />
-      </div>
-
-      {/* Main Content */}
-      <div className="relative z-10 w-full max-w-md mx-auto" data-node-id="678:3187">
-
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <div className="backdrop-blur-[43px] backdrop-filter bg-[rgba(204,229,248,0.3)] border border-solid border-white rounded-full p-4" data-name="menu מחפש עבודה" data-node-id="678:3188">
-            <div className="flex items-center space-x-2" data-name="logo metch" data-node-id="678:3192">
-              <img alt="" className="w-8 h-8" src={imgHugeiconsAiMagic} data-name="hugeicons:ai-magic" data-node-id="678:3194" />
-              <p className="font-['Poppins:Regular',_sans-serif] text-2xl text-black font-medium" data-node-id="678:3193">
-                Metch
-              </p>
+    <div className="bg-gradient-to-b from-[#dbedf3] from-[12.35%] to-[#ffffff] via-[#ffffff] via-[32.336%] min-h-screen flex items-center justify-center p-4">
+      {/* Main Card Component - Merged Background and Content */}
+      <div className="relative bg-[rgba(255,255,255,0.5)] rounded-[40px] shadow-[0px_0px_17.611px_0px_rgba(0,0,0,0.2)] w-full max-w-4xl min-h-[80vh] flex flex-col justify-center items-center p-12">
+        <div className="w-full max-w-md mx-auto">
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <div className="backdrop-blur-[43px] backdrop-filter bg-[rgba(204,229,248,0.3)] border border-solid border-white rounded-full p-5 px-10">
+              <div className="flex items-center">
+                <p className="font-['Poppins',_sans-serif] text-2xl text-black font-normal">
+                  Metch
+                </p>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 15 15"
+                  fill="none"
+                  className="w-5 h-5 mr-1 text-black"
+                >
+                  <path
+                    d="M7.375 0.5L6.86821 1.86911C6.20429 3.66446 5.87232 4.56214 5.21723 5.21723C4.56214 5.87232 3.66446 6.20429 1.86911 6.86821L0.5 7.375L1.86911 7.88179C3.66446 8.54571 4.56214 8.87866 5.21723 9.53277C5.87232 10.1869 6.20429 11.0855 6.86821 12.8809L7.375 14.25L7.88179 12.8809C8.54571 11.0855 8.87866 10.1879 9.53277 9.53277C10.1869 8.87768 11.0855 8.54571 12.8809 7.88179L14.25 7.375L12.8809 6.86821C11.0855 6.20429 10.1879 5.87232 9.53277 5.21723C8.87768 4.56214 8.54571 3.66446 7.88179 1.86911L7.375 0.5Z"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Form Content */}
-        <div className="space-y-8" data-node-id="597:1981">
+          {/* Content */}
+          <div className="space-y-8">
+            {/* Title */}
+            <div className="text-center">
+              <h1 className="font-['Rubik',_sans-serif] font-bold text-3xl md:text-4xl text-[#32343d]" dir="auto">
+                אימות מייל הרשמה
+              </h1>
+            </div>
 
-          {/* Title */}
-          <div className="text-center" data-name="Title" data-node-id="418:1620">
-            <h1 className="font-['Rubik:Bold',_sans-serif] font-bold text-3xl md:text-4xl text-[#32343d]" dir="auto" data-node-id="418:1621">
-              אימות מייל הרשמה
-            </h1>
-          </div>
+            {/* Instructions */}
+            <div className="text-center">
+              <p className="font-['Rubik',_sans-serif] font-normal text-lg text-[#32343d]" dir="auto">
+                בדקו את המייל שלכם והמשיכו דרך הקישור שנשלח
+              </p>
+            </div>
 
-          {/* Instructions */}
-          <div className="text-center" data-name="Text" data-node-id="418:1659">
-            <p className="font-['Rubik:Regular',_sans-serif] font-normal text-lg text-[#32343d]" dir="auto" data-node-id="418:1660">
-              בדקו את המייל שלכם והמשיכו דרך הקישור שנשלח
-            </p>
-          </div>
+            {/* Resend Email Button */}
+            <div className="text-center">
+              <button
+                onClick={handleResendEmail}
+                disabled={loading}
+                className="font-['Rubik',_sans-serif] text-[14px] text-[#2987cd] hover:underline disabled:opacity-50"
+                dir="auto"
+              >
+                <span className="font-normal text-[#32343d]">{`לא קיבלת את הקוד? `}</span>
+                <span className="font-bold">שלח שוב</span>
+              </button>
+            </div>
 
-          {/* Resend Email Button */}
-          <div className="text-center" data-node-id="418:1671">
-            <button
-              onClick={handleResendEmail}
-              disabled={loading}
-              className="font-['Assistant:Bold',_sans-serif] font-bold text-[14px] text-[#2987cd] hover:underline disabled:opacity-50"
-              dir="auto"
-            >
-              <span className="font-['Rubik:Regular',_sans-serif] font-normal text-[#32343d]">{`לא קיבלת את הקוד? `}</span>
-              <span className="font-['Rubik:Bold',_sans-serif]">שלח שוב</span>
-            </button>
-          </div>
-
-
-          {/* Back to Login Link */}
-          <div className="text-center">
-            <Link to="/Login" className="font-['Rubik:Regular',_sans-serif] text-[#2987cd] text-sm hover:underline" dir="auto">
-              חזרה להתחברות
-            </Link>
+            {/* Back to Login Link */}
+            <div className="text-center">
+              <Link to="/Login" className="font-['Rubik',_sans-serif] text-[#2987cd] text-sm hover:underline" dir="auto">
+                חזרה להתחברות
+              </Link>
+            </div>
           </div>
         </div>
       </div>
