@@ -274,7 +274,7 @@ export default function CreateJob() {
     switch (step) {
       case 1: return <Step1Details jobData={jobData} setJobData={setJobData} />;
       case 2: return <Step3Company jobData={jobData} setJobData={setJobData} />;
-      case 3: return <Step2Screening jobData={jobData} setJobData={setJobData} onSave={() => setIsScreeningSaved(true)} />;
+      case 3: return <Step2Screening jobData={jobData} setJobData={setJobData} onSave={() => setIsScreeningSaved(true)} onNext={nextStep} />;
       case 4: return (
         <Step5Preview
           jobData={jobData}
