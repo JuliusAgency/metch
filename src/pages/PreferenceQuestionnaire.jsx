@@ -181,7 +181,7 @@ export default function PreferenceQuestionnaire() {
       >
         <div className="p-8 md:p-12 flex flex-col items-center w-full max-w-4xl mx-auto">
 
-          <StepIndicator totalSteps={5} currentStep={step + 1} />
+          <StepIndicator totalSteps={2} currentStep={step} />
 
           {step === 1 && (
             <Step1
