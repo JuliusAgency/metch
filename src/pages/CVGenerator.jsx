@@ -376,6 +376,13 @@ export default function CVGenerator() {
         setTimeout(() => {
           // Check if we are in onboarding mode
           const isOnboarding = searchParams.get('onboarding') === 'true';
+
+          // Correct navigation for existing users
+          if (!isOnboarding && user?.is_onboarding_completed) {
+            navigate(createPageUrl('Profile'));
+            return;
+          }
+
           const returnTo = isOnboarding ? '' : '/Profile';
           const target = `PreferenceQuestionnaire?onboarding=${isOnboarding}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`;
           navigate(createPageUrl(target));
@@ -461,6 +468,13 @@ export default function CVGenerator() {
     } else if (step === 1 || step === -1 || step === 0) {
       if (step === -1 && choice === 'upload') {
         const isOnboarding = searchParams.get('onboarding') === 'true';
+
+        // Correct navigation for existing users
+        if (!isOnboarding && user?.is_onboarding_completed) {
+          navigate(createPageUrl('Profile'));
+          return;
+        }
+
         const returnUrl = `/CVGenerator?choice=upload&step=-1${isOnboarding ? '&onboarding=true' : ''}`;
         const target = `PreferenceQuestionnaire?step=2&onboarding=${isOnboarding}&returnTo=${encodeURIComponent(returnUrl)}`;
         navigate(createPageUrl(target), { replace: true });
@@ -470,6 +484,12 @@ export default function CVGenerator() {
       // BUT UserTypeSelection might redirect to Dashboard if onboarding is done.
       // So instead, we stay in CVGenerator and show Step 0 (Choice Cards).
       const isOnboarding = searchParams.get('onboarding') === 'true';
+
+      // Correct navigation for existing users
+      if (!isOnboarding && user?.is_onboarding_completed) {
+        navigate(createPageUrl('Profile'));
+        return;
+      }
 
       // FORCE STATE UPDATE IMMEDIATELY
       setStep(0);
@@ -493,12 +513,10 @@ export default function CVGenerator() {
     // After upload, user is done with this flow, navigate to profile
     // NEW FLOW: Personal -> Pref -> Upload -> JobSeekerProfileCompletion -> Career Stage -> Dashboard
     const isOnboarding = searchParams.get('onboarding') === 'true' || localStorage.getItem('onboarding_active') === 'true';
-    if (isOnboarding) {
+    if (isOnboarding && !user?.is_onboarding_completed) {
       navigate('/JobSeekerProfileCompletion?onboarding=true');
     } else {
-      // Even if not strictly "onboarding" by param, force the onboarding flow to ensure user lands on completion page
-      // and isn't redirected to Dashboard if they are re-testing.
-      navigate('/JobSeekerProfileCompletion?onboarding=true');
+      navigate('/Profile');
     }
   };
 
@@ -515,6 +533,10 @@ export default function CVGenerator() {
     setShowSkipDisclaimer(false);
   };
 
+  const handleUploadDelete = () => {
+    setUploadSuccess(false);
+  };
+
   const renderStep = () => {
     if (loading) {
       return <div className="flex justify-center items-center h-full"><div className="w-8 h-8 border-t-2 border-blue-500 rounded-full animate-spin"></div></div>;
@@ -525,6 +547,7 @@ export default function CVGenerator() {
         return <UploadCV
           user={user}
           onUploadSuccess={handleUploadSuccess}
+          onDelete={handleUploadDelete}
           onSkip={handleSkip}
           showSkipDisclaimer={showSkipDisclaimer}
         />;

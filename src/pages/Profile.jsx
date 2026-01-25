@@ -108,8 +108,7 @@ export default function Profile() {
     performStatusUpdate(checked);
   };
 
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
+  const processFile = async (file) => {
     if (!file) return;
 
     setLoading(true);
@@ -175,6 +174,25 @@ export default function Profile() {
     }
   };
 
+  const handleInputFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) processFile(file);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      processFile(file);
+    }
+  };
+
   const handleDeleteFile = async () => {
     if (!cvData?.id) return;
 
@@ -221,6 +239,8 @@ export default function Profile() {
       <div
         className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-gray-50 transition-colors flex flex-col items-center justify-center min-h-[200px]"
         onClick={() => fileInputRef.current?.click()}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
       >
         <UploadCloud className="mx-auto h-12 w-12 text-gray-400 mb-4" />
         <h3 className="text-lg font-medium text-gray-900">העלאת קורות חיים</h3>
@@ -359,7 +379,7 @@ export default function Profile() {
               ref={fileInputRef}
               className="hidden"
               accept=".pdf,.doc,.docx"
-              onChange={handleFileUpload}
+              onChange={handleInputFileChange}
             />
 
             {/* CV Section */}

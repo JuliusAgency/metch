@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { UploadCloud, FileText, Loader2, CheckCircle, AlertCircle, Eye, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onSkip, showSkipDisclaimer }) {
+export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDelete, onSkip, showSkipDisclaimer }) {
     const [file, setFile] = useState(null);
     const [uploadStatus, setUploadStatus] = useState('idle'); // idle, uploading, success, error
     const [errorMessage, setErrorMessage] = useState('');
@@ -127,11 +127,25 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onSk
         }
     };
 
-    const handleDelete = () => {
-        setFile(null);
+    const handleDelete = async () => {
         setUploadStatus('idle');
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
+        try {
+            if (user?.email) {
+                // Remove from backend
+                const existingCvs = await CV.filter({ user_email: user.email });
+                if (existingCvs.length > 0) {
+                    await CV.delete(existingCvs[0].id);
+                }
+                await User.updateMyUserData({ resume_url: null });
+            }
+        } catch (error) {
+            console.error("Error deleting CV:", error);
+        } finally {
+            setFile(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+            if (onDelete) onDelete();
         }
     };
 
