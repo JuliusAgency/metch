@@ -102,7 +102,13 @@ export default function Step1Details({ jobData, setJobData }) {
               ))}
             </SelectContent>
           </Select>
-          {/* Location Removed */}
+          <CategorySelect
+            value={jobData.location || ''}
+            onChange={(value) => handleSelectChange('location', value)}
+            options={locations}
+            placeholder="מיקום המשרה"
+            searchPlaceholder="חיפוש מיקום..."
+          />
         </div>
 
         <div className="relative">
