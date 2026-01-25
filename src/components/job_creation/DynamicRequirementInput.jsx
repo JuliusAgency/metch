@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { X, Info } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function DynamicRequirementInput({ label, placeholder, items = [], setItems, infoText }) {
   const [inputValue, setInputValue] = useState("");
@@ -50,14 +51,16 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
         <div className="flex items-center gap-2">
           {infoText && (
             <div className="shrink-0">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Info className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
-                </PopoverTrigger>
-                <PopoverContent className="max-w-xs bg-black text-white p-3 text-right border-none" side="left">
-                  <p className="text-sm leading-relaxed">{infoText}</p>
-                </PopoverContent>
-              </Popover>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs bg-black text-white p-3 text-right border-none" side="left">
+                    <p className="text-sm leading-relaxed">{infoText}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           )}
           <Input

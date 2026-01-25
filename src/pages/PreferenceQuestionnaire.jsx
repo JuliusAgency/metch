@@ -7,6 +7,7 @@ import { createPageUrl } from '@/utils';
 import { useRequireUserType } from '@/hooks/use-require-user-type';
 import Step1 from '@/components/preference-questionnaire/Step1';
 import Step2 from '@/components/preference-questionnaire/Step2';
+import InfoPopup from '@/components/ui/info-popup';
 
 import StepIndicator from '@/components/ui/StepIndicator';
 import { Info, ChevronRight } from 'lucide-react';
@@ -180,6 +181,19 @@ export default function PreferenceQuestionnaire() {
         className="h-full relative overflow-y-auto"
       >
         <div className="p-8 md:p-12 flex flex-col items-center w-full max-w-4xl mx-auto">
+
+          <div className="w-full text-center space-y-2 mb-6">
+            <h1 className="text-2xl font-bold text-[#001a6e]">שאלון העדפה</h1>
+
+            {/* Info Link - Preference Questionnaire */}
+            <div className="flex justify-center">
+              <InfoPopup
+                triggerText="מה זה שאלון העדפה"
+                title="מה זה שאלון העדפה?"
+                content="שאלון העדפה עוזר לנו להבין את ההעדפות שלכם לגבי עבודה באופן כללי, למשל באיזה איזור תרצו לעבוד או מתי תהיו זמינים להתחיל. מענה על שאלון זה יעזור לנו להתאים עבורכם משרות שתואמות את העדפותיכם האישיות."
+              />
+            </div>
+          </div>
 
           <StepIndicator totalSteps={2} currentStep={step} />
 

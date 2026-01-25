@@ -15,6 +15,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { MetchApi } from "@/api/metchApi";
 import { Loader2 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import InfoPopup from "@/components/ui/info-popup";
 
 export default function Packages() {
     const { toast } = useToast();
@@ -146,6 +147,13 @@ export default function Packages() {
                 <div className="text-center space-y-2">
                     <h1 className="text-3xl font-bold text-[#1E3A8A]">למצוא את המועמד המדויק</h1>
                     <p className="text-[#1E3A8A]/70">בעזרת הבינה המלאכותית של מאצ׳</p>
+                    <div className="pt-2">
+                        <InfoPopup
+                            triggerText="הסבר"
+                            title="הסבר"
+                            content="על מנת להמשיך יש לרכוש משרה לפרסום, לאחר מכן תעברו לשלב יצירת משרה. שימו לב, פרסום המשרה בפועל לא חייב להתבצע באופן מיידי, ניתן לפרסם במועד מאוחר יותר."
+                        />
+                    </div>
                 </div>
 
 

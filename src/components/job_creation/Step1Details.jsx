@@ -3,10 +3,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, ArrowRight, Loader2, Info } from 'lucide-react';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import DynamicRequirementInput from './DynamicRequirementInput';
 import jobCategoryList from '../../../jobs_category.json';
@@ -113,14 +114,16 @@ export default function Step1Details({ jobData, setJobData }) {
 
         <div className="relative">
           <div className="absolute top-3 -right-8 pointer-events-auto">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Info className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
-              </PopoverTrigger>
-              <PopoverContent className="max-w-xs bg-black text-white p-3 text-right border-none" side="left">
-                <p className="text-sm leading-relaxed">כאן ממלאים את הפרטים ומידע נוסף כגון: תיאור התפקיד/המשרה, תחומי אחריות. שכר צפוי וכל מידע שתרצו לשתף על המשרה או החברה.<br />שימו לב - כאן לא מוסיפים דרישות יתרון או חובה לתפקיד.</p>
-              </PopoverContent>
-            </Popover>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs bg-black text-white p-3 text-right border-none" side="left">
+                  <p className="text-sm leading-relaxed">כאן ממלאים את הפתיח ומידע נוסף כגון: תיאור התפקיד/המשרה, תחומי אחריות, שכר צפוי וכל מידע שתרצו לשתף על המשרה או החברה.<br />שימו לב - כאן לא מוסיפים דרישות יתרון או חובה לתפקיד.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <Textarea
             name="description"

@@ -10,6 +10,7 @@ import { Core } from "@/api/integrations";
 import { useUser } from "@/contexts/UserContext";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import logo from "@/assets/Vector.svg";
+import InfoPopup from "@/components/ui/info-popup";
 
 export default function Insights() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -344,9 +345,21 @@ export default function Insights() {
             transition={{ duration: 0.6 }}
             className="space-y-8"
           >
-            <div className="text-center flex items-center justify-center gap-3">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">התובנות שלי</h1>
-              <img src={logo} alt="Metch" className="w-6 h-6 mb-1" />
+            <div className="text-center flex flex-col items-center justify-center gap-2">
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">התובנות שלי</h1>
+                <img src={logo} alt="Metch" className="w-6 h-6 mb-1" />
+              </div>
+              <InfoPopup
+                triggerText="מה זה?"
+                title="מה זה?"
+                content={
+                  <>
+                    <p className="mb-2">בעמוד זה ריכזנו תובנות שהבינה המלאכותית של מאצ׳ הוציאה במיוחד עבורך על בסיס הקו׳׳ח שלך והמענה על שאלון העדפה.</p>
+                    <p>ניתחנו את הניסיון שצברת, הכיוון שבחרת והיכולות שלך – ותרגמנו את זה לתובנות ברורות ושימושיות: מה החוזקות שלך, מה כדאי להדגיש בראיון עבודה, ואיך אפשר לחדד את קורות החיים או לעשות צעד נכון קדימה בקריירה.</p>
+                  </>
+                }
+              />
             </div>
             {loading ? (
               <div className="text-center py-8">
