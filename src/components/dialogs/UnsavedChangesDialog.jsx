@@ -34,7 +34,7 @@ export function UnsavedChangesDialog({ open, onOpenChange, onConfirm, onCancel }
                     {/* Title */}
                     <AlertDialogHeader className="space-y-3 mb-6 w-full px-2">
                         <AlertDialogTitle className="text-2xl font-bold text-[#0E1B4D] text-center" style={{ fontFamily: 'Rubik, sans-serif' }}>
-                            האם ברצונך לסיים?
+                            ?האם ברצונך לסיים
                         </AlertDialogTitle>
                         <AlertDialogDescription className="text-lg text-[#0E1B4D] text-center font-normal">
                            פרופיל מלא מביא מועמדים איכותיים ומעלה את סיכויי ההשמה

@@ -228,7 +228,7 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
                 : 'bg-[#1e88e5] text-white hover:bg-[#1565c0]'
                 }`}
             >
-              {localData.is_phone_verified ? 'אומת ✓' : 'שליחה מחדש'}
+              {localData.is_phone_verified ? 'אומת ✓' : 'שליחת קוד'}
             </Button>
           </div>
           {!localData.is_phone_verified && (
@@ -236,7 +236,7 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
               onClick={() => setIsVerificationOpen(true)}
               className="text-xs text-[#1e88e5] font-medium cursor-pointer mt-2 text-right w-full hover:underline mr-4"
             >
-              לא קיבלתי שליחה מחדש
+              לא קיבלתי שליחת קוד
             </p>
           )}
         </div>

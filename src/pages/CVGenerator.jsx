@@ -636,7 +636,7 @@ export default function CVGenerator() {
                 : (showSkipDisclaimer ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700 hover:border-red-300' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700 hover:border-gray-400')
                 }`}
             >
-              {uploadSuccess ? "להמשך" : (showSkipDisclaimer ? "להמשך" : "דילוג על השלב הזה")}
+              {uploadSuccess ? "המשך" : (showSkipDisclaimer ? "המשך" : "דילוג על השלב הזה")}
               <ArrowLeft className="w-5 h-5 mr-2" />
             </Button>
           ) : (step < STEPS.length + 1 && (

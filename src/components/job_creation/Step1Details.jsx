@@ -36,7 +36,7 @@ export default function Step1Details({ jobData, setJobData }) {
     { value: "full_time", label: "מלאה" },
     { value: "part_time", label: "חלקית" },
     { value: "shifts", label: "משמרות" },
-    { value: "flexible", label: "גמיש/גמישה" }
+    { value: "flexible", label: "גמיש/ה" }
   ];
   const categoryOptions = Array.isArray(jobCategoryList)
     ? jobCategoryList.filter(Boolean).filter((category, index, arr) => arr.indexOf(category) === index)

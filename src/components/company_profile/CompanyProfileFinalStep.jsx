@@ -123,7 +123,7 @@ export default function CompanyProfileFinalStep({ companyData, setCompanyData, .
                 {/* Titles (Smaller Text/Margin) */}
                 <div className="space-y-1">
                     <h1 className="text-2xl font-bold text-[#000080]">השלם את הפרופיל שלך</h1>
-                    <p className="text-black text-base font-medium">הפרופיל המלא משפר את סיכויי ההשמה</p>
+                    <p className="text-black text-base font-medium">הפרופיל מלא משפר את סיכויי ההשמה</p>
                 </div>
 
                 {/* Social Icons & Input (Tighter Gap) */}
