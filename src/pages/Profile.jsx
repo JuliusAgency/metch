@@ -33,6 +33,7 @@ export default function Profile() {
   const [isCareerStageModalOpen, setIsCareerStageModalOpen] = useState(false);
   const [statusModalStep, setStatusModalStep] = useState(1);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -111,8 +112,17 @@ export default function Profile() {
   const processFile = async (file) => {
     if (!file) return;
 
+    console.log("[Profile] processFile started", { fileName: file?.name, fileSize: file?.size });
     setLoading(true);
     try {
+      // Ensure we have user email
+      const currentUser = user || await UserEntity.me();
+      const userEmail = currentUser?.email;
+
+      if (!userEmail) {
+        throw new Error("מזהה משתמש חסר. אנא נסה לרענן את הדף.");
+      }
+
       // 1. Upload file
       // Sanitize filename to avoid "Invalid key" errors with special characters
       const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -123,14 +133,15 @@ export default function Profile() {
       });
 
       const resumeUrl = publicUrl || file_url;
+      console.log("[Profile] File uploaded successfully:", resumeUrl);
 
       // 2. Update User entity
       await UserEntity.updateMyUserData({ resume_url: resumeUrl });
 
       // 3. Update CV entity
-      const existingCvs = await CV.filter({ user_email: user.email });
+      const existingCvs = await CV.filter({ user_email: userEmail });
       const cvMetadata = {
-        user_email: user.email,
+        user_email: userEmail,
         file_name: file.name,
         file_size_kb: String(Math.round(file.size / 1024)),
         last_modified: new Date().toISOString(),
@@ -182,11 +193,19 @@ export default function Profile() {
   const handleDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!isDragging) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    setIsDragging(false);
     const file = e.dataTransfer.files[0];
     if (file) {
       processFile(file);
@@ -237,10 +256,8 @@ export default function Profile() {
   const NoCvView = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div
-        className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-gray-50 transition-colors flex flex-col items-center justify-center min-h-[200px]"
+        className={`border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-gray-50 transition-colors flex flex-col items-center justify-center min-h-[200px]`}
         onClick={() => fileInputRef.current?.click()}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
       >
         <UploadCloud className="mx-auto h-12 w-12 text-gray-400 mb-4" />
         <h3 className="text-lg font-medium text-gray-900">העלאת קורות חיים</h3>
@@ -315,7 +332,7 @@ export default function Profile() {
           <div className="w-px h-4 bg-gray-300"></div>
 
           <Link
-            to={createPageUrl('CVGenerator')}
+            to={createPageUrl('CVGenerator?step=0')}
             className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
           >
             {(cvData.personal_details && Object.keys(cvData.personal_details).length > 0) ? (
@@ -385,8 +402,22 @@ export default function Profile() {
             {/* CV Section */}
             {(contextUser?.user_type === 'job_seeker' || !contextUser?.user_type) && (
               <>
-                <div className="mb-8">
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`relative rounded-2xl transition-all duration-300 ${isDragging ? 'ring-4 ring-blue-400 ring-offset-4 bg-blue-50/50 scale-[1.02] z-50' : ''}`}
+                >
                   {cvData ? <FileManagementCard /> : <NoCvView />}
+
+                  {isDragging && (
+                    <div className="absolute inset-0 bg-blue-500/10 rounded-2xl flex items-center justify-center pointer-events-none border-2 border-blue-500 border-dashed">
+                      <div className="bg-white px-6 py-3 rounded-full shadow-lg flex items-center gap-3">
+                        <UploadCloud className="w-6 h-6 text-blue-500 animate-bounce" />
+                        <span className="font-bold text-blue-600">שחרר קובץ לעדכון מהיר</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
@@ -522,6 +553,6 @@ export default function Profile() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </div >
   );
 }

@@ -138,13 +138,13 @@ export default function PreferenceQuestionnaire() {
       const isOnboarding = searchParams.get('onboarding') === 'true';
 
       if (returnTo) {
-        navigate(returnTo);
+        navigate(returnTo, { replace: true });
       } else if (isOnboarding) {
         // Force onboarding flow (Career Stage -> Guide) explicitly only during real onboarding
-        navigate(createPageUrl('Dashboard?onboarding=complete'));
+        navigate(createPageUrl('Dashboard?onboarding=complete'), { replace: true });
       } else {
         // Just go to dashboard normally
-        navigate(createPageUrl('Dashboard'));
+        navigate(createPageUrl('Dashboard'), { replace: true });
       }
     } catch (error) {
       console.error("Failed to save preferences:", error);
@@ -165,7 +165,15 @@ export default function PreferenceQuestionnaire() {
           if (step > 1) {
             handleBack();
           } else {
-            navigate(-1);
+            const backTo = searchParams.get('backTo');
+            const returnTo = searchParams.get('returnTo');
+            if (backTo) {
+              navigate(backTo);
+            } else if (returnTo) {
+              navigate(returnTo);
+            } else {
+              navigate(-1);
+            }
           }
         }}
         className="absolute top-6 right-6 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors z-[60] shadow-sm"

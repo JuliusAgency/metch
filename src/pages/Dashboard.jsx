@@ -118,6 +118,7 @@ const JobSeekerDashboard = ({ user }) => {
   const ITEMS_PER_PAGE = 10;
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
 
   // Check for onboarding triggers - MOVED AFTER GUARDS CHECK
   useEffect(() => {
@@ -130,12 +131,18 @@ const JobSeekerDashboard = ({ user }) => {
     const params = new URLSearchParams(location.search);
     const forceOnboarding = params.get('onboarding') === 'complete';
 
-    // 1. First priority: Career Stage
-    // Force show if redirected from Preference Questionnaire (forceOnboarding) 
-    // OR if data is missing AND user hasn't completed onboarding yet
+    // Cleanup the URL parameter after processing and set local state
+    if (forceOnboarding) {
+      setHasCompletedOnboardingFlow(true);
+      const newParams = new URLSearchParams(params);
+      newParams.delete('onboarding');
+      const newSearch = newParams.toString();
+      navigate(location.pathname + (newSearch ? `?${newSearch}` : ''), { replace: true });
+    }
+
     if (forceOnboarding || (!user.career_stage && !user.is_onboarding_completed)) {
       setShowCareerModal(true);
-      return; // Wait for career stage before showing guide
+      return;
     }
 
     // We check hasCV (state) and profile specialization.
@@ -152,6 +159,26 @@ const JobSeekerDashboard = ({ user }) => {
       setShowGuide(true);
     }
   }, [user, loading, hasCV, hasCompletedOnboardingFlow]);
+
+  // Prevent back-navigation to onboarding from Dashboard
+  useEffect(() => {
+    if (hasCompletedOnboardingFlow) {
+      // Create a buffer in history
+      window.history.pushState(null, "", window.location.pathname);
+
+      const handlePopState = (event) => {
+        // Trap them on the dashboard
+        window.history.pushState(null, "", window.location.pathname);
+        toast({
+          title: "תהליך הרישום הושלם!",
+          description: "ברוכים הבאים למחלקת המועמדים. כעת ניתן להתחיל בחיפוש משרות.",
+        });
+      };
+
+      window.addEventListener("popstate", handlePopState);
+      return () => window.removeEventListener("popstate", handlePopState);
+    }
+  }, [hasCompletedOnboardingFlow, location.pathname, toast]);
 
   const handleGuideComplete = () => {
     setShowGuide(false);

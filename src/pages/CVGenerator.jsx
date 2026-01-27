@@ -413,12 +413,15 @@ export default function CVGenerator() {
         if (choice === 'upload' && step === 1) {
           const isOnboarding = searchParams.get('onboarding') === 'true';
           const returnUrl = `/CVGenerator?choice=upload&step=-1${isOnboarding ? '&onboarding=true' : ''}`;
-          const target = `PreferenceQuestionnaire?onboarding=${isOnboarding}&returnTo=${encodeURIComponent(returnUrl)}`;
+          const backToUrl = `/CVGenerator?choice=upload&step=1${isOnboarding ? '&onboarding=true' : ''}`;
+          const target = `PreferenceQuestionnaire?onboarding=${isOnboarding}&returnTo=${encodeURIComponent(returnUrl)}&backTo=${encodeURIComponent(backToUrl)}`;
           navigate(createPageUrl(target));
           return;
         }
 
         setStep((prev) => prev + 1);
+        const isOnboarding = searchParams.get('onboarding') === 'true';
+        navigate(`/CVGenerator?choice=${choice}&step=${step + 1}${isOnboarding ? '&onboarding=true' : ''}`);
       }
 
     } catch (error) {
@@ -469,12 +472,6 @@ export default function CVGenerator() {
       if (step === -1 && choice === 'upload') {
         const isOnboarding = searchParams.get('onboarding') === 'true';
 
-        // Correct navigation for existing users
-        if (!isOnboarding && user?.is_onboarding_completed) {
-          navigate(createPageUrl('Profile'));
-          return;
-        }
-
         const returnUrl = `/CVGenerator?choice=upload&step=-1${isOnboarding ? '&onboarding=true' : ''}`;
         const target = `PreferenceQuestionnaire?step=2&onboarding=${isOnboarding}&returnTo=${encodeURIComponent(returnUrl)}`;
         navigate(createPageUrl(target), { replace: true });
@@ -505,16 +502,21 @@ export default function CVGenerator() {
     setStep(1);
   };
 
-  const handleUploadComplete = () => {
+  const handleUploadComplete = (isSkip = false) => {
     // Clear draft
     if (user?.email) {
       localStorage.removeItem(`cv_draft_${user.email}`);
     }
     // After upload, user is done with this flow, navigate to profile
     // NEW FLOW: Personal -> Pref -> Upload -> JobSeekerProfileCompletion -> Career Stage -> Dashboard
+    // BYPASS: If skip, go straight to Dashboard
     const isOnboarding = searchParams.get('onboarding') === 'true' || localStorage.getItem('onboarding_active') === 'true';
-    if (isOnboarding && !user?.is_onboarding_completed) {
-      navigate('/JobSeekerProfileCompletion?onboarding=true');
+    if (isOnboarding) {
+      if (isSkip) {
+        navigate('/Dashboard?onboarding=complete', { replace: true });
+      } else {
+        navigate('/JobSeekerProfileCompletion?onboarding=true', { replace: true });
+      }
     } else {
       navigate('/Profile');
     }
@@ -524,7 +526,7 @@ export default function CVGenerator() {
     if (!showSkipDisclaimer) {
       setShowSkipDisclaimer(true);
     } else {
-      handleUploadComplete();
+      handleUploadComplete(true);
     }
   };
 
@@ -572,7 +574,11 @@ export default function CVGenerator() {
   // Handle choice selection from Modal
   const handleChoiceSelect = (selectedChoice) => {
     setChoice(selectedChoice);
-    // Mimic handleNext logic:
+    const isOnboarding = searchParams.get('onboarding') === 'true';
+
+    // Navigate to create a history entry for Step 1
+    navigate(`/CVGenerator?choice=${selectedChoice}&step=1${isOnboarding ? '&onboarding=true' : ''}`);
+
     setStep(1);
   };
 
