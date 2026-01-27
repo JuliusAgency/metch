@@ -140,6 +140,8 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
                   'פרסום למשך 30 ימים',
                   'אפשרות לערוך את המשרה בכל רגע',
                   'ניתוח ומסקנות מועמד בעזרת AI',
+                  'דשבורד נתונים מלא ',
+                  'סינון חכם מבוסס AI',
                   'כולל שאלון סינון',
                   'צ׳אט ישיר עם מועמדים'
                 ].map((feature, idx) => (

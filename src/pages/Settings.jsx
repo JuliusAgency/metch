@@ -688,7 +688,7 @@ export default function Settings() {
 
                   {/* Section 2: Recruiter Details */}
                   <div className="space-y-4 pt-4">
-                    <h3 className="text-lg font-bold text-gray-900 border-b pb-2">ניהול פרטי איש גיוס</h3>
+                    <h3 className="text-lg font-bold text-gray-900 border-b pb-2">ניהול פרטי מגייס</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-1">
                         <label className="text-sm font-medium text-gray-700">שם איש גיוס</label>

@@ -11,6 +11,7 @@ import Question from "@/components/questionnaire/Question";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { createPageUrl } from "@/utils";
 import ApplicationSuccessModal from "@/components/jobs/ApplicationSuccessModal";
+import InfoPopup from "@/components/ui/info-popup";
 
 export default function AnswerQuestionnaire() {
     useRequireUserType(); // Ensure user has selected a user type
@@ -123,7 +124,17 @@ export default function AnswerQuestionnaire() {
                     <div className="max-w-4xl mx-auto w-full">
                         <div className="text-center mb-6">
                             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">שאלון סינון</h1>
-                            <p className="text-gray-600 mt-0.5 text-sm md:text-base opacity-80">עבור המשרה: {job.title}</p>
+                            <p className="text-gray-600 mt-0.5 text-sm md:text-base opacity-80 mb-2">עבור המשרה: {job.title}</p>
+                            <InfoPopup
+                                triggerText="מה זה?"
+                                title="מה זה?"
+                                content={
+                                    <>
+                                        <p className="mb-2">השאלון יכול לעזור למעסיק לקבל פרטים אודותיך שלא כתובים בקורות החיים.</p>
+                                        <p>יש לזכור, השאלון אינו מבחן אלא רק כלי עזר לקבלת מידע.</p>
+                                    </>
+                                }
+                            />
                         </div>
 
                         <form onSubmit={handleSubmit} className="w-full">

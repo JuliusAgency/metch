@@ -20,6 +20,7 @@ import Lottie from 'lottie-react';
 import confettiAnimation from '../../Confetti banner.json';
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
 import CVPreview from '@/components/cv_generator/CVPreview';
+import InfoPopup from '@/components/ui/info-popup';
 
 export default function Profile() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -462,6 +463,13 @@ export default function Profile() {
         <DialogContent className="sm:max-w-md text-center bg-white" dir="rtl">
           <DialogHeader>
             <DialogTitle className="text-3xl font-bold text-center mb-6 text-slate-900">עדכון סטטוס</DialogTitle>
+            <div className="mb-6 flex justify-center">
+              <InfoPopup
+                triggerText="הסבר"
+                title="הסבר"
+                content="הסטטוס התעסוקתי שלנו נועד להשתנות מדי פעם - כדי שנוכל לעדכן אתכם במשרות שמתאימות עבורכם רק מתי שאתם צריכים - חשוב שתעדכנו אותנו בסטטוס שלכם."
+              />
+            </div>
           </DialogHeader>
 
           <div className="flex flex-col gap-4 py-2 px-4">

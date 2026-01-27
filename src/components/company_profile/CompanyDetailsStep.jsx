@@ -83,7 +83,7 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                 <div className="space-y-2">
                     <h1 className="text-3xl font-bold text-[#001a6f]">מתחילים</h1>
                     <p className="text-gray-600 text-sm">כמה פרטים עליכם ועל החברה - מבטיחים שזה לא יהיה מתיש</p>
-                    <h2 className="text-xl font-bold text-black pt-4">פרטי איש גיוס</h2>
+                    <h2 className="text-xl font-bold text-black pt-4">פרטי מגייס</h2>
                 </div>
 
                 {/* Recruiter Details - 3 Columns Layout */}
@@ -117,14 +117,14 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                                 : 'bg-[#1e88e5] text-white hover:bg-[#1565c0]'
                                 }`}
                         >
-                            {companyData.is_phone_verified ? 'אומת ✓' : 'שליחה מחדש'}
+                            {companyData.is_phone_verified ? 'אומת ✓' : 'שליחת קוד'}
                         </Button>
                         {!companyData.is_phone_verified && (
                             <p
                                 onClick={() => setIsVerificationOpen(true)}
                                 className="text-xs text-[#1e88e5] font-medium cursor-pointer mt-1 text-right w-full hover:underline absolute top-full right-0"
                             >
-                                לא קיבלתי שליחה מחדש
+                                לא קיבלתי שליחת קוד
                             </p>
                         )}
                     </div>

@@ -82,7 +82,7 @@ export default function Step3Company({ jobData, setJobData }) {
     <div className="max-w-5xl mx-auto py-0" dir="rtl">
       <div className="text-center mb-4">
         <h1 className="text-2xl font-bold text-[#001a6e]">חברה מפנקת? חשוב שידעו!</h1>
-        <p className="text-gray-500 mt-1 text-sm">זה הזמןן לבחור את היתרונות של המשרה שלכם</p>
+        <p className="text-gray-500 mt-1 text-sm">זה הזמן לבחור את היתרונות של המשרה שלכם</p>
       </div>
 
       <div className="space-y-6">

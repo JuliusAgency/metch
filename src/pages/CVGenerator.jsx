@@ -2,11 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { CV } from '@/api/entities';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { User } from '@/api/entities';
-import StepIndicator from '@/components/ui/StepIndicator';
+import CVStepper from '@/components/cv_generator/CVStepper';
 import Step1PersonalDetails from '@/components/cv_generator/Step1_PersonalDetails';
 import Step2WorkExperience from '@/components/cv_generator/Step2_WorkExperience';
 import Step3Education from '@/components/cv_generator/Step3_Education';
 import Step4Certifications from '@/components/cv_generator/Step4_Certifications';
+
 
 import Step6Summary from '@/components/cv_generator/Step6_Summary';
 import Step7Preview from '@/components/cv_generator/Step7_Preview';
@@ -611,9 +612,11 @@ export default function CVGenerator() {
     <div className={`min-h-screen ${choice === 'upload' ? 'p-0 pt-4' : 'p-4 md:p-8'}`} dir="rtl">
       <div className={`max-w-6xl mx-auto rounded-[2rem] p-8 md:p-14 transition-transform origin-top ${choice === 'upload' ? 'bg-white shadow-none scale-90' : 'bg-white shadow-none'}`}>
         {step !== 0 && (
-          <StepIndicator
-            totalSteps={6}
-            currentStep={step === -1 ? 5 : (step > 6 ? 6 : step)}
+          <CVStepper
+            currentStep={step - 1}
+            steps={STEPS}
+            onStepSelect={(index) => handleStepSelect(index)}
+            disabledSteps={disabledStepIndexes.map(idx => idx - 1)}
           />
         )}
 
@@ -639,7 +642,7 @@ export default function CVGenerator() {
                 : (showSkipDisclaimer ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700 hover:border-red-300' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700 hover:border-gray-400')
                 }`}
             >
-              {uploadSuccess ? "להמשך" : (showSkipDisclaimer ? "להמשך" : "דילוג על השלב הזה")}
+              {uploadSuccess ? "המשך" : (showSkipDisclaimer ? "המשך" : "דילוג על השלב הזה")}
               <ArrowLeft className="w-5 h-5 mr-2" />
             </Button>
           ) : (step < STEPS.length + 1 && (
