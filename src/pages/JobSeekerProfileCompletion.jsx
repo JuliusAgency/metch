@@ -135,6 +135,8 @@ export default function JobSeekerProfileCompletion() {
         setLoading(true);
         try {
             await saveSocials();
+            // Mark onboarding as completed
+            await updateProfile({ is_onboarding_completed: true });
             setShowSuccess(true);
         } catch (error) {
             console.error("Error saving profile:", error);

@@ -129,8 +129,7 @@ export default function PreferenceQuestionnaire() {
         preferred_job_types: dbJobTypesArray,
         availability: dbAvailability,
         character_traits: preferences.traits,
-        specialization: preferences.field,
-        is_onboarding_completed: true
+        specialization: preferences.field
       };
 
       await updateProfile(updateData);
@@ -145,8 +144,8 @@ export default function PreferenceQuestionnaire() {
         // Special flow for "I have CV" onboarding: go back to CVGenerator for upload step
         navigate(createPageUrl('CVGenerator?choice=upload&step=-1&onboarding=true'), { replace: true });
       } else if (isOnboarding) {
-        // Force onboarding flow (Career Stage -> Guide) explicitly only during real onboarding
-        navigate(createPageUrl('Dashboard?onboarding=complete'), { replace: true });
+        // Final onboarding step
+        navigate(createPageUrl('JobSeekerProfileCompletion?onboarding=true'), { replace: true });
       } else {
         // Just go to dashboard normally
         navigate(createPageUrl('Dashboard'), { replace: true });

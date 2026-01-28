@@ -311,6 +311,11 @@ export default function CVGenerator() {
   const { toast } = useToast();
 
   const handleNext = async () => {
+    if (step === -1) {
+      handleUploadComplete(false);
+      return;
+    }
+
     if (step === 0) {
       if (choice === 'upload') {
         // Go to Personal Details step first
@@ -640,7 +645,7 @@ export default function CVGenerator() {
           {step === -1 ? (
             <Button
               variant={uploadSuccess ? "default" : "outline"}
-              onClick={uploadSuccess ? handleUploadComplete : handleSkip}
+              onClick={uploadSuccess ? () => handleUploadComplete(false) : handleSkip}
               className={`px-8 py-3 rounded-full font-semibold text-lg h-auto border-2 transition-all ${uploadSuccess
                 ? 'bg-[#2589D8] hover:bg-[#1e7bc4] text-white shadow-lg hover:shadow-xl border-transparent'
                 : (showSkipDisclaimer ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700 hover:border-red-300' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700 hover:border-gray-400')
