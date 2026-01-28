@@ -22,6 +22,7 @@ import locationsList from '../../../locations.json';
 // Option constants
 const JOB_TYPES = ["משמרות", "חלקית", "מלאה", "גמישה"];
 const AVAILABILITIES = ["חודש עד חודשיים", "שבוע עד שבועיים", "מיידית", "גמישה"];
+const FIELDS = ["מכירות", "שירות לקוחות", "תמיכה טכנית", "ניהול משרד"];
 
 const PillButton = ({ label, isSelected, onClick }) => (
     <button
@@ -63,6 +64,21 @@ export default function Step1({
 
     return (
         <div className="flex flex-col items-center text-center space-y-10 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+            {/* Field Selection Section - NEW */}
+            <div className="w-full space-y-6">
+                <h2 className="text-3xl font-bold text-gray-900">באיזה תחום?</h2>
+                <div className="flex flex-wrap justify-center gap-4">
+                    {FIELDS.map(field => (
+                        <PillButton
+                            key={field}
+                            label={field}
+                            isSelected={preferences.field === field}
+                            onClick={() => handleSelection('field', field)}
+                        />
+                    ))}
+                </div>
+            </div>
 
             {/* Dropdowns Section */}
             <div className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-4">

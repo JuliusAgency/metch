@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { createPageUrl } from "@/utils";
 import uploadPlaceholder from "@/assets/upload_profile_placeholder.png";
 import { ProfileUpdatedDialog } from "@/components/dialogs/ProfileUpdatedDialog";
+import StepIndicator from "@/components/ui/StepIndicator";
 
 const XIcon = ({ size = 24, ...props }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -165,15 +166,7 @@ export default function JobSeekerProfileCompletion() {
                 className="bg-white rounded-[30px] w-full max-w-xl p-6 md:p-8 text-center"
             >
                 {/* Header */}
-                <div className="flex justify-center mb-12">
-                    <div className="flex gap-2">
-                        <div className="w-12 h-1 bg-[#86D2A4] rounded-full"></div>
-                        <div className="w-12 h-1 bg-[#86D2A4] rounded-full"></div>
-                        <div className="w-12 h-1 bg-[#86D2A4] rounded-full"></div>
-                        <div className="w-12 h-1 bg-[#86D2A4] rounded-full"></div>
-                        <div className="w-12 h-1 bg-[#86D2A4] rounded-full"></div>
-                    </div>
-                </div>
+                <StepIndicator totalSteps={5} currentStep={5} />
 
                 <h1 className="text-2xl font-bold text-[#1e293b] mb-1">השלם את הפרופיל שלך</h1>
                 <p className="text-gray-500 mb-6 text-sm">פרופיל מלא מעלה את סיכוי ההשמה</p>

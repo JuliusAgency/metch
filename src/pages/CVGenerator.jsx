@@ -22,6 +22,7 @@ import cvCreateIcon from '@/assets/cv_create_icon.png';
 import cvExistsIcon from '@/assets/cv_exists_icon.png';
 import CVChoiceModal from '@/components/CVChoiceModal';
 import globeGrid from '@/assets/globe_grid.png';
+import StepIndicator from '@/components/ui/StepIndicator';
 
 const STEPS = ["פרטים אישיים", "ניסיון תעסוקתי", "השכלה", "הסמכות", "תמצית", "תצוגה מקדימה"];
 
@@ -413,9 +414,7 @@ export default function CVGenerator() {
         // go to Preference Questionnaire instead of Step 2
         if (choice === 'upload' && step === 1) {
           const isOnboarding = searchParams.get('onboarding') === 'true';
-          const returnUrl = `/CVGenerator?choice=upload&step=-1${isOnboarding ? '&onboarding=true' : ''}`;
-          const backToUrl = `/CVGenerator?choice=upload&step=1${isOnboarding ? '&onboarding=true' : ''}`;
-          const target = `PreferenceQuestionnaire?onboarding=${isOnboarding}&returnTo=${encodeURIComponent(returnUrl)}&backTo=${encodeURIComponent(backToUrl)}`;
+          const target = `PreferenceQuestionnaire?onboarding=${isOnboarding}&choice=upload`;
           navigate(createPageUrl(target));
           return;
         }
@@ -472,9 +471,7 @@ export default function CVGenerator() {
     } else if (step === 1 || step === -1 || step === 0) {
       if (step === -1 && choice === 'upload') {
         const isOnboarding = searchParams.get('onboarding') === 'true';
-
-        const returnUrl = `/CVGenerator?choice=upload&step=-1${isOnboarding ? '&onboarding=true' : ''}`;
-        const target = `PreferenceQuestionnaire?step=2&onboarding=${isOnboarding}&returnTo=${encodeURIComponent(returnUrl)}`;
+        const target = `PreferenceQuestionnaire?step=2&onboarding=${isOnboarding}&choice=upload`;
         navigate(createPageUrl(target), { replace: true });
         return;
       }
@@ -611,12 +608,19 @@ export default function CVGenerator() {
   return (
     <div className={`min-h-screen ${choice === 'upload' ? 'p-0 pt-4' : 'p-4 md:p-8'}`} dir="rtl">
       <div className={`max-w-6xl mx-auto rounded-[2rem] p-8 md:p-14 transition-transform origin-top ${choice === 'upload' ? 'bg-white shadow-none scale-90' : 'bg-white shadow-none'}`}>
-        {step !== 0 && (
+        {step !== 0 && choice === 'create' && (
           <CVStepper
             currentStep={step - 1}
             steps={STEPS}
             onStepSelect={(index) => handleStepSelect(index)}
             disabledSteps={disabledStepIndexes.map(idx => idx - 1)}
+          />
+        )}
+
+        {step !== 0 && choice === 'upload' && (
+          <StepIndicator
+            totalSteps={5}
+            currentStep={step === 1 ? 1 : (step === -1 ? 4 : 0)}
           />
         )}
 

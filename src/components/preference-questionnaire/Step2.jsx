@@ -3,16 +3,15 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 
 const TRAITS = [
-    "מוטיבציה",
+    "התמדה",
+    "ראש גדול/יוזמה אישית",
     "אחריות אישית",
-    "ראש גדול",
-    "תקשורת בין-אישית מעולה",
-    "עבודת צוות",
-    "יכולת למידה עצמית",
+    "דייקנות והקפדה",
+    "אדיבות ושירותיות",
+    "סדר וארגון",
     "גמישות",
-    "יצירתיות",
-    "חשיבה ביקורתית",
-    "ניהול זמן"
+    "תקשורת בין-אישית מעולה",
+    "יכולת למידה מהירה"
 ];
 
 const PillButton = ({ label, isSelected, onClick, disabled, className }) => (
@@ -61,7 +60,7 @@ export default function Step2({ preferences, setPreferences, onSave, onBack, sav
                 <p className="text-gray-500 text-sm">מידע זה פנימי על מנת שנמצא את המאץ' המושלם בלי לרמות</p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-3 md:gap-4 w-full max-w-xl mx-auto px-4">
+            <div className="flex flex-wrap justify-center gap-3 md:gap-x-4 md:gap-y-6 w-full max-w-2xl mx-auto px-4">
                 {TRAITS.map((trait, index) => {
                     const isSelected = selectedTraits.includes(trait);
                     const isMaxSelected = selectedTraits.length >= 3;

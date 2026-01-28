@@ -137,9 +137,13 @@ export default function PreferenceQuestionnaire() {
 
       const returnTo = searchParams.get('returnTo');
       const isOnboarding = searchParams.get('onboarding') === 'true';
+      const choice = searchParams.get('choice');
 
       if (returnTo) {
         navigate(returnTo, { replace: true });
+      } else if (isOnboarding && choice === 'upload' && step === 2) {
+        // Special flow for "I have CV" onboarding: go back to CVGenerator for upload step
+        navigate(createPageUrl('CVGenerator?choice=upload&step=-1&onboarding=true'), { replace: true });
       } else if (isOnboarding) {
         // Force onboarding flow (Career Stage -> Guide) explicitly only during real onboarding
         navigate(createPageUrl('Dashboard?onboarding=complete'), { replace: true });
@@ -168,8 +172,14 @@ export default function PreferenceQuestionnaire() {
           } else {
             const backTo = searchParams.get('backTo');
             const returnTo = searchParams.get('returnTo');
+            const choice = searchParams.get('choice');
+            const isOnboarding = searchParams.get('onboarding') === 'true';
+
             if (backTo) {
               navigate(backTo);
+            } else if (isOnboarding && choice === 'upload') {
+              // Go back to CVGenerator Step 1
+              navigate(createPageUrl('CVGenerator?choice=upload&step=1&onboarding=true'));
             } else if (returnTo) {
               navigate(returnTo);
             } else {
@@ -190,20 +200,10 @@ export default function PreferenceQuestionnaire() {
       >
         <div className="p-8 md:p-12 flex flex-col items-center w-full max-w-4xl mx-auto">
 
-          <div className="w-full text-center space-y-2 mb-6">
-            <h1 className="text-2xl font-bold text-[#001a6e]">שאלון העדפה</h1>
-
-            {/* Info Link - Preference Questionnaire */}
-            <div className="flex justify-center">
-              <InfoPopup
-                triggerText="מה זה שאלון העדפה"
-                title="מה זה שאלון העדפה?"
-                content="שאלון העדפה עוזר לנו להבין את ההעדפות שלכם לגבי עבודה באופן כללי, למשל באיזה איזור תרצו לעבוד או מתי תהיו זמינים להתחיל. מענה על שאלון זה יעזור לנו להתאים עבורכם משרות שתואמות את העדפותיכם האישיות."
-              />
-            </div>
-          </div>
-
-          <StepIndicator totalSteps={2} currentStep={step} />
+          <StepIndicator
+            totalSteps={searchParams.get('choice') === 'upload' ? 5 : 2}
+            currentStep={searchParams.get('choice') === 'upload' ? (step === 1 ? 2 : 3) : step}
+          />
 
           {step === 1 && (
             <Step1

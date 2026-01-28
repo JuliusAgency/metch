@@ -51,13 +51,8 @@ export default function Profile() {
         // Only fetch CVs for job seekers
         if (contextUser?.user_type === 'job_seeker' || !contextUser?.user_type) {
           const cvs = await CV.filter({ user_email: userData.email });
-          if (cvs.length > 0) {
-            setCvData({
-              ...cvs[0],
-              file_name: cvs[0].file_name || 'אלון כהן...מעבדה ux ui סביון קורץ 2025.pdf',
-              last_modified: cvs[0].last_modified || '2025-05-30T11:30:00Z',
-              file_size_kb: cvs[0].file_size_kb || 867,
-            });
+          if (cvs.length > 0 && cvs[0].file_name) {
+            setCvData(cvs[0]);
           }
         }
       } catch (error) {
@@ -255,24 +250,36 @@ export default function Profile() {
   };
 
   const NoCvView = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl mx-auto">
+      {/* Upload Option */}
       <div
-        className={`border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-gray-50 transition-colors flex flex-col items-center justify-center min-h-[200px]`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={`border-2 border-dashed rounded-3xl p-6 md:p-8 text-center cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[240px] shadow-sm
+          ${isDragging ? 'border-blue-500 bg-blue-50/50 scale-[1.02] shadow-md' : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-gray-50'}`}
         onClick={() => fileInputRef.current?.click()}
       >
-        <UploadCloud className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900">העלאת קורות חיים</h3>
-        <p className="mt-1 text-sm text-gray-500">גרור קובץ או לחץ כדי לבחור (PDF, DOCX)</p>
+        <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+          <UploadCloud className="h-7 w-7 text-blue-500" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900 mb-1">העלאת קורות חיים</h3>
+        <p className="text-sm text-gray-500 max-w-[180px]">גרור קובץ לכאן או לחץ לבחירה</p>
+        <p className="mt-3 text-[11px] text-gray-400 font-medium bg-gray-100 px-3 py-0.5 rounded-full">PDF, DOCX עד 5MB</p>
       </div>
 
-      <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center flex flex-col items-center justify-center min-h-[200px] hover:border-blue-500 hover:bg-gray-50 transition-colors">
-        <FileText className="mx-auto h-12 w-12 text-blue-500 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900">אין לך קורות חיים?</h3>
-        <p className="mt-1 text-sm text-gray-500 mb-4">צור קורות חיים מקצועיים בקלות</p>
-        <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white rounded-full">
-          <Link to={`${createPageUrl('CVGenerator')}?choice=create`}>
-            צור קורות חיים
-          </Link>
+      {/* AI Create Option */}
+      <div
+        className="border-2 border-dashed border-gray-200 bg-white rounded-3xl p-6 md:p-8 text-center flex flex-col items-center justify-center min-h-[240px] hover:border-blue-300 hover:bg-gray-50 transition-all duration-300 shadow-sm cursor-pointer group"
+        onClick={() => navigate(createPageUrl('CVGenerator') + '?choice=create')}
+      >
+        <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <FileText className="h-7 w-7 text-blue-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900 mb-1">אין לך קורות חיים?</h3>
+        <p className="text-sm text-gray-500 max-w-[180px] mb-4">צור קורות חיים מקצועיים בקלות ב-AI</p>
+        <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2 h-auto text-base font-bold shadow-lg shadow-blue-100">
+          צור ב-AI
         </Button>
       </div>
     </div>
