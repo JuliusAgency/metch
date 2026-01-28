@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/api/supabaseClient";
 import { UserProfile } from "@/api/entities";
 import { Notification } from "@/api/entities";
 import { CandidateView } from "@/api/entities";
@@ -37,7 +38,7 @@ const ApplicationsIcon = ({ className }) => <img src={iconApplications} classNam
 const ActiveJobsIcon = ({ className }) => <img src={iconActiveJobs} className={`${className} object-contain`} alt="Active Jobs" />;
 
 // Allowed notification types for Employer users
-const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message'];
+const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message', 'job_view'];
 
 const EmployerDashboard = ({ user }) => {
   const [viewedCandidates, setViewedCandidates] = useState([]);
@@ -104,11 +105,23 @@ const EmployerDashboard = ({ user }) => {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [notificationsData, viewedCandidatesData, dashboardData] = await Promise.all([
-          Notification.filter({ is_read: false, user_email: user.email }, "-created_date", 5),
+        const [byUserId, byEmail, byCreatedBy, viewedCandidatesData, dashboardData] = await Promise.all([
+          Notification.filter({ user_id: user.id, is_read: 'false' }, "-created_date", 10),
+          Notification.filter({ email: user.email, is_read: 'false' }, "-created_date", 10),
+          Notification.filter({ created_by: user.id, is_read: 'false' }, "-created_date", 10),
           CandidateView.filter({ viewer_email: user.email }, "-created_date", 50),
           EmployerAnalytics.getDashboardData(user.email)
         ]);
+
+        // Merge and deduplicate notifications
+        const mergedNotifications = [...(byUserId || []), ...(byEmail || []), ...(byCreatedBy || [])]
+          .reduce((acc, current) => {
+            const x = acc.find(item => item.id === current.id);
+            if (!x) return acc.concat([current]);
+            return acc;
+          }, [])
+          .sort((a, b) => new Date(b.created_date || b.created_at) - new Date(a.created_date || a.created_at))
+          .slice(0, 5);
 
         // Fetch actual applicants instead of just recent job seekers
         // We'll get all jobs by this employer first (already done in getDashboardData, but we need the IDs here)
@@ -162,13 +175,33 @@ const EmployerDashboard = ({ user }) => {
         }
 
         // Filter notifications to only show allowed types for Employers
-        const filteredNotifications = notificationsData.filter(notif =>
+        const filteredNotifications = mergedNotifications.filter(notif =>
           EMPLOYER_ALLOWED_NOTIFICATION_TYPES.includes(notif.type)
         );
 
+        // Deduplicate message notifications - show only one per sender
+        const deduplicatedNotifications = [];
+        const seenMessageSenders = new Set();
+
+        for (const notif of filteredNotifications) {
+          if (notif.type === 'new_message') {
+            // Extract sender from message (assuming format: "הודעה חדשה מ-[שם]")
+            const senderMatch = notif.message?.match(/מ-(.+)$/);
+            const sender = senderMatch ? senderMatch[1] : notif.message;
+
+            if (!seenMessageSenders.has(sender)) {
+              seenMessageSenders.add(sender);
+              deduplicatedNotifications.push(notif);
+            }
+          } else {
+            // Keep all non-message notifications
+            deduplicatedNotifications.push(notif);
+          }
+        }
+
         setEmployerStats(dashboardData.stats);
         setEmployerActivity(dashboardData.recentActivity);
-        setNotifications(filteredNotifications);
+        setNotifications(deduplicatedNotifications);
         setViewedCandidates(viewedCandidatesData);
         setCandidates(applicantProfiles);
       } catch (error) {
@@ -183,7 +216,38 @@ const EmployerDashboard = ({ user }) => {
       }
     };
     loadData();
-  }, [user]);
+
+    // Set up Realtime subscription for Notifications to refresh dashboard list
+    let notificationSubscription = null;
+    if (user?.id || user?.email) {
+      notificationSubscription = supabase
+        .channel('dashboard:Notification')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'Notification'
+        }, (payload) => {
+          const newNotif = payload.new;
+          const oldNotif = payload.old;
+
+          // Check if it's relevant to this user using broad identifiers
+          const isRelevant =
+            (newNotif?.user_id === user.id || newNotif?.email === user.email || newNotif?.created_by === user.id) ||
+            (oldNotif?.user_id === user.id || oldNotif?.email === user.email || oldNotif?.created_by === user.id);
+
+          if (isRelevant) {
+            loadData(); // Re-fetch all data to keep stats and list in sync
+          }
+        })
+        .subscribe();
+    }
+
+    return () => {
+      if (notificationSubscription) {
+        supabase.removeChannel(notificationSubscription);
+      }
+    };
+  }, [user, navigate]);
 
   useEffect(() => {
     console.log('Candidates Data:', candidates);
@@ -369,7 +433,15 @@ const EmployerDashboard = ({ user }) => {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handleNextNotification} disabled={notifications.length <= 1}><ChevronRight className="w-6 h-6 text-blue-600" /></Button>
-                  <div className="text-center flex items-center gap-3 overflow-hidden">
+                  <div
+                    className="text-center flex items-center gap-3 overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => {
+                      const notif = notifications[currentNotificationIndex];
+                      if (notif) {
+                        navigate(createPageUrl("Notifications"), { state: { selectedNotificationId: notif.id } });
+                      }
+                    }}
+                  >
                     <p className="text-blue-800 font-semibold text-sm sm:text-base whitespace-nowrap">{notifications[currentNotificationIndex]?.message || "אין התראות חדשות"}</p>
                     {notifications.length > 1 && (<div className="hidden sm:flex gap-1.5">{notifications.map((_, index) => (<div key={index} className={`w-2.5 h-2.5 rounded-full ${index === currentNotificationIndex ? 'bg-blue-600' : 'bg-gray-300'}`} />))}</div>)}
                   </div>

@@ -16,7 +16,7 @@ import {
     Sparkles
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
-import { User as UserEntity, Message } from "@/api/entities";
+import { useUser } from "@/contexts/UserContext";
 
 const NavItem = ({ icon: Icon, text, to, isActive, isLast, badge }) => {
     const [isHovered, setIsHovered] = useState(false);
@@ -69,41 +69,10 @@ const NavItem = ({ icon: Icon, text, to, isActive, isLast, badge }) => {
 };
 
 export default function Navbar({ currentPageName, isJobSeeker }) {
-    const [unreadCount, setUnreadCount] = useState(0);
+    const { unreadCount, unreadMessagesCount } = useUser();
 
-    useEffect(() => {
-        const fetchUnread = async () => {
-            try {
-                const user = await UserEntity.me();
-                if (user) {
-                    // Fetch by email first (as IDs might be missing in some created messages)
-                    const messagesByEmail = await Message.filter({
-                        recipient_email: user.email
-                    }, "-created_date", 200);
+    console.log('[Navbar] unreadCount:', unreadCount, 'unreadMessagesCount:', unreadMessagesCount);
 
-                    // Fetch by ID as well to coverage all bases
-                    const messagesById = await Message.filter({
-                        recipient_id: user.id
-                    }, "-created_date", 200);
-
-                    // Combine and deduplicate by ID
-                    const allMessages = [...messagesByEmail, ...messagesById];
-                    const uniqueMessages = Array.from(new Map(allMessages.map(item => [item.id, item])).values());
-
-                    // Filter for unread in memory to avoid backend boolean parsing issues
-                    const unread = uniqueMessages.filter(m => m.is_read === false || m.is_read === "false" || m.is_read === 0);
-
-                    setUnreadCount(unread.length);
-                }
-            } catch (e) {
-                console.error("Error fetching unread count", e);
-            }
-        };
-
-        fetchUnread();
-        const interval = setInterval(fetchUnread, 5000);
-        return () => clearInterval(interval);
-    }, []);
 
     let navLinks = [];
 
@@ -119,9 +88,9 @@ export default function Navbar({ currentPageName, isJobSeeker }) {
             { page: "Insights", icon: Sparkles, text: "תובנות" },
             // 5. Notifications (Bell) - Added based on request tickbox, though strictly speaking layout had it? No, layout had it for Employer. Adding for Seeker as per icons request.
             // Wait, Layout.jsx didn't have Notifications for seeker. Prompt checklist asks for Bell -> Notifications. I will add it.
-            { page: "Notifications", icon: Bell, text: "התראות" },
+            { page: "Notifications", icon: Bell, text: "התראות", badge: unreadCount },
             // 6. Messages
-            { page: "MessagesSeeker", icon: MessageSquareText, text: "הודעות", badge: unreadCount },
+            { page: "MessagesSeeker", icon: MessageSquareText, text: "הודעות", badge: unreadMessagesCount },
             // 7. FAQ 
             { page: "FAQ", icon: HelpCircle, text: "שאלות נפוצות" },
             // 8. Contact
@@ -133,10 +102,10 @@ export default function Navbar({ currentPageName, isJobSeeker }) {
             { page: "Dashboard", icon: Home, text: "דף הבית" },
             { page: "JobManagement", icon: Briefcase, text: "משרות" },
             { page: "Statistics", icon: BarChart2, text: "סטטיסטיקות" },
-            { page: "Notifications", icon: Bell, text: "התראות" },
+            { page: "Notifications", icon: Bell, text: "התראות", badge: unreadCount },
             { page: "Payments", icon: CreditCard, text: "תשלומים" },
             { page: "Settings", icon: Settings, text: "הגדרות" },
-            { page: "Messages", icon: MessageSquareText, text: "הודעות", badge: unreadCount },
+            { page: "Messages", icon: MessageSquareText, text: "הודעות", badge: unreadMessagesCount },
             { page: "FAQ", icon: HelpCircle, text: "שאלות נפוצות" },
             { page: "Contact", icon: Headphones, text: "צור קשר" }
         ];

@@ -31,7 +31,7 @@ import { useUser } from "@/contexts/UserContext";
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, loading, signOut } = useUser();
+  const { user, loading, signOut, unreadCount, unreadMessagesCount } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLogoHovered, setIsLogoHovered] = useState(false);
 
@@ -237,6 +237,7 @@ export default function Layout({ children, currentPageName }) {
                       icon={MessageSquareText}
                       text="הודעות"
                       isActive={currentPageName === 'MessagesSeeker'}
+                      badge={unreadMessagesCount > 0}
                     />
                     <div className="h-6 w-px bg-white/50 mx-1"></div>
 
@@ -246,6 +247,7 @@ export default function Layout({ children, currentPageName }) {
                       icon={Bell}
                       text="התראות"
                       isActive={currentPageName === 'Notifications'}
+                      badge={unreadCount > 0}
                     />
                     <div className="h-6 w-px bg-white/50 mx-1"></div>
 
@@ -292,6 +294,7 @@ export default function Layout({ children, currentPageName }) {
                       icon={Bell}
                       text="התראות"
                       isActive={currentPageName === 'Notifications'}
+                      badge={unreadCount > 0}
                     />
                     <div className="h-6 w-px bg-white/50 mx-1"></div>
 
@@ -316,6 +319,7 @@ export default function Layout({ children, currentPageName }) {
                       icon={MessageSquareText}
                       text="הודעות"
                       isActive={currentPageName === 'Messages'}
+                      badge={unreadMessagesCount > 0}
                     />
                     <div className="h-6 w-px bg-white/50 mx-1"></div>
 

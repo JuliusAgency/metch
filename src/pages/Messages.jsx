@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/api/supabaseClient";
 import { User } from "@/api/entities";
 import { Conversation } from "@/api/entities";
-import { Message } from "@/api/entities";
+import { Message, Notification } from "@/api/entities";
 import { UserProfile } from "@/api/entities";
 import { Job } from "@/api/entities";
 import { JobApplication } from "@/api/entities";
@@ -25,6 +26,7 @@ import Pagination from "@/components/messages/Pagination";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useLocation, useNavigate } from "react-router-dom";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
+import { useUser } from "@/contexts/UserContext";
 
 const ITEMS_PER_PAGE = 5;
 const SUPPORT_EMAIL = "business@metch.co.il";
@@ -43,6 +45,7 @@ const safeFormatDate = (dateValue, formatString, fallback = "") => {
 
 export default function Messages() {
     useRequireUserType(); // Ensure user has selected a user type
+    const { refreshUnreadCount } = useUser();
     const [user, setUser] = useState(null);
     const [conversations, setConversations] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
@@ -57,6 +60,7 @@ export default function Messages() {
     const location = useLocation();
     const navigate = useNavigate();
 
+
     const totalPages = Math.ceil(conversations.length / ITEMS_PER_PAGE);
 
     useEffect(() => {
@@ -67,6 +71,23 @@ export default function Messages() {
         try {
             const userData = await User.me();
             setUser(userData);
+
+            // Mark all unread messages as read when page is visited
+            try {
+                // Mark messages as read
+                await supabase
+                    .from('Message')
+                    .update({ is_read: 'true' })
+                    .eq('recipient_email', userData.email)
+                    .eq('is_read', 'false');
+
+                console.log('[Messages] Marked messages as read for:', userData.email);
+
+                // Force refresh badges
+                refreshUnreadCount(userData.id, userData.email);
+            } catch (error) {
+                console.error('Error marking messages as read:', error);
+            }
 
             // Load conversations for employer from database
             let conversationsData = [];
@@ -189,7 +210,6 @@ export default function Messages() {
                 return;
             }
             // Load real messages from database
-            // Load real messages from database
             const messagesData = await Message.filter(
                 { conversation_id: conversationId },
                 "created_date",
@@ -203,13 +223,34 @@ export default function Messages() {
                 return tA - tB;
             });
 
-            // Ensure created_date is set for all messages
+            // Ensure created_date is set for all messages, favoring created_at if created_date is missing
             const mappedMessages = sortedMessages.map(msg => ({
                 ...msg,
-                created_date: msg.created_date || msg.created_at || new Date().toISOString()
+                created_date: msg.created_date || msg.created_at || null
             }));
 
             setMessages(mappedMessages);
+
+            // Mark incoming messages as read in database
+            try {
+                const unreadMessagesData = mappedMessages.filter(m => m.sender_email !== user?.email && !m.is_read);
+                if (unreadMessagesData.length > 0) {
+                    await Promise.all([
+                        supabase
+                            .from('Message')
+                            .update({ is_read: true })
+                            .eq('conversation_id', conversationId)
+                            .eq('recipient_email', user?.email),
+                        supabase
+                            .from('Notification')
+                            .update({ is_read: 'true' })
+                            .eq('email', user?.email)
+                            .eq('type', 'new_message')
+                    ]);
+                }
+            } catch (readErr) {
+                console.error("Error marking messages/notifications as read:", readErr);
+            }
         } catch (error) {
             console.error("Error loading messages:", error);
             setMessages([]);
@@ -365,6 +406,25 @@ export default function Messages() {
                 last_message_time: currentDate
             });
 
+            // Create notification for recipient
+            try {
+                const notificationData = {
+                    type: 'new_message',
+                    user_id: selectedConversation.candidate_id || null,
+                    email: recipientEmail,
+                    created_by: user.id,
+                    title: 'הודעה חדשה',
+                    message: `הודעה חדשה מ-${user.company_name || user.full_name || 'מעסיק'}`,
+                    is_read: 'false',
+                    created_date: currentDate
+                };
+                console.log('[Messages] Creating notification:', notificationData);
+                const createdNotif = await Notification.create(notificationData);
+                console.log('[Messages] Notification created successfully:', createdNotif);
+            } catch (e) {
+                console.error("Error creating notification for candidate:", e);
+            }
+
             if (selectedConversation.id === "support") {
                 // Switch to real conversation
                 const updatedConv = {
@@ -423,9 +483,13 @@ export default function Messages() {
                     <ChevronRight className="w-5 h-5 text-[#348dcf] group-hover:scale-110 transition-transform" />
                 </button>
 
-                {/* Title Above Card - Brought closer to the card and lifted */}
+                {/* Title Above Card / Chat Header */}
                 <div className="relative z-10 text-center mt-[60px] mb-0">
-                    <h1 className="text-xl md:text-2xl font-bold text-[#001a6e] drop-shadow-sm">הודעות</h1>
+                    <ChatHeader
+                        setSelectedConversation={setSelectedConversation}
+                        selectedConversation={selectedConversation}
+                        ConversationStatusIndicator={ConversationStatusIndicator}
+                    />
                 </div>
 
                 {/* Chat Container - Now split for the "cut" effect */}
@@ -453,7 +517,10 @@ export default function Messages() {
                             <AnimatePresence>
                                 {!loadingMessages && messages.map((message, index) => {
                                     const isMyMessage = message.sender_email === user?.email;
-                                    const messageDate = new Date(message.created_date || message.created_at);
+                                    const messageDateValue = message.created_date || message.created_at;
+                                    if (!messageDateValue) return null;
+
+                                    const messageDate = new Date(messageDateValue);
                                     const previousMessage = messages[index - 1];
                                     const previousDate = previousMessage ? new Date(previousMessage.created_date || previousMessage.created_at) : null;
 
@@ -462,13 +529,17 @@ export default function Messages() {
 
                                     let dateSeparatorText = "";
                                     if (showDateSeparator) {
-                                        const today = new Date();
-                                        const yesterday = new Date();
-                                        yesterday.setDate(today.getDate() - 1);
+                                        const now = new Date();
+                                        const todayStr = now.toDateString();
+                                        const yesterday = new Date(now);
+                                        yesterday.setDate(now.getDate() - 1);
+                                        const yesterdayStr = yesterday.toDateString();
 
-                                        if (messageDate.toDateString() === today.toDateString()) {
+                                        const currentMsgDateStr = messageDate.toDateString();
+
+                                        if (currentMsgDateStr === todayStr) {
                                             dateSeparatorText = "היום";
-                                        } else if (messageDate.toDateString() === yesterday.toDateString()) {
+                                        } else if (currentMsgDateStr === yesterdayStr) {
                                             dateSeparatorText = "אתמול";
                                         } else {
                                             dateSeparatorText = safeFormatDate(messageDate, "dd.MM.yy");

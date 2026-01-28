@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/api/supabaseClient";
 import { User } from "@/api/entities";
 import { Conversation } from "@/api/entities";
-import { Message } from "@/api/entities";
+import { Message, Notification } from "@/api/entities";
 import { Job } from "@/api/entities";
 import { JobApplication } from "@/api/entities";
 import { UserProfile } from "@/api/entities";
@@ -19,6 +20,7 @@ import SeekerPagination from "@/components/seeker/SeekerPagination";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useLocation, useNavigate } from "react-router-dom";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
+import { useUser } from "@/contexts/UserContext";
 
 const ITEMS_PER_PAGE = 5;
 const SUPPORT_EMAIL = "support@metch.co.il";
@@ -37,6 +39,7 @@ const safeFormatDate = (dateValue, formatString, fallback = "") => {
 
 export default function MessagesSeeker() {
     useRequireUserType(); // Ensure user has selected a user type
+    const { refreshUnreadCount } = useUser();
     const [user, setUser] = useState(null);
     const [conversations, setConversations] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
@@ -50,6 +53,7 @@ export default function MessagesSeeker() {
     const location = useLocation();
     const navigate = useNavigate();
 
+
     const totalPages = Math.ceil(conversations.length / ITEMS_PER_PAGE);
 
     useEffect(() => {
@@ -60,6 +64,23 @@ export default function MessagesSeeker() {
         try {
             const userData = await User.me();
             setUser(userData);
+
+            // Mark all unread messages as read when page is visited
+            try {
+                // Mark messages as read
+                await supabase
+                    .from('Message')
+                    .update({ is_read: 'true' })
+                    .eq('recipient_email', userData.email)
+                    .eq('is_read', 'false');
+
+                console.log('[MessagesSeeker] Marked messages as read for:', userData.email);
+
+                // Force refresh badges
+                refreshUnreadCount(userData.id, userData.email);
+            } catch (error) {
+                console.error('Error marking messages as read:', error);
+            }
 
 
 
@@ -213,6 +234,27 @@ export default function MessagesSeeker() {
             });
 
             setMessages(sortedMessages);
+
+            // Mark incoming messages as read in database
+            try {
+                const unreadMessagesData = sortedMessages.filter(m => m.sender_email !== user?.email && !m.is_read);
+                if (unreadMessagesData.length > 0) {
+                    await Promise.all([
+                        supabase
+                            .from('Message')
+                            .update({ is_read: true })
+                            .eq('conversation_id', conversationId)
+                            .eq('recipient_email', user?.email),
+                        supabase
+                            .from('Notification')
+                            .update({ is_read: 'true' })
+                            .eq('email', user?.email)
+                            .eq('type', 'new_message')
+                    ]);
+                }
+            } catch (readErr) {
+                console.error("Error marking messages/notifications as read:", readErr);
+            }
         } catch (error) {
             console.error("Error loading messages:", error);
             setMessages([]);
@@ -287,6 +329,25 @@ export default function MessagesSeeker() {
                 last_message: newMessage.trim(),
                 last_message_time: currentDate // Use currentDate for consistency
             });
+
+            // Create notification for recipient (Employer)
+            try {
+                const notificationData = {
+                    type: 'new_message',
+                    user_id: selectedConversation.employer_id || null,
+                    email: recipientEmail,
+                    created_by: user.id,
+                    title: 'הודעה חדשה',
+                    message: `הודעה חדשה מ-${user.full_name || 'מחפש עבודה'}`,
+                    is_read: 'false',
+                    created_date: currentDate
+                };
+                console.log('[MessagesSeeker] Creating notification:', notificationData);
+                const createdNotif = await Notification.create(notificationData);
+                console.log('[MessagesSeeker] Notification created successfully:', createdNotif);
+            } catch (e) {
+                console.error("Error creating notification for employer:", e);
+            }
 
             if (selectedConversation.id === "support") {
                 // If we were in temporary support mode, switch to the real conversation

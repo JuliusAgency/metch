@@ -1,6 +1,4 @@
-import { UserAction } from '@/api/entities';
-import { UserStats } from '@/api/entities';
-import { JobView } from '@/api/entities';
+import { UserAction, UserStats, JobView, Notification, JobApplication } from '@/api/entities';
 
 /**
  * Utility class for tracking user actions and updating analytics
@@ -171,6 +169,24 @@ export class UserAnalytics {
           user_email: user.email,
           job_id: job.id
         });
+
+        // Track notification for employer
+        try {
+          if (job.created_by || job.employer_id) {
+            await Notification.create({
+              type: 'job_view',
+              user_id: job.employer_id || job.created_by,
+              email: job.created_by,
+              created_by: job.employer_id || job.created_by,
+              title: 'מישהו צפה במשרה שלך',
+              message: `מועמד צפה במשרת ${job.title}`,
+              is_read: 'false',
+              created_date: new Date().toISOString()
+            });
+          }
+        } catch (notifErr) {
+          console.error('Error creating job_view notification:', notifErr);
+        }
       }
     } catch (error) {
       console.error('Error tracking job view:', error);
@@ -245,6 +261,47 @@ export class UserAnalytics {
     } catch (error) {
       console.error('Error getting user stats:', error);
       return null;
+    }
+  }
+
+  /**
+   * Get comprehensive dashboard data for job seekers
+   * @param {string} userId - User's ID
+   * @param {string} userEmail - User's email
+   */
+  static async getUserDashboardData(userId, userEmail) {
+    try {
+      const [stats, applications, profileViewNotifications] = await Promise.all([
+        this.getUserStats(userId),
+        JobApplication.filter({ applicant_email: userEmail }),
+        Notification.filter({ created_by: userId, type: 'profile_view' })
+      ]);
+
+      const mergedStats = {
+        ...(stats || {
+          total_jobs_viewed: 0,
+          total_applications_sent: applications.length,
+          total_messages_sent: 0,
+          total_profile_views: profileViewNotifications.length
+        }),
+        total_applications_sent: applications.length,
+        total_profile_views: profileViewNotifications.length
+      };
+
+      return {
+        stats: mergedStats,
+        applications: applications
+      };
+    } catch (error) {
+      console.error('Error getting user dashboard data:', error);
+      return {
+        stats: {
+          total_jobs_viewed: 0,
+          total_applications_sent: 0,
+          total_profile_views: 0
+        },
+        applications: []
+      };
     }
   }
 

@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
-import { Job, CV } from "@/api/entities";
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/api/supabaseClient";
+import { Job, CV, Notification } from "@/api/entities";
 import { JobView } from "@/api/entities";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
   Eye,
@@ -30,6 +31,9 @@ const JobSeekerDashboard = ({ user }) => {
   const [viewedJobIds, setViewedJobIds] = useState(new Set()); // New state for viewed job IDs
   const [loading, setLoading] = useState(true);
   const [showGuide, setShowGuide] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [seekerStats, setSeekerStats] = useState({});
+  const navigate = useNavigate();
 
   // Check if user needs onboarding guide
   useEffect(() => {
@@ -95,16 +99,100 @@ const JobSeekerDashboard = ({ user }) => {
         setAllJobs(limitedJobs);
         setViewedJobIds(new Set(jobViewsData.map(view => view.job_id)));
 
+        // Fetch seeker dashboard data (stats + notifications)
+        const [dashData, byUserId, byEmail, byCreatedBy] = await Promise.all([
+          UserAnalytics.getUserDashboardData(user.id, user.email),
+          Notification.filter({ user_id: user.id }, "-created_date"),
+          Notification.filter({ email: user.email }, "-created_date"),
+          Notification.filter({ created_by: user.id }, "-created_date")
+        ]);
+
+        const mergedNotifs = [...(byUserId || []), ...(byEmail || []), ...(byCreatedBy || [])]
+          .reduce((acc, current) => {
+            if (!acc.find(item => item.id === current.id)) return acc.concat([current]);
+            return acc;
+          }, [])
+          .sort((a, b) => new Date(b.created_date || b.created_at) - new Date(a.created_at || a.created_date));
+
+        const SEEKER_ALLOWED_NOTIFICATION_TYPES = ['profile_view', 'new_message'];
+        const filteredNotifications = mergedNotifs.filter(n =>
+          SEEKER_ALLOWED_NOTIFICATION_TYPES.includes(n.type)
+        );
+
+        // Deduplicate message notifications - show only one per sender
+        const deduplicatedNotifications = [];
+        const seenMessageSenders = new Set();
+
+        for (const notif of filteredNotifications) {
+          if (notif.type === 'new_message') {
+            // Extract sender from message (assuming format: "הודעה חדשה מ-[שם]")
+            const senderMatch = notif.message?.match(/מ-(.+)$/);
+            const sender = senderMatch ? senderMatch[1] : notif.message;
+
+            if (!seenMessageSenders.has(sender)) {
+              seenMessageSenders.add(sender);
+              deduplicatedNotifications.push(notif);
+            }
+          } else {
+            // Keep all non-message notifications
+            deduplicatedNotifications.push(notif);
+          }
+        }
+
+        setSeekerStats(dashData.stats);
+        setNotifications(deduplicatedNotifications);
+
       } catch (error) {
         console.error("Error loading jobs for seeker:", error);
         setAllJobs([]);
         setViewedJobIds(new Set());
+        setNotifications([]);
+        setSeekerStats({});
       } finally {
         setLoading(false);
       }
     };
     loadData();
-  }, [user]);
+
+    // Set up Realtime subscription for Notifications to refresh dashboard list
+    let notificationSubscription = null;
+    if (user?.id || user?.email) {
+      notificationSubscription = supabase
+        .channel('seeker_dashboard:Notification')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'Notification'
+        }, (payload) => {
+          const newNotif = payload.new;
+          const oldNotif = payload.old;
+
+          // Check if it's relevant to this user using broad identifiers
+          const isRelevant =
+            (newNotif?.user_id === user.id || newNotif?.email === user.email || newNotif?.created_by === user.id) ||
+            (oldNotif?.user_id === user.id || oldNotif?.email === user.email || oldNotif?.created_by === user.id);
+
+          if (isRelevant) {
+            loadData(); // Re-fetch all data to keep stats and list in sync
+          }
+        })
+        .subscribe();
+    }
+
+    return () => {
+      if (notificationSubscription) {
+        supabase.removeChannel(notificationSubscription);
+      }
+    };
+  }, [user, navigate]);
+
+  const handleNextNotification = () => {
+    setCurrentNotificationIndex((prev) => (prev + 1) % notifications.length);
+  };
+
+  const handlePrevNotification = () => {
+    setCurrentNotificationIndex((prev) => (prev - 1 + notifications.length) % notifications.length);
+  };
 
   // Filter jobs based on the current jobFilter state
   const displayedJobs = allJobs.filter(job => {
@@ -133,16 +221,53 @@ const JobSeekerDashboard = ({ user }) => {
                 מדריך
                 <HelpCircle className="w-3 h-3 mr-1" />
               </Button>
-              <span className="text-sm text-gray-600">התראות חדשות</span>
-              <Bell className="w-5 h-5 text-yellow-500" />
             </div>
           </div>
 
           <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 sm:p-6 md:p-8 space-y-8 border border-gray-100">
             {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stats-grid">
-              <StatCard icon={Briefcase} title="משרות רלוונטיות" value={allJobs.length} /> {/* Changed to allJobs.length */}
+              <StatCard icon={Briefcase} title="משרות רלוונטיות" value={allJobs.length} />
+              <StatCard icon={Eye} title="צפיות בפרופיל" value={seekerStats?.total_profile_views || 0} />
+              <StatCard icon={Bell} title="מועמדויות שנשלחו" value={seekerStats?.total_applications_sent || 0} />
             </div>
+
+            {/* Notification Carousel */}
+            <Card className="bg-[#E7F2F7] shadow-none border-0 rounded-lg notification-carousel">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handleNextNotification} disabled={notifications.length <= 1}>
+                    <ChevronRight className="w-6 h-6 text-blue-600" />
+                  </Button>
+                  <div
+                    className="text-center flex items-center gap-3 overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => {
+                      const notif = notifications[currentNotificationIndex];
+                      if (notif) {
+                        navigate(createPageUrl("Notifications"), { state: { selectedNotificationId: notif.id } });
+                      }
+                    }}
+                  >
+                    <p className="text-blue-800 font-semibold text-sm sm:text-base whitespace-nowrap">
+                      {notifications[currentNotificationIndex]?.message || "אין התראות חדשות"}
+                    </p>
+                    {notifications.length > 1 && (
+                      <div className="hidden sm:flex gap-1.5">
+                        {notifications.map((_, index) => (
+                          <div
+                            key={index}
+                            className={`w-2.5 h-2.5 rounded-full ${index === currentNotificationIndex ? 'bg-blue-600' : 'bg-gray-300'}`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-200/50 flex-shrink-0" onClick={handlePrevNotification} disabled={notifications.length <= 1}>
+                    <ChevronLeft className="w-6 h-6 text-blue-600" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Filter Toggle */}
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">

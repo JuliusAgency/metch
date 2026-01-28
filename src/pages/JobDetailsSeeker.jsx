@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Job, UserProfile, CV } from "@/api/entities";
+import { Job, UserProfile, CV, Notification } from "@/api/entities";
 import { JobApplication } from "@/api/entities";
 import { User } from "@/api/entities";
 import { BrainCircuit, Sparkles, CheckCircle2 } from "lucide-react";
@@ -339,6 +339,28 @@ export default function JobDetailsSeeker() {
         applicant_id: user.id,
         status: 'pending'
       });
+
+      // Create notification for employer
+      try {
+        await Notification.create({
+          type: 'application_submitted',
+          user_id: job.employer_id || job.created_by, // Try ID then fallback to email
+          user_email: job.created_by, // Usually contains email
+          created_by: job.employer_id || job.created_by, // For backward compatibility with filter
+          title: 'הוגשה מועמדות חדשה',
+          message: `מועמד חדש הגיש מועמדות למשרת ${job.title}`,
+          data: {
+            job_id: job.id,
+            applicant_name: user.full_name,
+            applicant_email: user.email,
+            job_title: job.title
+          },
+          is_read: false,
+          created_date: new Date().toISOString()
+        });
+      } catch (e) {
+        console.error("Error creating notification for employer:", e);
+      }
 
       setHasExistingApplication(true);
       setShowSuccessModal(true);

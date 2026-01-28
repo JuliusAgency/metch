@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { User } from "@/api/entities";
 import { UserProfile } from "@/api/entities";
-import { QuestionnaireResponse, Job, JobApplication, CV, Conversation } from "@/api/entities";
+import { QuestionnaireResponse, Job, JobApplication, CV, Conversation, Notification } from "@/api/entities";
 import { Core } from "@/api/integrations";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -668,8 +668,24 @@ export default function CandidateProfile() {
       if (candidate && user) {
         try {
           await EmployerAnalytics.trackCandidateView(user.email, candidate);
+
+          // Create notification for candidate
+          await Notification.create({
+            type: 'profile_view',
+            user_id: candidate.id || candidate.email,
+            user_email: candidate.email,
+            created_by: candidate.id || candidate.email,
+            title: 'מישהו צפה לך בפרופיל!',
+            message: `מעסיק צפה בפרופיל שלך כרגע. בהצלחה!`,
+            data: {
+              candidate_id: candidate.id,
+              viewer_name: user.company_name || 'מעסיק'
+            },
+            is_read: false,
+            created_date: new Date().toISOString()
+          });
         } catch (error) {
-          console.error("Error tracking candidate view:", error);
+          console.error("Error tracking candidate view or creating notification:", error);
         }
       }
     };

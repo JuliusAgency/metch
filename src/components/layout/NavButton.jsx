@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
-export const NavButton = ({ to, icon: Icon, text, isActive }) => {
+export const NavButton = ({ to, icon: Icon, text, isActive, badge }) => {
     const [isHovered, setIsHovered] = useState(false);
     const showText = isActive || isHovered;
 
@@ -11,12 +11,17 @@ export const NavButton = ({ to, icon: Icon, text, isActive }) => {
         <Button
             asChild
             variant="ghost"
-            className={`hover:bg-transparent bg-transparent rounded-full px-3 py-3 text-base transition-all duration-200`}
+            className={`hover:bg-transparent bg-transparent rounded-full px-3 py-3 text-base transition-all duration-200 relative`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
             <Link to={to} className="flex items-center gap-2">
-                <Icon className={`w-7 h-7 text-gray-700`} strokeWidth={1.5} />
+                <div className="relative">
+                    <Icon className={`w-7 h-7 text-gray-700`} strokeWidth={1.5} />
+                    {badge && (
+                        <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-blue-600 rounded-full border-2 border-white" />
+                    )}
+                </div>
 
                 <motion.div
                     initial={false}

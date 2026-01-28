@@ -24,6 +24,8 @@ export const useUser = () => {
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const initInFlightRef = useRef(false);
 
@@ -132,6 +134,11 @@ export const UserProvider = ({ children }) => {
         setUser(session.user);
         const userProfile = await loadUserProfile(session.user.id);
         setProfile(userProfile);
+
+        // Load initial unread count
+        if (session.user.id) {
+          refreshUnreadCount(session.user.id, session.user.email);
+        }
 
         // Update last login date
         if (userProfile) {
@@ -278,6 +285,64 @@ export const UserProvider = ({ children }) => {
   };
 
   /**
+   * Refresh unread notification and message counts
+   */
+  const refreshUnreadCount = useCallback(async (userId, userEmail) => {
+    if (!userId && !userEmail) return;
+
+    console.log('[refreshUnreadCount] Starting with userId:', userId, 'userEmail:', userEmail);
+
+    try {
+      // Count unread notifications (INCLUDING message notifications now)
+      const [byUserId, byEmail, byCreatedBy] = await Promise.all([
+        supabase.from('Notification').select('*', { count: 'exact', head: false }).eq('user_id', userId).eq('is_read', 'false'),
+        supabase.from('Notification').select('*', { count: 'exact', head: false }).eq('email', userEmail).eq('is_read', 'false'),
+        supabase.from('Notification').select('*', { count: 'exact', head: false }).eq('created_by', userId).eq('is_read', 'false')
+      ]);
+
+      console.log('[refreshUnreadCount] Notifications by userId:', byUserId.data?.length);
+      console.log('[refreshUnreadCount] Notifications by email:', byEmail.data?.length);
+      console.log('[refreshUnreadCount] Notifications by createdBy:', byCreatedBy.data?.length);
+
+      // Merge and deduplicate notifications
+      const allNotifications = [
+        ...(byUserId.data || []),
+        ...(byEmail.data || []),
+        ...(byCreatedBy.data || [])
+      ];
+      const uniqueNotifications = Array.from(
+        new Map(allNotifications.map(item => [item.id, item])).values()
+      );
+
+      console.log('[refreshUnreadCount] Total unique notifications:', uniqueNotifications.length);
+      setUnreadCount(uniqueNotifications.length);
+
+      // Count unread messages
+      const [messagesByEmail, messagesById] = await Promise.all([
+        supabase.from('Message').select('*', { count: 'exact', head: false }).eq('recipient_email', userEmail).eq('is_read', 'false'),
+        supabase.from('Message').select('*', { count: 'exact', head: false }).eq('recipient_id', userId).eq('is_read', 'false')
+      ]);
+
+      console.log('[refreshUnreadCount] Messages by email:', messagesByEmail.data?.length);
+      console.log('[refreshUnreadCount] Messages by id:', messagesById.data?.length);
+
+      // Merge and deduplicate messages
+      const allMessages = [
+        ...(messagesByEmail.data || []),
+        ...(messagesById.data || [])
+      ];
+      const uniqueMessages = Array.from(
+        new Map(allMessages.map(item => [item.id, item])).values()
+      );
+
+      console.log('[refreshUnreadCount] Total unique messages:', uniqueMessages.length);
+      setUnreadMessagesCount(uniqueMessages.length);
+    } catch (error) {
+      console.error('Error refreshing unread count:', error);
+    }
+  }, []);
+
+  /**
    * Get user with profile data
    */
   const getUserWithProfile = () => {
@@ -305,10 +370,73 @@ export const UserProvider = ({ children }) => {
     // Then initialize user
     initializeUser();
 
+    // Set up Realtime subscription for Notifications
+    let notificationSubscription = null;
+    if (user?.id || user?.email) {
+      notificationSubscription = supabase
+        .channel('public:Notification')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'Notification'
+        }, (payload) => {
+          console.log('[UserContext] Notification change detected:', payload.eventType, payload);
+          const newNotif = payload.new;
+          const oldNotif = payload.old;
+
+          // Check if it's relevant to this user
+          const isRelevant =
+            (newNotif?.user_id === user.id || newNotif?.email === user.email || newNotif?.created_by === user.id) ||
+            (oldNotif?.user_id === user.id || oldNotif?.email === user.email || oldNotif?.created_by === user.id);
+
+          console.log('[UserContext] Notification is relevant:', isRelevant, 'user.id:', user.id, 'user.email:', user.email);
+          if (isRelevant) {
+            refreshUnreadCount(user.id, user.email);
+          }
+        })
+        .subscribe();
+
+      // Initial count refresh
+      refreshUnreadCount(user.id, user.email);
+    }
+
+    // Set up Realtime subscription for Messages to refresh counts when marked as read
+    let messageSubscription = null;
+    if (user?.id || user?.email) {
+      messageSubscription = supabase
+        .channel('public:Message')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'Message'
+        }, (payload) => {
+          console.log('[UserContext] Message change detected:', payload.eventType, payload);
+          const newMsg = payload.new;
+          const oldMsg = payload.old;
+
+          // Check if it's relevant to this user
+          const isRelevant =
+            (newMsg?.recipient_id === user.id || newMsg?.recipient_email === user.email) ||
+            (oldMsg?.recipient_id === user.id || oldMsg?.recipient_email === user.email);
+
+          console.log('[UserContext] Message is relevant:', isRelevant);
+          if (isRelevant) {
+            refreshUnreadCount(user.id, user.email);
+          }
+        })
+        .subscribe();
+    }
+
     return () => {
       subscription.unsubscribe();
+      if (notificationSubscription) {
+        supabase.removeChannel(notificationSubscription);
+      }
+      if (messageSubscription) {
+        supabase.removeChannel(messageSubscription);
+      }
     };
-  }, [initializeUser]);
+  }, [initializeUser, user?.id, user?.email, refreshUnreadCount]);
 
   const value = React.useMemo(() => ({
     user: user ? getUserWithProfile() : null,
@@ -337,6 +465,9 @@ export const UserProvider = ({ children }) => {
       }
     },
     getUserWithProfile,
+    unreadCount,
+    unreadMessagesCount,
+    refreshUnreadCount,
     // Backwards compatibility
     setUser: (newUser) => {
       setUser(newUser);
@@ -344,7 +475,7 @@ export const UserProvider = ({ children }) => {
         loadUserProfile(newUser.id).then(setProfile);
       }
     }
-  }), [user, profile, loading, signUp, signIn, signInWithGoogle, signOut, updateProfile, createUserProfile, loadUserProfile, getUserWithProfile]);
+  }), [user, profile, loading, unreadCount, unreadMessagesCount, refreshUnreadCount, signUp, signIn, signInWithGoogle, signOut, updateProfile, createUserProfile, loadUserProfile, getUserWithProfile]);
 
   return (
     <UserContext.Provider value={value}>

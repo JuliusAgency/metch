@@ -1,8 +1,4 @@
-import { EmployerAction } from '@/api/entities';
-import { EmployerStats } from '@/api/entities';
-import { Job } from '@/api/entities';
-import { JobApplication } from '@/api/entities';
-import { JobView } from '@/api/entities';
+import { EmployerAction, EmployerStats, Job, JobApplication, JobView, Notification } from '@/api/entities';
 
 /**
  * Utility class for tracking employer actions and updating analytics
@@ -185,12 +181,34 @@ export class EmployerAnalytics {
    * Track candidate profile view
    */
   static async trackCandidateView(employerEmail, candidate, jobContext = null) {
-    return this.trackAction(employerEmail, 'candidate_view', {
+    const actionData = {
       candidate_email: candidate.email,
       candidate_name: candidate.full_name,
       job_id: jobContext?.id,
       job_title: jobContext?.title
-    });
+    };
+
+    const result = await this.trackAction(employerEmail, 'candidate_view', actionData);
+
+    // Create notification for the candidate
+    try {
+      if (candidate.id || candidate.email) {
+        await Notification.create({
+          type: 'profile_view',
+          user_id: candidate.id || candidate.email,
+          email: candidate.email,
+          created_by: candidate.id || candidate.email,
+          title: 'מישהו צפה בפרופיל שלך',
+          message: `מעסיק צפה בפרופיל שלך${jobContext?.title ? ` בהקשר למשרת ${jobContext.title}` : ''}`,
+          is_read: 'false',
+          created_date: new Date().toISOString()
+        });
+      }
+    } catch (notifErr) {
+      console.error('Error creating profile_view notification for candidate:', notifErr);
+    }
+
+    return result;
   }
 
   /**
@@ -365,7 +383,7 @@ export class EmployerAnalytics {
         stats: mergedStats,
         recentActivity,
         activeJobs: activeJobsCount,
-        recentApplications: realTotalApplications,
+        recentApplications: totalAppsCount,
         pendingApplications: realPendingApplications
       };
     } catch (error) {

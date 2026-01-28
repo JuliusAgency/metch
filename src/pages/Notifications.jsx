@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Notification } from "@/api/entities";
@@ -23,14 +24,15 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { Link, useNavigate } from "react-router-dom";
+
 import { createPageUrl } from "@/utils";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
 
 const ITEMS_PER_PAGE = 7;
 
-// Allowed notification types for Employer users
-const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message'];
+// Allowed notification types
+const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message', 'job_view'];
+const SEEKER_ALLOWED_NOTIFICATION_TYPES = ['profile_view', 'new_message'];
 
 // Map notification types to icons and titles
 const getNotificationConfig = (type) => {
@@ -50,11 +52,13 @@ const getNotificationConfig = (type) => {
 
 export default function Notifications() {
   useRequireUserType(); // Ensure user has selected a user type
-  const { user } = useUser();
+  const { user, refreshUnreadCount } = useUser();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedNotification, setSelectedNotification] = useState(null); // State for modal
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const loadNotifications = useCallback(async () => {
     if (!user?.email) {
@@ -68,16 +72,28 @@ export default function Notifications() {
 
 
 
-      // Fetch all notifications for the user, ordered by created_date descending
-      const allNotifications = await Notification.filter(
-        { created_by: user.id },
-        "-created_date"
-      );
+      // Fetch all notifications for the user using all possible identifiers
+      const [byUserId, byEmail, byCreatedBy] = await Promise.all([
+        Notification.filter({ user_id: user.id }, "-created_date"),
+        Notification.filter({ email: user.email }, "-created_date"),
+        Notification.filter({ created_by: user.id }, "-created_date")
+      ]);
 
-      // Filter notifications for Employer users to only show allowed types
-      const filteredNotifications = user.user_type === 'employer'
-        ? allNotifications.filter(notif => EMPLOYER_ALLOWED_NOTIFICATION_TYPES.includes(notif.type))
-        : allNotifications;
+      // Merge and deduplicate
+      const allNotifications = [...byUserId, ...byEmail, ...byCreatedBy]
+        .reduce((acc, current) => {
+          const x = acc.find(item => item.id === current.id);
+          if (!x) return acc.concat([current]);
+          return acc;
+        }, [])
+        .sort((a, b) => new Date(b.created_date || b.created_at) - new Date(a.created_date || a.created_at));
+
+      // Filter based on user type
+      const allowedTypes = user.user_type === 'employer'
+        ? EMPLOYER_ALLOWED_NOTIFICATION_TYPES
+        : SEEKER_ALLOWED_NOTIFICATION_TYPES;
+
+      const filteredNotifications = allNotifications.filter(notif => allowedTypes.includes(notif.type));
 
       setNotifications(filteredNotifications);
 
@@ -89,9 +105,66 @@ export default function Notifications() {
     }
   }, [user?.email, user?.id, user?.user_type]);
 
+  // Handle auto-opening notification from state
+  useEffect(() => {
+    if (notifications.length > 0 && location.state?.selectedNotificationId) {
+      const notifId = location.state.selectedNotificationId;
+      const notif = notifications.find(n => n.id === notifId);
+      if (notif) {
+        setSelectedNotification(notif);
+        // Mark as read if it's not
+        if (notif.is_read === 'false' || notif.is_read === false) {
+          handleNotificationClick(notif);
+        }
+        // Clean up state to avoid re-opening on manual refresh/nav
+        window.history.replaceState({}, document.title);
+      }
+    }
+  }, [notifications, location.state, navigate]);
+
   useEffect(() => {
     loadNotifications();
   }, [loadNotifications]);
+
+  // Mark all unread notifications as read when page is visited
+  useEffect(() => {
+    const markAllAsRead = async () => {
+      if (!user?.email || notifications.length === 0) return;
+
+      const unreadNotifications = notifications.filter(
+        n => n.is_read === 'false' || n.is_read === false
+      );
+
+      if (unreadNotifications.length > 0) {
+        try {
+          // Mark all as read in parallel
+          await Promise.all(
+            unreadNotifications.map(notif =>
+              Notification.update(notif.id, { is_read: 'true' })
+            )
+          );
+
+          // Update local state
+          setNotifications(prev =>
+            prev.map(n => ({ ...n, is_read: 'true', read: true }))
+          );
+
+          // Force refresh badges immediately
+          // Using a small timeout to ensure DB trigger (if any) or prop changes propagate
+          setTimeout(() => {
+            if (user?.id) refreshUnreadCount(user.id, user.email);
+          }, 100);
+
+        } catch (error) {
+          console.error('Error marking notifications as read:', error);
+        }
+      } else {
+        console.log('[Notifications] No unread notifications to mark.');
+      }
+    };
+
+    markAllAsRead();
+  }, [user?.email, notifications]); // Run when notifications change to catch loaded data
 
   const totalPages = Math.ceil(notifications.length / ITEMS_PER_PAGE);
   const paginatedNotifications = notifications.slice(
@@ -119,8 +192,6 @@ export default function Notifications() {
 
 
 
-  const navigate = useNavigate();
-
   const handleNotificationClick = async (notif) => {
     // Mark as read immediately
     if (notif.is_read === 'false' || notif.is_read === false) {
@@ -136,7 +207,19 @@ export default function Notifications() {
 
     // Navigation logic
     if (notif.type === 'new_message') {
-      navigate('/Messages');
+      console.log('[Notifications] Navigating for message. User:', user);
+
+      // Route based on user type with fallback checks
+      const isSeeker =
+        user?.user_type === 'seeker' ||
+        (user?.full_name && !user?.company_name) || // Fallback: has name but no company
+        window.location.pathname.includes('seeker'); // Fallback: current page context
+
+      if (isSeeker) {
+        navigate('/messagesseeker', { state: { selectedNotificationId: notif.id } });
+      } else {
+        navigate('/Messages', { state: { selectedNotificationId: notif.id } });
+      }
       return;
     }
 
@@ -286,7 +369,20 @@ export default function Notifications() {
               <span>{selectedNotification && formatDate(selectedNotification.created_date || selectedNotification.created_at)}</span>
             </div>
           </div>
-          <DialogFooter className="sm:justify-start">
+          <DialogFooter className="sm:justify-start flex-col gap-2">
+            {selectedNotification?.type === 'application_submitted' && selectedNotification?.data?.applicant_email && (
+              <Button
+                type="button"
+                variant="default"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => {
+                  navigate(`/CandidateProfile?email=${selectedNotification.data.applicant_email}`);
+                  closeDialog();
+                }}
+              >
+                צפה בפרופיל המועמד
+              </Button>
+            )}
             <Button type="button" variant="secondary" onClick={closeDialog} className="w-full">
               סגור
             </Button>
