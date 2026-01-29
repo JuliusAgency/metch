@@ -340,7 +340,7 @@ export default function Profile() {
           <div className="w-px h-4 bg-gray-300"></div>
 
           <Link
-            to={createPageUrl('CVGenerator?step=0')}
+            to={createPageUrl('CVGenerator?choice=create&step=1')}
             className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
           >
             {(cvData.personal_details && Object.keys(cvData.personal_details).length > 0) ? (

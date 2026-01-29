@@ -102,7 +102,7 @@ export default function Navbar({ currentPageName, isJobSeeker }) {
             { page: "Dashboard", icon: Home, text: "דף הבית" },
             { page: "JobManagement", icon: Briefcase, text: "משרות" },
             { page: "Statistics", icon: BarChart2, text: "סטטיסטיקות" },
-            { page: "Notifications", icon: Bell, text: "התראות", badge: unreadCount },
+            { page: "Notifications", icon: Bell, text: "התראות", badge: unreadCount + unreadMessagesCount },
             { page: "Payments", icon: CreditCard, text: "תשלומים" },
             { page: "Settings", icon: Settings, text: "הגדרות" },
             { page: "Messages", icon: MessageSquareText, text: "הודעות", badge: unreadMessagesCount },
