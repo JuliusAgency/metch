@@ -322,9 +322,11 @@ export async function InvokeAssistant({
 
   if (!threadResponse.ok) {
     const err = await threadResponse.json();
+    console.error("DEBUG: OpenAI Thread Error:", err);
     throw new Error(`Failed to create thread: ${JSON.stringify(err)}`);
   }
   const thread = await threadResponse.json();
+  console.log("DEBUG: OpenAI Thread created:", thread.id);
 
   // 2. Run Assistant
   const runResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs`, {
@@ -335,9 +337,11 @@ export async function InvokeAssistant({
 
   if (!runResponse.ok) {
     const err = await runResponse.json();
+    console.error("DEBUG: OpenAI Run Error:", err);
     throw new Error(`Failed to create run: ${JSON.stringify(err)}`);
   }
   const run = await runResponse.json();
+  console.log("DEBUG: OpenAI Run started:", run.id, "status:", run.status);
 
   // 3. Poll for completion
   let runStatus = run.status;
@@ -348,9 +352,11 @@ export async function InvokeAssistant({
     });
     const statusData = await statusResponse.json();
     runStatus = statusData.status;
+    console.log("DEBUG: OpenAI Run Status:", runStatus);
 
     if (['failed', 'cancelled', 'expired'].includes(runStatus)) {
-      throw new Error(`Assistant run failed: ${runStatus}`);
+      console.error("DEBUG: OpenAI Run Failed:", statusData.last_error);
+      throw new Error(`Assistant run failed: ${runStatus} - ${JSON.stringify(statusData.last_error)}`);
     }
   }
 

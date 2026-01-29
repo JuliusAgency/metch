@@ -5,8 +5,8 @@ const ProfileResume = ({ resume_url, full_name, cvData, onViewCv }) => {
     const hasGeneratedCv = cvData && Object.keys(cvData).length > 0;
 
     return (
-        <div className="w-full max-w-4xl pt-6">
-            <div className="w-full bg-white border border-gray-100 rounded-[1.5rem] p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+        <div className="w-full">
+            <div className="w-full bg-white border border-gray-100 rounded-[1.2rem] p-3 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-4 flex-1 justify-start">
                     {/* Custom PDF Icon - First in RTL = Rightmost */}
                     <div className={`w-12 h-14 rounded-lg flex flex-col items-center justify-center relative overflow-hidden shrink-0 ${resume_url ? 'bg-[#FF4444]' : (hasGeneratedCv ? 'bg-blue-500' : 'bg-gray-300')}`}>

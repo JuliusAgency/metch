@@ -20,7 +20,7 @@ import ProfileSocials from "@/components/candidate/ProfileSocials";
 import ProfileActions from "@/components/candidate/ProfileActions";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useToast } from "@/components/ui/use-toast";
-import { SendEmail } from "@/api/integrations";
+import { SendEmail, InvokeAssistant } from "@/api/integrations";
 import { extractTextFromPdf } from "@/utils/pdfUtils";
 
 const arrayBufferToBase64 = (buffer) => {
@@ -44,23 +44,26 @@ export default function CandidateProfile() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [aiInsights, setAiInsights] = useState({ summary: "", thoughts: [] });
+  const [aiInsights, setAiInsights] = useState({ summary: "", thoughts: [], score: 90 });
   const [generatingInsights, setGeneratingInsights] = useState(false);
   const [cvData, setCvData] = useState(null);
   const [isCvPreviewOpen, setIsCvPreviewOpen] = useState(false);
   const [markingNotRelevant, setMarkingNotRelevant] = useState(false);
   const [appliedJob, setAppliedJob] = useState(null);
 
+  const queryParams = new URLSearchParams(location.search);
+  const candidateId = queryParams.get("id");
+  const jobId = queryParams.get("jobId");
+  const matchScoreParam = queryParams.get("match") || "N/A";
+
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const id = params.get("id");
-    if (id) {
-      loadCandidate(id);
+    if (candidateId) {
+      loadCandidate(candidateId);
     } else {
       setLoading(false);
     }
     loadUser();
-  }, [location.search]);
+  }, [candidateId]);
 
   useEffect(() => {
     const fetchQuestionnaire = async () => {
@@ -108,6 +111,13 @@ export default function CandidateProfile() {
     fetchAppliedJob();
   }, [user, candidate]);
 
+  useEffect(() => {
+    // Only trigger if we have a candidate, the questionnaire is loaded, insights are empty, and we aren't already generating
+    if (candidate && !aiInsights.summary && !generatingInsights && questionnaireResponse !== null) {
+      generateEmployerInsights(candidate);
+    }
+  }, [candidate, questionnaireResponse, generatingInsights]); // Removed aiInsights.summary to prevent loop if it stays empty
+
   const loadUser = async () => {
     try {
       const userData = await User.me();
@@ -118,20 +128,14 @@ export default function CandidateProfile() {
   };
 
   const generateEmployerInsights = async (candidateData) => {
-    const apiKey = import.meta.env.VITE_EMPLOYER_VIEW_CANDIDATE_KEY;
-    if (!apiKey) {
-      console.log("Skipping AI generation: No API key found");
-      return;
-    }
-
-    const params = new URLSearchParams(location.search);
-    const jobId = params.get("jobId");
-    const cacheKey = `employer_insights_${candidateData.id}_${jobId || 'general'}`;
+    const INSIGHTS_ASSISTANT_ID = 'asst_y0XNCLBkyuYcbzxjYUdmHbxr';
+    const cacheKey = `employer_insights_v3_${candidateData.id}_${jobId || 'general'}`;
 
     const cachedData = localStorage.getItem(cacheKey);
     if (cachedData) {
       try {
-        setAiInsights(JSON.parse(cachedData));
+        const parsed = JSON.parse(cachedData);
+        setAiInsights(parsed);
         return;
       } catch (e) {
         console.error("Error parsing cached insights", e);
@@ -141,7 +145,7 @@ export default function CandidateProfile() {
 
     setGeneratingInsights(true);
     try {
-      const matchScore = params.get("match") || "N/A";
+      const matchScore = matchScoreParam;
 
       // 1. Fetch CV Content
       let cvText = "";
@@ -232,61 +236,81 @@ export default function CandidateProfile() {
         }
       }
 
-      // 3. Career Answer (using specific field if available, or bio)
-      const careerAnswer = candidateData.career_path_status || candidateData.bio || "Not specified";
+      // 3. Questionnaire Data
+      let questionnaireText = "No questionnaire data available.";
+      if (questionnaireResponse) {
+        questionnaireText = `
+        Preferences Questionnaire:
+        - Desired Position: ${questionnaireResponse.desired_position || 'N/A'}
+        - Preferred Location: ${questionnaireResponse.preferred_location || 'N/A'}
+        - Availability: ${questionnaireResponse.availability || 'N/A'}
+        - Job Type: ${questionnaireResponse.job_type || 'N/A'}
+        - Career Status: ${questionnaireResponse.career_status || 'N/A'}
+        `;
+      }
 
       // 4. Construct Prompt
       const prompt = `
-      Analyze this candidate for the following job.
+      Analyze this candidate for the following job based on their CV, preferences, and job requirements.
       
       Job Context:
       ${jobDescription}
       
       Candidate Data:
       Name: ${candidateData.full_name}
-      Match Score: ${matchScore}
-      Career Status/Goal: ${careerAnswer}
+      ${questionnaireText}
       
       CV Content:
       "${cvText.substring(0, 5000)}"
       
       Task:
-      Generate a JSON object with two keys:
-      1. "candidate_summary": A concise paragraph analyzing the candidate's professional background and suitability (in Hebrew).
-      2. "match_thoughts": A list of 3-5 bullet points (strings) explaining "What Match Thinks" - highlighting key strengths or gaps relative to the job (in Hebrew).
+      Generate a valid JSON object in Hebrew with the following keys:
+      1. "match_score": A number (0-100) representing the match percentage.
+      2. "candidate_summary": A professional paragraph (Hebrew) summarizing the candidate's background and suitability for this specific job.
+      3. "match_thoughts": A list of 5-7 bullet points (Hebrew) explaining "What Metch Thinks" - specific strengths, gaps, or highlights about the match.
       
       Return ONLY valid JSON:
       {
+        "match_score": 90,
         "candidate_summary": "...",
         "match_thoughts": ["...", "..."]
       }
       `;
 
       // 5. Call Assistant
+      console.log("DEBUG: Calling Assistant with ID:", INSIGHTS_ASSISTANT_ID);
+      console.log("DEBUG: CV Text Length:", cvText ? cvText.length : 0);
       const response = await Core.InvokeAssistant({
-        assistantId: apiKey,
+        assistantId: INSIGHTS_ASSISTANT_ID,
         prompt
       });
 
+      console.log("DEBUG: Raw AI Response:", response);
+      console.log("Assistant Response:", response);
 
 
-      let parsed = null;
-      try {
-        let clean = response.content.replace(/```json/g, '').replace(/```/g, '').trim();
-        const jsonMatch = clean.match(/\{[\s\S]*\}/);
-        if (jsonMatch) clean = jsonMatch[0];
-        parsed = JSON.parse(clean);
-      } catch (e) {
-        console.error("Failed to parse AI JSON", e);
-      }
+      if (response.content) {
+        try {
+          let clean = response.content.trim();
+          // Extract JSON if wrapped in text or markdown
+          const jsonMatch = clean.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            clean = jsonMatch[0];
+          }
+          const parsed = JSON.parse(clean);
 
-      if (parsed) {
-        const insights = {
-          summary: parsed.candidate_summary,
-          thoughts: parsed.match_thoughts
-        };
-        setAiInsights(insights);
-        localStorage.setItem(cacheKey, JSON.stringify(insights));
+          if (parsed) {
+            const insights = {
+              summary: parsed.candidate_summary || parsed.summary,
+              thoughts: parsed.match_thoughts || parsed.thoughts,
+              score: parsed.match_score || parsed.score || 90
+            };
+            setAiInsights(insights);
+            localStorage.setItem(cacheKey, JSON.stringify(insights));
+          }
+        } catch (e) {
+          console.error("Failed to parse AI JSON", e, response.content);
+        }
       }
 
     } catch (error) {
@@ -313,8 +337,7 @@ export default function CandidateProfile() {
           console.error("Error fetching CV", e);
         }
 
-        // Trigger AI generation after loading candidate
-        generateEmployerInsights(results[0]);
+        // generateEmployerInsights will be triggered by useEffect when questionnaireResponse is set
       } else {
         console.error(`Candidate with ID ${id} not found.`);
       }
@@ -672,20 +695,15 @@ export default function CandidateProfile() {
           // Create notification for candidate
           await Notification.create({
             type: 'profile_view',
-            user_id: candidate.id || candidate.email,
-            user_email: candidate.email,
-            created_by: candidate.id || candidate.email,
+            user_id: candidate.id,
             title: 'מישהו צפה לך בפרופיל!',
             message: `מעסיק צפה בפרופיל שלך כרגע. בהצלחה!`,
-            data: {
-              candidate_id: candidate.id,
-              viewer_name: user.company_name || 'מעסיק'
-            },
             is_read: false,
             created_date: new Date().toISOString()
           });
-        } catch (error) {
-          console.error("Error tracking candidate view or creating notification:", error);
+          console.log("Notification created successfully");
+        } catch (err) {
+          console.error("Error creating notification:", err);
         }
       }
     };
@@ -739,8 +757,8 @@ export default function CandidateProfile() {
   };
 
   return (
-    <div className="w-full" dir="rtl">
-      <Card className="text-card-foreground bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden min-h-[85vh] flex flex-col w-full">
+    <div className="w-full min-h-screen bg-gray-50/30 py-4 px-2 flex justify-center" dir="rtl">
+      <Card className="text-card-foreground bg-white border border-gray-100 shadow-xl overflow-hidden min-h-[85vh] flex flex-col w-full max-w-[99.5%] rounded-[1.5rem] md:rounded-[2rem]">
         {/* Header Background */}
         <ProfileHeader />
 
@@ -748,8 +766,8 @@ export default function CandidateProfile() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col items-center text-center space-y-6"
+            transition={{ duration: 0.3 }}
+            className="flex flex-col items-center text-center space-y-3"
           >
             {/* Avatar - Centered & Overlapping */}
             <div className="relative">
@@ -766,14 +784,16 @@ export default function CandidateProfile() {
               </div>
             </div>
 
-            {/* Name */}
-            <h1 className="text-3xl md:text-4xl font-bold text-[#003566]">
-              {(() => {
-                if (candidate.full_name && candidate.full_name.trim().length > 0) return candidate.full_name;
-                if (candidate.email) return candidate.email;
-                return 'מועמד ללא שם';
-              })()}
-            </h1>
+            {/* Name/Title */}
+            <div className="text-center mb-4">
+              <h1 className="text-2xl font-bold text-[#003566]">
+                {(() => {
+                  if (candidate.full_name && candidate.full_name.trim().length > 0) return candidate.full_name;
+                  if (candidate.email) return candidate.email;
+                  return 'מועמד ללא שם';
+                })()}
+              </h1>
+            </div>
 
             {/* Badges */}
             <ProfileBadges
@@ -785,31 +805,30 @@ export default function CandidateProfile() {
             />
 
             {/* Job Applied For */}
-            {appliedJob && (
-              <div className="text-lg text-gray-700 font-medium mt-2">
-                עבור <span className="text-[#003566] font-bold">{appliedJob.title},</span> {appliedJob.location}.
-              </div>
-            )}
+            {/* Removed appliedJob text to match design example 0 */}
 
-            {/* Match Score */}
-            <ProfileMatchScore matchScore={matchScore} />
+            {/* Content Sections Container - Constrained Width */}
+            <div className="w-full max-w-4xl mx-auto space-y-7">
+              {/* Match Score */}
+              <ProfileMatchScore matchScore={aiInsights.score} />
 
-            {/* Info Cards */}
-            <ProfileInfo
-              looking_for_summary={candidate.looking_for_summary}
-              bio={candidate.bio}
-              aiSummary={aiInsights.summary}
-              aiThoughts={aiInsights.thoughts}
-              isLoading={generatingInsights}
-            />
+              {/* Info Cards */}
+              <ProfileInfo
+                looking_for_summary={candidate.looking_for_summary}
+                bio={candidate.bio}
+                aiSummary={aiInsights.summary}
+                aiThoughts={aiInsights.thoughts}
+                isLoading={generatingInsights}
+              />
 
-            {/* Resume */}
-            <ProfileResume
-              resume_url={candidate.resume_url}
-              full_name={candidate.full_name}
-              cvData={cvData}
-              onViewCv={() => setIsCvPreviewOpen(true)}
-            />
+              {/* Resume/CV */}
+              <ProfileResume
+                resume_url={candidate.resume_url}
+                full_name={candidate.full_name}
+                cvData={cvData}
+                onViewCv={() => setIsCvPreviewOpen(true)}
+              />
+            </div>
 
             {/* Socials */}
             <ProfileSocials
