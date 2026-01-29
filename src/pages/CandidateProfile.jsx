@@ -315,6 +315,8 @@ export default function CandidateProfile() {
 
     } catch (error) {
       console.error("Error generating insights:", error);
+      // Set empty but non-null summary to stop the retry loop in useEffect
+      setAiInsights(prev => ({ ...prev, summary: "נתונים אינם זמינים כעת" }));
     } finally {
       setGeneratingInsights(false);
     }

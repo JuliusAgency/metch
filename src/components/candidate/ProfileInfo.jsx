@@ -21,7 +21,7 @@ const ProfileInfo = ({ looking_for_summary, bio, aiThoughts, aiSummary, isLoadin
                         ))}
                     </ul>
                 ) : (
-                    "אין מידע זמין כרגע"
+                    "נתונים אינם זמינים כעת"
                 )}
             </div>
         </div>
@@ -36,7 +36,7 @@ const ProfileInfo = ({ looking_for_summary, bio, aiThoughts, aiSummary, isLoadin
                         <div className="h-4 bg-gray-100 rounded w-5/6"></div>
                     </div>
                 ) : (
-                    aiSummary || bio || "אין מידע זמין כרגע"
+                    aiSummary || bio || "נתונים אינם זמינים כעת"
                 )}
             </div>
         </div>
