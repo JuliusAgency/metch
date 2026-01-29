@@ -515,11 +515,7 @@ export default function CVGenerator() {
     // BYPASS: If skip, go straight to Dashboard
     const isOnboarding = searchParams.get('onboarding') === 'true' || localStorage.getItem('onboarding_active') === 'true';
     if (isOnboarding) {
-      if (isSkip) {
-        navigate('/Dashboard?onboarding=complete', { replace: true });
-      } else {
-        navigate('/JobSeekerProfileCompletion?onboarding=true', { replace: true });
-      }
+      navigate('/JobSeekerProfileCompletion?onboarding=true', { replace: true });
     } else {
       navigate('/Profile');
     }
