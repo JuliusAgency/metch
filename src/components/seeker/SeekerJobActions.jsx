@@ -17,9 +17,9 @@ const SeekerJobActions = ({ handleApply, applying, isUnavailable, hasExistingApp
                 <Button
                     onClick={handleReject}
                     variant="outline"
-                    className="w-full sm:w-auto px-8 py-2 rounded-full border-gray-300 text-gray-700 font-medium text-base h-auto hover:bg-gray-50"
+                    className="w-full sm:w-auto px-12 py-2 rounded-full border-gray-300 bg-white text-gray-700 font-medium text-base h-auto hover:bg-gray-50"
                 >
-                    לא מתאים לי
+                    לא מעוניין
                 </Button>
             )}
 

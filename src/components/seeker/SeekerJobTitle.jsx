@@ -6,36 +6,24 @@ import {
 } from "lucide-react";
 
 const SeekerJobTitle = ({ job, employmentTypeText }) => (
-    <div className="text-center mb-4">
-        <p className="text-lg text-gray-600 mb-1">{job.company}</p>
+    <div className="text-center mb-4 pt-[30px]" dir="rtl">
         <h1 className="text-2xl font-bold text-gray-900 mb-3">{job.title}</h1>
 
-        <div className="flex justify-center items-center gap-3 mb-4">
-            <Badge variant="outline" className="text-xs font-bold border-blue-100 text-blue-900 py-1.5 px-3 rounded-lg shadow-sm" style={{ backgroundColor: '#e1f1fa' }}>
-                <MapPin className="w-3.5 h-3.5 ml-1 text-blue-900" />
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 px-2 max-w-lg mx-auto mb-1" dir="rtl">
+            <Badge variant="outline" className="text-sm font-extrabold border-blue-100 text-blue-900 py-2 rounded-lg shadow-sm flex items-center justify-center gap-2 bg-white w-full">
+                <MapPin className="w-4 h-4 text-blue-900 shrink-0" />
                 {job.location}
             </Badge>
-            <Badge variant="outline" className="text-xs font-bold border-blue-100 text-blue-900 py-1.5 px-3 rounded-lg shadow-sm" style={{ backgroundColor: '#e1f1fa' }}>
-                <Briefcase className="w-3.5 h-3.5 ml-1 text-blue-900" />
+            <Badge variant="outline" className="text-sm font-extrabold border-blue-100 text-blue-900 py-2 rounded-lg shadow-sm flex items-center justify-center gap-2 bg-white w-full">
+                <Briefcase className="w-4 h-4 text-blue-900 shrink-0" />
                 {employmentTypeText[job.employment_type] || 'משרה מלאה'}
             </Badge>
-            <Badge variant="outline" className="text-xs font-bold border-blue-100 text-blue-900 py-1.5 px-3 rounded-lg shadow-sm" style={{ backgroundColor: '#e1f1fa' }}>
-                <Clock className="w-3.5 h-3.5 ml-1 text-blue-900" />
+            <Badge variant="outline" className="text-sm font-extrabold border-blue-100 text-blue-900 py-2 rounded-lg shadow-sm flex items-center justify-center gap-2 bg-white w-full">
+                <Clock className="w-4 h-4 text-blue-900 shrink-0" />
                 {job.start_date}
             </Badge>
         </div>
 
-        <div className="max-w-xs mx-auto mb-4">
-            <div className="text-center mb-1">
-                <span className="text-base font-semibold text-gray-700">{job.match_score || 90}% התאמה</span>
-            </div>
-            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                    className={`h-full transition-all duration-1000 rounded-full ${(!job.match_score && job.match_score !== 0 || job.match_score >= 70) ? 'bg-green-500' : job.match_score >= 40 ? 'bg-orange-500' : 'bg-red-600'}`}
-                    style={{ width: `${job.match_score || 90}%` }}
-                ></div>
-            </div>
-        </div>
     </div>
 );
 

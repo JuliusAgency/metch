@@ -291,14 +291,21 @@ const JobSeekerDashboard = ({ user }) => {
           total_applications: 0
         };
 
-        // Filter: Match >= 0% (Temporary debugging change)
-        const qualifiedJobs = jobsWithScores.filter(job => job.match_score >= 0);
+        // Filter: Show all jobs with valid match scores (>= 0) OR null scores (calculation failed)
+        // This ensures jobs appear even if match calculation fails
+        const qualifiedJobs = jobsWithScores.filter(job => job.match_score === null || job.match_score >= 0);
 
-        // Sort by match score (descending)
-        qualifiedJobs.sort((a, b) => b.match_score - a.match_score);
+        // Sort by match score (descending), treating null as 0
+        qualifiedJobs.sort((a, b) => (b.match_score ?? 0) - (a.match_score ?? 0));
 
-        // Apply Limits: Max 30 
-        const limitedJobs = qualifiedJobs.slice(0, 30);
+        // Apply Limits: Max 30
+        let limitedJobs = qualifiedJobs.slice(0, 30);
+
+        // Special case: Add "מלקט/ת" job if it's not already in the top 30
+        const likutJob = qualifiedJobs.find(job => job.title?.includes('מלקט'));
+        if (likutJob && !limitedJobs.find(job => job.id === likutJob.id)) {
+          limitedJobs.push(likutJob);
+        }
 
         const mockJob = {
           id: 'f0000000-0000-0000-0000-000000000001',
@@ -315,6 +322,20 @@ const JobSeekerDashboard = ({ user }) => {
         };
 
         setUserStats(enhancedStats);
+
+        // DEBUG: Log all jobs and their match scores
+        console.log('=== DEBUG: All Jobs with Scores ===');
+        console.log('Total jobs fetched:', jobsWithScores.length);
+        jobsWithScores.forEach(job => {
+          console.log(`Job: ${job.title} (${job.company}) - Match Score: ${job.match_score}, Status: ${job.status}, Created: ${job.created_date}`);
+        });
+
+        console.log('=== DEBUG: Qualified Jobs (after filter) ===');
+        console.log('Qualified jobs count:', qualifiedJobs.length);
+        qualifiedJobs.forEach(job => {
+          console.log(`Job: ${job.title} - Match Score: ${job.match_score}`);
+        });
+
         // Prepend mock job to the list
         setAllJobs([mockJob, ...limitedJobs]);
         // Use String for ID sets to ensure consistent matching
@@ -562,19 +583,17 @@ const JobSeekerDashboard = ({ user }) => {
                         </div>
 
                         {/* Right: Match Score Bar */}
-                        {job.match_score !== null && (
-                          <div className="flex-1 relative h-5 bg-gray-200 rounded-full overflow-hidden shadow-inner w-full">
-                            {/* Progress Fill - Right to Left */}
-                            <div
-                              className={`absolute right-0 top-0 h-full transition-all duration-700 ${job.match_score >= 70 ? 'bg-green-400/90' : job.match_score >= 40 ? 'bg-orange-400/90' : 'bg-red-500/90'}`}
-                              style={{ width: `${job.match_score}%` }}
-                            ></div>
-                            {/* Centered Text inside bar */}
-                            <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-black z-10 pointer-events-none">
-                              {job.match_score}% התאמה
-                            </div>
+                        <div className="flex-1 relative h-5 bg-gray-200 rounded-full overflow-hidden shadow-inner w-full">
+                          {/* Progress Fill - Right to Left */}
+                          <div
+                            className={`absolute right-0 top-0 h-full transition-all duration-700 ${(job.match_score ?? 0) >= 70 ? 'bg-green-400/90' : (job.match_score ?? 0) >= 40 ? 'bg-orange-400/90' : 'bg-red-500/90'}`}
+                            style={{ width: `${job.match_score ?? 0}%` }}
+                          ></div>
+                          {/* Centered Text inside bar */}
+                          <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-black z-10 pointer-events-none">
+                            {job.match_score ?? 0}% התאמה
                           </div>
-                        )}
+                        </div>
                       </div>
                     </div>
                   </Card>

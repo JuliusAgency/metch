@@ -115,30 +115,13 @@ export default function JobDetailsSeeker() {
             }
           }
 
-          // Parse screening_questions if needed
-          if (fetchedJob.screening_questions && typeof fetchedJob.screening_questions === 'string') {
-            try {
-              let jsonStr = fetchedJob.screening_questions;
-              // Handle Postgres Bytea Hex format
-              if (jsonStr.startsWith('\\x')) {
-                const hex = jsonStr.slice(2);
-                let str = '';
-                for (let i = 0; i < hex.length; i += 2) {
-                  str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-                }
-                jsonStr = str;
-              }
-              fetchedJob.screening_questions = JSON.parse(jsonStr);
-            } catch (e) {
-              console.warn("Failed to parse screening_questions", e);
-              fetchedJob.screening_questions = [];
-            }
-          }
+          // Helper to safely parse JSON from DB
+          const safeParseJSON = (data, fallback = []) => {
+            if (!data) return fallback;
+            if (typeof data !== 'string') return data;
 
-          // Parse attachments if needed
-          if (fetchedJob.attachments && typeof fetchedJob.attachments === 'string') {
             try {
-              let jsonStr = fetchedJob.attachments;
+              let jsonStr = data;
               // Handle Postgres Bytea Hex format
               if (jsonStr.startsWith('\\x')) {
                 const hex = jsonStr.slice(2);
@@ -148,11 +131,26 @@ export default function JobDetailsSeeker() {
                 }
                 jsonStr = str;
               }
-              fetchedJob.attachments = JSON.parse(jsonStr);
+              return JSON.parse(jsonStr);
             } catch (e) {
-              console.warn("Failed to parse attachments", e);
-              fetchedJob.attachments = [];
+              console.warn("Failed to parse JSON field", e);
+              return fallback;
             }
+          };
+
+          // Parse all relevant structured fields
+          fetchedJob.screening_questions = safeParseJSON(fetchedJob.screening_questions);
+          fetchedJob.attachments = safeParseJSON(fetchedJob.attachments);
+          fetchedJob.company_perks = safeParseJSON(fetchedJob.company_perks);
+          fetchedJob.structured_requirements = safeParseJSON(fetchedJob.structured_requirements);
+          fetchedJob.structured_education = safeParseJSON(fetchedJob.structured_education);
+
+          // Also handle responsibilities/requirements if they might be stored as JSON strings
+          if (typeof fetchedJob.responsibilities === 'string' && fetchedJob.responsibilities.trim().startsWith('[')) {
+            fetchedJob.responsibilities = safeParseJSON(fetchedJob.responsibilities);
+          }
+          if (typeof fetchedJob.requirements === 'string' && fetchedJob.requirements.trim().startsWith('[')) {
+            fetchedJob.requirements = safeParseJSON(fetchedJob.requirements);
           }
 
           setJob(fetchedJob);
@@ -417,60 +415,12 @@ export default function JobDetailsSeeker() {
           <SeekerJobTitle job={job} employmentTypeText={employmentTypeText} />
           <SeekerJobPerks perks={job.company_perks} />
 
-          {/* AI Analysis Cards */}
-          {(aiAnalysis || isAiLoading) && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 mb-6">
-              {/* Card 1: Why it suits you */}
-              <Card className="bg-gradient-to-br from-indigo-50 to-white border-indigo-100 shadow-sm opacity-100 transition-all duration-300">
-                <CardContent className="p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <h3 className="font-bold text-gray-900 text-lg">למה המשרה מתאימה לך?</h3>
-                  </div>
-                  {isAiLoading ? (
-                    <div className="space-y-2 animate-pulse">
-                      <div className="h-4 bg-indigo-100 rounded w-3/4"></div>
-                      <div className="h-4 bg-indigo-100 rounded w-full"></div>
-                      <div className="h-4 bg-indigo-100 rounded w-5/6"></div>
-                    </div>
-                  ) : (
-                    <p className="text-gray-700 leading-relaxed text-sm">
-                      {aiAnalysis?.why_suitable || "אנו מעבדים את הנתונים..."}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+          <SeekerJobInfo
+            job={job}
+            aiAnalysis={aiAnalysis}
+            isAiLoading={isAiLoading}
+          />
 
-              {/* Card 2: Metch Thoughts */}
-              <Card className="bg-gradient-to-br from-blue-50 to-white border-blue-100 shadow-sm opacity-100 transition-all duration-300">
-                <CardContent className="p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <h3 className="font-bold text-gray-900 text-lg">מה מאצ' חושב על ההתאמה?</h3>
-                  </div>
-                  {isAiLoading ? (
-                    <div className="space-y-3 animate-pulse">
-                      {[1, 2, 3].map(i => (
-                        <div key={i} className="flex gap-2">
-                          <div className="w-4 h-4 rounded-full bg-blue-100 shrink-0"></div>
-                          <div className="h-4 bg-blue-100 rounded w-full"></div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <ul className="space-y-2.5">
-                      {aiAnalysis?.match_analysis?.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-2.5">
-                          <CheckCircle2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-                          <span className="text-gray-700 text-sm">{item}</span>
-                        </li>
-                      )) || <li className="text-gray-500 text-sm">מעבד נתונים...</li>}
-                    </ul>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          <SeekerJobInfo job={job} />
           <SeekerJobImages images={attachments} />
           <SeekerJobActions
             handleApply={handleApply}
