@@ -49,8 +49,11 @@ const getBirthDateValue = (source) => source?.birth_date || source?.birthDate ||
 const REQUIRED_FIELDS = ['firstName', 'lastName', 'phone', 'address', 'birthDate', 'gender'];
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
-const isFormComplete = (formData) => (
-  REQUIRED_FIELDS.every((field) => {
+const isFormComplete = (formData) => {
+  // Enforce phone verification
+  if (!formData?.is_phone_verified) return false;
+
+  return REQUIRED_FIELDS.every((field) => {
     const fieldValue = formData?.[field];
     if (field === 'birthDate') {
       return typeof fieldValue === 'string' && DATE_REGEX.test(fieldValue.trim());
@@ -59,8 +62,8 @@ const isFormComplete = (formData) => (
       return fieldValue.trim().length > 0;
     }
     return Boolean(fieldValue);
-  })
-);
+  });
+};
 
 export default function Step1_PersonalDetails({ data, setData, user, onValidityChange = () => { } }) {
   const [localData, setLocalData] = useState({

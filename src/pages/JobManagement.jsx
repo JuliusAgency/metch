@@ -61,7 +61,7 @@ export default function JobManagement() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 2;
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     loadData();

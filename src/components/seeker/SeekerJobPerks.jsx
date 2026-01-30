@@ -1,26 +1,16 @@
 import { Check } from "lucide-react";
 
 const SeekerJobPerks = ({ perks }) => (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 px-2 max-w-lg mx-auto mb-4" dir="rtl">
-        {Array.isArray(perks) && perks.map((perk, index) => {
-            // Cyclical colors: green, blue, purple
-            const colors = [
-                { bg: '#dbfce7', text: '#166534' }, // Green
-                { bg: '#dbe9fe', text: '#1e40af' }, // Blue
-                { bg: '#f3e8ff', text: '#6b21a8' }  // Purple
-            ];
-            const color = colors[index % colors.length];
-
-            return (
-                <div
-                    key={index}
-                    className="flex items-center justify-center px-2 py-1.5 rounded-lg shadow-sm border border-transparent font-bold text-sm w-full truncate"
-                    style={{ backgroundColor: color.bg, color: color.text }}
-                >
-                    {perk}
-                </div>
-            );
-        })}
+    <div className="flex flex-wrap justify-center gap-4 mb-8 max-w-2xl mx-auto" dir="rtl">
+        {Array.isArray(perks) && perks.map((perk, index) => (
+            <div
+                key={index}
+                className="bg-white text-gray-800 px-4 py-2 rounded-full text-sm font-medium border border-gray-200 flex items-center gap-2"
+            >
+                <Check className="w-5 h-5 text-green-500 bg-green-100 rounded-full p-0.5" />
+                {perk}
+            </div>
+        ))}
     </div>
 );
 

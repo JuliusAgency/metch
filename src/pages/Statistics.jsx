@@ -17,7 +17,7 @@ export default function Statistics() {
     const [loading, setLoading] = useState(true);
     const [activeView, setActiveView] = useState('active'); // 'active' or 'expired'
     const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 5;
+    const ITEMS_PER_PAGE = 10;
 
     useEffect(() => {
         loadData();
