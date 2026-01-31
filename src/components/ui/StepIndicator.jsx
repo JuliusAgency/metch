@@ -7,7 +7,7 @@ export default function StepIndicator({ totalSteps = 5, currentStep }) {
                 {Array.from({ length: totalSteps }).map((_, index) => (
                     <div
                         key={index}
-                        className={`w-16 h-1.5 rounded-full transition-colors duration-300 ${index < currentStep ? 'bg-[#86D2A4]' : 'bg-gray-200'
+                        className={`w-16 h-1.5 rounded-full transition-colors duration-300 ${index + 1 <= currentStep ? 'bg-[#86D2A4]' : 'bg-gray-200'
                             }`}
                     ></div>
                 ))}

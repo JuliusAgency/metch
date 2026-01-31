@@ -29,14 +29,14 @@ const PillInput = ({ name, placeholder, value, onChange, type = "text", classNam
     value={value}
     onChange={onChange}
     type={type}
-    className={cn("w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400", className)}
+    className={cn("w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right focus:border-blue-400 focus:ring-blue-400", className)}
     {...props}
   />
 );
 
 const PillSelect = ({ name, placeholder, value, onValueChange, children }) => (
   <Select name={name} value={value} onValueChange={onValueChange}>
-    <SelectTrigger className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400">
+    <SelectTrigger className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right focus:border-blue-400 focus:ring-blue-400 [&>span]:w-full [&>span]:text-right flex items-center justify-between">
       <SelectValue placeholder={placeholder} />
     </SelectTrigger>
     <SelectContent>
@@ -208,103 +208,106 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     <div className="max-w-4xl mx-auto text-center" dir="rtl">
       <h2 className="text-3xl font-bold text-gray-900 mb-3">פרטים אישיים</h2>
       <p className="text-gray-600 mb-12 max-w-lg mx-auto">בחלק הזה תספקו לנו מידע נחוץ עליכם כך שמעסיקים פוטנציאליים יוכלו לפנות אליכם</p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-10">
-        {/* Row 1 */}
-        <PillInput name="firstName" placeholder="שם פרטי" value={localData.firstName} onChange={handleInputChange} />
-        <PillInput name="lastName" placeholder="שם משפחה" value={localData.lastName} onChange={handleInputChange} />
-        <div className="relative">
+      {/* Card wrapper with shadow */}
+      <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.08)] mx-3 md:mx-0">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4">
+          {/* Row 1 */}
+          <PillInput name="firstName" placeholder="שם פרטי" value={localData.firstName} onChange={handleInputChange} />
+          <PillInput name="lastName" placeholder="שם משפחה" value={localData.lastName} onChange={handleInputChange} />
           <div className="relative">
-            <PillInput
-              name="phone"
-              placeholder="מספר טלפון"
-              value={localData.phone}
-              onChange={handleInputChange}
-              className="pl-36"
-              disabled={localData.is_phone_verified}
-            />
-            <Button
-              type="button"
-              onClick={() => setIsVerificationOpen(true)}
-              disabled={localData.is_phone_verified}
-              className={`absolute left-1.5 top-1/2 -translate-y-1/2 h-8 px-4 text-xs font-medium rounded-full transition-all ${localData.is_phone_verified
-                ? 'bg-green-500 text-white cursor-default'
-                : 'bg-[#1e88e5] text-white hover:bg-[#1565c0]'
-                }`}
-            >
-              {localData.is_phone_verified ? 'אומת ✓' : 'שליחת קוד'}
-            </Button>
+            <div className="relative">
+              <PillInput
+                name="phone"
+                placeholder="מספר טלפון"
+                value={localData.phone}
+                onChange={handleInputChange}
+                className="pl-36"
+                disabled={localData.is_phone_verified}
+              />
+              <Button
+                type="button"
+                onClick={() => setIsVerificationOpen(true)}
+                disabled={localData.is_phone_verified}
+                className={`absolute left-1.5 top-1/2 -translate-y-1/2 h-8 px-4 text-xs font-medium rounded-full transition-all ${localData.is_phone_verified
+                  ? 'bg-green-500 text-white cursor-default'
+                  : 'bg-[#1e88e5] text-white hover:bg-[#1565c0]'
+                  }`}
+              >
+                {localData.is_phone_verified ? 'אומת ✓' : 'שליחת קוד'}
+              </Button>
+            </div>
+            {!localData.is_phone_verified && (
+              <p
+                onClick={() => setIsVerificationOpen(true)}
+                className="text-xs text-[#1e88e5] font-medium cursor-pointer mt-2 text-right w-full hover:underline mr-4"
+              >
+                לא קיבלתי שליחת קוד
+              </p>
+            )}
           </div>
-          {!localData.is_phone_verified && (
-            <p
-              onClick={() => setIsVerificationOpen(true)}
-              className="text-xs text-[#1e88e5] font-medium cursor-pointer mt-2 text-right w-full hover:underline mr-4"
-            >
-              לא קיבלתי שליחת קוד
-            </p>
-          )}
+
+          {/* Row 2 */}
+          <PillSelect name="gender" placeholder="מגדר" value={localData.gender} onValueChange={handleSelectChange}>
+            <SelectItem value="male">זכר</SelectItem>
+            <SelectItem value="female">נקבה</SelectItem>
+            <SelectItem value="other">אחר</SelectItem>
+          </PillSelect>
+
+          <Popover open={openLocation} onOpenChange={setOpenLocation}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={openLocation}
+                className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right focus:border-blue-400 focus:ring-blue-400 justify-between font-normal hover:bg-white"
+              >
+                {localData.address || "מקום מגורים"}
+                <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[300px] p-0" align="start" dir="rtl">
+              <Command>
+                <CommandInput placeholder="חיפוש עיר..." className="text-right gap-2" />
+                <CommandList>
+                  <CommandEmpty>לא נמצאה עיר.</CommandEmpty>
+                  <CommandGroup className="max-h-[300px] overflow-y-auto">
+                    {locationsList.map((loc) => (
+                      <CommandItem
+                        key={loc}
+                        value={loc}
+                        onSelect={(currentValue) => {
+                          handleLocationChange(currentValue);
+                          setOpenLocation(false);
+                        }}
+                        className="text-right flex justify-between cursor-pointer"
+                      >
+                        <Check
+                          className={cn(
+                            "h-4 w-4",
+                            localData.address === loc ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {loc}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+
+          <PillInput
+            name="birthDate"
+            placeholder="תאריך לידה"
+            value={localData.birthDate}
+            onChange={handleInputChange}
+            type={localData.birthDate ? 'date' : 'text'}
+            min={minBirthDate}
+            max={maxBirthDate}
+            onFocus={(e) => { e.target.type = 'date'; }}
+            onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }}
+          />
         </div>
-
-        {/* Row 2 */}
-        <PillSelect name="gender" placeholder="מגדר" value={localData.gender} onValueChange={handleSelectChange}>
-          <SelectItem value="male">זכר</SelectItem>
-          <SelectItem value="female">נקבה</SelectItem>
-          <SelectItem value="other">אחר</SelectItem>
-        </PillSelect>
-
-        <Popover open={openLocation} onOpenChange={setOpenLocation}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={openLocation}
-              className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400 justify-between font-normal hover:bg-white"
-            >
-              {localData.address || "מקום מגורים"}
-              <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[300px] p-0" align="start" dir="rtl">
-            <Command>
-              <CommandInput placeholder="חיפוש עיר..." className="text-right gap-2" />
-              <CommandList>
-                <CommandEmpty>לא נמצאה עיר.</CommandEmpty>
-                <CommandGroup className="max-h-[300px] overflow-y-auto">
-                  {locationsList.map((loc) => (
-                    <CommandItem
-                      key={loc}
-                      value={loc}
-                      onSelect={(currentValue) => {
-                        handleLocationChange(currentValue);
-                        setOpenLocation(false);
-                      }}
-                      className="text-right flex justify-between cursor-pointer"
-                    >
-                      <Check
-                        className={cn(
-                          "h-4 w-4",
-                          localData.address === loc ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      {loc}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-
-        <PillInput
-          name="birthDate"
-          placeholder="תאריך לידה"
-          value={localData.birthDate}
-          onChange={handleInputChange}
-          type={localData.birthDate ? 'date' : 'text'}
-          min={minBirthDate}
-          max={maxBirthDate}
-          onFocus={(e) => { e.target.type = 'date'; }}
-          onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }}
-        />
       </div>
 
       <WhatsAppVerificationDialog

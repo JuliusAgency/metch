@@ -159,7 +159,7 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
             <h2 className="text-3xl font-bold text-gray-900 mb-3">הסמכות מקצועיות ורישיונות</h2>
             <p className="text-gray-600 mb-12 max-w-lg mx-auto">בחלק הזה תציינו בנוסף להשכלתכם הסמכות מקצועיות</p>
 
-            <div className="space-y-6">
+            <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-6 pb-48 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.08)] mx-3 md:mx-0 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Popover open={open} onOpenChange={setOpen}>
                         <PopoverTrigger asChild>
@@ -208,20 +208,14 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
                     placeholder="הערות"
                     value={currentItem.notes || ''}
                     onChange={(e) => handleCurrentItemChange('notes', e.target.value)}
-                    className="w-full bg-white border-gray-200 rounded-xl p-4 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400 min-h-[120px]" />
-            </div>
+                    className="w-full bg-white border-gray-200 rounded-xl px-4 py-3 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400 min-h-[48px] h-12 resize-none overflow-hidden" />
 
-            <div className="mt-6 flex justify-between gap-4">
-                <Button variant="link" className="text-blue-600 font-semibold" onClick={handleSave}>
-                    <Plus className="w-4 h-4 ml-2" />
-                    {(data || []).find(i => i.id === currentItem.id) ? 'עדכון הסמכה' : 'הוספת הסמכה'}
-                </Button>
-                <Button
-                    onClick={handleSave}
-                    className="bg-green-600 hover:bg-green-700 text-white rounded-full px-6"
-                >
-                    שמירה
-                </Button>
+                <div className="flex justify-start mt-4">
+                    <Button variant="link" className="text-blue-600 font-semibold p-0 h-auto" onClick={handleSave}>
+                        <Plus className="w-4 h-4 ml-1" />
+                        {(data || []).find(i => i.id === currentItem.id) ? 'עדכון הסמכה' : 'הוספת הסמכה'}
+                    </Button>
+                </div>
             </div>
 
             {data && data.length > 0 && (

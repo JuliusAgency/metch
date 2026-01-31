@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/components/ui/use-toast';
+import { Menu } from 'lucide-react';
+import VectorLogo from '@/assets/Vector.svg';
 
 const CareerStageSelection = () => {
     const [selected, setSelected] = useState(null);
@@ -67,6 +69,19 @@ const CareerStageSelection = () => {
 
     return (
         <div className="bg-gradient-to-b from-[#dbecf3] from-[12.35%] to-[#ffffff] via-[#ffffff] via-[32.336%] min-h-screen w-full flex flex-col items-center justify-center p-4 relative overflow-hidden" dir="rtl">
+
+            {/* Mobile Header - Pill Shape */}
+            <div className="w-full px-2 pt-1 pb-2 md:hidden absolute top-0 z-10">
+                <div className="bg-[#e0eef5]/90 backdrop-blur-md border border-white/40 rounded-full px-6 py-3 flex items-center justify-between shadow-sm">
+                    <button className="text-[#001d3d] p-1">
+                        <Menu className="w-6 h-6" />
+                    </button>
+                    <div className="flex items-center gap-1">
+                        <p className="font-['Poppins',_sans-serif] text-2xl text-[#001d3d] font-light pt-0.5 tracking-tight">Metch</p>
+                        <img src={VectorLogo} alt="Metch Logo" className="w-3.5 h-3.5 object-contain" />
+                    </div>
+                </div>
+            </div>
 
             {/* Background elements if needed, keeping it clean for now */}
 

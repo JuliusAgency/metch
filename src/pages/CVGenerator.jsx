@@ -9,12 +9,13 @@ import Step3Education from '@/components/cv_generator/Step3_Education';
 import Step4Certifications from '@/components/cv_generator/Step4_Certifications';
 
 
+import Step5Skills from '@/components/cv_generator/Step5_Skills';
 import Step6Summary from '@/components/cv_generator/Step6_Summary';
 import Step7Preview from '@/components/cv_generator/Step7_Preview';
 import UploadCV from '@/components/cv_generator/UploadCV';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/components/ui/use-toast";
-import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, Menu } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { useRequireUserType } from '@/hooks/use-require-user-type';
@@ -23,8 +24,10 @@ import cvExistsIcon from '@/assets/cv_exists_icon.png';
 import CVChoiceModal from '@/components/CVChoiceModal';
 import globeGrid from '@/assets/globe_grid.png';
 import StepIndicator from '@/components/ui/StepIndicator';
+import VectorLogo from '@/assets/Vector.svg';
 
-const STEPS = ["פרטים אישיים", "ניסיון תעסוקתי", "השכלה", "הסמכות", "תמצית", "תצוגה מקדימה"];
+const STEPS = ["פרטים אישיים", "ניסיון תעסוקתי", "השכלה", "הסמכות", "כישורים", "תמצית", "תצוגה מקדימה"];
+const STEPS_MOBILE = ["פרטים", "ניסיון", "השכלה", "הסמכות", "כישורים", "תמצית", "תצוגה מקדימה"];
 
 const ensureArray = (value) => {
   if (Array.isArray(value)) {
@@ -558,8 +561,9 @@ export default function CVGenerator() {
       case 2: return <Step2WorkExperience data={cvData.work_experience || []} setData={(updater) => setCvData((prev) => ({ ...prev, work_experience: updater(prev.work_experience || []) }))} onDirtyChange={handleDirtyChange} />;
       case 3: return <Step3Education data={cvData.education || []} setData={(updater) => setCvData((prev) => ({ ...prev, education: updater(prev.education || []) }))} onDirtyChange={handleDirtyChange} />;
       case 4: return <Step4Certifications data={cvData.certifications || []} setData={(updater) => setCvData((prev) => ({ ...prev, certifications: updater(prev.certifications || []) }))} onDirtyChange={handleDirtyChange} />;
-      case 5: return <Step6Summary data={cvData.summary || ''} setData={(d) => setCvData((prev) => ({ ...prev, summary: d }))} />;
-      case 6: return <Step7Preview cvData={cvData} setData={(d) => setCvData(prev => ({ ...prev, ...d }))} onEdit={handleEdit} />;
+      case 5: return <Step5Skills data={cvData.skills || []} setData={(updater) => setCvData((prev) => ({ ...prev, skills: typeof updater === 'function' ? updater(prev.skills || []) : updater }))} />;
+      case 6: return <Step6Summary data={cvData.summary || ''} setData={(d) => setCvData((prev) => ({ ...prev, summary: d }))} />;
+      case 7: return <Step7Preview cvData={cvData} setData={(d) => setCvData(prev => ({ ...prev, ...d }))} onEdit={handleEdit} />;
       default: return null;
     }
   };
@@ -607,12 +611,29 @@ export default function CVGenerator() {
   }
 
   return (
-    <div className={`min-h-screen ${choice === 'upload' ? 'p-0 pt-4' : 'p-4 md:p-8'}`} dir="rtl">
-      <div className={`max-w-6xl mx-auto rounded-[2rem] p-8 md:p-14 transition-transform origin-top ${choice === 'upload' ? 'bg-white shadow-none scale-90' : 'bg-white shadow-none'}`}>
+    <div className={`min-h-screen ${choice === 'upload' ? 'p-0 pt-4' : 'p-0 md:p-8'} relative bg-gradient-to-b from-[#dbecf3] to-white via-white via-[20%]`} dir="rtl">
+      {/* Mobile Background Gradient - Only Top 25% (Optional additional overlay or removed if main bg is enough) */}
+      <div className="absolute top-0 left-0 right-0 h-[35vh] bg-gradient-to-b from-[#dbecf3] to-transparent md:hidden opacity-100 pointer-events-none" />
+
+      {/* Mobile Header - Pill Shape */}
+      <div className="w-full px-2 pt-1 pb-2 md:hidden sticky top-0 z-10">
+        <div className="bg-[#e0eef5]/90 backdrop-blur-md border border-white/40 rounded-full px-6 py-3 flex items-center justify-between shadow-sm">
+          <button className="text-[#001d3d] p-1">
+            <Menu className="w-6 h-6" />
+          </button>
+          <div className="flex items-center gap-1">
+            <p className="font-['Poppins',_sans-serif] text-2xl text-[#001d3d] font-light pt-0.5 tracking-tight">Metch</p>
+            <img src={VectorLogo} alt="Metch Logo" className="w-3.5 h-3.5 object-contain" />
+          </div>
+        </div>
+      </div>
+
+      <div className={`w-full md:max-w-6xl md:mx-auto md:rounded-[2rem] md:p-14 transition-transform origin-top relative z-[1] ${choice === 'upload' ? 'md:bg-white md:shadow-none scale-90' : 'md:bg-white md:shadow-none !bg-transparent !shadow-none !border-none !p-0 !m-0 !max-w-none !w-full !rounded-none'}`}>
         {step !== 0 && choice === 'create' && (
           <CVStepper
             currentStep={step - 1}
             steps={STEPS}
+            mobileSteps={STEPS_MOBILE}
             onStepSelect={(index) => handleStepSelect(index)}
             disabledSteps={disabledStepIndexes.map(idx => idx - 1)}
           />
@@ -631,11 +652,12 @@ export default function CVGenerator() {
           {renderStep()}
         </div>
 
-        <div className={`flex ${step === 0 ? 'justify-center' : 'justify-between'} items-center mt-auto`}>
+        <div className={`flex ${step === 0 ? 'justify-center' : 'justify-center gap-4'} items-center mt-auto pb-8`}>
           {(step > 1 || step === -1 || step === 1) && (
-            <Button variant="outline" onClick={handleBack} disabled={saving} className="px-8 py-3 rounded-full font-semibold text-lg h-auto border-2 hover:bg-gray-50">
-              <ArrowRight className="w-5 h-5 ml-2" />
-              חזור
+            <Button variant="outline" onClick={handleBack} disabled={saving} className="w-[140px] md:w-auto px-0 md:px-8 py-2 md:py-3 rounded-full font-medium md:font-semibold text-base md:text-lg h-auto border-2 bg-white hover:bg-gray-50 flex justify-center items-center">
+              <ArrowRight className="hidden md:block w-4 h-4 md:w-5 md:h-5 ml-1 md:ml-2" />
+              <span className="md:hidden">הקודם</span>
+              <span className="hidden md:inline">חזור</span>
             </Button>
           )}
           {step === -1 ? (
@@ -648,16 +670,27 @@ export default function CVGenerator() {
                 }`}
             >
               {uploadSuccess ? "המשך" : (showSkipDisclaimer ? "המשך" : "דילוג על השלב הזה")}
-              <ArrowLeft className="w-5 h-5 mr-2" />
+              <ArrowLeft className="hidden md:block w-5 h-5 mr-2" />
             </Button>
           ) : (step < STEPS.length + 1 && (
             <Button
               onClick={handleNext}
               disabled={isNextDisabled}
-              className="px-16 py-3 rounded-full font-bold text-lg h-auto bg-[#2589D8] hover:bg-[#1e7bc4] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all"
+              className="w-[140px] md:w-auto px-0 md:px-16 py-2 md:py-3 rounded-full font-medium md:font-bold text-base md:text-lg h-auto bg-[#2589D8] hover:bg-[#1e7bc4] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all flex justify-center items-center"
             >
-              {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (step === 0 ? 'הבא' : (step === STEPS.length ? 'שמירה וסיום' : 'הבא'))}
-              {!saving && step !== 0 && <ArrowLeft className="w-5 h-5 mr-2" />}
+              {saving ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : (
+                step === 0 ? 'הבא' : (
+                  step === STEPS.length ? 'שמור והמשך' : (
+                    <>
+                      <span className="md:hidden">
+                        {step === 1 ? 'המשך לניסיון' : (step === 2 ? 'המשך להשכלה' : (step === 3 ? 'המשך להסמכות' : (step === 4 ? 'המשך לכישורים' : (step === 5 ? 'המשך לתמצית' : (step === 6 ? 'המשך לקו"ח' : 'הבא')))))}
+                      </span>
+                      <span className="hidden md:inline">הבא</span>
+                    </>
+                  )
+                )
+              )}
+              {!saving && step !== 0 && <ArrowLeft className="hidden md:block w-5 h-5 mr-2" />}
             </Button>
           ))}
         </div>

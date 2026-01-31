@@ -437,8 +437,8 @@ export default function Layout({ children, currentPageName }) {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className={`flex-1 flex justify-center w-full mt-[18px] mb-4 ${(currentPageName === 'CreateJob' || currentPageName === 'CandidateProfile') ? 'px-0 mt-0' : 'px-2'}`}>
-        {(currentPageName === 'CreateJob' || currentPageName === 'CandidateProfile') ? (
+      <main className={`flex-1 flex justify-center w-full mt-[18px] mb-4 ${(currentPageName === 'CreateJob' || currentPageName === 'CandidateProfile' || onboardingPages.includes(currentPageName)) ? 'px-0 mt-0' : 'px-2'}`}>
+        {(currentPageName === 'CreateJob' || currentPageName === 'CandidateProfile' || onboardingPages.includes(currentPageName)) ? (
           <div className="w-full h-full">
             {children}
           </div>
