@@ -4,7 +4,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/components/ui/use-toast";
 import ToggleSwitch from "@/components/dashboard/ToggleSwitch";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
-import { Job, JobView, Notification, UserProfile, CandidateView, CV, JobApplication, User as UserApi } from "@/api/entities";
+import { Job, JobView, Notification, UserProfile, CandidateView, CV, JobApplication, User as UserApi, EmployerAction } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -231,7 +231,7 @@ const JobSeekerDashboard = ({ user }) => {
         const results = await Promise.allSettled([
           Job.filter({ status: 'active' }, "-created_date", 100),
           JobView.filter({ viewer_id: user.id }),
-          Notification.filter({ is_read: false, user_id: user.id }, "-created_date", 5), // Change to user_id
+          Notification.filter({ is_read: 'false', user_id: user.id }, "-created_date", 5), // Change to user_id
           UserAnalytics.getUserStats(user.id), // Change to user.id
           CandidateView.filter({ candidate_id: user.id }), // Change to candidate_id
           UserProfile.filter({ id: user.id }).then(profiles => profiles[0] || null), // Change to ID
@@ -732,15 +732,12 @@ const EmployerDashboard = ({ user }) => {
 
         // 2. Fetch all jobs for user (like Statistics.jsx)
         const allUserJobs = await Job.filter({ created_by: userData.email });
+        console.log('[Dashboard] allUserJobs found:', allUserJobs.length);
 
-        // 3. Filter for Active/Paused jobs (like Statistics.jsx)
         const activeStatuses = ['active', 'paused'];
         const activeJobs = allUserJobs.filter(job => activeStatuses.includes(job.status));
+        console.log('[Dashboard] activeJobs:', activeJobs.length);
 
-        console.log(`📊 Dashboard: Found ${allUserJobs.length} total jobs, ${activeJobs.length} active/paused`);
-
-        // 4. Calculate Views and Applications specifically for these Active Jobs
-        // We do this precisely to match the "Active Jobs" view in Statistics
         let realTotalApps = 0;
         let realTotalViews = 0;
 
@@ -752,14 +749,26 @@ const EmployerDashboard = ({ user }) => {
           realTotalApps += jobApps.length;
           realTotalViews += jobViews.length;
         }));
+        console.log('[Dashboard] Stats - Apps:', realTotalApps, 'Views:', realTotalViews);
 
         console.log(`📊 Dashboard: Calculated - Apps: ${realTotalApps}, Views: ${realTotalViews}`);
 
         // 5. Get other dashboard data (Activity, etc.)
-        const [viewedCandidatesData, dashboardData] = await Promise.all([
-          CandidateView.filter({ viewer_email: userData.email }, "-viewed_at", 1000),
-          EmployerAnalytics.getDashboardData(userData.email) // Still needed for activity and other stats
+        const [recentActions, dashboardData] = await Promise.all([
+          EmployerAction.filter({
+            employer_email: userData.email,
+            action_type: 'candidate_view'
+          }, "-created_date", 1000),
+          EmployerAnalytics.getDashboardData(userData.email)
         ]);
+
+        // Map EmployerAction to a format compatible with viewedCandidates state
+        const viewedCandidatesData = recentActions.map(action => ({
+          candidate_email: action.additional_data?.candidate_email,
+          candidate_name: action.additional_data?.candidate_name,
+          job_id: action.additional_data?.job_id,
+          viewed_at: action.created_date
+        }));
 
         // 6. Fetch actual candidate profiles for the "Candidates" tab/list below (retaining previous logic)
         // We can reuse allUserJobs or fetch again. Let's reuse activeJobs for the "Recent Applications" list context if preferred, 
@@ -787,48 +796,73 @@ const EmployerDashboard = ({ user }) => {
         const allAppsFlat = (await Promise.all(myJobIds.map(async (jobId) => {
           return await JobApplication.filter({ job_id: jobId });
         }))).flat().sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+        console.log('[Dashboard] Total apps flat:', allAppsFlat.length);
 
-        // Build unique candidate list for the TABLE display (not the stats card)
-        const candidateRefs = [];
-        const seenIds = new Set();
-        const seenEmails = new Set();
+        // Create job map for easy title lookup
+        const myJobMap = allUserJobs.reduce((acc, job) => ({ ...acc, [job.id]: job.title }), {});
+
+        // Build list of applications (NOT deduplicated by candidate)
+        const applicationRefs = [];
+        const seenJobApps = new Set(); // To avoid truly duplicate applications for the same job
 
         for (const app of allAppsFlat) {
           const email = app.applicant_email?.toLowerCase();
-          if (app.applicant_id && !seenIds.has(app.applicant_id)) {
-            candidateRefs.push({ id: app.applicant_id, email: email });
-            seenIds.add(app.applicant_id);
-            if (email) seenEmails.add(email);
-          } else if (email && !seenEmails.has(email) && !app.applicant_id) {
-            candidateRefs.push({ email: email });
-            seenEmails.add(email);
-          }
-          if (candidateRefs.length >= 50) break;
-        }
+          const applicantKey = app.applicant_id || email;
+          const jobAppKey = `${app.job_id}_${applicantKey}`;
 
-        if (candidateRefs.length > 0) {
-          const profiles = await Promise.all(candidateRefs.map(async (ref) => {
+          if (!seenJobApps.has(jobAppKey)) {
+            applicationRefs.push({
+              applicant_id: app.applicant_id,
+              applicant_email: email,
+              job_id: app.job_id,
+              job_title: myJobMap[app.job_id] || 'משרה לא ידועה',
+              application_id: app.id
+            });
+            seenJobApps.add(jobAppKey);
+          }
+          if (applicationRefs.length >= 50) break;
+        }
+        console.log('[Dashboard] applicationRefs created:', applicationRefs.length);
+
+        if (applicationRefs.length > 0) {
+          const profiles = await Promise.all(applicationRefs.map(async (ref) => {
             try {
-              if (ref.id) {
-                const p = await UserProfile.filter({ id: ref.id });
-                if (p.length > 0) return p[0];
+              let p = null;
+              if (ref.applicant_id) {
+                const results = await UserProfile.filter({ id: ref.applicant_id });
+                if (results.length > 0) p = results[0];
               }
-              if (ref.email) {
-                const p = await UserProfile.filter({ email: ref.email });
-                if (p.length > 0) return p[0];
+              if (!p && ref.applicant_email) {
+                const results = await UserProfile.filter({ email: ref.applicant_email });
+                if (results.length > 0) p = results[0];
               }
-            } catch (e) { console.error('Error fetching profile:', e); }
+
+              if (p) {
+                // Enrich profile with application context
+                return {
+                  ...p,
+                  applied_job_id: ref.job_id,
+                  applied_job_title: ref.job_title,
+                  application_id: ref.application_id,
+                  // Unique combined ID for React key
+                  unique_app_id: `${p.id || p.email}_${ref.job_id}`
+                };
+              } else {
+                console.warn('[Dashboard] Profile not found for ref:', ref.applicant_email);
+              }
+            } catch (e) { console.error('[Dashboard] Error fetching profile:', e); }
             return null;
           }));
           applicantProfiles = profiles.filter(p => p !== null);
+          console.log('[Dashboard] Final applicantProfiles:', applicantProfiles.length);
         }
 
         let notificationsData = [];
         try {
-          notificationsData = await Notification.filter({ is_read: false, user_id: userData.id }, "-created_date", 5);
+          notificationsData = await Notification.filter({ is_read: 'false', user_id: userData.id }, "-created_date", 5);
         } catch (err) {
           try {
-            notificationsData = await Notification.filter({ is_read: false, email: userData.email }, "-created_date", 5);
+            notificationsData = await Notification.filter({ is_read: 'false', email: userData.email }, "-created_date", 5);
           } catch (err2) { }
         }
 
@@ -873,80 +907,43 @@ const EmployerDashboard = ({ user }) => {
     loadData();
   }, [user]);
 
-  // Fetch applications for displayed candidates to show "Job Applied For"
-  useEffect(() => {
-    const fetchCandidateApplications = async () => {
-      if (!user?.email || candidates.length === 0) return;
-
-      const appMap = {};
-
-      try {
-        // 1. Get Jobs created by this employer
-        const myJobs = await Job.filter({ created_by: user.email });
-        if (!myJobs || myJobs.length === 0) return;
-
-        const myJobIds = myJobs.map(j => j.id);
-        const myJobMap = myJobs.reduce((acc, job) => ({ ...acc, [job.id]: job.title }), {});
-
-        // 2. For each candidate, check for applications to these jobs
-        await Promise.all(candidates.map(async (candidate) => {
-          if (!candidate.email) return;
-          try {
-            // Fetch applications by this candidate
-            // Optimally we would filter by both applicant and job_id list but client lib limitation
-            const apps = await JobApplication.filter({ applicant_email: candidate.email });
-
-            // Find one that matches one of my jobs
-            const relevantApp = apps.find(app => myJobIds.includes(app.job_id));
-
-            if (relevantApp) {
-              appMap[candidate.email] = myJobMap[relevantApp.job_id];
-            }
-          } catch (e) {
-            console.error(`Error fetching apps for ${candidate.email}`, e);
-          }
-        }));
-
-        setCandidateApplications(appMap);
-
-      } catch (err) {
-        console.error("Error fetching candidate applications context", err);
-      }
-    };
-
-    fetchCandidateApplications();
-  }, [candidates, user]);
+  // Note: Candidate application enrichment is now handled directly in loadData
+  // to support multiple applications from the same seeker to different jobs.
 
   const handleViewCandidate = async (candidate) => {
-    // 1. Track Analytics (Non-blocking)
+    // 1. Track Analytics with Job Context
     try {
       if (user?.email) {
-        await UserAnalytics.trackAction(user, 'profile_view', { // Pass full user object
-          candidate_name: candidate.full_name,
-          candidate_email: candidate.email,
-          candidate_id: candidate.id
-        });
+        const jobContext = candidate.applied_job_id ? {
+          id: candidate.applied_job_id,
+          title: candidate.applied_job_title
+        } : null;
+
+        await EmployerAnalytics.trackCandidateView(user.email, candidate, jobContext);
+
+        // Update local state by fetching latest candidate_view actions
+        // This ensures the "Watched" filter updates immediately
+        const recentActions = await EmployerAction.filter(
+          {
+            employer_email: user.email,
+            action_type: 'candidate_view'
+          },
+          "-created_date",
+          1000
+        );
+
+        // Map EmployerAction to a format compatible with viewedCandidates state
+        const mappedViews = recentActions.map(action => ({
+          candidate_email: action.additional_data?.candidate_email,
+          candidate_name: action.additional_data?.candidate_name,
+          job_id: action.additional_data?.job_id,
+          viewed_at: action.created_date
+        }));
+
+        setViewedCandidates(mappedViews);
       }
-    } catch (analyticsError) {
-      console.warn("Analytics tracking failed (non-critical):", analyticsError);
-    }
-
-    // 2. Create Candidate View Record (Critical)
-    try {
-      await CandidateView.create({
-        candidate_name: candidate.full_name,
-        candidate_role: candidate.experience_level || 'N/A',
-        candidate_id: candidate.id, // Add ID
-        // viewer_id: user.id, // Removed: Column missing
-        viewer_email: user.email,
-        viewed_at: new Date().toISOString()
-      });
-
-      // Update local state immediately
-      const updatedViewed = await CandidateView.filter({ viewer_email: user.email }, "-viewed_at", 1000);
-      setViewedCandidates(updatedViewed);
     } catch (error) {
-      console.error("Error recording candidate view:", error);
+      console.error("[Dashboard] Error tracking candidate view:", error);
     }
   };
 
@@ -959,7 +956,7 @@ const EmployerDashboard = ({ user }) => {
     // Show loading state if desired, or just wait
     await handleViewCandidate(candidate);
 
-    const targetUrl = createPageUrl(`CandidateProfile?id=${candidate.id}&match=${match}`);
+    const targetUrl = createPageUrl(`CandidateProfile?id=${candidate.id}&match=${match}&jobId=${candidate.applied_job_id}`);
     navigate(targetUrl, {
       state: { from: `${location.pathname}?filter=${candidateFilter}` }
     });
@@ -978,8 +975,13 @@ const EmployerDashboard = ({ user }) => {
     }
 
     const isViewed = viewedCandidates.some(vc => {
-      const match = vc.candidate_name?.trim().toLowerCase() === c.full_name?.trim().toLowerCase();
-      return match;
+      const matchIdentity = (vc.candidate_email && vc.candidate_email === c.email) ||
+        (vc.candidate_name?.trim().toLowerCase() === c.full_name?.trim().toLowerCase());
+
+      if (!matchIdentity) return false;
+
+      // STRICT CHECK: Only mark as viewed for the SPECIFIC job
+      return vc.job_id === c.applied_job_id;
     });
 
     // console.log(`Candidate ${c.full_name} isViewed: ${isViewed}, filter: ${candidateFilter}`);
@@ -1148,7 +1150,7 @@ const EmployerDashboard = ({ user }) => {
               };
 
               return (
-                <motion.div key={candidate.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
+                <motion.div key={candidate.unique_app_id || candidate.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
                   <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl">
                     <CardContent className="p-4">
                       <div className="flex flex-col gap-4">
@@ -1176,7 +1178,7 @@ const EmployerDashboard = ({ user }) => {
                                 })()}
                               </h3>
                               <p className="text-gray-500 text-sm mt-0.5">
-                                {jobAppliedTo || candidate.experience_level?.replace('_', ' ') || "ללא ניסיון"}
+                                {candidate.applied_job_title || jobAppliedTo || candidate.experience_level?.replace('_', ' ') || "ללא ניסיון"}
                               </p>
                             </div>
                           </div>

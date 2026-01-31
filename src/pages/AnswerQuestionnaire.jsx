@@ -95,6 +95,22 @@ export default function AnswerQuestionnaire() {
                 status: 'pending'
             });
 
+            // Create notification for employer
+            try {
+                const { Notification } = await import("@/api/entities");
+                await Notification.create({
+                    type: 'application_submitted',
+                    user_id: job.created_by_id || job.employer_id || null, // Ensure UUID or null
+                    email: job.created_by,
+                    title: 'הוגשה מועמדות חדשה (שאלון)',
+                    message: `מועמד חדש הוסיף שאלון למשרת ${job.title}`,
+                    is_read: false,
+                    created_date: new Date().toISOString()
+                });
+            } catch (e) {
+                console.error("Error creating notification for employer:", e);
+            }
+
             setShowSuccessModal(true);
 
         } catch (error) {

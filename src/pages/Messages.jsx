@@ -415,7 +415,7 @@ export default function Messages() {
                     created_by: user.id,
                     title: 'הודעה חדשה',
                     message: `הודעה חדשה מ-${user.company_name || user.full_name || 'מעסיק'}`,
-                    is_read: 'false',
+                    is_read: false,
                     created_date: currentDate
                 };
                 console.log('[Messages] Creating notification:', notificationData);

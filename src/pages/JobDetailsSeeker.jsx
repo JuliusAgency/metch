@@ -342,20 +342,14 @@ export default function JobDetailsSeeker() {
       try {
         await Notification.create({
           type: 'application_submitted',
-          user_id: job.employer_id || job.created_by, // Try ID then fallback to email
-          user_email: job.created_by, // Usually contains email
-          created_by: job.employer_id || job.created_by, // For backward compatibility with filter
+          user_id: job.created_by_id || job.employer_id || null, // Ensure UUID or null
+          email: job.created_by,
           title: 'הוגשה מועמדות חדשה',
-          message: `מועמד חדש הגיש מועמדות למשרת ${job.title}`,
-          data: {
-            job_id: job.id,
-            applicant_name: user.full_name,
-            applicant_email: user.email,
-            job_title: job.title
-          },
+          message: `מועמד הגיש מועמדות למשרת ${job.title}`,
           is_read: false,
           created_date: new Date().toISOString()
         });
+        console.log('[JobDetailsSeeker] Notification created for employer:', job.created_by);
       } catch (e) {
         console.error("Error creating notification for employer:", e);
       }

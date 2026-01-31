@@ -31,7 +31,7 @@ import settingsHeaderBg from "@/assets/settings_header_bg.png";
 const ITEMS_PER_PAGE = 7;
 
 // Allowed notification types
-const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message', 'job_view'];
+const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message'];
 const SEEKER_ALLOWED_NOTIFICATION_TYPES = ['profile_view', 'new_message'];
 
 // Map notification types to icons and titles
@@ -94,6 +94,7 @@ export default function Notifications() {
         : SEEKER_ALLOWED_NOTIFICATION_TYPES;
 
       const filteredNotifications = allNotifications.filter(notif => allowedTypes.includes(notif.type));
+      console.log('[NotificationsPage] Displaying filtered notifications:', filteredNotifications.length, filteredNotifications.map(n => n.type));
 
       setNotifications(filteredNotifications);
 
@@ -132,21 +133,22 @@ export default function Notifications() {
       if (!user?.email || notifications.length === 0) return;
 
       const unreadNotifications = notifications.filter(
-        n => n.is_read === 'false' || n.is_read === false
+        n => n.is_read === false || n.is_read === 'false'
       );
+      console.log('[NotificationsPage] Unread notifications count:', unreadNotifications.length);
 
       if (unreadNotifications.length > 0) {
         try {
           // Mark all as read in parallel
           await Promise.all(
             unreadNotifications.map(notif =>
-              Notification.update(notif.id, { is_read: 'true' })
+              Notification.update(notif.id, { is_read: true })
             )
           );
 
           // Update local state
           setNotifications(prev =>
-            prev.map(n => ({ ...n, is_read: 'true', read: true }))
+            prev.map(n => ({ ...n, is_read: true, read: true }))
           );
 
           // Force refresh badges immediately
@@ -196,9 +198,9 @@ export default function Notifications() {
     // Mark as read immediately
     if (notif.is_read === 'false' || notif.is_read === false) {
       try {
-        await Notification.update(notif.id, { is_read: 'true' });
+        await Notification.update(notif.id, { is_read: true });
         setNotifications(prev => prev.map(n =>
-          n.id === notif.id ? { ...n, is_read: 'true', read: true } : n
+          n.id === notif.id ? { ...n, is_read: true, read: true } : n
         ));
       } catch (error) {
         console.error("Error marking notification as read:", error);

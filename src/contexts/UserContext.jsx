@@ -295,10 +295,16 @@ export const UserProvider = ({ children }) => {
     try {
       // Count unread notifications (INCLUDING message notifications now)
       const [byUserId, byEmail, byCreatedBy] = await Promise.all([
-        supabase.from('Notification').select('*', { count: 'exact', head: false }).eq('user_id', userId).eq('is_read', 'false'),
-        supabase.from('Notification').select('*', { count: 'exact', head: false }).eq('email', userEmail).eq('is_read', 'false'),
-        supabase.from('Notification').select('*', { count: 'exact', head: false }).eq('created_by', userId).eq('is_read', 'false')
+        supabase.from('Notification').select('*', { count: 'exact', head: false }).eq('user_id', userId).eq('is_read', false),
+        supabase.from('Notification').select('*', { count: 'exact', head: false }).eq('email', userEmail).eq('is_read', false),
+        supabase.from('Notification').select('*', { count: 'exact', head: false }).eq('created_by', userId).eq('is_read', false)
       ]);
+
+      console.log('[refreshUnreadCount] Query results:', {
+        byUserId: byUserId.data?.length,
+        byEmail: byEmail.data?.length,
+        byCreatedBy: byCreatedBy.data?.length
+      });
 
       console.log('[refreshUnreadCount] Notifications by userId:', byUserId.data?.length);
       console.log('[refreshUnreadCount] Notifications by email:', byEmail.data?.length);
@@ -314,8 +320,30 @@ export const UserProvider = ({ children }) => {
         new Map(allNotifications.map(item => [item.id, item])).values()
       );
 
-      console.log('[refreshUnreadCount] Total unique notifications:', uniqueNotifications.length);
-      setUnreadCount(uniqueNotifications.length);
+      console.log('[refreshUnreadCount] Total unique unread notifications (all types):', uniqueNotifications.length);
+      if (uniqueNotifications.length > 0) {
+        console.log('[refreshUnreadCount] Unique unread notification details:', uniqueNotifications.map(n => ({
+          type: n.type,
+          email: n.email,
+          user_id: n.user_id,
+          is_read: n.is_read
+        })));
+      }
+
+      // Filter by allowed types based on profile
+      let filteredUnread = [];
+      if (profile) {
+        const allowedTypes = profile.user_type === 'employer'
+          ? ['application_submitted', 'new_message']
+          : ['profile_view', 'new_message'];
+
+        filteredUnread = uniqueNotifications.filter(n => allowedTypes.includes(n.type));
+        console.log('[refreshUnreadCount] Filtered unread count for', profile.user_type, ':', filteredUnread.length);
+      } else {
+        filteredUnread = uniqueNotifications;
+      }
+
+      setUnreadCount(filteredUnread.length);
 
       // Count unread messages
       const [messagesByEmail, messagesById] = await Promise.all([
@@ -337,10 +365,12 @@ export const UserProvider = ({ children }) => {
 
       console.log('[refreshUnreadCount] Total unique messages:', uniqueMessages.length);
       setUnreadMessagesCount(uniqueMessages.length);
+
+      console.log('[refreshUnreadCount] SUCCESS. Unread Counts - Notifications:', filteredUnread.length, 'Messages:', uniqueMessages.length);
     } catch (error) {
-      console.error('Error refreshing unread count:', error);
+      console.error('[refreshUnreadCount] ERROR:', error);
     }
-  }, []);
+  }, [profile]);
 
   /**
    * Get user with profile data
@@ -436,7 +466,7 @@ export const UserProvider = ({ children }) => {
         supabase.removeChannel(messageSubscription);
       }
     };
-  }, [initializeUser, user?.id, user?.email, refreshUnreadCount]);
+  }, [initializeUser, user?.id, user?.email, profile, refreshUnreadCount]);
 
   const value = React.useMemo(() => ({
     user: user ? getUserWithProfile() : null,

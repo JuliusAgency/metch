@@ -170,7 +170,8 @@ export class UserAnalytics {
           job_id: job.id
         });
 
-        // Track notification for employer
+        /* 
+        // Track notification for employer - Disabled as per request to refine notifications
         try {
           if (job.created_by || job.employer_id) {
             await Notification.create({
@@ -187,6 +188,7 @@ export class UserAnalytics {
         } catch (notifErr) {
           console.error('Error creating job_view notification:', notifErr);
         }
+        */
       }
     } catch (error) {
       console.error('Error tracking job view:', error);

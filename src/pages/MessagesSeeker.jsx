@@ -108,7 +108,7 @@ export default function MessagesSeeker() {
                 try {
                     const unreadMessages = await Message.filter({
                         recipient_id: userData.id,
-                        is_read: false
+                        is_read: 'false'
                     });
 
                     unreadMessages.forEach(msg => {
@@ -321,7 +321,7 @@ export default function MessagesSeeker() {
                 recipient_email: recipientEmail,
                 recipient_id: selectedConversation.employer_id || null,
                 content: newMessage.trim(),
-                is_read: false,
+                is_read: 'false',
                 created_date: currentDate
             });
 

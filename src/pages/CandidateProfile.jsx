@@ -690,14 +690,22 @@ export default function CandidateProfile() {
 
   useEffect(() => {
     const trackCandidateView = async () => {
-      if (candidate && user) {
+      if (candidate && user && user.role === 'employer') {
         try {
-          await EmployerAnalytics.trackCandidateView(user.email, candidate);
+          // Get jobId from query params
+          const params = new URLSearchParams(location.search);
+          const jobId = params.get("jobId");
+          const jobTitle = params.get("title");
+
+          const jobContext = jobId ? { id: jobId, title: jobTitle } : null;
+
+          await EmployerAnalytics.trackCandidateView(user.email, candidate, jobContext);
 
           // Create notification for candidate
           await Notification.create({
             type: 'profile_view',
-            user_id: candidate.id,
+            user_id: candidate.id || null,
+            email: candidate.email,
             title: 'מישהו צפה לך בפרופיל!',
             message: `מעסיק צפה בפרופיל שלך כרגע. בהצלחה!`,
             is_read: false,
@@ -851,6 +859,8 @@ export default function CandidateProfile() {
             questionnaireResponse={questionnaireResponse}
             handleNotRelevant={handleNotRelevant}
             markingNotRelevant={markingNotRelevant}
+            jobId={new URLSearchParams(location.search).get("jobId")}
+            jobTitle={new URLSearchParams(location.search).get("title")}
           />
         </CardFooter>
       </Card>
