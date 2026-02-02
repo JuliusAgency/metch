@@ -364,15 +364,21 @@ export default function CandidateProfile() {
         candidate_id: candidate.id,
       };
 
-      if (jobId) {
-        filterParams.job_id = jobId;
-      }
-
       const existingConversations = await Conversation.filter(filterParams);
 
       let conversation;
       if (existingConversations.length > 0) {
         conversation = existingConversations[0];
+        // Update to latest job context if provided
+        try {
+          await Conversation.update(conversation.id, {
+            job_id: jobId || conversation.job_id,
+            job_title: jobTitle || conversation.job_title,
+            last_message_time: new Date().toISOString()
+          });
+        } catch (updateErr) {
+          console.error("Error updating existing conversation context:", updateErr);
+        }
       } else {
         const createParams = {
           employer_email: user.email,

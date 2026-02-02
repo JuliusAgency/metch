@@ -150,6 +150,9 @@ export default function Layout({ children, currentPageName }) {
 
   // Hide header if it's an auth page OR (it's an onboarding page AND we are in onboarding mode) OR specific onboarding query param exists
   const isSettingsOnboarding = currentPageName === 'Settings' && searchParams.get('onboarding') === 'company_details';
+  // Check if we are in Settings, Profile, or Notifications as a job seeker to enable mobile full-width redesign
+  const isJobSeekerMobileFlow = (currentPageName === 'Settings' || currentPageName === 'Profile' || currentPageName === 'JobDetailsSeeker' || currentPageName === 'Notifications' || currentPageName === 'Messages' || currentPageName === 'MessagesSeeker');
+
   const shouldHideHeader = authPages.includes(currentPageName) || (onboardingPages.includes(currentPageName) && isOnboardingActive) || isSettingsOnboarding || currentPageName === 'CompanyProfileCompletion' || currentPageName === 'JobSeekerProfileCompletion';
 
   return (
@@ -388,14 +391,16 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Mobile Navbar */}
       {!shouldHideHeader && (
-        <div className={`md:hidden pb-2 px-4 sticky top-0 z-40 ${currentPageName === 'Dashboard' ? 'pt-8 bg-transparent' : 'pt-4 bg-[#dbedf3]/80 backdrop-blur-sm'}`}>
-          <div className={`flex items-center justify-between ${currentPageName === 'Dashboard' ? 'bg-[#EBF5FF]/90 rounded-full h-[62px] px-6 border border-white/60 shadow-sm backdrop-blur-sm' : ''}`}>
+        <div className={`md:hidden pb-2 px-4 sticky ${currentPageName === 'JobDetailsSeeker' ? 'top-2' : 'top-4'} z-40 ${isJobSeekerMobileFlow ? 'pt-2 bg-transparent' : ((currentPageName === 'Dashboard' || currentPageName === 'JobDetailsSeeker') ? 'pt-8 bg-transparent' : 'pt-4 bg-[#dbedf3]/80 backdrop-blur-sm')}`}>
+          <div className={`flex items-center justify-between ${(currentPageName === 'Dashboard' || currentPageName === 'JobDetailsSeeker') ? 'bg-[#EBF5FF]/90 rounded-full h-[62px] px-6 border border-white/60 shadow-sm backdrop-blur-sm' : ''} ${isJobSeekerMobileFlow ? 'bg-white/30 backdrop-blur-md rounded-full px-4 border-2 border-white h-[54px]' : ''} ${currentPageName === 'JobDetailsSeeker' ? 'max-w-[420px] mx-auto w-full' : ''}`}>
             <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(true)}>
-              <Menu className="w-8 h-8 text-gray-700" />
+              <Menu className={`w-8 h-8 ${isJobSeekerMobileFlow ? 'text-gray-800' : 'text-gray-700'}`} />
             </Button>
             <div className="flex items-center gap-2">
-              <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
-              <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png" alt="Metch Logo" className="h-6" />
+              <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2">
+                <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
+                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png" alt="Metch Logo" className="h-6" />
+              </Link>
             </div>
           </div>
         </div>
@@ -436,9 +441,8 @@ export default function Layout({ children, currentPageName }) {
         )}
       </AnimatePresence>
 
-      {/* Main Content */}
-      <main className={`flex-1 flex justify-center w-full mt-[18px] mb-4 ${(currentPageName === 'CreateJob' || currentPageName === 'CandidateProfile' || onboardingPages.includes(currentPageName)) ? 'px-0 mt-0' : 'px-2'}`}>
-        {(currentPageName === 'CreateJob' || currentPageName === 'CandidateProfile' || onboardingPages.includes(currentPageName)) ? (
+      <main className={`flex-1 flex justify-center w-full mt-[18px] mb-4 ${(currentPageName === 'CreateJob' || currentPageName === 'CandidateProfile' || onboardingPages.includes(currentPageName)) ? 'px-0 mt-0' : (isJobSeekerMobileFlow ? 'px-0 md:px-2 mt-0 md:mt-[18px]' : 'px-2')}`}>
+        {(currentPageName === 'CreateJob' || currentPageName === 'CandidateProfile' || onboardingPages.includes(currentPageName) || (isJobSeekerMobileFlow && (typeof window !== 'undefined' ? window.innerWidth < 768 : false))) ? (
           <div className="w-full h-full">
             {children}
           </div>

@@ -26,6 +26,7 @@ import Pagination from "@/components/messages/Pagination";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useLocation, useNavigate } from "react-router-dom";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
+import settingsMobileBg from "@/assets/settings_mobile_bg.jpg";
 import { useUser } from "@/contexts/UserContext";
 
 const ITEMS_PER_PAGE = 5;
@@ -172,8 +173,29 @@ export default function Messages() {
                         is_support: isSupport
                     };
                 }));
+                // Deduplicate and group conversations by candidate email
+                const groupedConversations = mappedConversations.reduce((acc, current) => {
+                    const email = current.candidate_email;
+                    if (!acc[email]) {
+                        acc[email] = { ...current, all_ids: [current.id] };
+                    } else {
+                        // Grouping: Keep the most recent conversation as the primary but track all IDs
+                        const currentLastTime = new Date(current.last_message_time || 0).getTime();
+                        const existingLastTime = new Date(acc[email].last_message_time || 0).getTime();
 
-                setConversations(mappedConversations);
+                        acc[email].all_ids.push(current.id);
+
+                        if (currentLastTime > existingLastTime) {
+                            const allIds = acc[email].all_ids;
+                            acc[email] = { ...current, all_ids: allIds };
+                        }
+                    }
+                    return acc;
+                }, {});
+
+                setConversations(Object.values(groupedConversations).sort((a, b) =>
+                    new Date(b.last_message_time || 0).getTime() - new Date(a.last_message_time || 0).getTime()
+                ));
             } catch (error) {
                 console.error("Error loading conversations:", error);
             }
@@ -193,7 +215,7 @@ export default function Messages() {
         }
     }, [location.search]);
 
-    const loadMessages = useCallback(async (conversationId) => {
+    const loadMessages = useCallback(async (conversationId, allIds = []) => {
         setLoadingMessages(true);
         try {
             if (conversationId === "support") {
@@ -209,21 +231,27 @@ export default function Messages() {
                 setLoadingMessages(false);
                 return;
             }
-            // Load real messages from database
-            const messagesData = await Message.filter(
-                { conversation_id: conversationId },
-                "created_date",
-                100
-            );
 
-            // Client-side sort to ensure chronological order (Oldest -> Newest)
+            // Load messages from all conversation IDs in the group
+            const idsToFetch = allIds.length > 0 ? allIds : [conversationId];
+            const messagesResponses = await Promise.all(idsToFetch.map(id =>
+                Message.filter(
+                    { conversation_id: id },
+                    "created_date",
+                    100
+                )
+            ));
+
+            const messagesData = messagesResponses.flat();
+
+            // Client-side sort to ensure chronological order (Oldest -> Newest) across all IDs
             const sortedMessages = [...messagesData].sort((a, b) => {
                 const tA = new Date(a.created_at || a.created_date || 0).getTime();
                 const tB = new Date(b.created_at || b.created_date || 0).getTime();
                 return tA - tB;
             });
 
-            // Ensure created_date is set for all messages, favoring created_at if created_date is missing
+            // Ensure created_date is set for all messages
             const mappedMessages = sortedMessages.map(msg => ({
                 ...msg,
                 created_date: msg.created_date || msg.created_at || null
@@ -231,16 +259,18 @@ export default function Messages() {
 
             setMessages(mappedMessages);
 
-            // Mark incoming messages as read in database
+            // Mark incoming messages as read in database for all IDs
             try {
                 const unreadMessagesData = mappedMessages.filter(m => m.sender_email !== user?.email && !m.is_read);
                 if (unreadMessagesData.length > 0) {
                     await Promise.all([
-                        supabase
-                            .from('Message')
-                            .update({ is_read: true })
-                            .eq('conversation_id', conversationId)
-                            .eq('recipient_email', user?.email),
+                        ...idsToFetch.map(id =>
+                            supabase
+                                .from('Message')
+                                .update({ is_read: true })
+                                .eq('conversation_id', id)
+                                .eq('recipient_email', user?.email)
+                        ),
                         supabase
                             .from('Notification')
                             .update({ is_read: 'true' })
@@ -257,11 +287,11 @@ export default function Messages() {
         } finally {
             setLoadingMessages(false);
         }
-    }, []);
+    }, [user?.email]);
 
     const handleConversationSelect = useCallback((conversation) => {
         setSelectedConversation(conversation);
-        loadMessages(conversation.id);
+        loadMessages(conversation.id, conversation.all_ids || []);
     }, [loadMessages]);
 
     const startSupportConversation = useCallback(() => {
@@ -325,7 +355,7 @@ export default function Messages() {
 
         if (targetConversation) {
             setSelectedConversation(targetConversation);
-            loadMessages(targetConversation.id);
+            loadMessages(targetConversation.id, targetConversation.all_ids || []);
             setPendingConversationParams(null);
 
             if (location.search) {
@@ -462,8 +492,21 @@ export default function Messages() {
     if (selectedConversation) {
         return (
             <div className="h-[98vh] relative flex flex-col w-full mx-auto pt-[4px] pb-[26px]" dir="rtl">
-                {/* Background "Back Card" with Arch */}
-                <div className="absolute inset-0 bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-lg border border-white/50 -z-10 overflow-hidden">
+                {/* Fixed Background for Mobile */}
+                <div
+                    className="md:hidden fixed top-0 left-0 right-0 z-0 pointer-events-none"
+                    style={{
+                        width: '100%',
+                        height: '230px',
+                        backgroundImage: `url(${settingsMobileBg})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat'
+                    }}
+                />
+
+                {/* Background "Back Card" with Arch - Desktop Only */}
+                <div className="hidden md:block absolute inset-0 bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-lg border border-white/50 -z-10 overflow-hidden">
                     <div
                         className="absolute top-[-12px] left-0 right-0 h-[112px]"
                         style={{
@@ -493,9 +536,9 @@ export default function Messages() {
                 </div>
 
                 {/* Chat Container - Now split for the "cut" effect */}
-                <div className="relative h-[65vh] flex flex-col w-[63%] mx-auto mt-[5px] mb-4">
+                <div className="relative h-[85vh] md:h-[65vh] flex flex-col w-full md:w-[63%] mx-auto mt-[5px] mb-4 z-20">
                     {/* Message List Area - Sharpened corners (3px) and no border */}
-                    <div className="flex-1 overflow-hidden bg-white shadow-[0_4px_16px_rgba(0,0,0,0.12)] rounded-t-[3px] flex flex-col">
+                    <div className="flex-1 overflow-hidden bg-white shadow-[0_4px_16px_rgba(0,0,0,0.12)] rounded-t-[3px] md:rounded-t-[3px] flex flex-col">
                         <div className="flex-1 p-8 overflow-y-auto space-y-6 bg-gray-50/30">
                             {loadingMessages && (
                                 <div className="flex justify-center items-center py-8">
@@ -605,8 +648,22 @@ export default function Messages() {
 
     return (
         <div className="h-full relative" dir="rtl">
+            {/* MOBILE FIXED BACKGROUND */}
+            <div
+                className="md:hidden fixed top-0 left-0 right-0 z-0 pointer-events-none"
+                style={{
+                    width: '100%',
+                    height: '230px',
+                    backgroundImage: `url(${settingsMobileBg})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
+                }}
+            />
+
             <div className="relative">
-                <div className="relative h-[92px] overflow-hidden w-full">
+                {/* Desktop Background Only */}
+                <div className="hidden md:block relative h-[92px] overflow-hidden w-full">
                     <div
                         className="absolute inset-0 w-full h-full"
                         style={{
@@ -623,91 +680,186 @@ export default function Messages() {
                         <ChevronRight className="w-6 h-6 text-gray-800" />
                     </button>
                 </div>
-                <div className="p-2 sm:p-4 md:p-6 -mt-[50px] relative z-10 max-w-7xl w-[75%] mx-auto mb-8 mt-[-3.125rem]">
-                    <div className="text-center pb-4">
-                        <h1 className="text-2xl md:text-3xl font-bold text-[#001a6e]">הודעות</h1>
-                    </div>
-                    <div className="relative mb-4 w-full max-w-md mx-auto">
-                        <Input
-                            placeholder="חיפוש בהודעות"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-12 pr-4 py-3 bg-[#F9FAFB] border-none focus:ring-1 focus:ring-blue-200 rounded-lg h-12 text-right shadow-sm placeholder:text-gray-400"
-                            dir="rtl"
-                        />
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500 w-5 h-5" />
-                    </div>
 
-                    <div className="w-full max-w-3xl mx-auto h-px bg-gray-200 mb-3" />
+                {/* Mobile Back Button */}
+                <div className="md:hidden flex items-center justify-center pt-10 pb-4 relative z-10 w-full px-6">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="absolute right-6 w-8 h-8 bg-white/50 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm"
+                    >
+                        <ChevronRight className="w-5 h-5 text-gray-800" />
+                    </button>
+                    <h1 className="text-[28px] font-bold text-gray-800">הודעות</h1>
+                </div>
 
-                    {/* Conversations List */}
-                    <div className="space-y-3 mb-6 w-full max-w-3xl mx-auto">
-                        {loading ? (
-                            <div className="flex justify-center items-center py-12">
-                                <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
-                            </div>
-                        ) : paginatedConversations.length === 0 ? (
-                            <div className="text-center py-12 text-gray-500">
-                                <p>אין הודעות כרגע</p>
-                            </div>
-                        ) : (
-                            paginatedConversations.map((conversation, index) => {
-                                const names = conversation.candidate_name ? conversation.candidate_name.split(' ') : [];
-                                const firstName = names[0] || "";
-                                const lastInitial = names.length > 1 ? names[names.length - 1].charAt(0) : "";
+                <div className="p-0 md:p-6 -mt-6 md:-mt-[50px] relative z-10 max-w-7xl w-full md:w-[75%] mx-auto mb-8">
+                    <div className="md:hidden h-4" />
 
-                                return (
-                                    <div key={conversation.id}>
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.3, delay: index * 0.1 }}
-                                            className="flex items-center justify-between p-3 bg-[#F4F9FF] hover:bg-[#EBF5FF] cursor-pointer transition-colors h-[60px] rounded-xl border border-blue-50 mb-1"
-                                            onClick={() => handleConversationSelect(conversation)}
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-9 h-9 rounded-full overflow-hidden ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'grayscale opacity-75' : ''
-                                                    }`}>
-                                                    {conversation.profileImage && conversation.profileImage !== "" ? (
-                                                        <img
-                                                            src={conversation.profileImage}
-                                                            alt={conversation.candidate_name}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
-                                                            <span className="text-xs font-bold text-gray-600">
-                                                                {conversation.candidate_name.slice(0, 2)}
-                                                            </span>
+                    <div className="bg-white [border-top-left-radius:50%_40px] [border-top-right-radius:50%_40px] md:bg-transparent md:rounded-0 min-h-screen md:min-h-0 pt-4 md:pt-0 px-4 md:px-0">
+                        {/* Desktop only title */}
+                        <div className="text-center pb-4 hidden md:block">
+                            <h1 className="text-2xl md:text-3xl font-bold text-[#001a6e]">הודעות</h1>
+                        </div>
+                        {/* Mobile Shared Container: Search + Conversations */}
+                        <div className="md:contents">
+                            <div className="md:hidden bg-white border border-gray-100 rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden mx-4 mb-8">
+                                {/* Small Search Field */}
+                                <div className="p-4 border-b border-gray-100 flex items-center bg-[#f8f9fd] relative">
+                                    <Input
+                                        placeholder="חיפוש בהודעות"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="border-none bg-transparent focus:ring-0 h-8 pl-10 pr-4 text-sm text-right placeholder:text-gray-400 w-full"
+                                        dir="rtl"
+                                    />
+                                    <Search className="text-blue-500 w-4 h-4 absolute left-7 top-1/2 transform -translate-y-1/2" />
+                                </div>
+
+                                {/* Conversations List inside the card on mobile */}
+                                <div className="divide-y divide-gray-50 bg-[#f0f7fc]">
+                                    {loading ? (
+                                        <div className="flex justify-center items-center py-12">
+                                            <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
+                                        </div>
+                                    ) : (searchTerm ? filteredConversations : conversations).length === 0 ? (
+                                        <div className="text-center py-12 text-gray-500 bg-white">
+                                            <p className="text-sm">אין הודעות כרגע</p>
+                                        </div>
+                                    ) : (
+                                        (searchTerm ? filteredConversations : conversations).map((conversation, index) => {
+                                            const names = conversation.candidate_name ? conversation.candidate_name.split(' ') : [];
+                                            const firstName = names[0] || "";
+                                            const lastInitial = names.length > 1 ? names[names.length - 1].charAt(0) : "";
+
+                                            return (
+                                                <div
+                                                    key={conversation.id}
+                                                    className={`flex items-center justify-between p-4 bg-[#f0f7fc] hover:bg-[#e1effa] cursor-pointer transition-colors h-[68px] ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'opacity-60' : ''}`}
+                                                    onClick={() => handleConversationSelect(conversation)}
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-10 h-10 rounded-full border border-blue-200 bg-white flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                                            {conversation.profileImage && conversation.profileImage !== "" ? (
+                                                                <img
+                                                                    src={conversation.profileImage}
+                                                                    alt={conversation.candidate_name}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <span className="text-xs font-bold text-gray-600">
+                                                                    {conversation.candidate_name.slice(0, 2)}
+                                                                </span>
+                                                            )}
                                                         </div>
-                                                    )}
-                                                </div>
-                                                <div className="text-right">
-                                                    <span className={`text-base text-gray-900 font-bold ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'text-gray-500' : ''
-                                                        }`}>
-                                                        {firstName} {lastInitial && <span>{lastInitial}</span>}
+                                                        <div className="text-right">
+                                                            <span className="text-[15px] text-gray-900 font-bold block mb-0.5">
+                                                                {firstName} {lastInitial && <span>{lastInitial}</span>}
+                                                            </span>
+                                                            <p className="text-[11px] text-gray-400 truncate max-w-[150px]">
+                                                                {conversation.last_message || "אין הודעות"}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-gray-400 text-[10px] whitespace-nowrap">
+                                                        {safeFormatDate(conversation.last_message_time, "dd.MM.yy")}
                                                     </span>
                                                 </div>
-                                            </div>
-                                            <span className="text-gray-400 text-xs font-light whitespace-nowrap px-4">
-                                                {safeFormatDate(conversation.last_message_time, "dd.MM.yy")}
-                                            </span>
-                                        </motion.div>
-                                        {index < paginatedConversations.length - 1 && (
-                                            <div className="h-[1px] bg-gray-300 w-[95%] mx-auto my-1" />
-                                        )}
-                                    </div>
-                                );
-                            })
-                        )}
-                    </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </div>
 
-                    <Pagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        goToPage={goToPage}
-                        pageNumbers={pageNumbers}
-                    />
+                            {/* Desktop/Legacy View (Hidden on mobile) */}
+                            <div className="hidden md:block">
+                                <div className="relative mb-4 w-full max-w-md mx-auto">
+                                    <Input
+                                        placeholder="חיפוש בהודעות"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-12 pr-4 py-3 bg-[#F9FAFB] border-none focus:ring-1 focus:ring-blue-200 rounded-lg h-12 text-right shadow-sm placeholder:text-gray-400"
+                                        dir="rtl"
+                                    />
+                                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500 w-5 h-5" />
+                                </div>
+
+                                <div className="w-full max-w-3xl mx-auto h-px bg-gray-200 mb-3" />
+                            </div>
+                        </div>
+
+                        {/* Conversations List */}
+                        <div className="space-y-3 mb-6 w-full max-w-3xl mx-auto">
+                            <div className="hidden md:block">
+                                {loading ? (
+                                    <div className="flex justify-center items-center py-12">
+                                        <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
+                                    </div>
+                                ) : paginatedConversations.length === 0 ? (
+                                    <div className="text-center py-12 text-gray-500">
+                                        <p>אין הודעות כרגע</p>
+                                    </div>
+                                ) : (
+                                    paginatedConversations.map((conversation, index) => {
+                                        const names = conversation.candidate_name ? conversation.candidate_name.split(' ') : [];
+                                        const firstName = names[0] || "";
+                                        const lastInitial = names.length > 1 ? names[names.length - 1].charAt(0) : "";
+
+                                        return (
+                                            <div key={conversation.id}>
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                                                    className="flex items-center justify-between p-3 bg-[#F4F9FF] hover:bg-[#EBF5FF] cursor-pointer transition-colors h-[60px] rounded-xl border border-blue-50 mb-1"
+                                                    onClick={() => handleConversationSelect(conversation)}
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`w-9 h-9 rounded-full overflow-hidden ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'grayscale opacity-75' : ''
+                                                            }`}>
+                                                            {conversation.profileImage && conversation.profileImage !== "" ? (
+                                                                <img
+                                                                    src={conversation.profileImage}
+                                                                    alt={conversation.candidate_name}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
+                                                                    <span className="text-xs font-bold text-gray-600">
+                                                                        {conversation.candidate_name.slice(0, 2)}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <span className={`text-base text-gray-900 font-bold ${['filled', 'filled_via_metch', 'closed'].includes(conversation.job_status) ? 'text-gray-500' : ''
+                                                                }`}>
+                                                                {firstName} {lastInitial && <span>{lastInitial}</span>}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-gray-400 text-xs font-light whitespace-nowrap px-4">
+                                                        {safeFormatDate(conversation.last_message_time, "dd.MM.yy")}
+                                                    </span>
+                                                </motion.div>
+                                                {index < paginatedConversations.length - 1 && (
+                                                    <div className="h-[1px] bg-gray-300 w-[95%] mx-auto my-1" />
+                                                )}
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="hidden md:block">
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                goToPage={goToPage}
+                                pageNumbers={pageNumbers}
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

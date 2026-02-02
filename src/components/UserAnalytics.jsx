@@ -28,11 +28,6 @@ export class UserAnalytics {
       return;
     }
 
-    // Ignore mock jobs starting with f0000000
-    if (actionData.job_id && String(actionData.job_id).startsWith('f0000000')) {
-      return;
-    }
-
     try {
       const sessionId = this.initSession();
 
@@ -145,7 +140,6 @@ export class UserAnalytics {
    * Track job detail view
    */
   static async trackJobView(user, job) {
-    if (!job || !job.id || String(job.id).startsWith('f0000000')) return;
     try {
       // Track the analytics event
       await this.trackAction(user, 'job_view', {

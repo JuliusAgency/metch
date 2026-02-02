@@ -19,6 +19,7 @@ import CareerStageModal from '@/components/dashboard/CareerStageModal';
 import Lottie from 'lottie-react';
 import confettiAnimation from '../../Confetti banner.json';
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
+import settingsMobileBg from "@/assets/settings_mobile_bg.jpg"; // Using the same mobile background
 import CVPreview from '@/components/cv_generator/CVPreview';
 import InfoPopup from '@/components/ui/info-popup';
 
@@ -297,76 +298,135 @@ export default function Profile() {
     };
 
     return (
-      <div className="w-full">
-        {/* Dashed File Info Card */}
-        <div className="bg-[#f8fafd] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 mb-4 flex justify-between items-end">
-          <div className="flex items-center gap-6">
-            <div className="flex-shrink-0">
-              <img src="/pdf_icon.png" alt="PDF" className="w-12 h-auto" />
+      <>
+        {/* DESKTOP VIEW */}
+        <div className="w-full hidden md:block">
+          <div className="bg-[#f8fafd] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 mb-4 flex justify-between items-end">
+            <div className="flex items-center gap-6">
+              <div className="flex-shrink-0">
+                <img src="/pdf_icon.png" alt="PDF" className="w-12 h-auto" />
+              </div>
+              <div className="text-right">
+                <p className="font-semibold text-gray-900 text-lg" title={cvData.file_name}>
+                  {cvData.file_name}
+                </p>
+                <p className="text-sm text-gray-400 mt-1">
+                  {format(new Date(cvData.last_modified), 'dd.MM.yyyy HH:mm')}
+                  <span className="mx-2">|</span>
+                  {cvData.file_size_kb} KB
+                </p>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="font-semibold text-gray-900 text-lg" title={cvData.file_name}>
-                {cvData.file_name}
-              </p>
-              <p className="text-sm text-gray-400 mt-1">
-                {format(new Date(cvData.last_modified), 'dd.MM.yyyy HH:mm')}
-                <span className="mx-2">|</span>
-                {cvData.file_size_kb} KB
-              </p>
-            </div>
+
+            <button
+              onClick={handleViewCV}
+              className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors font-medium mb-1"
+            >
+              <Eye className="w-4 h-4" />
+              צפייה
+            </button>
           </div>
 
-          <button
-            onClick={handleViewCV}
-            className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors font-medium mb-1"
-          >
-            <Eye className="w-4 h-4" />
-            צפייה
-          </button>
+          <div className="flex items-center justify-end gap-6 text-sm font-medium px-2">
+            <button
+              onClick={handleDeleteFile}
+              className="flex items-center gap-2 text-[#FF4D4D] hover:text-red-700 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              מחיקת קובץ
+            </button>
+
+            <div className="w-px h-4 bg-gray-300"></div>
+
+            <Link
+              to={createPageUrl('CVGenerator?choice=create&step=1')}
+              className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
+            >
+              {(cvData.personal_details && Object.keys(cvData.personal_details).length > 0) ? (
+                <>
+                  <img src="/edit_icon.png" alt="Edit" className="w-4 h-4" />
+                  עריכת קובץ
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  ליצירת קו״ח
+                </>
+              )}
+            </Link>
+
+            <div className="w-px h-4 bg-gray-300"></div>
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
+            >
+              <img src="/replace_icon.png" alt="Replace" className="w-4 h-4" />
+              החלפת קובץ
+            </button>
+          </div>
         </div>
 
-        {/* Action Buttons Row - Aligned Left (justify-end in RTL) */}
-        <div className="flex items-center justify-end gap-6 text-sm font-medium px-2">
+        {/* MOBILE VIEW */}
+        <div className="w-full md:hidden mb-6 px-2">
+          <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
+            {/* File Info Box */}
+            <div className="bg-[#f8fafd] rounded-xl p-4 mb-5">
+              <div className="flex items-center justify-between">
+                <div className="flex-shrink-0 ml-4">
+                  <img src="/pdf_icon.png" alt="PDF" className="w-10 h-auto" />
+                </div>
+                <div className="text-right w-full">
+                  <p className="font-bold text-gray-900 text-base mb-1 truncate" title={cvData.file_name}>
+                    {cvData.file_name}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {format(new Date(cvData.last_modified), 'dd.MM.yyyy HH:mm')}
+                    <span className="mx-2">|</span>
+                    {cvData.file_size_kb} KB
+                  </p>
+                </div>
+              </div>
+            </div>
 
+            {/* Action Buttons */}
+            <div className="flex items-center justify-between px-2 text-sm font-bold">
+              <button
+                onClick={handleDeleteFile}
+                className="flex items-center gap-1.5 text-[#FF4D4D] hover:text-red-700 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                מחק קובץ
+              </button>
 
-          <button
-            onClick={handleDeleteFile}
-            className="flex items-center gap-2 text-[#FF4D4D] hover:text-red-700 transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-            מחיקת קובץ
-          </button>
+              <Link
+                to={createPageUrl('CVGenerator?choice=create&step=1')}
+                className="flex items-center gap-1.5 text-[#4D8EFF] hover:text-blue-700 transition-colors"
+              >
+                {(cvData.personal_details && Object.keys(cvData.personal_details).length > 0) ? (
+                  <>
+                    <img src="/edit_icon.png" alt="Edit" className="w-4 h-4" />
+                    ערוך קובץ
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4" />
+                    צור חדש
+                  </>
+                )}
+              </Link>
 
-          <div className="w-px h-4 bg-gray-300"></div>
-
-          <Link
-            to={createPageUrl('CVGenerator?choice=create&step=1')}
-            className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
-          >
-            {(cvData.personal_details && Object.keys(cvData.personal_details).length > 0) ? (
-              <>
-                <img src="/edit_icon.png" alt="Edit" className="w-4 h-4" />
-                עריכת קובץ
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4" />
-                ליצירת קו״ח
-              </>
-            )}
-          </Link>
-
-          <div className="w-px h-4 bg-gray-300"></div>
-
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 text-[#4D8EFF] hover:text-blue-700 transition-colors"
-          >
-            <img src="/replace_icon.png" alt="Replace" className="w-4 h-4" />
-            החלפת קובץ
-          </button>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1.5 text-[#4D8EFF] hover:text-blue-700 transition-colors"
+              >
+                <img src="/replace_icon.png" alt="Replace" className="w-4 h-4" />
+                החלף קובץ
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      </>
     );
   };
 
@@ -375,9 +435,25 @@ export default function Profile() {
   }
 
   return (
-    <div className="h-full relative" dir="rtl">
+    <div className="h-full relative overflow-hidden md:overflow-visible" dir="rtl">
+      {/* Mobile-Only Background Image - Applied only to Profile Page Background */}
+      <div
+        className="md:hidden fixed left-0 right-0 z-0 pointer-events-none"
+        style={{
+          top: '0',
+          width: '100%',
+          maxWidth: '440px',
+          height: '280px',
+          margin: '0 auto',
+          backgroundImage: `url(${settingsMobileBg})`,
+          backgroundSize: '100% 100%',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+
       <div className="relative">
-        <div className="relative h-32 overflow-hidden w-full">
+        <div className="relative h-32 overflow-hidden w-full hidden md:block">
           <div
             className="absolute inset-0 w-full h-full"
             style={{
@@ -388,14 +464,23 @@ export default function Profile() {
             }}
           />
         </div>
-        <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-full max-w-7xl mx-auto">
+
+        {/* Mobile Header Title */}
+        <div className="md:hidden flex items-center justify-center pt-10 pb-4 relative z-10 w-full px-4">
+          <h1 className="text-2xl font-bold text-gray-800">ניהול הפרטים שלי</h1>
+          <Link to={createPageUrl("Dashboard")} className="absolute right-6 w-8 h-8 bg-white/50 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm">
+            <ChevronRight className="w-5 h-5 text-gray-800" />
+          </Link>
+        </div>
+
+        <div className="p-0 md:p-8 mt-6 md:-mt-16 relative z-10 w-full max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="max-w-4xl mx-auto space-y-12"
+            className="max-w-4xl mx-auto space-y-4 md:space-y-12 bg-white md:bg-transparent [border-top-left-radius:50%_40px] [border-top-right-radius:50%_40px] md:rounded-0 min-h-screen md:min-h-0 pt-8 md:pt-0 px-6 md:px-0"
           >
-            <h1 className="text-center text-3xl font-bold text-gray-900">
+            <h1 className="text-center text-3xl font-bold text-gray-900 hidden md:block">
               {(contextUser?.user_type === 'job_seeker' || !contextUser?.user_type) ? "הקו״ח שלי" : "ניהול הפרטים שלי"}
             </h1>
 
@@ -428,17 +513,17 @@ export default function Profile() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:pt-2">
                   {/* Preference Questionnaire Link */}
                   <Link to={createPageUrl(`PreferenceQuestionnaire?returnTo=${encodeURIComponent(location.pathname)}`)}>
-                    <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center justify-between h-[72px] hover:border-blue-200 transition-colors cursor-pointer group">
+                    <div className="bg-white border border-gray-100 shadow-sm md:shadow-sm shadow-[0_4px_10px_rgba(0,0,0,0.03)] rounded-2xl md:rounded-xl p-4 flex items-center justify-between h-[72px] hover:border-blue-200 transition-colors cursor-pointer group">
                       <span className="font-semibold text-gray-700 text-base">ניהול שאלון העדפה</span>
                       <ChevronLeft className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
                     </div>
                   </Link>
 
-                  {/* Career Questionnaire Link - Opens Modal */}
-                  <div onClick={() => setIsCareerStageModalOpen(true)}>
+                  {/* Career Questionnaire Link - Opens Modal - HIDDEN ON MOBILE as per image */}
+                  <div onClick={() => setIsCareerStageModalOpen(true)} className="hidden md:block">
                     <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center justify-between h-[72px] hover:border-blue-200 transition-colors cursor-pointer group">
                       <span className="font-semibold text-gray-700 text-base">שאלון קריירה</span>
                       <ChevronLeft className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
@@ -446,7 +531,7 @@ export default function Profile() {
                   </div>
 
                   {/* Looking for Job Switch - NOW ON LEFT (Second in RTL Grid) */}
-                  <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center justify-between h-[72px]">
+                  <div className="bg-white border border-gray-100 shadow rounded-2xl md:shadow-sm shadow-[0_4px_10px_rgba(0,0,0,0.03)] md:rounded-xl p-4 flex items-center justify-between h-[72px]">
                     <div className="flex items-center gap-3 w-full justify-between">
                       <label htmlFor="looking-for-job" className="font-semibold text-gray-700 text-base cursor-pointer select-none">
                         אני מחפש/ת עבודה

@@ -18,6 +18,7 @@ import SeekerJobImages from "@/components/seeker/SeekerJobImages";
 import SeekerJobActions from "@/components/seeker/SeekerJobActions";
 import ApplicationSuccessModal from "@/components/jobs/ApplicationSuccessModal";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
+import settingsMobileBg from "@/assets/settings_mobile_bg.jpg";
 import { calculate_match_score } from "@/utils/matchScore";
 
 export default function JobDetailsSeeker() {
@@ -400,30 +401,61 @@ export default function JobDetailsSeeker() {
 
   return (
     <div className="h-full relative" dir="rtl">
+      {/* MOBILE FIXED BACKGROUND - Matches Settings/Profile pattern */}
+      <div
+        className="md:hidden fixed top-0 left-0 right-0 pointer-events-none"
+        style={{
+          width: '100%',
+          height: '320px',
+          backgroundImage: `url(${settingsMobileBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'top center',
+          backgroundRepeat: 'no-repeat',
+          zIndex: '0'
+        }}
+      />
+
       <div className="relative h-full overflow-y-auto">
-        <div className="p-2 sm:p-4 md:p-6 w-full max-w-5xl mx-auto">
-          <SeekerHeader job={job} returnUrl={returnUrl} />
+        <div className="w-full mx-auto">
           {isUnavailable && (
-            <JobStatusBanner status={job.status} className="mb-4" />
+            <div className="px-4 md:px-0">
+              <JobStatusBanner status={job.status} className="mb-4" />
+            </div>
           )}
-          <SeekerJobTitle job={job} employmentTypeText={employmentTypeText} />
-          <SeekerJobPerks perks={job.company_perks} />
 
-          <SeekerJobInfo
-            job={job}
-            aiAnalysis={aiAnalysis}
-            isAiLoading={isAiLoading}
-          />
+          <div className="md:hidden h-[100px]" />
 
-          <SeekerJobImages images={attachments} />
-          <SeekerJobActions
-            handleApply={handleApply}
-            applying={applying}
-            isUnavailable={isUnavailable}
-            hasExistingApplication={hasExistingApplication}
-            handleReject={handleReject}
-            hasScreeningQuestions={Array.isArray(job.screening_questions) && job.screening_questions.length > 0}
-          />
+          <div className="bg-white mx-0 mt-[-30px] md:mt-0 rounded-t-[40px] [border-top-left-radius:80%_55px] [border-top-right-radius:80%_55px] px-4 py-8 md:p-6 md:shadow-[0_-15px_45px_rgba(0,0,0,0.06)] relative z-20 min-h-screen">
+            <div className="max-w-6xl mx-auto">
+              <div className="md:hidden -mt-14 mb-6">
+                <SeekerHeader job={job} returnUrl={returnUrl} />
+              </div>
+              <div className="hidden md:block">
+                <SeekerHeader job={job} returnUrl={returnUrl} />
+              </div>
+              <SeekerJobTitle job={job} employmentTypeText={employmentTypeText} />
+              <div className="hidden md:block">
+                <SeekerJobPerks perks={job.company_perks} />
+              </div>
+
+              <SeekerJobInfo
+                job={job}
+                aiAnalysis={aiAnalysis}
+                isAiLoading={isAiLoading}
+                perks={job.company_perks}
+              />
+
+              <SeekerJobImages images={attachments} />
+              <SeekerJobActions
+                handleApply={handleApply}
+                applying={applying}
+                isUnavailable={isUnavailable}
+                hasExistingApplication={hasExistingApplication}
+                handleReject={handleReject}
+                hasScreeningQuestions={Array.isArray(job.screening_questions) && job.screening_questions.length > 0}
+              />
+            </div>
+          </div>
         </div>
       </div>
 

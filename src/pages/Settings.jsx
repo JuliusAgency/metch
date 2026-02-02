@@ -56,6 +56,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { UnsavedChangesDialog } from "@/components/dialogs/UnsavedChangesDialog";
 import { ProfileUpdatedDialog } from "@/components/dialogs/ProfileUpdatedDialog";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
+import settingsMobileBg from "@/assets/settings_mobile_bg.jpg";
 
 export default function Settings() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -538,628 +539,664 @@ export default function Settings() {
   }
 
   return (
-    <div className="h-full relative" dir="rtl">
-      <div className="relative">
-        {/* Header with curved background - HIDDEN IN ONBOARDING MODE */}
-        {!isOnboarding && (
-          <div className="relative h-32 overflow-hidden w-full">
-            <div
-              className="absolute inset-0 w-full h-full"
-              style={{
-                backgroundImage: `url(${settingsHeaderBg})`,
-                backgroundSize: '100% 100%',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
-              }}
-            />
-            <Link to={createPageUrl("Dashboard")} className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-[60]">
-              <ChevronRight className="w-6 h-6 text-gray-800" />
-            </Link>
-          </div>
-        )}
+    <div className="h-full relative min-h-screen" dir="rtl">
+      {/* Mobile-Only Background Image - Applied only to Settings Page Background */}
+      <div
+        className="md:hidden fixed left-0 right-0 z-0 pointer-events-none"
+        style={{
+          top: '0',
+          width: '100%',
+          maxWidth: '390px',
+          height: '280px',
+          margin: '0 auto',
+          backgroundImage: `url(${settingsMobileBg})`,
+          backgroundSize: '100% 100%',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+      {/* Header with curved background - HIDDEN IN ONBOARDING MODE OR MOBILE */}
+      {!isOnboarding && (
+        <div className="relative h-32 overflow-hidden w-full hidden md:block">
+          <div
+            className="absolute inset-0 w-full h-full"
+            style={{
+              backgroundImage: `url(${settingsHeaderBg})`,
+              backgroundSize: '100% 100%',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          />
+          <Link to={createPageUrl("Dashboard")} className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-[60]">
+            <ChevronRight className="w-6 h-6 text-gray-800" />
+          </Link>
+        </div>
+      )}
 
-        <div className={`p-4 sm:p-6 md:p-8 ${!isOnboarding ? '-mt-20' : 'mt-10'} relative z-10 w-full max-w-7xl mx-auto`}>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-8"
-          >
-            {/* Header Section */}
-            <div className="flex flex-col items-center text-center space-y-4">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                {isOnboarding ? "השלמת פרטי חברה" : (isEmployer ? "הגדרות" : "הפרטים שלי")}
-              </h1>
+      {/* Mobile-Only Header ABOVE Card */}
+      <div className="md:hidden flex items-center px-6 pt-10 pb-4 relative z-10 w-full justify-center">
+        <Link to={createPageUrl("Dashboard")} className="absolute right-6 w-10 h-10 bg-white/50 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm">
+          <ChevronRight className="w-6 h-6 text-gray-800" />
+        </Link>
+        <h1 className="text-2xl font-bold text-gray-800">הגדרות פרופיל משתמש</h1>
+      </div>
 
-              {/* Profile Picture with Edit Button */}
-              <div className="relative">
-                <div className="w-20 h-20 bg-blue-200 rounded-full flex items-center justify-center border-4 border-white shadow-lg overflow-hidden">
-                  {user?.profile_picture ? (
-                    <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <UserIcon className="w-10 h-10 text-blue-600" />
-                  )}
-                </div>
-                <button
-                  className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 transition-colors"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Edit2 className="w-4 h-4 text-white" />
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                />
+      <div className={`p-0 md:p-8 ${!isOnboarding ? 'mt-6 md:-mt-20' : 'mt-10'} relative z-10 w-full max-w-7xl mx-auto`}>
+        <motion.div
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="md:space-y-8 bg-white md:bg-transparent [border-top-left-radius:50%_40px] [border-top-right-radius:50%_40px] md:rounded-none min-h-screen md:min-h-0 pt-8 md:pt-0 shadow-[0_0_20px_rgba(0,0,0,0.1)] border border-gray-100 md:shadow-none md:border-0"
+        >
+          {/* Header Section (Centering Profile Summary) */}
+          <div className={`flex flex-col items-center text-center ${isEmployer ? 'space-y-4' : 'space-y-2 md:space-y-4 mb-2 md:mb-0'}`}>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 hidden md:block">
+              {isOnboarding ? "השלמת פרטי חברה" : (isEmployer ? "הגדרות" : "הפרטים שלי")}
+            </h1>
+
+            {/* Profile Picture with Edit Button */}
+            <div className="relative">
+              <div onClick={() => fileInputRef.current?.click()} className="w-20 h-20 md:w-20 md:h-20 bg-blue-100 rounded-full flex items-center justify-center border-4 border-white shadow-lg overflow-hidden cursor-pointer relative">
+                {user?.profile_picture ? (
+                  <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <>
+                    <UserIcon className="w-10 h-10 text-blue-500 hidden md:block" />
+                    <img src="/mobile_edit_icon_v2.png" alt="Upload" className="w-full h-full object-cover md:hidden block" />
+                  </>
+                )}
               </div>
-
-              {isEmployer && (
-                <h2 className="text-xl font-semibold text-gray-800">{formData.company_name || "שם חברה"}</h2>
-              )}
-              {!isEmployer && (
-                <h2 className="text-xl font-semibold text-gray-800">{user?.full_name || "ישראל ישראלי"}</h2>
-              )}
+              <button
+                className="absolute bottom-0 right-0 w-7 h-7 md:w-8 md:h-8 bg-transparent md:bg-blue-500 rounded-full hidden md:flex items-center justify-center md:shadow-lg md:hover:bg-blue-600 transition-colors md:border-2 md:border-white"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Edit2 className="w-4 h-4 text-white hidden md:block" />
+                <img src="/mobile_edit_icon_v2.png" alt="Edit" className="w-full h-full md:hidden block object-contain" />
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
             </div>
 
-            {/* Form Section */}
-            <form onSubmit={handleSave} className="space-y-8">
+            {isEmployer && (
+              <h2 className="text-xl font-semibold text-gray-800">{formData.company_name || "שם חברה"}</h2>
+            )}
+            {!isEmployer && (
+              <h2 className="text-2xl font-bold text-gray-800 mt-2">{user?.full_name || `${formData.first_name} ${formData.last_name}` || "ישראל ישראלי"}</h2>
+            )}
+          </div>
 
-              {/* ==================== EMPLOYER LAYOUT ==================== */}
-              {isEmployer && (
-                <>
-                  {/* Section 1: Company Details */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-gray-900 border-b pb-2">ניהול פרטי חברה</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-gray-700">שם חברה</label>
-                        <div className="relative">
-                          <Building2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <Input
-                            placeholder="שם חברה"
-                            value={formData.company_name}
-                            onChange={(e) => handleInputChange('company_name', e.target.value)}
-                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                          />
-                        </div>
-                      </div>
+          {/* Form Section */}
+          <form onSubmit={handleSave} className="space-y-6 md:space-y-8 px-6 md:px-0 mt-4 md:mt-0">
 
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-gray-700">כתובת חברה</label>
-                        <div className="relative">
-                          <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <Input
-                            placeholder="כתובת חברה"
-                            value={formData.main_address}
-                            onChange={(e) => handleInputChange('main_address', e.target.value)}
-                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-gray-700">סוג חברה</label>
-                        <div className="relative">
-                          <Briefcase className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <select
-                            value={formData.company_type}
-                            onChange={(e) => handleInputChange('company_type', e.target.value)}
-                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400 appearance-none"
-                          >
-                            <option value="" disabled>בחר סוג חברה</option>
-                            <option value="עמותה">עמותה</option>
-                            <option value="חברה עסקית">חברה עסקית</option>
-                            <option value="חברת כח אדם">חברת כח אדם</option>
-                            <option value="חברת השמה">חברת השמה</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-gray-700">תחום פעילות</label>
-                        <div className="relative">
-                          <Briefcase className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <Input
-                            placeholder="תחום פעילות"
-                            value={formData.field_of_activity}
-                            onChange={(e) => handleInputChange('field_of_activity', e.target.value)}
-                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1 md:col-span-2">
-                        <label className="text-sm font-medium text-gray-700">מייל חברה</label>
-                        <div className="relative">
-                          <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <Input
-                            placeholder="מייל חברה"
-                            value={formData.cv_reception_email}
-                            onChange={(e) => handleInputChange('cv_reception_email', e.target.value)}
-                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                            dir="ltr"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Section 2: Recruiter Details */}
-                  <div className="space-y-4 pt-4">
-                    <h3 className="text-lg font-bold text-gray-900 border-b pb-2">ניהול פרטי מגייס</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-gray-700">שם איש גיוס</label>
-                        <div className="relative">
-                          <UserIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <Input
-                            placeholder="שם איש גיוס"
-                            value={formData.full_name}
-                            onChange={(e) => handleInputChange('full_name', e.target.value)}
-                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-gray-700">מייל איש גיוס</label>
-                        <div className="relative">
-                          <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <Input
-                            placeholder="מייל איש גיוס"
-                            value={formData.email}
-                            disabled
-                            className="w-full h-12 bg-gray-50 border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm"
-                            dir="ltr"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-gray-700">פלאפון (של האימות)</label>
-                        <div className="relative">
-                          <Phone className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <Input
-                            placeholder="פלאפון"
-                            value={formData.phone}
-                            onChange={(e) => handleInputChange('phone', e.target.value)}
-                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                            dir="ltr"
-                          />
-                        </div>
-                        {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Section 3: Company Description */}
-                  <div className="space-y-4 pt-4">
-                    <h3 className="text-lg font-bold text-gray-900 border-b pb-2">תיאור חברה</h3>
-                    <div className="relative">
-                      <textarea
-                        className="w-full min-h-[120px] p-4 rounded-[50px] border border-gray-200 focus:border-blue-400 focus:ring-0 resize-y text-right"
-                        placeholder="ספר קצת על החברה..."
-                        value={formData.bio}
-                        onChange={(e) => handleInputChange('bio', e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Section 4: Links Management */}
-                  <div className="space-y-4 pt-4">
-                    <h3 className="text-lg font-bold text-gray-900 border-b pb-2">ניהול לינקים</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-gray-700">אתר אינטרנט</label>
-                        <div className="relative">
-                          <Globe className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <Input
-                            placeholder="https://company.com"
-                            value={formData.website}
-                            onChange={(e) => handleInputChange('website', e.target.value)}
-                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                            dir="ltr"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-gray-700">LinkedIn</label>
-                        <div className="relative">
-                          <Linkedin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <Input
-                            placeholder="LinkedIn URL"
-                            value={formData.linkedin_url}
-                            onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
-                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                            dir="ltr"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-gray-700">Facebook</label>
-                        <div className="relative">
-                          <Facebook className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <Input
-                            placeholder="Facebook URL"
-                            value={formData.facebook_url}
-                            onChange={(e) => handleInputChange('facebook_url', e.target.value)}
-                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                            dir="ltr"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-gray-700">Instagram</label>
-                        <div className="relative">
-                          <Instagram className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <Input
-                            placeholder="Instagram URL"
-                            value={formData.instagram_url}
-                            onChange={(e) => handleInputChange('instagram_url', e.target.value)}
-                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                            dir="ltr"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-gray-700">X (Twitter)</label>
-                        <div className="relative">
-                          <svg viewBox="0 0 24 24" fill="currentColor" className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400">
-                            <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
-                          </svg>
-                          <Input
-                            placeholder="X URL"
-                            value={formData.twitter_url}
-                            onChange={(e) => handleInputChange('twitter_url', e.target.value)}
-                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                            dir="ltr"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-gray-700">TikTok</label>
-                        <div className="relative">
-                          <svg viewBox="0 0 24 24" fill="currentColor" className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400">
-                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
-                          </svg>
-                          <Input
-                            placeholder="TikTok URL"
-                            value={formData.tiktok_url}
-                            onChange={(e) => handleInputChange('tiktok_url', e.target.value)}
-                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                            dir="ltr"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* ==================== JOB SEEKER LAYOUT (EXISTING) ==================== */}
-              {!isEmployer && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* First Name & Last Name (Split) */}
-                  <div className="grid grid-cols-2 gap-4">
+            {/* ==================== EMPLOYER LAYOUT ==================== */}
+            {isEmployer && (
+              <>
+                {/* Section 1: Company Details */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-bold text-gray-900 border-b pb-2">ניהול פרטי חברה</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-gray-700">שם פרטי</label>
+                      <label className="text-sm font-medium text-gray-700">שם חברה</label>
                       <div className="relative">
-                        <UserIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Building2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <Input
-                          placeholder="שם פרטי"
-                          value={formData.first_name}
-                          onChange={(e) => handleInputChange('first_name', e.target.value)}
-                          required
+                          placeholder="שם חברה"
+                          value={formData.company_name}
+                          onChange={(e) => handleInputChange('company_name', e.target.value)}
                           className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                          dir="rtl"
                         />
                       </div>
-                      {errors.first_name && (
-                        <p className="text-red-500 text-sm">{errors.first_name}</p>
-                      )}
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-gray-700">שם משפחה</label>
+                      <label className="text-sm font-medium text-gray-700">כתובת חברה</label>
                       <div className="relative">
-                        <UserIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <Input
-                          placeholder="שם משפחה"
-                          value={formData.last_name}
-                          onChange={(e) => handleInputChange('last_name', e.target.value)}
-                          required
+                          placeholder="כתובת חברה"
+                          value={formData.main_address}
+                          onChange={(e) => handleInputChange('main_address', e.target.value)}
                           className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                          dir="rtl"
                         />
                       </div>
-                      {errors.last_name && (
-                        <p className="text-red-500 text-sm">{errors.last_name}</p>
-                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">סוג חברה</label>
+                      <div className="relative">
+                        <Briefcase className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <select
+                          value={formData.company_type}
+                          onChange={(e) => handleInputChange('company_type', e.target.value)}
+                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400 appearance-none"
+                        >
+                          <option value="" disabled>בחר סוג חברה</option>
+                          <option value="עמותה">עמותה</option>
+                          <option value="חברה עסקית">חברה עסקית</option>
+                          <option value="חברת כח אדם">חברת כח אדם</option>
+                          <option value="חברת השמה">חברת השמה</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">תחום פעילות</label>
+                      <div className="relative">
+                        <Briefcase className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="תחום פעילות"
+                          value={formData.field_of_activity}
+                          onChange={(e) => handleInputChange('field_of_activity', e.target.value)}
+                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1 md:col-span-2">
+                      <label className="text-sm font-medium text-gray-700">מייל חברה</label>
+                      <div className="relative">
+                        <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="מייל חברה"
+                          value={formData.cv_reception_email}
+                          onChange={(e) => handleInputChange('cv_reception_email', e.target.value)}
+                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                          dir="ltr"
+                        />
+                      </div>
                     </div>
                   </div>
-
-                  {/* Email */}
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-700">כתובת מייל</label>
-                    <div className="relative">
-                      <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <Input
-                        placeholder="דוא״ל"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange('email', e.target.value)}
-                        disabled
-                        className="w-full h-12 bg-gray-50 border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm"
-                        dir="rtl"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Phone */}
-                  <div className="space-y-1">
-                    <div className="relative">
-                      <Phone className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <Input
-                        placeholder="מספר טלפון"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
-                        required
-                        className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                        dir="rtl"
-                      />
-                    </div>
-                    {errors.phone && (
-                      <p className="text-red-500 text-sm text-right">{errors.phone}</p>
-                    )}
-                  </div>
-
-                  {/* Gender */}
-                  <div className="space-y-1">
-                    <div className="relative">
-                      <Users className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <select
-                        value={formData.gender}
-                        onChange={(e) => handleInputChange('gender', e.target.value)}
-                        required
-                        className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400 appearance-none"
-                        dir="rtl"
-                      >
-                        <option value="" disabled>בחר מגדר</option>
-                        <option value="male">זכר</option>
-                        <option value="female">נקבה</option>
-                        <option value="other">אחר</option>
-                      </select>
-                    </div>
-                    {errors.gender && (
-                      <p className="text-red-500 text-sm text-right">{errors.gender}</p>
-                    )}
-                  </div>
-
-                  {/* Date of Birth */}
-                  <div className="space-y-1">
-                    <div className="relative">
-                      <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <Input
-                        type="date"
-                        placeholder="תאריך לידה"
-                        value={formData.date_of_birth}
-                        onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-                        required
-                        className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                        dir="rtl"
-                      />
-                    </div>
-                    {errors.date_of_birth && (
-                      <p className="text-red-500 text-sm text-right">{errors.date_of_birth}</p>
-                    )}
-                  </div>
-
-                  {/* Place of Residence */}
-                  <div className="space-y-1">
-                    <div className="relative">
-                      <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
-                      <Popover open={openLocation} onOpenChange={setOpenLocation}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={openLocation}
-                            className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400 justify-between font-normal hover:bg-white text-base"
-                            dir="rtl"
-                          >
-                            {formData.place_of_residence || "מקום מגורים"}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50 absolute left-4" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[300px] md:w-[400px] p-0" align="start" dir="rtl">
-                          <Command>
-                            <CommandInput placeholder="חיפוש עיר..." className="text-right gap-2" />
-                            <CommandList>
-                              <CommandEmpty>לא נמצאה עיר.</CommandEmpty>
-                              <CommandGroup className="max-h-[300px] overflow-y-auto">
-                                {locationsList.map((loc) => (
-                                  <CommandItem
-                                    key={loc}
-                                    value={loc}
-                                    onSelect={(currentValue) => {
-                                      handleInputChange('place_of_residence', currentValue);
-                                      setOpenLocation(false);
-                                    }}
-                                    className="text-right flex justify-between cursor-pointer"
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "h-4 w-4 ml-2",
-                                        formData.place_of_residence === loc ? "opacity-100" : "opacity-0"
-                                      )}
-                                    />
-                                    {loc}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    {errors.place_of_residence && (
-                      <p className="text-red-500 text-sm text-right">{errors.place_of_residence}</p>
-                    )}
-                  </div>
-
-
                 </div>
-              )}
 
-              {/* ========================================================== */}
+                {/* Section 2: Recruiter Details */}
+                <div className="space-y-4 pt-4">
+                  <h3 className="text-lg font-bold text-gray-900 border-b pb-2">ניהול פרטי מגייס</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">שם איש גיוס</label>
+                      <div className="relative">
+                        <UserIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="שם איש גיוס"
+                          value={formData.full_name}
+                          onChange={(e) => handleInputChange('full_name', e.target.value)}
+                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                        />
+                      </div>
+                    </div>
 
-              {/* Password Change Section - Common for both */}
-              <div className="space-y-4 pt-4">
-                <h3 className="text-lg font-bold text-gray-900 border-b pb-2">שינוי סיסמא</h3>
-                <div className="space-y-1">
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">מייל איש גיוס</label>
+                      <div className="relative">
+                        <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="מייל איש גיוס"
+                          value={formData.email}
+                          disabled
+                          className="w-full h-12 bg-gray-50 border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">פלאפון (של האימות)</label>
+                      <div className="relative">
+                        <Phone className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="פלאפון"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                          dir="ltr"
+                        />
+                      </div>
+                      {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 3: Company Description */}
+                <div className="space-y-4 pt-4">
+                  <h3 className="text-lg font-bold text-gray-900 border-b pb-2">תיאור חברה</h3>
                   <div className="relative">
-                    <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <Input
-                      type="password"
-                      placeholder="סיסמא חדשה (השאר ריק אם אין שינוי)"
-                      value={formData.password}
-                      onChange={(e) => handleInputChange('password', e.target.value)}
-                      className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                      dir="rtl"
+                    <textarea
+                      className="w-full min-h-[120px] p-4 rounded-[50px] border border-gray-200 focus:border-blue-400 focus:ring-0 resize-y text-right"
+                      placeholder="ספר קצת על החברה..."
+                      value={formData.bio}
+                      onChange={(e) => handleInputChange('bio', e.target.value)}
                     />
                   </div>
                 </div>
-              </div>
 
-
-              {/* Action Buttons */}
-              <div className="flex flex-col items-center space-y-4 pt-6">
-                <Button
-                  type="submit"
-                  disabled={isSubmitDisabled}
-                  className={` rounded-full text-lg font-bold shadow-lg transition-all ${isSubmitDisabled
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed w-full md:w-96 h-12'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white w-full md:w-64 h-12' // Adjusted width for side-by-side
-                    }`}
-                >
-                  {saving ? (
-                    <>
-                      <div className="w-5 h-5 border-t-2 border-blue-500 rounded-full animate-spin"></div>
-                      שומר...
-                    </>
-                  ) : (
-                    isOnboarding ? 'עדכון' : 'שמירת שינויים'
-                  )}
-                </Button>
-
-                {isOnboarding && (
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      // Check if form is dirty by checking if submit is enabled
-                      // isSubmitDisabled is false when there are changes (dirty)
-                      if (!isSubmitDisabled) {
-                        setShowIncompleteDialog(true);
-                      } else {
-                        navigate(-1);
-                      }
-                    }}
-                    variant="outline"
-                    className="w-full md:w-32 h-12 rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 font-bold text-lg mr-4"
-                  >
-                    חזור
-                  </Button>
-                )}
-
-                {!isOnboarding && (
-                  <>
-                    <Button
-                      type="button"
-                      variant="link"
-                      className="text-gray-500 hover:text-red-600 font-medium"
-                      onClick={() => setShowDeleteConfirm(true)}
-                    >
-                      מחיקת חשבון
-                    </Button>
-
-                    <Button
-                      type="button"
-                      onClick={handleLogout}
-                      variant="outline"
-                      className="w-full md:w-96 h-12 rounded-[50px] border-2 border-red-400 bg-white text-red-600 hover:bg-red-50 hover:border-red-500 font-semibold text-base px-6 shadow-sm"
-                    >
-                      <LogOut className="w-5 h-5 ml-2" />
-                      התנתקות
-                    </Button>
-                  </>
-                )}
-
-              </div>
-            </form>
-          </motion.div>
-
-          {/* Delete Account Confirmation Modal */}
-          {
-            showDeleteConfirm && (
-              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4" dir="rtl">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl"
-                >
-                  <div className="text-center space-y-4">
-                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
-                      <AlertTriangle className="w-8 h-8 text-red-600" />
+                {/* Section 4: Links Management */}
+                <div className="space-y-4 pt-4">
+                  <h3 className="text-lg font-bold text-gray-900 border-b pb-2">ניהול לינקים</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">אתר אינטרנט</label>
+                      <div className="relative">
+                        <Globe className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="https://company.com"
+                          value={formData.website}
+                          onChange={(e) => handleInputChange('website', e.target.value)}
+                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                          dir="ltr"
+                        />
+                      </div>
                     </div>
-
-                    <h3 className="text-xl font-bold text-gray-900">מחיקת חשבון</h3>
-                    <p className="text-gray-600">
-                      האם אתה בטוח שברצונך למחוק את החשבון? פעולה זו אינה הפיכה וכל הנתונים שלך יימחקו לצמיתות.
-                    </p>
-
-                    <div className="flex gap-3 pt-4">
-                      <Button
-                        onClick={() => setShowDeleteConfirm(false)}
-                        variant="outline"
-                        className="flex-1 h-12 rounded-full border-gray-300"
-                        disabled={deleteLoading}
-                      >
-                        ביטול
-                      </Button>
-                      <Button
-                        onClick={handleDeleteAccount}
-                        className="flex-1 h-12 bg-red-600 hover:bg-red-700 rounded-full"
-                        disabled={deleteLoading}
-                      >
-                        {deleteLoading ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : 'מחיקת חשבון'}
-                      </Button>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">LinkedIn</label>
+                      <div className="relative">
+                        <Linkedin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="LinkedIn URL"
+                          value={formData.linkedin_url}
+                          onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
+                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">Facebook</label>
+                      <div className="relative">
+                        <Facebook className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="Facebook URL"
+                          value={formData.facebook_url}
+                          onChange={(e) => handleInputChange('facebook_url', e.target.value)}
+                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">Instagram</label>
+                      <div className="relative">
+                        <Instagram className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="Instagram URL"
+                          value={formData.instagram_url}
+                          onChange={(e) => handleInputChange('instagram_url', e.target.value)}
+                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">X (Twitter)</label>
+                      <div className="relative">
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400">
+                          <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+                        </svg>
+                        <Input
+                          placeholder="X URL"
+                          value={formData.twitter_url}
+                          onChange={(e) => handleInputChange('twitter_url', e.target.value)}
+                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">TikTok</label>
+                      <div className="relative">
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400">
+                          <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+                        </svg>
+                        <Input
+                          placeholder="TikTok URL"
+                          value={formData.tiktok_url}
+                          onChange={(e) => handleInputChange('tiktok_url', e.target.value)}
+                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                          dir="ltr"
+                        />
+                      </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
+              </>
+            )}
+
+            {/* ==================== JOB SEEKER LAYOUT (EXISTING) ==================== */}
+            {!isEmployer && (
+              <div className="md:grid md:grid-cols-1 md:gap-0">
+                <Card className="border-0 md:border-0 md:shadow-none md:bg-transparent md:p-0 mb-4 md:mb-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    {/* First Name & Last Name (Split) */}
+                    <div className="hidden md:grid md:grid-cols-2 gap-3 md:gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] md:text-sm font-medium text-gray-600 md:text-gray-700 hidden md:block pr-4 md:pr-0">שם פרטי</label>
+                        <div className="relative">
+                          <UserIcon className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <Edit2 className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            placeholder="שם פרטי"
+                            value={formData.first_name}
+                            onChange={(e) => handleInputChange('first_name', e.target.value)}
+                            required
+                            className="w-full h-11 md:h-12 bg-white border-gray-200 rounded-full md:rounded-[50px] pr-4 md:pr-12 pl-10 md:pl-4 text-right shadow-sm focus:border-blue-400 text-sm md:text-base"
+                            dir="rtl"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] md:text-sm font-medium text-gray-600 md:text-gray-700 hidden md:block pr-4 md:pr-0">שם משפחה</label>
+                        <div className="relative">
+                          <UserIcon className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <Edit2 className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            placeholder="שם משפחה"
+                            value={formData.last_name}
+                            onChange={(e) => handleInputChange('last_name', e.target.value)}
+                            required
+                            className="w-full h-11 md:h-12 bg-white border-gray-200 rounded-full md:rounded-[50px] pr-4 md:pr-12 pl-10 md:pl-4 text-right shadow-sm focus:border-blue-400 text-sm md:text-base"
+                            dir="rtl"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Email */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] md:text-sm font-medium text-gray-600 md:text-gray-700 hidden md:block pr-4 md:pr-0">כתובת מייל</label>
+                      <div className="relative">
+                        <Mail className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Edit2 className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Input
+                          placeholder="דוא״ל"
+                          value={formData.email}
+                          onChange={(e) => handleInputChange('email', e.target.value)}
+                          disabled
+                          className="w-full h-11 md:h-12 bg-white md:bg-gray-50 border-gray-200 rounded-full md:rounded-[50px] pr-4 md:pr-12 pl-10 md:pl-4 text-right shadow-sm text-sm md:text-base"
+                          dir="rtl"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Phone */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] md:text-sm font-medium text-gray-600 md:text-gray-700 hidden md:block pr-4 md:pr-0">מספר טלפון</label>
+                      <div className="relative">
+                        <Phone className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Edit2 className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Input
+                          placeholder="מספר טלפון"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          required
+                          className="w-full h-11 md:h-12 bg-white border-gray-200 rounded-full md:rounded-[50px] pr-4 md:pr-12 pl-10 md:pl-4 text-right shadow-sm focus:border-blue-400 text-sm md:text-base"
+                          dir="rtl"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Mobile-Only Password Field (Inserted between Phone and Gender) */}
+                    <div className="space-y-1 md:hidden">
+                      <div className="relative">
+                        <Edit2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Input
+                          type="password"
+                          placeholder="סיסמא"
+                          value={formData.password}
+                          onChange={(e) => handleInputChange('password', e.target.value)}
+                          className="w-full h-11 bg-white border-gray-200 rounded-full pr-4 pl-10 text-right shadow-sm focus:border-blue-400 text-sm"
+                          dir="rtl"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Gender */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] md:text-sm font-medium text-gray-600 md:text-gray-700 hidden md:block pr-4 md:pr-0">מגדר</label>
+                      <div className="relative">
+                        <Users className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Edit2 className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <select
+                          value={formData.gender}
+                          onChange={(e) => handleInputChange('gender', e.target.value)}
+                          required
+                          className="w-full h-11 md:h-12 bg-white border-gray-200 rounded-full md:rounded-[50px] pr-4 md:pr-12 pl-10 md:pl-4 text-right shadow-sm focus:border-blue-400 appearance-none text-sm md:text-base"
+                          dir="rtl"
+                        >
+                          <option value="" disabled>בחר מגדר</option>
+                          <option value="male">זכר</option>
+                          <option value="female">נקבה</option>
+                          <option value="other">אחר</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Place of Residence */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] md:text-sm font-medium text-gray-600 md:text-gray-700 hidden md:block pr-4 md:pr-0">מקום מגורים</label>
+                      <div className="relative">
+                        <MapPin className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
+                        <Edit2 className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+                        <Popover open={openLocation} onOpenChange={setOpenLocation}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={openLocation}
+                              className="w-full h-11 md:h-12 bg-white border-gray-100 md:border-gray-200 rounded-full md:rounded-[50px] pr-4 md:pr-12 pl-10 md:pl-4 text-right shadow-sm justify-between font-normal hover:bg-white text-sm md:text-base"
+                              dir="rtl"
+                            >
+                              {formData.place_of_residence || "מקום מגורים"}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50 absolute left-8 md:left-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[300px] md:w-[400px] p-0" align="start" dir="rtl">
+                            <Command>
+                              <CommandInput placeholder="חיפוש עיר..." className="text-right gap-2" />
+                              <CommandList>
+                                <CommandEmpty>לא נמצאה עיר.</CommandEmpty>
+                                <CommandGroup className="max-h-[300px] overflow-y-auto">
+                                  {locationsList.map((loc) => (
+                                    <CommandItem
+                                      key={loc}
+                                      value={loc}
+                                      onSelect={(currentValue) => {
+                                        handleInputChange('place_of_residence', currentValue);
+                                        setOpenLocation(false);
+                                      }}
+                                      className="text-right flex justify-between cursor-pointer"
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "h-4 w-4 ml-2",
+                                          formData.place_of_residence === loc ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {loc}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
+
+                    {/* Date of Birth */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] md:text-sm font-medium text-gray-600 md:text-gray-700 hidden md:block pr-4 md:pr-0">תאריך לידה</label>
+                      <div className="relative">
+                        <Calendar className="absolute left-4 md:left-auto md:right-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
+                        <Input
+                          type="date"
+                          placeholder="תאריך לידה"
+                          value={formData.date_of_birth}
+                          onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
+                          required
+                          className="w-full h-11 md:h-12 bg-white border-gray-100 md:border-gray-200 rounded-full md:rounded-[50px] pr-4 md:pr-12 pl-10 md:pl-4 text-right shadow-sm focus:border-blue-400 text-sm md:text-base"
+                          dir="rtl"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </Card>
               </div>
-            )
-          }
+            )}
+
+            {/* ========================================================== */}
+
+            {/* Password Change Section - Common for both, but Hidden on Mobile for Job Seeker (moved up) */}
+            <div className={`space-y-3 md:space-y-4 pt-2 md:pt-4 ${!isEmployer ? 'hidden md:block' : ''}`}>
+              <h3 className="text-sm md:text-lg font-bold text-gray-900 border-b md:border-b pb-2 hidden md:block">שינוי סיסמא</h3>
+              <div className="space-y-1">
+                <div className="relative">
+                  <Lock className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Edit2 className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    type="password"
+                    placeholder="סיסמא למשתמש"
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    className="w-full h-11 md:h-12 bg-white border-gray-100 md:border-gray-200 rounded-full md:rounded-[50px] pr-4 md:pr-12 pl-10 md:pl-4 text-right shadow-sm focus:border-blue-400 text-sm md:text-base"
+                    dir="rtl"
+                  />
+                </div>
+              </div>
+            </div>
 
 
-          <UnsavedChangesDialog
-            open={showIncompleteDialog}
-            onOpenChange={setShowIncompleteDialog}
-            onConfirm={() => setShowIncompleteDialog(false)} // Confirm = "Complete Profile" (Stay)
-            onCancel={() => {
-              setShowIncompleteDialog(false);
-              navigate(-1); // Cancel = "Finish/End" (Exit without saving)
-            }}
-          />
+            {/* Action Buttons */}
+            <div className="flex flex-col items-center space-y-4 pt-2 md:pt-6">
+              <Button
+                type="submit"
+                disabled={isSubmitDisabled}
+                className={` rounded-full text-lg font-bold shadow-lg transition-all w-full md:w-64 h-12 md:h-12 ${isSubmitDisabled
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-[#3182ce] hover:bg-blue-700 text-white'
+                  }`}
+              >
+                {saving ? (
+                  <>
+                    <div className="w-5 h-5 border-t-2 border-white rounded-full animate-spin ml-2"></div>
+                    שומר...
+                  </>
+                ) : (
+                  isOnboarding ? 'עדכון' : (isEmployer ? 'שמירת שינויים' : 'עדכן')
+                )}
+              </Button>
 
-          <ProfileUpdatedDialog
-            open={showSuccessDialog}
-            onOpenChange={setShowSuccessDialog}
-            title={successDialogContent.title}
-            description={successDialogContent.description}
-          />
-        </div >
-      </div >
+              {!isOnboarding && !isEmployer && (
+                <>
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="text-[#3182ce] hover:text-blue-800 font-medium text-sm underline border-0 p-0 h-auto mt-4"
+                    onClick={() => setShowDeleteConfirm(true)}
+                  >
+                    מחק חשבון
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full md:w-64 h-12 rounded-[50px] bg-red-600 hover:bg-red-700 text-white font-semibold text-base px-6 shadow-md mt-4 transition-colors"
+                  >
+                    <LogOut className="w-5 h-5 ml-2" />
+                    התנתקות
+                  </Button>
+                </>
+              )}
+
+              {!isOnboarding && isEmployer && (
+                <>
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="text-gray-500 hover:text-red-600 font-medium"
+                    onClick={() => setShowDeleteConfirm(true)}
+                  >
+                    מחיקת חשבון
+                  </Button>
+
+                  <Button
+                    type="button"
+                    onClick={handleLogout}
+                    variant="outline"
+                    className="w-full md:w-96 h-12 rounded-[50px] border-2 border-red-400 bg-white text-red-600 hover:bg-red-50 hover:border-red-500 font-semibold text-base px-6 shadow-sm"
+                  >
+                    <LogOut className="w-5 h-5 ml-2" />
+                    התנתקות
+                  </Button>
+                </>
+              )}
+
+            </div>
+          </form>
+        </motion.div>
+
+        {/* Delete Account Confirmation Modal */}
+        {
+          showDeleteConfirm && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4" dir="rtl">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl"
+              >
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+                    <AlertTriangle className="w-8 h-8 text-red-600" />
+                  </div>
+
+                  <h3 className="text-xl font-bold text-gray-900">מחיקת חשבון</h3>
+                  <p className="text-gray-600">
+                    האם אתה בטוח שברצונך למחוק את החשבון? פעולה זו אינה הפיכה וכל הנתונים שלך יימחקו לצמיתות.
+                  </p>
+
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      onClick={() => setShowDeleteConfirm(false)}
+                      variant="outline"
+                      className="flex-1 h-12 rounded-full border-gray-300"
+                      disabled={deleteLoading}
+                    >
+                      ביטול
+                    </Button>
+                    <Button
+                      onClick={handleDeleteAccount}
+                      className="flex-1 h-12 bg-red-600 hover:bg-red-700 rounded-full"
+                      disabled={deleteLoading}
+                    >
+                      {deleteLoading ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : 'מחיקת חשבון'}
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )
+        }
+
+
+        <UnsavedChangesDialog
+          open={showIncompleteDialog}
+          onOpenChange={setShowIncompleteDialog}
+          onConfirm={() => setShowIncompleteDialog(false)} // Confirm = "Complete Profile" (Stay)
+          onCancel={() => {
+            setShowIncompleteDialog(false);
+            navigate(-1); // Cancel = "Finish/End" (Exit without saving)
+          }}
+        />
+
+        <ProfileUpdatedDialog
+          open={showSuccessDialog}
+          onOpenChange={setShowSuccessDialog}
+          title={successDialogContent.title}
+          description={successDialogContent.description}
+        />
+      </div>
     </div >
   );
 }

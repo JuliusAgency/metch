@@ -122,12 +122,21 @@ export default function JobApplications() {
       const existingConversations = await Conversation.filter({
         employer_id: user.id,
         candidate_id: candidateId,
-        job_id: job.id,
       });
 
       let conversation;
       if (existingConversations.length > 0) {
+        // Reuse existing conversation and update it to the current job context
         conversation = existingConversations[0];
+        try {
+          await Conversation.update(conversation.id, {
+            job_id: job.id,
+            job_title: job.title,
+            last_message_time: new Date().toISOString()
+          });
+        } catch (updateErr) {
+          console.error("Error updating existing conversation context:", updateErr);
+        }
       } else {
         conversation = await Conversation.create({
           employer_email: user.email,

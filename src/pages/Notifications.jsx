@@ -27,12 +27,13 @@ import { format } from "date-fns";
 
 import { createPageUrl } from "@/utils";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
+import settingsMobileBg from "@/assets/settings_mobile_bg.jpg";
 
 const ITEMS_PER_PAGE = 7;
 
 // Allowed notification types
 const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message'];
-const SEEKER_ALLOWED_NOTIFICATION_TYPES = ['profile_view', 'new_message'];
+const SEEKER_ALLOWED_NOTIFICATION_TYPES = ['profile_view', 'new_message', 'job_view'];
 
 // Map notification types to icons and titles
 const getNotificationConfig = (type) => {
@@ -69,17 +70,12 @@ export default function Notifications() {
     try {
       setLoading(true);
 
-
-
-
-      // Fetch all notifications for the user using all possible identifiers
       const [byUserId, byEmail, byCreatedBy] = await Promise.all([
         Notification.filter({ user_id: user.id }, "-created_date"),
         Notification.filter({ email: user.email }, "-created_date"),
         Notification.filter({ created_by: user.id }, "-created_date")
       ]);
 
-      // Merge and deduplicate
       const allNotifications = [...byUserId, ...byEmail, ...byCreatedBy]
         .reduce((acc, current) => {
           const x = acc.find(item => item.id === current.id);
@@ -88,14 +84,11 @@ export default function Notifications() {
         }, [])
         .sort((a, b) => new Date(b.created_date || b.created_at) - new Date(a.created_date || a.created_at));
 
-      // Filter based on user type
       const allowedTypes = user.user_type === 'employer'
         ? EMPLOYER_ALLOWED_NOTIFICATION_TYPES
         : SEEKER_ALLOWED_NOTIFICATION_TYPES;
 
       const filteredNotifications = allNotifications.filter(notif => allowedTypes.includes(notif.type));
-      console.log('[NotificationsPage] Displaying filtered notifications:', filteredNotifications.length, filteredNotifications.map(n => n.type));
-
       setNotifications(filteredNotifications);
 
     } catch (error) {
@@ -106,18 +99,15 @@ export default function Notifications() {
     }
   }, [user?.email, user?.id, user?.user_type]);
 
-  // Handle auto-opening notification from state
   useEffect(() => {
     if (notifications.length > 0 && location.state?.selectedNotificationId) {
       const notifId = location.state.selectedNotificationId;
       const notif = notifications.find(n => n.id === notifId);
       if (notif) {
         setSelectedNotification(notif);
-        // Mark as read if it's not
         if (notif.is_read === 'false' || notif.is_read === false) {
           handleNotificationClick(notif);
         }
-        // Clean up state to avoid re-opening on manual refresh/nav
         window.history.replaceState({}, document.title);
       }
     }
@@ -127,7 +117,6 @@ export default function Notifications() {
     loadNotifications();
   }, [loadNotifications]);
 
-  // Mark all unread notifications as read when page is visited
   useEffect(() => {
     const markAllAsRead = async () => {
       if (!user?.email || notifications.length === 0) return;
@@ -135,24 +124,19 @@ export default function Notifications() {
       const unreadNotifications = notifications.filter(
         n => n.is_read === false || n.is_read === 'false'
       );
-      console.log('[NotificationsPage] Unread notifications count:', unreadNotifications.length);
 
       if (unreadNotifications.length > 0) {
         try {
-          // Mark all as read in parallel
           await Promise.all(
             unreadNotifications.map(notif =>
               Notification.update(notif.id, { is_read: true })
             )
           );
 
-          // Update local state
           setNotifications(prev =>
             prev.map(n => ({ ...n, is_read: true, read: true }))
           );
 
-          // Force refresh badges immediately
-          // Using a small timeout to ensure DB trigger (if any) or prop changes propagate
           setTimeout(() => {
             if (user?.id) refreshUnreadCount(user.id, user.email);
           }, 100);
@@ -160,13 +144,11 @@ export default function Notifications() {
         } catch (error) {
           console.error('Error marking notifications as read:', error);
         }
-      } else {
-        console.log('[Notifications] No unread notifications to mark.');
       }
     };
 
     markAllAsRead();
-  }, [user?.email, notifications]); // Run when notifications change to catch loaded data
+  }, [user?.email, notifications]);
 
   const totalPages = Math.ceil(notifications.length / ITEMS_PER_PAGE);
   const paginatedNotifications = notifications.slice(
@@ -192,10 +174,7 @@ export default function Notifications() {
     }
   };
 
-
-
   const handleNotificationClick = async (notif) => {
-    // Mark as read immediately
     if (notif.is_read === 'false' || notif.is_read === false) {
       try {
         await Notification.update(notif.id, { is_read: true });
@@ -207,16 +186,8 @@ export default function Notifications() {
       }
     }
 
-    // Navigation logic
     if (notif.type === 'new_message') {
-      console.log('[Notifications] Navigating for message. User:', user);
-
-      // Route based on user type with fallback checks
-      const isSeeker =
-        user?.user_type === 'seeker' ||
-        (user?.full_name && !user?.company_name) || // Fallback: has name but no company
-        window.location.pathname.includes('seeker'); // Fallback: current page context
-
+      const isSeeker = user?.user_type === 'seeker' || (user?.full_name && !user?.company_name) || window.location.pathname.includes('seeker');
       if (isSeeker) {
         navigate('/messagesseeker', { state: { selectedNotificationId: notif.id } });
       } else {
@@ -230,16 +201,29 @@ export default function Notifications() {
       return;
     }
 
-    // Default behavior for other types
     setSelectedNotification(notif);
   };
 
   const closeDialog = () => setSelectedNotification(null);
 
   return (
-    <div className="h-full relative" dir="rtl">
-      <div className="relative">
-        <div className="relative h-32 overflow-hidden w-full">
+    <div className="h-full relative overflow-hidden md:overflow-visible" dir="rtl">
+      {/* Mobile-Only Background Image - Shortened */}
+      <div
+        className="md:hidden fixed top-0 left-0 right-0 z-0 pointer-events-none"
+        style={{
+          width: '100%',
+          height: '230px',
+          backgroundImage: `url(${settingsMobileBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+
+      <div className="relative h-full">
+        {/* Desktop Header */}
+        <div className="relative h-32 overflow-hidden w-full hidden md:block">
           <div
             className="absolute inset-0 w-full h-full"
             style={{
@@ -257,126 +241,195 @@ export default function Notifications() {
           </Link>
         </div>
 
-        <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-full max-w-7xl mx-auto">
-          <div className="text-center pb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-              התראות
-            </h1>
-          </div>
+        {/* Mobile Header: Title Center, Back Button Right */}
+        <div className="md:hidden flex items-center justify-center pt-10 pb-4 relative z-10 w-full px-6">
+          <Link
+            to={createPageUrl("Dashboard")}
+            className="absolute right-6 w-8 h-8 bg-white/50 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-800 rotate-180" />
+          </Link>
+          <h1 className="text-[28px] font-bold text-gray-800">התראות</h1>
+        </div>
 
-          {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="text-gray-500">טוען...</div>
+        <div className="p-0 md:p-8 mt-6 md:-mt-16 relative z-10 w-full max-w-7xl mx-auto">
+          <div className="bg-white md:bg-transparent [border-top-left-radius:80%_55px] [border-top-right-radius:80%_55px] md:rounded-0 min-h-screen md:min-h-0 pt-8 md:pt-0 px-4 md:px-0">
+            {/* Desktop only title */}
+            <div className="text-center pb-8 hidden md:block">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                התראות
+              </h1>
             </div>
-          ) : notifications.length === 0 ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="text-gray-500">אין התראות</div>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {paginatedNotifications.map((notif, index) => {
-                const config = getNotificationConfig(notif.type);
-                const Icon = config.icon;
-                return (
-                  <motion.div
-                    key={notif.id}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="flex items-center justify-between p-4 border-b border-gray-200/80 last:border-b-0"
-                  >
-                    <div
-                      onClick={() => handleNotificationClick(notif)}
-                      className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 bg-white flex-shrink-0 cursor-pointer hover:bg-gray-50 transition-colors"
-                    >
-                      <Icon className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1 text-right px-4 sm:px-8">
-                      <p className="font-semibold text-gray-800">
-                        {config.title}
-                      </p>
-                      <p className="font-bold text-gray-900 mt-1">
-                        {notif.message || "התראה חדשה"}
-                      </p>
-                    </div>
-                    <span className="text-gray-500 text-sm whitespace-nowrap">
-                      {formatDate(notif.created_date || notif.created_at)}
-                    </span>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
 
-          {notifications.length > 0 && (
-            <div className="flex justify-center items-center pt-8">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => goToPage(currentPage + 1)}
-                disabled={currentPage === totalPages || totalPages === 0}
-                className="rounded-full hover:bg-gray-100"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-              <div className="flex items-center gap-2 mx-4">
-                {pageNumbers.map((number) => (
-                  <Button
-                    key={number}
-                    variant="ghost"
-                    onClick={() => goToPage(number)}
-                    className={`rounded-full w-9 h-9 transition-colors ${currentPage === number
-                      ? "bg-blue-600 text-white font-bold shadow-md"
-                      : "text-gray-600 hover:bg-gray-100"
-                      }`}
-                  >
-                    {number}
-                  </Button>
-                ))}
+            {loading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="text-gray-500">טוען...</div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => goToPage(currentPage - 1)}
-                disabled={currentPage === 1 || totalPages === 0}
-                className="rounded-full hover:bg-gray-100"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </Button>
-            </div>
-          )}
+            ) : notifications.length === 0 ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="text-gray-500 font-bold text-lg">אין התראות כרגע</div>
+              </div>
+            ) : (
+              <div className="pb-10">
+                {/* Mobile: Use an inner card container */}
+                <div className="md:hidden w-full bg-white border border-gray-100 rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden">
+                  {notifications.map((notif, index) => {
+                    const config = getNotificationConfig(notif.type);
+                    const Icon = config.icon;
+                    return (
+                      <motion.div
+                        key={notif.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: index * 0.05 }}
+                        className="flex items-center gap-4 py-5 px-5 border-b border-gray-100 last:border-b-0 cursor-pointer"
+                        onClick={() => handleNotificationClick(notif)}
+                      >
+                        {/* Icon on the right */}
+                        <div className="w-10 h-10 rounded-full border border-blue-200 bg-white flex items-center justify-center flex-shrink-0">
+                          <Icon className="w-5 h-5 text-blue-500" />
+                        </div>
+
+                        {/* Content in the middle - Smaller & Truncated */}
+                        <div className="flex-1 text-right overflow-hidden">
+                          <p className="text-gray-500 text-[10px] mb-0.5 truncate">
+                            {config.title}
+                          </p>
+                          <p className="font-bold text-gray-900 text-[12px] leading-tight truncate">
+                            {notif.message || "התראה חדסה"}
+                          </p>
+                        </div>
+
+                        {/* Date on the left */}
+                        <span className="text-gray-400 text-[10px] font-medium min-w-[50px] text-left">
+                          {formatDate(notif.created_date || notif.created_at)}
+                        </span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop: Original layout with pagination */}
+                <div className="hidden md:block space-y-0">
+                  {paginatedNotifications.map((notif, index) => {
+                    const config = getNotificationConfig(notif.type);
+                    const Icon = config.icon;
+                    return (
+                      <motion.div
+                        key={notif.id}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                        className="flex items-center gap-8 py-6 border-b border-gray-100 last:border-b-0 cursor-pointer"
+                        onClick={() => handleNotificationClick(notif)}
+                      >
+                        {/* Icon on the right */}
+                        <div className="w-12 h-12 rounded-full border border-blue-200 bg-white flex items-center justify-center flex-shrink-0 order-1">
+                          <Icon className="w-6 h-6 text-blue-500" />
+                        </div>
+
+                        {/* Content in the middle */}
+                        <div className="flex-1 text-right order-2">
+                          <p className="text-gray-500 text-[15px] mb-1">
+                            {config.title}
+                          </p>
+                          <p className="font-bold text-gray-900 text-[18px] leading-tight">
+                            {notif.message || "התראה חדשה"}
+                          </p>
+                        </div>
+
+                        {/* Date on the left */}
+                        <span className="text-gray-400 text-sm font-medium min-w-[80px] text-left order-3">
+                          {formatDate(notif.created_date || notif.created_at)}
+                        </span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Pagination visible only on Desktop */}
+            {notifications.length > 0 && (
+              <div className="hidden md:flex justify-center items-center pt-10 pb-16">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  className="rounded-full hover:bg-gray-100"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </Button>
+                <div className="flex items-center gap-2 mx-4">
+                  {pageNumbers.map((number) => (
+                    <Button
+                      key={number}
+                      variant="ghost"
+                      onClick={() => goToPage(number)}
+                      className={`rounded-full w-9 h-9 transition-colors ${currentPage === number
+                        ? "bg-blue-600 text-white font-bold shadow-md"
+                        : "text-gray-600 hover:bg-gray-100"
+                        }`}
+                    >
+                      {number}
+                    </Button>
+                  ))}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1 || totalPages === 0}
+                  className="rounded-full hover:bg-gray-100"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </Button>
+              </div>
+            )}
+
+            {/* Added bottom padding for mobile to ensure scrollability feels right */}
+            <div className="md:hidden h-20" />
+          </div>
         </div>
       </div>
 
       {/* Notification Details Dialog */}
       <Dialog open={!!selectedNotification} onOpenChange={closeDialog}>
-        <DialogContent className="sm:max-w-md text-right" dir="rtl">
+        <DialogContent className="sm:max-w-md text-right border-0 shadow-2xl rounded-[32px] p-6" dir="rtl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+            <DialogTitle className="text-xl font-bold flex items-center gap-3">
               {selectedNotification && (() => {
                 const config = getNotificationConfig(selectedNotification.type);
                 const Icon = config.icon;
-                return <><Icon className="w-6 h-6 text-blue-600" /> {config.title}</>;
+                return (
+                  <>
+                    <div className="w-10 h-10 rounded-full border border-blue-100 bg-blue-50 flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-blue-500" />
+                    </div>
+                    <span className="text-gray-900">{config.title}</span>
+                  </>
+                );
               })()}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-700 text-lg font-medium leading-relaxed">
+          <div className="space-y-4 py-6">
+            <div className="bg-gray-50/50 p-5 rounded-2xl border border-gray-100">
+              <p className="text-gray-800 text-lg font-bold leading-relaxed">
                 {selectedNotification?.message}
               </p>
             </div>
-            <div className="flex justify-between items-center text-sm text-gray-500">
+            <div className="flex justify-between items-center text-sm text-gray-400 px-1">
               <span>תאריך קבלה:</span>
-              <span>{selectedNotification && formatDate(selectedNotification.created_date || selectedNotification.created_at)}</span>
+              <span className="font-medium">{selectedNotification && formatDate(selectedNotification.created_date || selectedNotification.created_at)}</span>
             </div>
           </div>
-          <DialogFooter className="sm:justify-start flex-col gap-2">
+          <DialogFooter className="sm:justify-start flex-col gap-3">
             {selectedNotification?.type === 'application_submitted' && selectedNotification?.data?.applicant_email && (
               <Button
                 type="button"
                 variant="default"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-full h-12 font-bold shadow-lg shadow-blue-100"
                 onClick={() => {
                   navigate(`/CandidateProfile?email=${selectedNotification.data.applicant_email}`);
                   closeDialog();
@@ -385,7 +438,12 @@ export default function Notifications() {
                 צפה בפרופיל המועמד
               </Button>
             )}
-            <Button type="button" variant="secondary" onClick={closeDialog} className="w-full">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={closeDialog}
+              className="w-full rounded-full h-12 font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 border-0"
+            >
               סגור
             </Button>
           </DialogFooter>

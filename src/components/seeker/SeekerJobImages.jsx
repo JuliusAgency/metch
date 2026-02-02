@@ -36,7 +36,7 @@ const SeekerJobImages = ({ images: rawAttachments }) => {
     if (!Array.isArray(attachments) || attachments.length === 0) return null;
 
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6 mt-4">
+        <div className="flex overflow-x-auto md:grid md:grid-cols-4 gap-4 mb-6 mt-4 pb-4 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory">
             {attachments.map((file, index) => {
                 if (!file) return null;
 
@@ -50,7 +50,7 @@ const SeekerJobImages = ({ images: rawAttachments }) => {
                     return (
                         <Dialog key={index}>
                             <DialogTrigger asChild>
-                                <div className="relative group aspect-video rounded-xl overflow-hidden shadow-sm border border-gray-100 bg-white cursor-pointer">
+                                <div className="relative group shrink-0 w-[280px] md:w-full aspect-video rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-white cursor-pointer snap-center">
                                     <img
                                         src={finalUrl}
                                         alt={`Attachment ${index + 1}`}
@@ -88,7 +88,7 @@ const SeekerJobImages = ({ images: rawAttachments }) => {
                         href={finalUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex flex-col items-center justify-center aspect-video bg-white border border-gray-200 rounded-xl hover:border-blue-400 hover:shadow-sm transition-all p-4 text-center group"
+                        className="flex flex-col items-center justify-center shrink-0 w-[280px] md:w-full aspect-video bg-white border border-gray-200 rounded-2xl hover:border-blue-400 hover:shadow-sm transition-all p-4 text-center group snap-center"
                     >
                         <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-2 group-hover:bg-blue-100 transition-colors">
                             {fileType.includes('pdf') ? <ClipboardList className="w-5 h-5" /> : <FileText className="w-5 h-5" />}

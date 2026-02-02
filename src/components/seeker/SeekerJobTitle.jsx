@@ -26,8 +26,8 @@ const SeekerJobTitle = ({ job, employmentTypeText }) => (
         </div>
 
         {/* Match Score Bar - Dynamic color based on score */}
-        <div className="max-w-md mx-auto mb-3">
-            <div className="relative w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+        <div className="max-w-[240px] md:max-w-md mx-auto mb-3">
+            <div className="relative w-full bg-gray-200 rounded-full h-3 md:h-6 overflow-hidden">
                 {(job.match_score ?? 0) > 0 && (
                     <div
                         className={`h-full rounded-full transition-all duration-500 ${(job.match_score ?? 0) >= 70
@@ -40,7 +40,7 @@ const SeekerJobTitle = ({ job, employmentTypeText }) => (
                     />
                 )}
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-gray-900 font-bold text-xs whitespace-nowrap">
+                    <span className="text-gray-900 font-bold text-[10px] md:text-xs whitespace-nowrap">
                         {job.match_score ?? 0}% ההתאמה
                     </span>
                 </div>
