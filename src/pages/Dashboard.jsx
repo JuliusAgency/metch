@@ -211,6 +211,14 @@ const JobSeekerDashboard = ({ user }) => {
     setActiveTab('about');
   };
 
+  const handleNextNotification = () => {
+    setCurrentNotificationIndex((prev) => (prev + 1) % notifications.length);
+  };
+
+  const handlePrevNotification = () => {
+    setCurrentNotificationIndex((prev) => (prev - 1 + notifications.length) % notifications.length);
+  };
+
   const handleCareerStageComplete = () => {
     setHasCompletedOnboardingFlow(true);
     setShowCareerModal(false);
@@ -449,13 +457,13 @@ const JobSeekerDashboard = ({ user }) => {
           </div>
         </div>
 
-          <div className="hidden md:block max-w-7xl w-full md:w-[68%] mx-auto pt-0 md:pt-1 md:px-6 md:pb-6 relative z-10">
+        <div className="hidden md:block max-w-7xl w-full md:w-[68%] mx-auto pt-0 md:pt-1 md:px-6 md:pb-6 relative z-10">
           <div className="bg-transparent rounded-none min-h-[90vh] md:min-h-0">
             <div className="space-y-6">
               <div className="hidden md:grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-12 stats-grid justify-items-center">
-                <StatCard icon={JsRelevantJobsIcon} title="משרות רלוונטיות" value={allJobs.length}  />
+                <StatCard icon={JsRelevantJobsIcon} title="משרות רלוונטיות" value={allJobs.length} />
                 <StatCard icon={JsCvIcon} title="מועמדויות שהגשת" value={userStats?.total_applications || 0} />
-                <StatCard icon={JsApplicationsIcon} title="קורות חיים שנצפו" value={userStats?.resume_views || userStats?.profile_views || 0}  />
+                <StatCard icon={JsApplicationsIcon} title="קורות חיים שנצפו" value={userStats?.resume_views || userStats?.profile_views || 0} />
                 <StatCard icon={JsProfileViewsIcon} title="צפו בכרטיס שלי" value={userStats?.profile_views || 0} />
               </div>
 
