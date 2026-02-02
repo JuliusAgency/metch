@@ -600,6 +600,190 @@
         "label": "מידען/ספרן"
     },
     {
+        "id": "notary",
+        "label": "נוטריון"
+    },
+    {
+        "id": "real_estate_appraiser",
+        "label": "שמאי מקרקעין מוסמך"
+    },
+    {
+        "id": "patent_attorney",
+        "label": "עורך פטנטים"
+    },
+    {
+        "id": "portfolio_manager",
+        "label": "מנהל תיקי השקעות"
+    },
+    {
+        "id": "investment_marketer",
+        "label": "משווק השקעות"
+    },
+    {
+        "id": "dentist",
+        "label": "רופא שיניים / מומחה שיניים"
+    },
+    {
+        "id": "pharmacist",
+        "label": "רוקח מוסמך"
+    },
+    {
+        "id": "midwife",
+        "label": "מיילדת מוסמכת"
+    },
+    {
+        "id": "dental_technician_practical",
+        "label": "טכנאי שיניים מעשי"
+    },
+    {
+        "id": "dental_technician_qualified",
+        "label": "טכנאי שיניים מוסמך"
+    },
+    {
+        "id": "dental_technician_expert",
+        "label": "טכנאי שיניים מומחה"
+    },
+    {
+        "id": "dental_technician_master",
+        "label": "טכנאי שיניים אומן"
+    },
+    {
+        "id": "physiotherapist",
+        "label": "פיזיותרפיסט"
+    },
+    {
+        "id": "occupational_therapist",
+        "label": "מרפא/ה בעיסוק"
+    },
+    {
+        "id": "speech_therapist",
+        "label": "קלינאי/ת תקשורת"
+    },
+    {
+        "id": "optometrist",
+        "label": "אופטומטריסט"
+    },
+    {
+        "id": "podiatrist",
+        "label": "פודיאטר / פודיאטר מנתח"
+    },
+    {
+        "id": "chiropractor",
+        "label": "כירופרקט"
+    },
+    {
+        "id": "medical_radiographer",
+        "label": "דימותן רפואי"
+    },
+    {
+        "id": "medical_lab_worker_practical",
+        "label": "עובד מעבדה רפואית מעשי"
+    },
+    {
+        "id": "medical_lab_worker_academic",
+        "label": "עובד מעבדה רפואית אקדמאי"
+    },
+    {
+        "id": "medical_lab_worker_senior",
+        "label": "עובד מעבדה רפואית בכיר"
+    },
+    {
+        "id": "medical_lab_manager",
+        "label": "מנהל מעבדה רפואית"
+    },
+    {
+        "id": "hypnotist",
+        "label": "מהפנט/ת מורשה/ת"
+    },
+    {
+        "id": "registered_engineer",
+        "label": "מהנדס רשום (פנקס המהנדסים והאדריכלים)"
+    },
+    {
+        "id": "practical_engineer",
+        "label": "הנדסאי מוסמך"
+    },
+    {
+        "id": "certified_technician",
+        "label": "טכנאי מוסמך"
+    },
+    {
+        "id": "construction_foreman",
+        "label": "מנהל עבודה בבנייה / הנדסה אזרחית"
+    },
+    {
+        "id": "construction_safety_assistant",
+        "label": "עוזר בטיחות בבנייה / תשתיות"
+    },
+    {
+        "id": "electrician_helper",
+        "label": "חשמלאי עוזר"
+    },
+    {
+        "id": "electrician_chief",
+        "label": "חשמלאי ראשי"
+    },
+    {
+        "id": "crowd_safety_officer",
+        "label": "מורשה בטיחות באירועים מרובי קהל"
+    },
+    {
+        "id": "bus_driver",
+        "label": "נהג תחבורה ציבורית (אוטובוס) – רישיון ד’"
+    },
+    {
+        "id": "taxi_driver",
+        "label": "נהג מונית"
+    },
+    {
+        "id": "heavy_equipment_driver",
+        "label": "נהג כלי צמ׳׳ה"
+    },
+    {
+        "id": "hazmat_driver",
+        "label": "נהג רכב חומרים מסוכנים"
+    },
+    {
+        "id": "minibus_driver",
+        "label": "נהג אוטובוס זעיר / מיניבוס (רישיון D1)"
+    },
+    {
+        "id": "marine_captain",
+        "label": "קברניט / ימאי מוסמך"
+    },
+    {
+        "id": "pilot",
+        "label": "טייס מסחרי / טייס פרטי"
+    },
+    {
+        "id": "armed_guard",
+        "label": "מאבטח חמוש"
+    },
+    {
+        "id": "private_investigator",
+        "label": "חוקר פרטי מורשה"
+    },
+    {
+        "id": "weapon_license",
+        "label": "רישיון נשק (למאבטחים / אבטחה)"
+    },
+    {
+        "id": "kindergarten_teacher",
+        "label": "גננת מוסמכת"
+    },
+    {
+        "id": "veterinarian",
+        "label": "רופא וטרינר"
+    },
+    {
+        "id": "certified_surveyor",
+        "label": "מודד מוסמך"
+    },
+    {
+        "id": "rabbinical_pleader",
+        "label": "טוען רבני / שרעי"
+    },
+    {
         "id": "other",
         "label": "אחר (נא לפרט בהערות)"
     }
