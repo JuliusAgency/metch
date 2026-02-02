@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import locationsList from '../../../locations.json';
+import StepIndicator from '@/components/ui/StepIndicator';
 
 
 const PillInput = ({ name, placeholder, value, onChange, type = "text", className, ...props }) => (
@@ -46,7 +47,7 @@ const PillSelect = ({ name, placeholder, value, onValueChange, children }) => (
 );
 
 const getBirthDateValue = (source) => source?.birth_date || source?.birthDate || source?.date_of_birth || '';
-const REQUIRED_FIELDS = ['firstName', 'lastName', 'phone', 'address', 'birthDate', 'gender'];
+const REQUIRED_FIELDS = ['fullName', 'phone', 'address', 'birthDate', 'gender'];
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 const isFormComplete = (formData) => {
@@ -65,10 +66,9 @@ const isFormComplete = (formData) => {
   });
 };
 
-export default function Step1_PersonalDetails({ data, setData, user, onValidityChange = () => { } }) {
+export default function Step1_PersonalDetails({ data, setData, user, onValidityChange = () => { }, isUploadFlow = false }) {
   const [localData, setLocalData] = useState({
-    firstName: '',
-    lastName: '',
+    fullName: '',
     phone: '',
     address: '',
     birthDate: '',
@@ -106,25 +106,25 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
   useEffect(() => {
     console.log("[Step1] Initializing with data:", { data, user });
 
-    // TRUTH: Always prioritize active user profile for identity fields
-    const fullName = user?.full_name || data?.full_name || '';
-    const nameParts = fullName.split(/\s+/);
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
+    // TRUTH: Always prioritize existing form data (edits), fallback to user profile
+    const fullName = data?.full_name || user?.full_name || '';
 
-    const savedAddress = user?.preferred_location || data?.address || '';
+    const savedAddress = data?.address || user?.preferred_location || '';
     const isValidAddress = locationsList.includes(savedAddress);
 
     const profileBirthDate = getBirthDateValue(user);
     const cvBirthDate = getBirthDateValue(data);
 
+    // For phone/gender, update prioritization too
+    const phoneValue = data?.phone || user?.phone || '';
+    const genderValue = data?.gender || user?.gender || '';
+
     const initialState = {
-      firstName: firstName,
-      lastName: lastName,
-      phone: user?.phone || data?.phone || '',
+      fullName: fullName,
+      phone: phoneValue,
       address: isValidAddress ? savedAddress : '',
-      birthDate: sanitizeDateForInput(profileBirthDate || cvBirthDate),
-      gender: user?.gender || data?.gender || '',
+      birthDate: sanitizeDateForInput(cvBirthDate || profileBirthDate), // Prioritize CV data for birthdate too
+      gender: genderValue,
       is_phone_verified: data?.is_phone_verified || false
     };
 
@@ -136,8 +136,8 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
   const updateParentData = (key, value, currentLocalData) => {
     setData(parentData => {
       const newParentData = { ...(parentData || {}) };
-      if (key === 'firstName' || key === 'lastName') {
-        newParentData.full_name = `${currentLocalData.firstName} ${currentLocalData.lastName}`.trim();
+      if (key === 'fullName') {
+        newParentData.full_name = value;
       } else if (key === 'birthDate') {
         newParentData.birth_date = value;
       } else {
@@ -207,14 +207,18 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
   return (
     <div className="max-w-4xl mx-auto text-center" dir="rtl">
       <h2 className="text-3xl font-bold text-gray-900 mb-3">פרטים אישיים</h2>
-      <p className="text-gray-600 mb-12 max-w-lg mx-auto">בחלק הזה תספקו לנו מידע נחוץ עליכם כך שמעסיקים פוטנציאליים יוכלו לפנות אליכם</p>
+      {isUploadFlow && (
+        <div className="md:hidden mb-6 mt-8">
+          <StepIndicator totalSteps={5} currentStep={1} />
+        </div>
+      )}
+      <p className={cn("text-gray-600 mb-12 max-w-lg mx-auto", isUploadFlow && "hidden md:block")}>בחלק הזה תספקו לנו מידע נחוץ עליכם כך שמעסיקים פוטנציאליים יוכלו לפנות אליכם</p>
       {/* Card wrapper with shadow */}
       <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.08)] mx-3 md:mx-0">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4">
           {/* Row 1 */}
-          <PillInput name="firstName" placeholder="שם פרטי" value={localData.firstName} onChange={handleInputChange} />
-          <PillInput name="lastName" placeholder="שם משפחה" value={localData.lastName} onChange={handleInputChange} />
-          <div className="relative">
+          <PillInput name="fullName" placeholder="שם מלא" value={localData.fullName} onChange={handleInputChange} className="md:col-span-2 order-1 md:order-none" />
+          <div className="relative order-5 md:order-none">
             <div className="relative">
               <PillInput
                 name="phone"
@@ -247,11 +251,43 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
           </div>
 
           {/* Row 2 */}
-          <PillSelect name="gender" placeholder="מגדר" value={localData.gender} onValueChange={handleSelectChange}>
-            <SelectItem value="male">זכר</SelectItem>
-            <SelectItem value="female">נקבה</SelectItem>
-            <SelectItem value="other">אחר</SelectItem>
-          </PillSelect>
+          <div className="hidden md:block md:order-none">
+            <PillSelect name="gender" placeholder="מגדר" value={localData.gender} onValueChange={handleSelectChange}>
+              <SelectItem value="male">זכר</SelectItem>
+              <SelectItem value="female">נקבה</SelectItem>
+              <SelectItem value="other">אחר</SelectItem>
+            </PillSelect>
+          </div>
+
+          {/* Mobile Gender Selection */}
+          <div className="md:hidden order-2 grid grid-cols-2 gap-4">
+            <button
+              type="button"
+              onClick={() => handleSelectChange('male')}
+              className={`h-12 rounded-full border flex items-center justify-between px-6 transition-all ${localData.gender === 'male'
+                ? 'border-blue-500 text-blue-900 bg-white'
+                : 'bg-white border-gray-200 text-gray-500'
+                }`}
+            >
+              <span>זכר</span>
+              <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${localData.gender === 'male' ? 'border-[#1e40af]' : 'border-gray-400'}`}>
+                {localData.gender === 'male' && <div className="w-2.5 h-2.5 rounded-full bg-[#1e40af]" />}
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSelectChange('female')}
+              className={`h-12 rounded-full border flex items-center justify-between px-6 transition-all ${localData.gender === 'female'
+                ? 'border-blue-500 text-blue-900 bg-white'
+                : 'bg-white border-gray-200 text-gray-500'
+                }`}
+            >
+              <span>נקבה</span>
+              <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${localData.gender === 'female' ? 'border-[#1e40af]' : 'border-gray-400'}`}>
+                {localData.gender === 'female' && <div className="w-2.5 h-2.5 rounded-full bg-[#1e40af]" />}
+              </div>
+            </button>
+          </div>
 
           <Popover open={openLocation} onOpenChange={setOpenLocation}>
             <PopoverTrigger asChild>
@@ -259,7 +295,7 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
                 variant="outline"
                 role="combobox"
                 aria-expanded={openLocation}
-                className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right focus:border-blue-400 focus:ring-blue-400 justify-between font-normal hover:bg-white"
+                className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right focus:border-blue-400 focus:ring-blue-400 justify-between font-normal hover:bg-white order-3 md:order-none"
               >
                 {localData.address || "מקום מגורים"}
                 <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50" />
@@ -306,6 +342,7 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
             max={maxBirthDate}
             onFocus={(e) => { e.target.type = 'date'; }}
             onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }}
+            className="order-4 md:order-none [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:left-10"
           />
         </div>
       </div>

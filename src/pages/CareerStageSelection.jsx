@@ -68,7 +68,7 @@ const CareerStageSelection = () => {
     }
 
     return (
-        <div className="bg-gradient-to-b from-[#dbecf3] from-[12.35%] to-[#ffffff] via-[#ffffff] via-[32.336%] min-h-screen w-full flex flex-col items-center justify-center p-4 relative overflow-hidden" dir="rtl">
+        <div className="bg-gradient-to-b from-[#dbecf3] from-[5%] to-[#ffffff] via-[#ffffff] via-[15%] min-h-screen w-full flex flex-col items-center justify-center p-4 relative overflow-hidden" dir="rtl">
 
             {/* Mobile Header - Pill Shape */}
             <div className="w-full px-2 pt-1 pb-2 md:hidden absolute top-0 z-10">

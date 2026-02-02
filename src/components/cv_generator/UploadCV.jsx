@@ -3,8 +3,9 @@ import { UploadFile } from '@/api/integrations';
 import { User } from '@/api/entities';
 import { CV } from '@/api/entities';
 import { Button } from '@/components/ui/button';
-import { UploadCloud, FileText, Loader2, CheckCircle, AlertCircle, Eye, Trash2 } from 'lucide-react';
+import { UploadCloud, FileText, Loader2, CheckCircle, AlertCircle, Eye, Trash2, Upload, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import skipInfoIcon from '@/assets/skip_info_icon.png';
 
 export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDelete, onSkip, showSkipDisclaimer }) {
     const [file, setFile] = useState(null);
@@ -101,15 +102,22 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
     };
 
     const UploadArea = () => (
-        <div
-            className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-gray-50/50 transition-colors"
-            onClick={() => fileInputRef.current?.click()}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-        >
-            <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">גרור קובץ או לחץ כאן</h3>
-            <p className="mt-1 text-sm text-gray-500">PDF, DOCX (עד 5MB)</p>
+        <div className="flex flex-col items-center justify-center pt-0 pb-6 text-center">
+            {/* Green Upload Icon - Hide if disclaimer shown */}
+            {!showSkipDisclaimer && (
+                <div className="mb-2">
+                    <Upload className="w-10 h-10 text-[#77C883] mx-auto" />
+                </div>
+            )}
+
+            {/* Title - Hide if disclaimer shown */}
+            {!showSkipDisclaimer && (
+                <h3 className="text-xl md:text-2xl font-bold text-[#333333] mb-12 md:mb-8">
+                    העלה את קובץ קורות החיים שלך
+                </h3>
+            )}
+
+            {/* Hidden Input */}
             <input
                 ref={fileInputRef}
                 type="file"
@@ -117,6 +125,23 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
                 accept=".pdf,.doc,.docx"
                 onChange={handleFileChange}
             />
+
+            {/* Green Button */}
+            <Button
+                onClick={() => fileInputRef.current?.click()}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                className="bg-[#77C883] hover:bg-[#66b572] text-white text-lg md:text-xl font-bold py-6 px-12 rounded-full shadow-none w-auto min-w-[200px] mb-14 md:mb-8 transition-all"
+            >
+                בחירת קובץ
+            </Button>
+
+            {/* Subtitle / Disclaimer */}
+            <p className="text-gray-600 text-sm md:text-base max-w-xs mx-auto leading-relaxed px-4 md:px-0">
+                ה AI ינתח את קורות החיים שלך
+                <br />
+                על מנת להוציא ממנו את המיטב
+            </p>
         </div>
     );
 
@@ -194,19 +219,20 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
             dir="rtl"
         >
             {showSkipDisclaimer ? (
-                <div className="mb-12">
-                    <h2 className="text-3xl font-bold text-gray-800 mb-3">שים לב</h2>
-                    <div className="flex items-center justify-center gap-2 text-lg font-bold text-[#FF4D4D] py-3 px-6 rounded-xl inline-block">
-                        <AlertCircle className="w-5 h-5 fill-red-500 text-white" />
-                        <span>הצעות עבודה לא יתקבלו ללא קובץ קורות החיים שלך</span>
+                <div className="flex flex-col items-center justify-center mb-0 mt-8">
+                    {/* Custom Red Info Icon from user image */}
+                    <div className="mb-6">
+                        <img src={skipInfoIcon} alt="Warning" className="w-12 h-12 object-contain" />
                     </div>
+
+                    {/* Warning Text - 2 lines */}
+                    <h3 className="text-[#FF4D4D] text-lg font-bold max-w-[240px] leading-tight mb-8">
+                        הצעות עבודה לא יתקבלו
+                        <br />
+                        ללא קובץ קורות החיים שלך
+                    </h3>
                 </div>
-            ) : (
-                <>
-                    <h2 className="text-3xl font-bold text-gray-900 mb-3">העלאת קורות חיים</h2>
-                    <p className="text-gray-600 mb-12">צרף את קובץ קורות החיים שלך כדי שנוכל להתחיל למצוא לך משרות.</p>
-                </>
-            )}
+            ) : null}
 
             <div className="space-y-6">
                 {!file ? <UploadArea /> : <FilePreview />}

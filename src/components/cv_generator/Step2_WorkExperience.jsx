@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, X, Check, ChevronsUpDown, Calendar as CalendarIcon } from "lucide-react";
+import { Plus, X, Check, ChevronsUpDown, Calendar as CalendarIcon, Info } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import StepIndicator from '@/components/ui/StepIndicator';
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Command,
@@ -46,7 +48,143 @@ const newExperienceItem = () => ({
   description: ''
 });
 
-export default function Step2_WorkExperience({ data, setData, onDirtyChange }) {
+const CATEGORIES = ["מכירות", "שירות לקוחות", "תמיכה טכנית", "ניהול משרד"];
+const JOB_TYPES = ["גמיש", "מלאה", "חלקית", "משמרות"];
+const AVAILABILITIES = ["גמיש", "מיידי", "שבוע עד שבועיים", "חודש עד חודשיים"];
+
+export default function Step2_WorkExperience({ data, setData, onDirtyChange, isUploadFlow = false }) {
+  // --- PREFERENCES LOGIC (Upload Flow) ---
+  if (isUploadFlow) {
+    const formData = {
+      categories: data?.categories || [],
+      profession: data?.profession || '',
+      area: data?.area || '',
+      jobTypes: data?.jobTypes || [],
+      availability: data?.availability || ''
+    };
+
+    const handleChange = (key, value) => {
+      setData({ ...formData, [key]: value });
+    };
+
+    const handleCategoryToggle = (cat) => {
+      const newCats = formData.categories.includes(cat)
+        ? formData.categories.filter(c => c !== cat)
+        : [...formData.categories, cat];
+      handleChange('categories', newCats);
+    };
+
+    const handleJobTypeToggle = (type) => {
+      const newTypes = formData.jobTypes.includes(type)
+        ? formData.jobTypes.filter(t => t !== type)
+        : [...formData.jobTypes, type];
+      handleChange('jobTypes', newTypes);
+    };
+
+    return (
+      <div className="max-w-4xl mx-auto text-center" dir="rtl">
+        {/* Mobile Header: Title + Progress Bar Outside Card */}
+        <h2 className="text-3xl font-bold text-gray-900 mb-4 md:hidden">ההעדפות שלך</h2>
+
+        <div className="md:hidden mb-8">
+          <StepIndicator totalSteps={5} currentStep={2} />
+        </div>
+
+        {/* Card Wrapper (Preferences) */}
+        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.1)] border border-gray-100 mx-3 md:mx-0">
+          <h3 className="text-xl font-bold text-gray-800 mb-6 text-center">באיזה תחום?</h3>
+
+          {/* Categories Grid */}
+          <div className="grid grid-cols-4 gap-2 mb-6">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                onClick={() => handleCategoryToggle(cat)}
+                className={`py-2 px-1 rounded-full text-[11px] font-medium border transition-all truncate ${formData.categories.includes(cat)
+                    ? 'bg-blue-50 border-blue-500 text-blue-600'
+                    : 'bg-white border-blue-200 text-gray-600 hover:border-blue-400'
+                  }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Dropdowns / Inputs */}
+          <div className="space-y-4 mb-8">
+            <div className="relative">
+              <Select value={formData.profession} onValueChange={(val) => handleChange('profession', val)}>
+                <SelectTrigger className="w-full h-12 rounded-full text-right px-6 border-gray-200 bg-white shadow-none focus:ring-0 focus:border-gray-300">
+                  <SelectValue placeholder="חפש מקצוע" />
+                </SelectTrigger>
+                <SelectContent dir="rtl">
+                  {/* Placeholder items since no list provided yet */}
+                  <SelectItem value="dev">פיתוח תוכנה</SelectItem>
+                  <SelectItem value="design">עיצוב גרפי</SelectItem>
+                  <SelectItem value="marketing">שיווק</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="relative">
+              <Select value={formData.area} onValueChange={(val) => handleChange('area', val)}>
+                <SelectTrigger className="w-full h-12 rounded-full text-right px-6 border-gray-200 bg-white shadow-none focus:ring-0 focus:border-gray-300">
+                  <SelectValue placeholder="איזור או עיר" />
+                </SelectTrigger>
+                <SelectContent dir="rtl">
+                  {locationsList.slice(0, 10).map(loc => (
+                    <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Job Types */}
+          <h4 className="text-lg font-bold text-gray-800 mb-4 text-center">סוג משרה</h4>
+          <div className="grid grid-cols-4 gap-2 mb-8">
+            {JOB_TYPES.map(type => (
+              <button
+                key={type}
+                onClick={() => handleJobTypeToggle(type)}
+                className={`py-2 px-1 rounded-full text-xs font-medium border transition-all ${formData.jobTypes.includes(type)
+                    ? 'bg-blue-50 border-blue-500 text-blue-600'
+                    : 'bg-white border-blue-200 text-gray-600 hover:border-blue-400'
+                  }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+
+          {/* Availability */}
+          <h4 className="text-lg font-bold text-gray-800 mb-4 text-center">זמינות</h4>
+          <div className="grid grid-cols-4 gap-2 mb-8">
+            {AVAILABILITIES.map(avail => (
+              <button
+                key={avail}
+                onClick={() => handleChange('availability', avail)}
+                className={`py-2 px-1 rounded-full text-[10px] font-medium border transition-all whitespace-normal h-10 flex items-center justify-center leading-tight ${formData.availability === avail
+                    ? 'bg-blue-50 border-blue-500 text-blue-600'
+                    : 'bg-white border-blue-200 text-gray-600 hover:border-blue-400'
+                  }`}
+              >
+                {avail}
+              </button>
+            ))}
+          </div>
+
+          {/* Info Note */}
+          <div className="flex items-start gap-2 text-gray-500 text-xs text-right bg-blue-50/50 p-3 rounded-lg mb-2">
+            <Info className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" />
+            <p>ההתאמה נעשית בהתבסס על קורות החיים, גם אם שאלון ההעדפה לא מדוייק</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- REGULAR Work Experience Logic (Create Flow) ---
   const [currentItem, setCurrentItem] = useState(newExperienceItem());
   const minDate = '1900-01-01';
   const today = new Date().toISOString().split('T')[0];

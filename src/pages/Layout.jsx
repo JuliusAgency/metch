@@ -145,15 +145,15 @@ export default function Layout({ children, currentPageName }) {
   };
 
   // Pages that can run in "onboarding mode" (hidden header)
-  const onboardingPages = ['CVGenerator', 'PreferenceQuestionnaire', 'CreateJob', 'CareerStageSelection', 'careerstageselection'];
+  const onboardingPages = ['CVGenerator', 'PreferenceQuestionnaire', 'CreateJob', 'CareerStageSelection', 'careerstageselection', 'JobSeekerProfileCompletion'];
   const isOnboardingActive = localStorage.getItem('onboarding_active') === 'true';
 
   // Hide header if it's an auth page OR (it's an onboarding page AND we are in onboarding mode) OR specific onboarding query param exists
   const isSettingsOnboarding = currentPageName === 'Settings' && searchParams.get('onboarding') === 'company_details';
-  const shouldHideHeader = authPages.includes(currentPageName) || (onboardingPages.includes(currentPageName) && isOnboardingActive) || isSettingsOnboarding || currentPageName === 'CompanyProfileCompletion';
+  const shouldHideHeader = authPages.includes(currentPageName) || (onboardingPages.includes(currentPageName) && isOnboardingActive) || isSettingsOnboarding || currentPageName === 'CompanyProfileCompletion' || currentPageName === 'JobSeekerProfileCompletion';
 
   return (
-    <div className="min-h-screen page-gradient" dir="rtl">
+    <div className={`min-h-screen ${currentPageName === 'Dashboard' ? 'bg-[linear-gradient(180deg,#dcedf4_0%,#dcedf4_20%,#FFFFFF_100%)] md:[background:var(--page-gradient)]' : 'page-gradient'}`} dir="rtl">
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
@@ -388,8 +388,8 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Mobile Navbar */}
       {!shouldHideHeader && (
-        <div className="md:hidden pt-4 pb-2 px-4 sticky top-0 z-40 bg-[#dbedf3]/80 backdrop-blur-sm">
-          <div className="flex items-center justify-between">
+        <div className={`md:hidden pb-2 px-4 sticky top-0 z-40 ${currentPageName === 'Dashboard' ? 'pt-8 bg-transparent' : 'pt-4 bg-[#dbedf3]/80 backdrop-blur-sm'}`}>
+          <div className={`flex items-center justify-between ${currentPageName === 'Dashboard' ? 'bg-[#EBF5FF]/90 rounded-full h-[62px] px-6 border border-white/60 shadow-sm backdrop-blur-sm' : ''}`}>
             <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(true)}>
               <Menu className="w-8 h-8 text-gray-700" />
             </Button>
@@ -443,7 +443,7 @@ export default function Layout({ children, currentPageName }) {
             {children}
           </div>
         ) : (
-          <Card className="w-full max-w-[99%] bg-white/90 shadow-xl border border-gray-100 rounded-[50px] min-h-[92vh] overflow-hidden relative backdrop-blur-sm">
+          <Card className={`w-full max-w-[99%] shadow-xl border border-gray-100 rounded-[50px] min-h-[92vh] overflow-hidden relative backdrop-blur-sm ${currentPageName === 'Dashboard' ? 'bg-white md:bg-white/90 shadow-lg md:shadow-xl border md:border-gray-100 rounded-[32px] md:rounded-[50px] max-w-[94%] md:max-w-[99%] mx-auto md:mx-0' : 'bg-white/90'}`}>
             <div className="h-full">
               {children}
             </div>

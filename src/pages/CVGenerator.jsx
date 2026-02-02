@@ -15,7 +15,7 @@ import Step7Preview from '@/components/cv_generator/Step7_Preview';
 import UploadCV from '@/components/cv_generator/UploadCV';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/components/ui/use-toast";
-import { ArrowLeft, ArrowRight, Loader2, Menu } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, Menu, ChevronRight } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { useRequireUserType } from '@/hooks/use-require-user-type';
@@ -27,7 +27,7 @@ import StepIndicator from '@/components/ui/StepIndicator';
 import VectorLogo from '@/assets/Vector.svg';
 
 const STEPS = ["פרטים אישיים", "ניסיון תעסוקתי", "השכלה", "הסמכות", "כישורים", "תמצית", "תצוגה מקדימה"];
-const STEPS_MOBILE = ["פרטים", "ניסיון", "השכלה", "הסמכות", "כישורים", "תמצית", "תצוגה מקדימה"];
+const STEPS_MOBILE = ["פרטים", "ניסיון", "השכלה", "הסמכות", "כישורים", "תמצית", "קו\"ח"];
 
 const ensureArray = (value) => {
   if (Array.isArray(value)) {
@@ -174,10 +174,11 @@ export default function CVGenerator() {
 
     if (choiceParam === 'upload') {
       setChoice('upload');
+      // Ensure steps > 0 for upload flow (Step 0 is the choice modal)
       if (stepParam) {
         setStep(parseInt(stepParam, 10));
       } else {
-        setStep((prev) => (prev > 0 ? prev : 1));
+        setStep(prev => prev > 0 ? prev : 1);
       }
     } else if (choiceParam === 'create') {
       setChoice('create');
@@ -557,8 +558,17 @@ export default function CVGenerator() {
         />;
 
 
-      case 1: return <Step1PersonalDetails data={cvData.personal_details} setData={(d) => setCvData((prev) => ({ ...prev, personal_details: d(prev.personal_details) }))} user={user} onValidityChange={handleStep1ValidityChange} />;
-      case 2: return <Step2WorkExperience data={cvData.work_experience || []} setData={(updater) => setCvData((prev) => ({ ...prev, work_experience: updater(prev.work_experience || []) }))} onDirtyChange={handleDirtyChange} />;
+      case 1: return <Step1PersonalDetails data={cvData.personal_details} setData={(d) => setCvData((prev) => ({ ...prev, personal_details: d(prev.personal_details) }))} user={user} onValidityChange={handleStep1ValidityChange} isUploadFlow={choice === 'upload'} />;
+      case 2:
+        return <Step2WorkExperience
+          isUploadFlow={choice === 'upload'}
+          data={choice === 'upload' ? (cvData.preferences || {}) : (cvData.work_experience || [])}
+          setData={choice === 'upload'
+            ? (d) => setCvData((prev) => ({ ...prev, preferences: d }))
+            : (updater) => setCvData((prev) => ({ ...prev, work_experience: updater(prev.work_experience || []) }))
+          }
+          onDirtyChange={handleDirtyChange}
+        />;
       case 3: return <Step3Education data={cvData.education || []} setData={(updater) => setCvData((prev) => ({ ...prev, education: updater(prev.education || []) }))} onDirtyChange={handleDirtyChange} />;
       case 4: return <Step4Certifications data={cvData.certifications || []} setData={(updater) => setCvData((prev) => ({ ...prev, certifications: updater(prev.certifications || []) }))} onDirtyChange={handleDirtyChange} />;
       case 5: return <Step5Skills data={cvData.skills || []} setData={(updater) => setCvData((prev) => ({ ...prev, skills: typeof updater === 'function' ? updater(prev.skills || []) : updater }))} />;
@@ -613,7 +623,7 @@ export default function CVGenerator() {
   return (
     <div className={`min-h-screen ${choice === 'upload' ? 'p-0 pt-4' : 'p-0 md:p-8'} relative bg-gradient-to-b from-[#dbecf3] to-white via-white via-[20%]`} dir="rtl">
       {/* Mobile Background Gradient - Only Top 25% (Optional additional overlay or removed if main bg is enough) */}
-      <div className="absolute top-0 left-0 right-0 h-[35vh] bg-gradient-to-b from-[#dbecf3] to-transparent md:hidden opacity-100 pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-[15vh] bg-gradient-to-b from-[#dbecf3] to-transparent md:hidden opacity-100 pointer-events-none" />
 
       {/* Mobile Header - Pill Shape */}
       <div className="w-full px-2 pt-1 pb-2 md:hidden sticky top-0 z-10">
@@ -640,20 +650,39 @@ export default function CVGenerator() {
         )}
 
         {step !== 0 && choice === 'upload' && (
-          <StepIndicator
-            totalSteps={5}
-            currentStep={step === 1 ? 1 : (step === -1 ? 4 : 0)}
-          />
+          <div className={`${step === 1 ? "hidden md:block" : ""} pt-6 md:pt-0`}>
+            {/* Mobile Header for Upload Step: Title + Back Button */}
+            {step === -1 && (
+              <div className="flex items-center justify-between mb-4 md:hidden relative px-2">
+                <button
+                  onClick={handleBack}
+                  className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm"
+                >
+                  <ChevronRight className="w-6 h-6 text-[#2987cd]" />
+                </button>
+                <h1 className="text-2xl font-bold text-[#333333]">
+                  {showSkipDisclaimer ? "שים לב" : "אוטוטו מסיימים"}
+                </h1>
+                <div className="w-10" /> {/* Spacer for centering */}
+              </div>
+            )}
+            <StepIndicator
+              totalSteps={5}
+              currentStep={step === 1 ? 1 : (step === -1 ? 4 : 0)}
+            />
+          </div>
         )}
 
 
 
-        <div className="my-10 min-h-[400px] flex flex-col justify-center">
+        <div className={`min-h-[400px] flex flex-col justify-center ${step === -1
+          ? 'mt-10 mb-10 bg-white rounded-3xl py-8 px-6 shadow-[0_2px_12px_rgba(0,0,0,0.05)] border border-gray-100 md:bg-transparent md:shadow-none md:border-none relative z-10 mx-4 md:mx-0'
+          : 'my-10'}`}>
           {renderStep()}
         </div>
 
         <div className={`flex ${step === 0 ? 'justify-center' : 'justify-center gap-4'} items-center mt-auto pb-8`}>
-          {(step > 1 || step === -1 || step === 1) && (
+          {(step > 1 || step === 1) && (
             <Button variant="outline" onClick={handleBack} disabled={saving} className="w-[140px] md:w-auto px-0 md:px-8 py-2 md:py-3 rounded-full font-medium md:font-semibold text-base md:text-lg h-auto border-2 bg-white hover:bg-gray-50 flex justify-center items-center">
               <ArrowRight className="hidden md:block w-4 h-4 md:w-5 md:h-5 ml-1 md:ml-2" />
               <span className="md:hidden">הקודם</span>
@@ -661,17 +690,30 @@ export default function CVGenerator() {
             </Button>
           )}
           {step === -1 ? (
-            <Button
-              variant={uploadSuccess ? "default" : "outline"}
-              onClick={uploadSuccess ? () => handleUploadComplete(false) : handleSkip}
-              className={`px-8 py-3 rounded-full font-semibold text-lg h-auto border-2 transition-all ${uploadSuccess
-                ? 'bg-[#2589D8] hover:bg-[#1e7bc4] text-white shadow-lg hover:shadow-xl border-transparent'
-                : (showSkipDisclaimer ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700 hover:border-red-300' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700 hover:border-gray-400')
-                }`}
-            >
-              {uploadSuccess ? "המשך" : (showSkipDisclaimer ? "המשך" : "דילוג על השלב הזה")}
-              <ArrowLeft className="hidden md:block w-5 h-5 mr-2" />
-            </Button>
+            <div className="flex w-full gap-4 md:w-auto md:justify-end">
+              {/* Skip Button */}
+              <Button
+                variant="outline"
+                onClick={handleSkip}
+                className="flex-1 md:flex-none px-8 py-3 rounded-full font-medium text-lg h-auto border border-gray-200 text-[#001d3d] hover:bg-gray-50 bg-white"
+              >
+                דלג
+              </Button>
+
+              {/* Continue Button */}
+              <Button
+                onClick={() => handleUploadComplete(showSkipDisclaimer)}
+                disabled={!uploadSuccess && !showSkipDisclaimer}
+                className={`flex-1 md:flex-none px-8 py-3 rounded-full font-bold text-lg h-auto shadow-sm transition-all
+                  ${(uploadSuccess || showSkipDisclaimer)
+                    ? 'bg-[#2589D8] hover:bg-[#1e7bc4] text-white shadow-blue-200'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  }
+                `}
+              >
+                המשך
+              </Button>
+            </div>
           ) : (step < STEPS.length + 1 && (
             <Button
               onClick={handleNext}
@@ -683,9 +725,9 @@ export default function CVGenerator() {
                   step === STEPS.length ? 'שמור והמשך' : (
                     <>
                       <span className="md:hidden">
-                        {step === 1 ? 'המשך לניסיון' : (step === 2 ? 'המשך להשכלה' : (step === 3 ? 'המשך להסמכות' : (step === 4 ? 'המשך לכישורים' : (step === 5 ? 'המשך לתמצית' : (step === 6 ? 'המשך לקו"ח' : 'הבא')))))}
+                        המשך
                       </span>
-                      <span className="hidden md:inline">הבא</span>
+                      <span className="ml-2">המשך</span>
                     </>
                   )
                 )

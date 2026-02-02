@@ -44,7 +44,7 @@ export default function CVStepper({ currentStep, steps, mobileSteps, onStepSelec
             transition={{ duration: 0.3, delay: index * 0.05 }}
             onClick={() => isClickable && !isDisabled && onStepSelect(index)}
             type="button"
-            className={`flex flex-row items-center justify-center gap-1.5 md:gap-2 rounded-full px-3 md:px-5 py-2 md:py-2.5 font-semibold text-[11px] md:text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 flex-shrink-0 md:w-auto
+            className={`flex flex-row items-center justify-center gap-1.5 md:gap-2 rounded-full px-3 md:px-5 py-2 md:py-2.5 font-light md:font-semibold text-[11px] md:text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 flex-shrink-0 md:w-auto
               ${stateClasses}
               ${cursorClasses}
             `

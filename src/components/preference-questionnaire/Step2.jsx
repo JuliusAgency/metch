@@ -20,7 +20,7 @@ const PillButton = ({ label, isSelected, onClick, disabled, className }) => (
         onClick={onClick}
         disabled={disabled}
         className={`
-      px-6 py-3 rounded-full border transition-all duration-200 text-sm font-medium w-full md:w-auto
+      px-2 py-2 md:px-6 md:py-3 rounded-full border transition-all duration-200 text-[10px] md:text-sm font-medium w-auto whitespace-nowrap
       ${isSelected
                 ? 'bg-blue-50 border-blue-500 text-blue-600 shadow-sm'
                 : 'bg-white border-blue-200 text-gray-600 hover:border-blue-400 hover:bg-blue-50/50'
@@ -53,32 +53,37 @@ export default function Step2({ preferences, setPreferences, onSave, onBack, sav
     };
 
     return (
-        <div className="flex flex-col items-center text-center space-y-10 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex flex-col items-center text-center space-y-4 md:space-y-10 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-            <div className="space-y-2">
-                <h2 className="text-3xl font-bold text-gray-900"> 3 התכונות שהכי מאפיינות אותך</h2>
-                <p className="text-gray-500 text-sm">מידע זה פנימי על מנת שנמצא את המאץ' המושלם בלי לרמות</p>
+            <div className="space-y-2 px-2">
+                <h2 className="text-xl md:text-3xl font-bold text-gray-900 whitespace-nowrap">3 התכונות שהכי מאפיינות אותך</h2>
+                <p className="text-gray-500 text-[10px] md:text-sm whitespace-nowrap">מידע זה פנימי על מנת שנמצא את המאץ' המושלם בלי לרמות</p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-3 md:gap-x-4 md:gap-y-6 w-full max-w-2xl mx-auto px-4">
-                {TRAITS.map((trait, index) => {
-                    const isSelected = selectedTraits.includes(trait);
+            <div className="flex flex-wrap justify-center gap-2 md:gap-x-4 md:gap-y-6 w-full max-w-2xl mx-auto px-1 md:px-4">
+                {[...TRAITS, ...TRAITS].map((trait, index) => {
+                    const isDuplicate = index >= TRAITS.length;
+                    // Use a unique value for state to ensure independent selection
+                    const uniqueValue = isDuplicate ? `${trait} #2` : trait;
+
+                    const isSelected = selectedTraits.includes(uniqueValue);
                     const isMaxSelected = selectedTraits.length >= 3;
+                    const uniqueKey = `${trait}-${index}`;
 
                     return (
                         <PillButton
-                            key={trait}
-                            label={trait}
+                            key={uniqueKey}
+                            label={trait} // Display the original name
                             isSelected={isSelected}
-                            onClick={() => handleTraitToggle(trait)}
+                            onClick={() => handleTraitToggle(uniqueValue)}
                             disabled={!isSelected && isMaxSelected} // Disable if not selected and max reached
-                            className="w-auto px-6 py-2 md:py-3 text-sm md:text-base"
+                            className={`h-auto ${isDuplicate ? 'md:hidden' : ''}`}
                         />
                     );
                 })}
             </div>
 
-            <div className="pt-8 flex flex-col md:flex-row gap-4 items-center">
+            <div className="pt-8 hidden md:flex flex-col md:flex-row gap-4 items-center">
                 <Button
                     variant="outline"
                     onClick={onBack}

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
-import { UploadCloud, Globe, Facebook, Instagram, Linkedin, Plus, X, Copy, FileText, RefreshCw, Twitter, Menu } from "lucide-react";
+import { UploadCloud, Globe, Facebook, Instagram, Linkedin, Plus, X, Copy, FileText, RefreshCw, Twitter, Menu, Check, Sparkles } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { User, CV } from "@/api/entities";
 import { UploadFile } from "@/api/integrations";
@@ -14,6 +14,7 @@ import VectorLogo from "@/assets/Vector.svg";
 import uploadPlaceholder from "@/assets/upload_profile_placeholder.png";
 import { ProfileUpdatedDialog } from "@/components/dialogs/ProfileUpdatedDialog";
 import StepIndicator from "@/components/ui/StepIndicator";
+import profileSuccessMobile from "@/assets/popup-completed-success-v3.png";
 
 const XIcon = ({ size = 24, ...props }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -162,9 +163,11 @@ export default function JobSeekerProfileCompletion() {
     ];
 
     return (
-        <div className="bg-[#ffffff] min-h-screen flex flex-col items-center justify-start pt-2 p-4 md:pt-2 relative" dir="rtl">
+        <div className={`min-h-screen flex flex-col items-center pt-2 p-4 md:pt-2 relative transition-colors duration-300 ${showSuccess ? 'bg-[#dbecf3]' : 'bg-transparent'}`} dir="rtl">
             {/* Mobile Background Gradient - Only Top 25% */}
-            <div className="absolute top-0 left-0 right-0 h-[25vh] bg-gradient-to-b from-[#dbecf3] to-transparent md:hidden opacity-100 pointer-events-none" />
+            {!showSuccess && (
+                <div className="absolute top-0 left-0 right-0 h-[15vh] bg-gradient-to-b from-[#dbecf3] to-transparent md:hidden opacity-100 pointer-events-none" />
+            )}
 
             {/* Mobile Header - Pill Shape */}
             <div className="w-full px-2 pt-1 pb-2 md:hidden sticky top-0 z-10">
@@ -179,121 +182,148 @@ export default function JobSeekerProfileCompletion() {
                 </div>
             </div>
 
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-white md:bg-white rounded-[30px] w-full max-w-xl p-6 md:p-8 text-center relative z-[1]"
-            >
-                {/* Header */}
-                <StepIndicator totalSteps={5} currentStep={5} />
-
-                <h1 className="text-2xl font-bold text-[#1e293b] mb-1">השלם את הפרופיל שלך</h1>
-                <p className="text-gray-500 mb-6 text-sm">פרופיל מלא מעלה את סיכוי ההשמה</p>
-
-                {/* Profile Image - More Compact */}
-                <div className="flex flex-col items-center justify-center mb-6">
-                    <div className="relative group">
-                        <div className="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden cursor-pointer relative">
-                            {logoPreview ? (
-                                <img src={logoPreview} alt="Profile" className="w-full h-full object-cover rounded-full border-2 border-blue-100" />
-                            ) : (
-                                <img src={uploadPlaceholder} alt="Upload Profile" className="w-full h-full object-contain" />
-                            )}
-                            <input
-                                type="file"
-                                accept="image/*"
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                                onChange={handleLogoChange}
-                            />
-                        </div>
-                    </div>
-                </div>
 
 
-                {/* Social Icons - Compact */}
-                <div className="flex justify-center gap-3 mb-6">
-                    {socialIcons.map((social) => {
-                        const Icon = social.icon;
-                        const hasValue = socialLinks[social.id] && socialLinks[social.id].length > 0;
-                        const isActive = activeSocial === social.id;
-
-                        return (
-                            <button
-                                key={social.id}
-                                onClick={() => toggleSocialInput(social.id)}
-                                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ${isActive ? 'border-blue-500 text-blue-500' :
-                                    hasValue ? 'border-green-500 text-green-500' : 'border-gray-200 text-gray-300'
-                                    }`}
-                            >
-                                <Icon className="w-5 h-5" />
-                            </button>
-                        );
-                    })}
-                </div>
-
-                {/* Social Input - Compact */}
-                <div className="mb-6 max-w-md mx-auto relative w-full">
-                    <Input
-                        placeholder="הוספת קישור"
-                        value={socialLinks[activeSocial] || ''}
-                        onChange={(e) => handleSocialLinkChange(activeSocial, e.target.value)}
-                        onBlur={saveSocials}
-                        className="text-right h-10 rounded-xl bg-gray-50 border-gray-200 pl-10 text-sm"
-                        dir="ltr"
-                    />
-                    <div className="absolute top-1/2 left-3 -translate-y-1/2 text-blue-500">
-                        <Copy className="w-4 h-4" />
-                    </div>
-                </div>
-
-
-                {/* CV Preview Card - Match Width to Social Input (max-w-md) & Compact */}
-                {cvData && (
-                    <div className="mb-8 max-w-md mx-auto w-full rounded-xl p-3 flex items-center justify-between bg-gray-50">
-                        <div className="flex items-center gap-3 overflow-hidden">
-                            <div className="bg-red-500 p-1.5 rounded-lg">
-                                <span className="text-white font-bold text-[10px]">PDF</span>
-                            </div>
-                            <div className="text-right truncate flex-1 min-w-0">
-                                <p className="font-semibold text-gray-800 truncate text-sm leading-tight" title={cvData.file_name}>{cvData.file_name}</p>
-                                <p className="text-gray-400 text-[10px] leading-tight">{new Date(cvData.last_modified || Date.now()).toLocaleDateString()} • {cvData.file_size_kb || 0} Kb</p>
-                            </div>
-                        </div>
-                        <Button variant="ghost" className="text-blue-500 hover:text-blue-700 flex items-center gap-1 text-xs h-8 px-2" onClick={handleReplaceCV}>
-                            <RefreshCw className="w-3 h-3" />
-                            החלפת קובץ
-                        </Button>
-                    </div>
-                )}
-                {!cvData && !cvLoading && (
-                    <div className="mb-8 max-w-md mx-auto w-full">
-                        <Button variant="outline" onClick={handleReplaceCV} className="w-full text-sm h-10">
-                            לא נמצא קובץ קו"ח. לחץ להעלאה.
-                        </Button>
-                    </div>
-                )}
-
-
-                {/* Finish Button */}
-                <div className="max-w-xs mx-auto">
-                    <Button
-                        className="w-full h-10 rounded-full text-base font-bold bg-[#2987cd] hover:bg-[#1f6ba8]"
-                        onClick={handleFinishClick}
-                        disabled={loading}
+            {showSuccess ? (
+                <div className="flex-1 flex flex-col justify-center w-full items-center py-6 md:py-10">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="w-[98%] max-w-sm relative z-[1] flex flex-col items-center"
                     >
-                        {loading ? <div className="w-4 h-4 border-t-2 border-current rounded-full animate-spin"></div> : "סיום"}
-                    </Button>
+                        {/* The Image provided by the user */}
+                        <img
+                            src={profileSuccessMobile}
+                            alt="הפרופיל הושלם בהצלחה"
+                            className="w-full h-auto object-contain pointer-events-none"
+                        />
+
+                        {/* Invisible Clickable Area for the button in the image */}
+                        <button
+                            onClick={() => navigate(createPageUrl('Dashboard'), { replace: true })}
+                            className="absolute bottom-[18%] w-[65%] h-[12%] bg-transparent cursor-pointer rounded-full z-10 outline-none"
+                            aria-label="לעמוד הראשי"
+                        />
+                    </motion.div>
                 </div>
+            ) : (
+                <>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-white rounded-[30px] w-[calc(100%-1.5rem)] md:max-w-xl pt-6 pb-2 px-6 md:p-8 text-center relative z-[1] mt-4 md:mt-0 shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-gray-100 mx-3 md:mx-0"
+                    >
+                        {/* Desktop Header */}
+                        <div className="hidden md:block">
+                            <StepIndicator totalSteps={5} currentStep={5} />
+                            <h1 className="text-2xl font-bold text-[#1e293b] mb-1">השלם את הפרופיל שלך</h1>
+                        </div>
 
-            </motion.div>
+                        {/* Profile Image - More Compact */}
+                        <div className="flex flex-col items-center justify-center mb-6">
+                            <div className="relative group">
+                                <div className="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden cursor-pointer relative">
+                                    {logoPreview ? (
+                                        <img src={logoPreview} alt="Profile" className="w-full h-full object-cover rounded-full border-2 border-blue-100" />
+                                    ) : (
+                                        <img src={uploadPlaceholder} alt="Upload Profile" className="w-full h-full object-contain" />
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                                        onChange={handleLogoChange}
+                                    />
+                                </div>
+                            </div>
+                        </div>
 
-            <ProfileUpdatedDialog
-                open={showSuccess}
-                onOpenChange={setShowSuccess}
-                title="הפרופיל הושלם בהצלחה"
-                description="השלמת את הפרופיל שלך! עברת לשלב הבא"
-                redirectUrl="/Dashboard?onboarding=complete"
-            />
+                        <p className="text-gray-500 mb-8 text-sm md:text-base leading-relaxed max-w-[240px] mx-auto md:max-w-none">
+                            פרופיל מלא מעלה את סיכוי ההשמה
+                        </p>
+
+
+                        {/* Social Icons - Compact */}
+                        <div className="flex justify-center gap-3 mb-6">
+                            {socialIcons.map((social) => {
+                                const Icon = social.icon;
+                                const hasValue = socialLinks[social.id] && socialLinks[social.id].length > 0;
+                                const isActive = activeSocial === social.id;
+
+                                return (
+                                    <button
+                                        key={social.id}
+                                        onClick={() => toggleSocialInput(social.id)}
+                                        className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ${isActive ? 'border-blue-500 text-blue-500' :
+                                            hasValue ? 'border-green-500 text-green-500' : 'border-gray-200 text-gray-300'
+                                            }`}
+                                    >
+                                        <Icon className="w-5 h-5" />
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* Social Input - Compact */}
+                        <div className="mb-6 max-w-md mx-auto relative w-full">
+                            <Input
+                                placeholder="הוספת קישור"
+                                value={socialLinks[activeSocial] || ''}
+                                onChange={(e) => handleSocialLinkChange(activeSocial, e.target.value)}
+                                onBlur={saveSocials}
+                                className="text-right h-10 rounded-xl bg-white border-gray-200 pl-10 text-sm shadow-sm focus:border-blue-400 transition-all"
+                                dir="ltr"
+                            />
+                            <div className="absolute top-1/2 left-3 -translate-y-1/2 text-blue-500">
+                                <Copy className="w-4 h-4" />
+                            </div>
+                        </div>
+
+
+                        {/* CV Preview Card - Match Width to Social Input (max-w-md) & Compact */}
+                        {cvData && (
+                            <div className="mb-4 max-w-md mx-auto w-full rounded-xl p-3 flex items-center justify-between bg-white shadow-sm border border-gray-100">
+                                <div className="flex items-center gap-3 overflow-hidden">
+                                    <div className="bg-red-500 p-1.5 rounded-lg">
+                                        <span className="text-white font-bold text-[10px]">PDF</span>
+                                    </div>
+                                    <div className="text-right truncate flex-1 min-w-0">
+                                        <p className="font-semibold text-gray-800 truncate text-sm leading-tight" title={cvData.file_name}>{cvData.file_name}</p>
+                                        <p className="text-gray-400 text-[10px] leading-tight">{new Date(cvData.last_modified || Date.now()).toLocaleDateString()} • {cvData.file_size_kb || 0} Kb</p>
+                                    </div>
+                                </div>
+                                <Button variant="ghost" className="text-blue-500 hover:text-blue-700 flex items-center gap-1 text-xs h-8 px-2" onClick={handleReplaceCV}>
+                                    <RefreshCw className="w-3 h-3" />
+                                    החלפת קובץ
+                                </Button>
+                            </div>
+                        )}
+                        {!cvData && !cvLoading && (
+                            <div className="mb-8 max-w-md mx-auto w-full">
+                                <Button variant="outline" onClick={handleReplaceCV} className="w-full text-sm h-10">
+                                    לא נמצא קובץ קו"ח. לחץ להעלאה.
+                                </Button>
+                            </div>
+                        )}
+
+
+
+
+                    </motion.div>
+
+                    {/* Finish Button - Outside Card */}
+                    <div className="max-w-md mx-auto w-full mt-8 md:mt-10 px-4 md:px-0">
+                        <Button
+                            className="w-full h-12 rounded-full text-lg font-bold bg-[#2987cd] hover:bg-[#1f6ba8] shadow-lg shadow-blue-100"
+                            onClick={handleFinishClick}
+                            disabled={loading}
+                        >
+                            {loading ? <div className="w-4 h-4 border-t-2 border-current rounded-full animate-spin"></div> : "סיום"}
+                        </Button>
+                    </div>
+                </>
+            )}
+
         </div>
     );
 }

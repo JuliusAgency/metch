@@ -37,7 +37,7 @@ const CVChoiceModal = ({ isOpen, onSelect, loading }) => {
         <AnimatePresence>
             <div className="fixed inset-0 bg-white md:bg-black/50 z-[100] flex items-center justify-center">
                 {/* Mobile Background Gradient - Only Top 25% */}
-                <div className="absolute top-0 left-0 right-0 h-[25vh] bg-gradient-to-b from-[#dbecf3] to-transparent md:hidden opacity-100 pointer-events-none" />
+                <div className="absolute top-0 left-0 right-0 h-[15vh] bg-gradient-to-b from-[#dbecf3] to-transparent md:hidden opacity-100 pointer-events-none" />
 
                 <motion.div
                     initial={{ opacity: 0, y: 50 }}

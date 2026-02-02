@@ -31,10 +31,10 @@ const SeekerJobTitle = ({ job, employmentTypeText }) => (
                 {(job.match_score ?? 0) > 0 && (
                     <div
                         className={`h-full rounded-full transition-all duration-500 ${(job.match_score ?? 0) >= 70
-                                ? 'bg-green-400'
-                                : (job.match_score ?? 0) >= 40
-                                    ? 'bg-orange-400'
-                                    : 'bg-red-500'
+                            ? 'bg-green-400'
+                            : (job.match_score ?? 0) >= 40
+                                ? 'bg-orange-400'
+                                : 'bg-red-500'
                             }`}
                         style={{ width: `${job.match_score ?? 0}%` }}
                     />

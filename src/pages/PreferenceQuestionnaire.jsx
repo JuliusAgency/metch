@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { User } from '@/api/entities';
 import { motion } from 'framer-motion';
@@ -129,7 +130,7 @@ export default function PreferenceQuestionnaire() {
         preferred_location: preferences.location,
         preferred_job_types: dbJobTypesArray,
         availability: dbAvailability,
-        character_traits: preferences.traits,
+        character_traits: preferences.traits.map(t => t.replace(' #2', '')),
         specialization: preferences.field
       };
 
@@ -166,7 +167,7 @@ export default function PreferenceQuestionnaire() {
   return (
     <div className="h-full relative" dir="rtl">
       {/* Mobile Background Gradient - Only Top 25% */}
-      <div className="absolute top-0 left-0 right-0 h-[25vh] bg-gradient-to-b from-[#dbecf3] to-transparent md:hidden opacity-100 pointer-events-none z-0" />
+      <div className="absolute top-0 left-0 right-0 h-[15vh] bg-gradient-to-b from-[#dbecf3] to-transparent md:hidden opacity-100 pointer-events-none z-0" />
 
       {/* Mobile Header - Pill Shape */}
       <div className="w-full px-2 pt-1 pb-2 md:hidden sticky top-0 z-10">
@@ -203,7 +204,7 @@ export default function PreferenceQuestionnaire() {
             }
           }
         }}
-        className="absolute top-6 right-6 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors z-[60] shadow-sm"
+        className="hidden md:flex absolute top-6 right-6 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full items-center justify-center transition-colors z-[60] shadow-sm"
         aria-label="חזור"
       >
         <ChevronRight className="w-6 h-6 text-gray-600" />
@@ -214,38 +215,80 @@ export default function PreferenceQuestionnaire() {
         transition={{ duration: 0.5 }}
         className="h-full relative overflow-y-auto z-[1]"
       >
-        <div className="p-8 md:p-12 flex flex-col items-center w-full max-w-4xl mx-auto">
+        <div className="p-4 md:p-12 flex flex-col items-center w-full max-w-4xl mx-auto mt-4 md:mt-0">
+
+          <h1 className="text-3xl font-bold text-gray-800 mb-2 md:hidden">ההעדפות שלך</h1>
 
           <StepIndicator
             totalSteps={searchParams.get('choice') === 'upload' ? 5 : 2}
             currentStep={searchParams.get('choice') === 'upload' ? (step === 1 ? 2 : 3) : step}
           />
 
-          {step === 1 && (
-            <Step1
-              preferences={preferences}
-              setPreferences={setPreferences}
-              onNext={handleNext}
-            />
-          )}
+          <div className="w-full bg-white md:bg-transparent rounded-3xl p-4 md:p-0 shadow-[0_2px_12px_rgba(0,0,0,0.1)] md:shadow-none border border-gray-100 md:border-none mt-4 md:mt-0">
+            {step === 1 && (
+              <Step1
+                preferences={preferences}
+                setPreferences={setPreferences}
+                onNext={handleNext}
+              />
+            )}
 
-          {step === 2 && (
-            <Step2
-              preferences={preferences}
-              setPreferences={setPreferences}
-              onSave={handleSave}
-              onBack={handleBack}
-              saving={saving}
-            />
-          )}
+            {step === 2 && (
+              <Step2
+                preferences={preferences}
+                setPreferences={setPreferences}
+                onSave={handleSave}
+                onBack={handleBack}
+                saving={saving}
+              />
+            )}
 
-
-          <div className="mt-auto pt-10 w-full flex items-center justify-center gap-3 border-t border-gray-50">
-            <Info className="w-5 h-5 text-blue-400 shrink-0" />
-            <span className="text-gray-500 text-sm">
-              ההתאמה נעשית בהתבסס על קורות החיים, גם אם שאלון ההעדפה לא מדוייק
-            </span>
+            {/* Terms / Info Block (Inside Card) - Hidden on Step 2 */}
+            {step !== 2 && (
+              <div className="hidden lg:flex items-start gap-2 text-gray-500 text-xs text-right mt-6">
+                <Info className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" />
+                <p>ההתאמה נעשית בהתבסס על קורות החיים, גם אם שאלון ההעדפה לא מדוייק</p>
+              </div>
+            )}
           </div>
+
+          {/* Mobile "Continue" Button for Step 1 */}
+          {step === 1 && (
+            <div className="w-full mt-6 md:hidden">
+              <Button
+                onClick={handleNext}
+                disabled={!preferences.location || !preferences.profession_search || !preferences.job_type || !preferences.availability}
+                className={`w-full h-14 rounded-full text-lg font-bold shadow-sm transition-all
+                  ${(preferences.location && preferences.profession_search && preferences.job_type && preferences.availability)
+                    ? 'bg-[#2987cd] hover:bg-[#1f6ba8] text-white shadow-blue-200'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  }`}
+              >
+                המשך
+              </Button>
+            </div>
+          )}
+
+          {/* Mobile "Continue" Button for Step 2 */}
+          {step === 2 && (
+            <div className="w-full mt-6 md:hidden">
+              <Button
+                onClick={handleSave}
+                disabled={saving || (preferences.traits || []).length !== 3}
+                className={`w-full h-14 rounded-full text-lg font-bold shadow-sm transition-all
+                  ${(preferences.traits || []).length === 3
+                    ? 'bg-[#2987cd] hover:bg-[#1f6ba8] text-white shadow-blue-200'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  }`}
+              >
+                {saving ? "שומר..." : "המשך"}
+              </Button>
+            </div>
+          )}
+
+
+          {/* Footer spacer if needed, or remove completely */}
+          <div className="md:hidden h-6" />
 
         </div>
       </motion.div>
