@@ -453,10 +453,10 @@ const JobSeekerDashboard = ({ user }) => {
           <div className="bg-transparent rounded-none min-h-[90vh] md:min-h-0">
             <div className="space-y-6">
               <div className="hidden md:grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-12 stats-grid justify-items-center">
-                <StatCard icon={JsRelevantJobsIcon} title="משרות רלוונטיות" value={allJobs.length} />
-                <StatCard icon={JsCvIcon} title="קו״ח שהגשת" value={userStats?.resume_views || userStats?.profile_views || 0} />
-                <StatCard icon={JsApplicationsIcon} title="מועמדויות שהגשתי" value={userStats?.total_applications || 0} />
-                <StatCard icon={JsProfileViewsIcon} title="צפו בכרטיס שלך" value={userStats?.profile_views || 0} />
+                <StatCard icon={JsRelevantJobsIcon} title="משרות רלוונטיות" value={allJobs.length}  />
+                <StatCard icon={JsCvIcon} title="מועמדויות שהגשת" value={userStats?.total_applications || 0} />
+                <StatCard icon={JsApplicationsIcon} title="קורות חיים שנצפו" value={userStats?.resume_views || userStats?.profile_views || 0}  />
+                <StatCard icon={JsProfileViewsIcon} title="צפו בכרטיס שלי" value={userStats?.profile_views || 0} />
               </div>
 
               <Card className="hidden md:block bg-[#E7F2F7] shadow-none border-0 rounded-lg">
