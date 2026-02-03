@@ -292,7 +292,15 @@ export default function AccessibilityButton() {
                         </div>
 
                         {/* Footer */}
-                        <div className="bg-gray-100 p-2 text-center border-t">
+                        <div className="bg-gray-100 p-3 text-center border-t flex flex-col gap-2 items-center">
+                            <a
+                                href="https://metch.co.il/accessibility-statement/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm font-semibold text-blue-700 hover:text-blue-800 hover:underline flex items-center gap-1"
+                            >
+                                הצהרת נגישות
+                            </a>
                             <span className="text-[10px] text-gray-500">
                                 מונגש באמצעות רכיב נגישות מתקדם
                             </span>

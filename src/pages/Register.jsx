@@ -5,6 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 
 // Figma design assets
@@ -18,6 +19,8 @@ const Register = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(true);
   const [loading, setLoading] = useState(false);
   const { signUp, signInWithGoogle, checkUserExists } = useUser();
   const { toast } = useToast();
@@ -45,6 +48,15 @@ const Register = () => {
       toast({
         title: "סיסמה חלשה",
         description: "הסיסמה חייבת להכיל לפחות 6 תווים",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!termsAccepted) {
+      toast({
+        title: "חובה לאשר תנאי שימוש",
+        description: "אנא אשרו את תנאי השימוש ומדיניות הפרטיות להמשך",
         variant: "destructive",
       });
       return false;
@@ -92,6 +104,8 @@ const Register = () => {
       await signUp({
         email: signUpData.email,
         password: signUpData.password,
+        marketing_consent: marketingConsent,
+        terms_accepted: true,
         created_at: new Date().toISOString()
       });
 
@@ -245,6 +259,44 @@ const Register = () => {
                   placeholder="אימות סיסמה"
                   dir="rtl"
                 />
+              </div>
+
+              {/* Terms and Marketing Checkboxes */}
+              <div className="space-y-4">
+                <div className="flex items-start space-x-2 space-x-reverse" dir="rtl">
+                  <Checkbox
+                    id="terms"
+                    checked={termsAccepted}
+                    onCheckedChange={setTermsAccepted}
+                    className="mt-1 border-[#6a6a6a] data-[state=checked]:bg-[#2987cd] data-[state=checked]:border-[#2987cd]"
+                  />
+                  <label
+                    htmlFor="terms"
+                    className="text-sm font-['Rubik',_sans-serif] font-normal leading-normal text-[#32343d] mr-2 cursor-pointer"
+                  >
+                    קראתי ואני מסכים/ה <a href="https://metch.co.il/%d7%aa%d7%a0%d7%90%d7%99-%d7%a9%d7%99%d7%9e%d7%95%d7%a9/" target="_blank" rel="noopener noreferrer" className="underline text-[#2987cd] font-bold">לתנאי השימוש</a> ו<a href="https://metch.co.il/מדיניות-הפרטיות/" target="_blank" rel="noopener noreferrer" className="underline text-[#2987cd] font-bold">למדיניות הפרטיות</a> של Metch
+                  </label>
+                </div>
+
+                <div className="flex items-start space-x-2 space-x-reverse" dir="rtl">
+                  <Checkbox
+                    id="marketing"
+                    checked={marketingConsent}
+                    onCheckedChange={setMarketingConsent}
+                    className="mt-1 border-[#6a6a6a] data-[state=checked]:bg-[#2987cd] data-[state=checked]:border-[#2987cd]"
+                  />
+                  <div className="mr-2 space-y-1">
+                    <label
+                      htmlFor="marketing"
+                      className="text-sm font-['Rubik',_sans-serif] font-normal leading-normal text-[#32343d] cursor-pointer"
+                    >
+                      אני מעוניין/ת לקבל עדכונים, חדשות וטיפים בתחום התעסוקה, הצעות מיוחדות ודיוור שיווקי מ-Metch באמצעות דואר אלקטרוני ו/או הודעות SMS וWhatsapp
+                    </label>
+                    <p className="text-xs font-['Rubik',_sans-serif] text-[#6a6a6a]">
+                      ניתן לבטל את ההסכמה בכל עת דרך עמוד ההגדרות או בלחיצה על "הסר מרשימת תפוצה" בכל דיוור.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Register Button */}
