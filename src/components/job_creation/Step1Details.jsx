@@ -56,7 +56,7 @@ export default function Step1Details({ jobData, setJobData }) {
   return (
     <div className="max-w-2xl mx-auto" dir="rtl">
       <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-[#001a6e]">משרה מפורטת מובילה למועמדים מדוייקים</h1>
+        <h1 className="text-2xl font-bold text-[#001a6e]">משרה מפורטת מובילה למועמדים מדויקים</h1>
       </div>
 
       <div className="space-y-4">
