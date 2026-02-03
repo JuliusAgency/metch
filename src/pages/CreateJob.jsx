@@ -24,6 +24,8 @@ import { EmployerAnalytics } from "@/components/EmployerAnalytics"; // Added Emp
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/components/ui/use-toast";
+import { createPageUrl } from "@/utils";
+
 
 const STEPS = ["פרטי המשרה", "פרטי החברה", "שאלון סינון", "תצוגה מקדימה"]; // Removed "חבילות"
 
@@ -58,8 +60,18 @@ export default function CreateJob() {
   const [loadingJob, setLoadingJob] = useState(true);
   const { user, updateProfile } = useUser();
   const { toast } = useToast();
-
   const [isScreeningSaved, setIsScreeningSaved] = useState(false);
+
+  const handleSkipOnboarding = async () => {
+    if (user && !user.is_onboarding_completed) {
+      try {
+        await updateProfile({ is_onboarding_completed: true });
+      } catch (error) {
+        console.error("Failed to mark onboarding as completed:", error);
+      }
+    }
+    navigate(createPageUrl("Dashboard"), { replace: true });
+  };
 
   useEffect(() => {
     setIsScreeningSaved(false);
@@ -325,10 +337,10 @@ export default function CreateJob() {
     if (step === 3) {
       if (!jobData.screening_questions || jobData.screening_questions.length === 0) return 'דילוג';
       // If has questions
-      return 'הבא';
+      return 'המשך';
     }
     if (isFinalStep) return isEditing ? 'עדכון משרה' : 'סיום וצפייה במשרה';
-    return 'הבא';
+    return 'המשך';
   };
 
   const isNextDisabled = () => {
@@ -362,14 +374,24 @@ export default function CreateJob() {
 
         {!isSubmitted && step !== 4 && (
           <div className="flex justify-center items-center gap-4 mt-8 pb-8">
-            <Button
-              variant="outline"
-              className="px-8 py-3 rounded-full font-bold text-lg border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
-              onClick={prevStep}
-              disabled={isSubmitting}
-            >
-              חזור
-            </Button>
+            {step === 1 && !isEditing ? (
+              <Button
+                variant="outline"
+                className="px-8 py-3 rounded-full font-bold text-lg border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
+                onClick={handleSkipOnboarding}
+              >
+                לפרסם מאוחר יותר
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                className="px-8 py-3 rounded-full font-bold text-lg border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
+                onClick={prevStep}
+                disabled={isSubmitting}
+              >
+                חזור
+              </Button>
+            )}
 
             <Button
               className={`text-white px-12 py-3 rounded-full font-bold text-lg shadow-lg ${isFinalStep ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'
