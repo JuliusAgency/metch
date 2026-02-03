@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Eye, Download, FileOutput, ChevronRight } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
@@ -21,7 +21,14 @@ export default function Payments() {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [paymentData, setPaymentData] = useState({}); // Mock state for PaymentStep
+    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
     const [errors, setErrors] = useState({});
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Mock data initial state
     const [transactions, setTransactions] = useState([
@@ -396,29 +403,70 @@ ET`;
 
 
             {/* Change Payment Method Modal */}
-            <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-                <DialogContent className="sm:max-w-[600px] h-[80vh] overflow-y-auto" dir="rtl">
-                    <DialogHeader>
-                        <DialogTitle className="text-center text-xl font-bold text-[#1E3A8A]">עדכון אמצעי תשלום</DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <PaymentStep
-                            paymentData={paymentData}
-                            setPaymentData={setPaymentData}
-                            errors={errors}
-                            setErrors={setErrors}
-                        />
-                        <div className="mt-8 flex justify-center">
+            {/* Mobile Edit Payment Page Overlay */}
+            {showPaymentModal && isMobile && (
+                <div className="fixed inset-0 z-40 bg-[#eff6ff] overflow-y-auto pt-20 pb-10 px-4 animate-in fade-in slide-in-from-bottom-10 duration-300">
+                    <div className="max-w-lg mx-auto">
+                        {/* Header Area */}
+                        <div className="text-center mb-6 relative">
+                            <h2 className="text-[24px] font-bold text-[#001a6e]">עדכון אמצעי תשלום</h2>
+                            <button
+                                onClick={() => setShowPaymentModal(false)}
+                                className="absolute top-1 right-0 p-1.5 rounded-full bg-white/60 hover:bg-white text-gray-500 shadow-sm"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                            </button>
+                        </div>
+
+                        {/* White Card Container */}
+                        <div className="bg-white rounded-[24px] shadow-[0_4px_30px_rgba(0,0,0,0.06)] p-6 mb-8 relative border border-white">
+                            <PaymentStep
+                                paymentData={paymentData}
+                                setPaymentData={setPaymentData}
+                                errors={errors}
+                                setErrors={setErrors}
+                            />
+                        </div>
+
+                        {/* Action Button */}
+                        <div className="mt-4 px-2">
                             <Button
                                 onClick={handleSavePaymentMethod}
-                                className="bg-[#1E3A8A] text-white rounded-full px-8 w-full md:w-1/2"
+                                className="w-full bg-[#2987cd] hover:bg-[#2070ab] text-white rounded-full h-14 text-lg font-bold shadow-xl shadow-blue-200/50"
                             >
-                                שמירת אמצעי תשלום
+                                עדכון
                             </Button>
                         </div>
                     </div>
-                </DialogContent>
-            </Dialog>
+                </div>
+            )}
+
+            {/* Desktop Modal */}
+            {!isMobile && (
+                <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+                    <DialogContent className="sm:max-w-[600px] h-[80vh] overflow-y-auto" dir="rtl">
+                        <DialogHeader>
+                            <DialogTitle className="text-center text-xl font-bold text-[#1E3A8A]">עדכון אמצעי תשלום</DialogTitle>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <PaymentStep
+                                paymentData={paymentData}
+                                setPaymentData={setPaymentData}
+                                errors={errors}
+                                setErrors={setErrors}
+                            />
+                            <div className="mt-8 flex justify-center">
+                                <Button
+                                    onClick={handleSavePaymentMethod}
+                                    className="bg-[#1E3A8A] text-white rounded-full px-8 w-full md:w-1/2"
+                                >
+                                    שמירת אמצעי תשלום
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
 
             {/* View Invoice Modal */}
             <Dialog open={!!selectedInvoice} onOpenChange={(open) => !open && setSelectedInvoice(null)}>
