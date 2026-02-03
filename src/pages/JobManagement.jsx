@@ -259,10 +259,10 @@ export default function JobManagement() {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="h-full relative" dir="rtl">
+      <div className="h-full relative bg-[#fafafa] md:bg-transparent min-h-screen pb-24 md:pb-0" dir="rtl">
         <div className="relative">
           {/* Header */}
-          <div className="relative h-40 overflow-hidden w-full">
+          <div className="relative h-32 md:h-40 overflow-hidden w-full">
             <div
               className="absolute inset-0 w-full h-full"
               style={{
@@ -273,14 +273,15 @@ export default function JobManagement() {
               }} />
 
             {/* Title - On the curve */}
-            <div className="absolute top-8 left-0 right-0 text-center z-20">
-              <h1 className="text-3xl font-bold text-[#001a6e]">ניהול משרות</h1>
+            <div className="absolute top-6 md:top-8 left-0 right-0 text-center z-20">
+              <h1 className="text-2xl md:text-3xl font-bold text-[#001a6e]">ניהול משרות</h1>
             </div>
           </div>
 
-          <div className="p-2 sm:p-4 md:p-6 -mt-16 relative z-10 w-[70%] mx-auto">
+          <div className="p-4 md:p-6 -mt-12 md:-mt-16 relative z-10 w-full md:w-[70%] mx-auto">
             {/* Toggle Buttons - Centered */}
-            <div className="flex justify-center items-center mb-4">
+            <div className="flex justify-center items-center mb-6 gap-4">
+              <BarChart className="w-6 h-6 text-[#2987cd] md:hidden" />
               <ToggleSwitch
                 options={[
                   { value: 'ended', label: 'משרות שהסתיימו' },
@@ -306,8 +307,8 @@ export default function JobManagement() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}>
 
-                      {/* Updated Card Structure */}
-                      <div className="bg-white border border-gray-200/90 shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
+                      {/* Desktop Card Structure */}
+                      <div className="hidden md:block bg-white border border-gray-200/90 shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl p-4">
                         {/* Top Section */}
                         <div className="flex items-center justify-between pb-3">
                           {/* Right Side (Status) */}
@@ -319,7 +320,7 @@ export default function JobManagement() {
                           {/* Left Side (Actions) */}
                           <div className="flex items-center gap-4 text-gray-400">
                             <CustomSwitch
-                              id={`status-switch-${job.id}`}
+                              id={`status-switch-desktop-${job.id}`}
                               checked={job.status === 'active'}
                               onCheckedChange={(checked) =>
                                 handleStatusChange(job.id, checked)
@@ -367,6 +368,53 @@ export default function JobManagement() {
                           </Link>
                         </div>
                       </div>
+
+                      {/* Mobile Card Structure */}
+                      <div className="md:hidden bg-white border border-gray-100 shadow-sm rounded-[16px] p-4">
+                        {/* Top: Status & Switch */}
+                        <div className="flex items-center justify-between pb-3">
+                          <span className="text-sm font-medium text-gray-900">
+                            {job.status === 'active' ? 'משרה פעילה' : 'משרה הסתיימה'}
+                          </span>
+                          <CustomSwitch
+                            id={`status-switch-mobile-${job.id}`}
+                            checked={job.status === 'active'}
+                            onCheckedChange={(checked) =>
+                              handleStatusChange(job.id, checked)
+                            }
+                            disabled={job.status !== 'active' && job.status !== 'paused' && job.status !== 'draft'}
+                          />
+                        </div>
+
+                        <div className="border-t border-gray-100 mb-3"></div>
+
+                        {/* Middle: Info & Icons */}
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="text-right">
+                            <h3 className="font-bold text-lg text-gray-900">{job.title}</h3>
+                            <p className="text-gray-500 text-sm">{job.location}</p>
+                          </div>
+                          <div className="flex gap-3 pt-1">
+                            <Link to={createPageUrl(`CreateJob?id=${job.id}`)}>
+                              <Edit className="w-5 h-5 text-gray-300" strokeWidth={1.5} />
+                            </Link>
+                            <Copy
+                              className="w-5 h-5 text-gray-300"
+                              strokeWidth={1.5}
+                              onClick={() => handleDuplicateJob(job)} />
+                          </div>
+                        </div>
+
+                        {/* Bottom: Button */}
+                        <div className="flex justify-end">
+                          <Link to={createPageUrl(`JobDetails?id=${job.id}`)}>
+                            <Button className="bg-[#84CC9E] hover:bg-green-500 text-white px-6 py-1.5 h-auto rounded-full font-normal text-sm shadow-none">
+                              צפייה במשרה
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+
                     </motion.div>);
 
                 }) :
@@ -381,9 +429,8 @@ export default function JobManagement() {
               }
             </div>
 
-            {/* Bottom Row: Pagination (Left) and Create Button (Right) */}
-            <div className="flex justify-between items-center mt-6">
-              {/* Pagination Controls - Left Side */}
+            {/* Pagination Controls - Left Side (Desktop Only for now unless requested) */}
+            <div className="flex justify-between items-center mt-6 hidden md:flex">
               <div className="flex items-center gap-3">
                 {totalPages > 1 && (
                   <>
@@ -412,7 +459,7 @@ export default function JobManagement() {
                 )}
               </div>
 
-              {/* Create New Job Button - Right Side */}
+              {/* Create New Job Button - Right Side (Desktop) */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div>
@@ -441,6 +488,26 @@ export default function JobManagement() {
                 )}
               </Tooltip>
             </div>
+
+            {/* Mobile Create Job Button (Fixed/Sticky or just at bottom) */}
+            <div className="fixed md:hidden bottom-8 left-0 right-0 px-6 z-40 transform translate-y-0">
+              <Button
+                onClick={() => {
+                  const hasCredits = (user?.job_credits > 0 || user?.profile?.job_credits > 0);
+                  if (hasCredits) {
+                    handleCreateNewJob();
+                  }
+                }}
+                disabled={!(user?.job_credits > 0 || user?.profile?.job_credits > 0)}
+                className={`w-full py-6 rounded-full font-bold text-xl shadow-[0_4px_14px_0_rgba(0,0,0,0.2)] ${(user?.job_credits > 0 || user?.profile?.job_credits > 0)
+                  ? 'bg-[#2987CD] hover:bg-[#2070ab] text-white'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300'
+                  }`}
+              >
+                צור משרה חדשה +
+              </Button>
+            </div>
+
           </div>
         </div>
       </div>
