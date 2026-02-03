@@ -102,46 +102,48 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
     };
 
     const UploadArea = () => (
-        <div className="flex flex-col items-center justify-center pt-0 pb-6 text-center">
-            {/* Green Upload Icon - Hide if disclaimer shown */}
+        <div className="flex flex-col items-center justify-center text-center w-full">
+            {/* Title - Outside the box */}
             {!showSkipDisclaimer && (
-                <div className="mb-2">
-                    <Upload className="w-10 h-10 text-[#77C883] mx-auto" />
-                </div>
-            )}
-
-            {/* Title - Hide if disclaimer shown */}
-            {!showSkipDisclaimer && (
-                <h3 className="text-xl md:text-2xl font-bold text-[#333333] mb-12 md:mb-8">
+                <h3 className="text-xl md:text-2xl font-bold text-[#333333] mb-8">
                     העלה את קובץ קורות החיים שלך
                 </h3>
             )}
 
-            {/* Hidden Input */}
-            <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                accept=".pdf,.doc,.docx"
-                onChange={handleFileChange}
-            />
+            <div className={`w-full border-2 border-dashed border-gray-200 rounded-[1rem] px-10 md:px-14 flex flex-col items-center ${showSkipDisclaimer ? 'py-6 md:py-8' : 'py-10 md:py-16'}`}>
+                {/* Green Upload Icon */}
+                {!showSkipDisclaimer && (
+                    <div className="mb-6">
+                        <Upload className="w-10 h-10 text-[#77C883] mx-auto" />
+                    </div>
+                )}
 
-            {/* Green Button */}
-            <Button
-                onClick={() => fileInputRef.current?.click()}
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                className="bg-[#77C883] hover:bg-[#66b572] text-white text-lg md:text-xl font-bold py-6 px-12 rounded-full shadow-none w-auto min-w-[200px] mb-14 md:mb-8 transition-all"
-            >
-                בחירת קובץ
-            </Button>
+                {/* Hidden Input */}
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,.doc,.docx"
+                    onChange={handleFileChange}
+                />
 
-            {/* Subtitle / Disclaimer */}
-            <p className="text-gray-600 text-sm md:text-base max-w-xs mx-auto leading-relaxed px-4 md:px-0">
-                ה AI ינתח את קורות החיים שלך
-                <br />
-                על מנת להוציא ממנו את המיטב
-            </p>
+                {/* Green Button */}
+                <Button
+                    onClick={() => fileInputRef.current?.click()}
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                    className={`bg-[#77C883] hover:bg-[#66b572] text-white text-lg md:text-xl font-bold py-6 px-12 rounded-full shadow-none w-auto min-w-[200px] transition-all ${showSkipDisclaimer ? 'mb-4' : 'mb-8'}`}
+                >
+                    בחירת קובץ
+                </Button>
+
+                {/* Subtitle / Disclaimer */}
+                <p className="text-gray-600 text-sm md:text-base max-w-xs mx-auto leading-relaxed px-4 md:px-0">
+                    ה AI ינתח את קורות החיים שלך
+                    <br />
+                    על מנת להוציא ממנו את המיטב
+                </p>
+            </div>
         </div>
     );
 
@@ -215,18 +217,18 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-xl mx-auto text-center"
+            className="w-full max-w-4xl mx-auto text-center px-4 md:px-0"
             dir="rtl"
         >
             {showSkipDisclaimer ? (
-                <div className="flex flex-col items-center justify-center mb-0 mt-8">
+                <div className="flex flex-col items-center justify-center mb-0 mt-2">
                     {/* Custom Red Info Icon from user image */}
-                    <div className="mb-6">
+                    <div className="mb-4">
                         <img src={skipInfoIcon} alt="Warning" className="w-12 h-12 object-contain" />
                     </div>
 
                     {/* Warning Text - 2 lines */}
-                    <h3 className="text-[#FF4D4D] text-lg font-bold max-w-[240px] leading-tight mb-8">
+                    <h3 className="text-[#FF4D4D] text-lg font-bold max-w-[240px] leading-tight mb-4">
                         הצעות עבודה לא יתקבלו
                         <br />
                         ללא קובץ קורות החיים שלך

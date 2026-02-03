@@ -208,15 +208,21 @@ export default function JobSeekerProfileCompletion() {
                 </div>
             ) : (
                 <>
+                    {/* Mobile Header - Outside the card, Title then Progress */}
+                    <div className="md:hidden w-full flex flex-col items-center mb-6 px-4">
+                        <h1 className="text-2xl font-bold text-[#1e293b] mb-4">השלם את הפרופיל שלך</h1>
+                        <StepIndicator totalSteps={5} currentStep={5} />
+                    </div>
+
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white rounded-[30px] w-[calc(100%-1.5rem)] md:max-w-xl pt-6 pb-2 px-6 md:p-8 text-center relative z-[1] mt-4 md:mt-0 shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-gray-100 mx-3 md:mx-0"
+                        className="bg-white rounded-[30px] md:rounded-[2rem] w-[calc(100%-1.5rem)] md:w-[95%] md:max-w-none pt-6 pb-2 px-6 md:pt-4 md:pb-12 md:px-12 text-center relative z-[1] mt-0 shadow-[0_4px_20px_rgba(0,0,0,0.06)] md:shadow-none border border-gray-100 md:border-none mx-3 md:mx-auto"
                     >
-                        {/* Desktop Header */}
-                        <div className="hidden md:block">
+                        {/* Desktop Header - Inside, Progress then Title */}
+                        <div className="hidden md:block w-full mb-8 pt-2">
                             <StepIndicator totalSteps={5} currentStep={5} />
-                            <h1 className="text-2xl font-bold text-[#1e293b] mb-1">השלם את הפרופיל שלך</h1>
+                            <h1 className="text-3xl font-bold text-[#1e293b] mt-2">השלם את הפרופיל שלך</h1>
                         </div>
 
                         {/* Profile Image - More Compact */}
@@ -309,10 +315,20 @@ export default function JobSeekerProfileCompletion() {
 
 
 
+                        {/* Finish Button - Inside Card on Desktop Only */}
+                        <div className="hidden md:block max-w-md mx-auto w-full mt-12 px-0">
+                            <Button
+                                className="w-full h-12 rounded-full text-lg font-bold bg-[#2987cd] hover:bg-[#1f6ba8] shadow-lg shadow-blue-100 transition-all active:scale-[0.98]"
+                                onClick={handleFinishClick}
+                                disabled={loading}
+                            >
+                                {loading ? <div className="w-4 h-4 border-t-2 border-current rounded-full animate-spin"></div> : "סיום"}
+                            </Button>
+                        </div>
                     </motion.div>
 
-                    {/* Finish Button - Outside Card */}
-                    <div className="max-w-md mx-auto w-full mt-8 md:mt-10 px-4 md:px-0">
+                    {/* Finish Button - Outside Card on Mobile Only */}
+                    <div className="md:hidden max-w-md mx-auto w-full mt-8 px-4">
                         <Button
                             className="w-full h-12 rounded-full text-lg font-bold bg-[#2987cd] hover:bg-[#1f6ba8] shadow-lg shadow-blue-100"
                             onClick={handleFinishClick}

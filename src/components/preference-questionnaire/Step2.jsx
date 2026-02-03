@@ -53,7 +53,7 @@ export default function Step2({ preferences, setPreferences, onSave, onBack, sav
     };
 
     return (
-        <div className="flex flex-col items-center text-center space-y-4 md:space-y-10 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex flex-col items-center text-center space-y-4 md:space-y-10 md:pt-16 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
 
             <div className="space-y-2 px-2">
                 <h2 className="text-xl md:text-3xl font-bold text-gray-900 whitespace-nowrap">3 התכונות שהכי מאפיינות אותך</h2>
