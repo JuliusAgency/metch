@@ -83,6 +83,7 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
 
   const [openLocation, setOpenLocation] = useState(false);
   const [isVerificationOpen, setIsVerificationOpen] = useState(false);
+  const [isBirthDateFocused, setIsBirthDateFocused] = useState(false);
 
   const notifyValidity = useCallback((formState) => {
     onValidityChange(isFormComplete(formState));
@@ -385,23 +386,34 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
             <PillInput
               ref={birthDateRef}
               name="birthDate"
-              placeholder="תאריך לידה"
               value={localData.birthDate}
               onChange={handleInputChange}
-              type={localData.birthDate ? 'date' : 'text'}
+              type="date"
               min={minBirthDate}
               max={maxBirthDate}
-              onFocus={(e) => { e.target.type = 'date'; }}
-              onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }}
-              className="pl-12 w-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:left-10"
+              onFocus={() => setIsBirthDateFocused(true)}
+              onBlur={() => setIsBirthDateFocused(false)}
+              className={cn(
+                "pl-12 w-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:left-10",
+                (!localData.birthDate && !isBirthDateFocused) && "text-transparent"
+              )}
             />
+            {(!localData.birthDate && !isBirthDateFocused) && (
+              <span className="absolute right-6 text-gray-500 pointer-events-none text-sm md:text-base">
+                תאריך לידה
+              </span>
+            )}
             <Calendar
               className="absolute left-4 h-5 w-5 text-blue-500 cursor-pointer"
               onClick={() => {
                 if (birthDateRef.current) {
-                  if (birthDateRef.current.showPicker) {
-                    birthDateRef.current.showPicker();
-                  } else {
+                  try {
+                    if (birthDateRef.current.showPicker) {
+                      birthDateRef.current.showPicker();
+                    } else {
+                      birthDateRef.current.focus();
+                    }
+                  } catch (e) {
                     birthDateRef.current.focus();
                   }
                 }

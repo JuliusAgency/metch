@@ -724,9 +724,9 @@ export default function CVGenerator() {
                 step === 0 ? 'הבא' : (
                   step === STEPS.length ? 'שמור והמשך' : (
                     <>
-                      <span className="md:hidden">
+                      {/* <span className="md:hidden">
                         המשך
-                      </span>
+                      </span> */}
                       <span className="ml-2">המשך</span>
                     </>
                   )
