@@ -59,6 +59,7 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
         <div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">למצוא את המועמד המדויק</h1>
           <p className="text-gray-600">בעזרת הבינה המלאכותית של מאצ'</p>
+          <p className="text-gray-600">בחרו כמות משרות</p>
         </div>
 
         {/* Quantity Selector - Delicate Pill Design */}
