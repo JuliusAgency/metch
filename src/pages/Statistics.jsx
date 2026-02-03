@@ -116,13 +116,13 @@ export default function Statistics() {
                     </div>
                 </div>
 
-                <div className="p-4 sm:p-6 md:p-8 -mt-20 relative z-10 w-[72%] mx-auto">
+                <div className="p-4 sm:p-6 md:p-8 -mt-20 relative z-10 w-full md:w-[72%] mx-auto">
                     {/* Toggle - Centered */}
-                    <div className="flex justify-center mb-8">
+                    <div className="flex justify-center mb-6 md:mb-8">
                         <div className="flex bg-white border border-blue-200 rounded-full p-1 shadow-sm">
                             <button
                                 onClick={() => setActiveView('active')}
-                                className={`px-8 py-2 rounded-full text-sm font-medium transition-all duration-200 ${activeView === 'active'
+                                className={`px-6 md:px-8 py-2 rounded-full text-xs md:text-sm font-medium transition-all duration-200 ${activeView === 'active'
                                     ? 'bg-[#2d7ec8] text-white shadow-md'
                                     : 'text-gray-500 hover:bg-gray-50'
                                     }`}
@@ -131,7 +131,7 @@ export default function Statistics() {
                             </button>
                             <button
                                 onClick={() => setActiveView('expired')}
-                                className={`px-8 py-2 rounded-full text-sm font-medium transition-all duration-200 ${activeView === 'expired'
+                                className={`px-6 md:px-8 py-2 rounded-full text-xs md:text-sm font-medium transition-all duration-200 ${activeView === 'expired'
                                     ? 'bg-[#2d7ec8] text-white shadow-md'
                                     : 'text-gray-500 hover:bg-gray-50'
                                     }`}
@@ -141,13 +141,22 @@ export default function Statistics() {
                         </div>
                     </div>
 
-                    {/* Table Headers */}
-                    <div className="grid grid-cols-12 gap-4 px-4 mb-4 text-gray-600 text-sm font-medium items-center">
+                    {/* Desktop Table Headers */}
+                    <div className="hidden md:grid grid-cols-12 gap-4 px-4 mb-4 text-gray-600 text-sm font-medium items-center">
                         <div className="col-span-4 text-right pr-4">משרה</div>
                         <div className="col-span-2 text-center invisible">מיקום</div>
                         <div className="col-span-2 text-center invisible">תאריך</div>
                         <div className="col-span-2 text-center">קו"ח שהוגשו</div>
                         <div className="col-span-2 text-center">צפיות</div>
+                    </div>
+
+                    {/* Mobile Table Headers */}
+                    <div className="flex md:hidden w-full items-center justify-between px-6 mb-2 text-gray-900 text-[10px] font-bold">
+                        <div className="w-[45%] text-right pr-2">משרה</div>
+                        {/* Empty spacer for date to align optically or labels if needed */}
+                        <div className="w-[25%] text-center"></div>
+                        <div className="w-[15%] text-center leading-tight">קו״ח<br />שהוגשו</div>
+                        <div className="w-[15%] text-center">צפיות</div>
                     </div>
 
                     {/* List */}
