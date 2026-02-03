@@ -10,8 +10,8 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
   const [quantity, setQuantity] = useState(packageData.quantity || 1);
   const navigate = useNavigate();
 
-  const getPricePerJob = (qty) => {
-    if (qty === 1) return 600;
+  const getTierPrice = (qty) => {
+    if (qty === 1) return 0;
     if (qty >= 2 && qty <= 3) return 550;
     if (qty >= 4 && qty <= 5) return 500;
     if (qty >= 6 && qty <= 7) return 450;
@@ -19,17 +19,23 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
     return 0; // 10+
   };
 
+  const calculateTotal = (qty) => {
+    if (qty === 1) return 0;
+    // Calculation: (Total Jobs - 1 Free Job) * Tier Price
+    return (qty - 1) * getTierPrice(qty);
+  };
+
   const handleQuantityChange = (amount) => {
     const newQuantity = Math.max(1, quantity + amount);
     setQuantity(newQuantity);
 
-    const unitPrice = getPricePerJob(newQuantity);
+    const total = calculateTotal(newQuantity);
 
     if (setPackageData) {
       setPackageData({
         type: 'per_job',
         quantity: newQuantity,
-        price: unitPrice * newQuantity
+        price: total
       });
     }
   };
@@ -114,12 +120,18 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
                 ) : (
                   <>
                     <div className="flex items-baseline gap-1 text-[#003566]">
-                      <span className="text-[45px] font-normal font-['Rubik']">₪{getPricePerJob(quantity)}</span>
-                      <span className="text-2xl font-normal">/למשרה</span>
+                      {quantity === 1 ? (
+                        <span className="text-[45px] font-normal font-['Rubik']">חינם</span>
+                      ) : (
+                        <>
+                          <span className="text-[45px] font-normal font-['Rubik']">₪{getTierPrice(quantity)}</span>
+                          <span className="text-2xl font-normal">/למשרה</span>
+                        </>
+                      )}
                     </div>
                     {quantity > 1 && (
                       <div className="text-lg text-[#003566] mt-1 font-['Rubik'] font-bold">
-                        ({(getPricePerJob(quantity) * quantity).toLocaleString()}₪ סה״כ)
+                        ({(calculateTotal(quantity)).toLocaleString()}₪ סה״כ)
                       </div>
                     )}
                     <div className="w-full h-[3px] bg-[#003566] mt-1 rounded-full"></div>
