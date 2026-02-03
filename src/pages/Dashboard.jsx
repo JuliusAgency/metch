@@ -40,6 +40,25 @@ import CareerStageModal from "@/components/dashboard/CareerStageModal";
 import { calculate_match_score } from "@/utils/matchScore";
 const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message'];
 
+const AVAILABILITY_TRANSLATIONS = {
+  'immediate': 'מיידית',
+  '1_2_weeks': 'שבוע עד שבועיים',
+  'two_weeks': 'שבוע עד שבועיים',
+  '1_2_months': 'חודש עד חודשיים',
+  'months_1_2': 'חודש עד חודשיים',
+  'months_2_1': 'חודש עד חודשיים',
+  'one_month': 'חודש עד חודשיים',
+  'negotiable': 'גמיש/ה',
+  'flexible': 'גמיש/ה'
+};
+
+const JOB_TYPE_TRANSLATIONS = {
+  'full_time': 'משרה מלאה',
+  'part_time': 'משרה חלקית',
+  'shifts': 'משמרות',
+  'flexible': 'גמיש/ה'
+};
+
 // --- ICONS AND ASSETS ---
 import iconJsRelevantJobs from "@/assets/icon_js_relevant_jobs.png";
 import iconJsApplications from "@/assets/icon_js_applications.png";
@@ -127,14 +146,11 @@ const JobSeekerDashboard = ({ user }) => {
     // Wait for initial loading and User check
     if (loading || !user) return;
 
-    // GUARD: If we just finished the flow, don't re-evaluate
-    if (hasCompletedOnboardingFlow) return;
-
     const params = new URLSearchParams(location.search);
     const forceOnboarding = params.get('onboarding') === 'complete';
 
     // Cleanup the URL parameter after processing and set local state
-    if (forceOnboarding) {
+    if (forceOnboarding && !hasCompletedOnboardingFlow) {
       setHasCompletedOnboardingFlow(true);
       const newParams = new URLSearchParams(params);
       newParams.delete('onboarding');
@@ -146,6 +162,9 @@ const JobSeekerDashboard = ({ user }) => {
       setShowCareerModal(true);
       return;
     }
+
+    // GUARD: If we just finished the flow, don't re-evaluate
+    if (hasCompletedOnboardingFlow) return;
 
     // We check hasCV (state) and profile specialization.
     if (!hasCV) return; // Will be redirected
@@ -569,10 +588,10 @@ const JobSeekerDashboard = ({ user }) => {
                                 {/* Chips Area (Mobile Only - under info) */}
                                 <div className="flex md:hidden flex-row flex-nowrap overflow-hidden gap-0.5 mt-1">
                                   <span className="flex items-center gap-0.5 bg-[#eaf5fc] text-[#001a6e] px-0.5 py-0.5 rounded-md border border-blue-100/50 font-bold text-[6px] whitespace-nowrap">
-                                    <Clock className="w-1.5 h-1.5 ml-0.5" />{job.start_date || 'מיידית'}
+                                    <Clock className="w-1.5 h-1.5 ml-0.5" />{AVAILABILITY_TRANSLATIONS[job.start_date] || job.start_date || 'מיידית'}
                                   </span>
                                   <span className="flex items-center gap-0.5 bg-[#eaf5fc] text-[#001a6e] px-0.5 py-0.5 rounded-md border border-blue-100/50 font-bold text-[6px] whitespace-nowrap">
-                                    <Briefcase className="w-1.5 h-1.5 ml-0.5" />משרה מלאה
+                                    <Briefcase className="w-1.5 h-1.5 ml-0.5" />{JOB_TYPE_TRANSLATIONS[job.employment_type] || 'משרה מלאה'}
                                   </span>
                                   <span className="flex items-center gap-0.5 bg-[#eaf5fc] text-[#001a6e] px-0.5 py-0.5 rounded-md border border-blue-100/50 font-bold text-[6px] whitespace-nowrap">
                                     <MapPin className="w-1.5 h-1.5 ml-0.5" />{job.location}
@@ -617,10 +636,10 @@ const JobSeekerDashboard = ({ user }) => {
                             {/* Chips Area (Desktop Only) */}
                             <div className="hidden md:flex gap-2 text-xs flex-nowrap">
                               <span className="flex items-center gap-1 bg-[#eaf5fc] text-[#001a6e] px-2.5 py-1 rounded-lg border border-blue-100/50 font-bold whitespace-nowrap">
-                                <Clock className="w-3 h-3 ml-1 text-[#001a6e]" />{job.start_date || 'מיידית'}
+                                <Clock className="w-3 h-3 ml-1 text-[#001a6e]" />{AVAILABILITY_TRANSLATIONS[job.start_date] || job.start_date || 'מיידית'}
                               </span>
                               <span className="flex items-center gap-1 bg-[#eaf5fc] text-[#001a6e] px-2.5 py-1 rounded-lg border border-blue-100/50 font-bold whitespace-nowrap">
-                                <Briefcase className="w-3 h-3 ml-1 text-[#001a6e]" />משרה מלאה
+                                <Briefcase className="w-3 h-3 ml-1 text-[#001a6e]" />{JOB_TYPE_TRANSLATIONS[job.employment_type] || 'משרה מלאה'}
                               </span>
                               <span className="flex items-center gap-1 bg-[#eaf5fc] text-[#001a6e] px-2.5 py-1 rounded-lg border border-blue-100/50 font-bold whitespace-nowrap">
                                 <MapPin className="w-3 h-3 ml-1 text-[#001a6e]" />{job.location}

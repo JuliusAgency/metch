@@ -182,6 +182,7 @@ export default function Step5Preview({ jobData, setJobData, onNext, onPrev, isSu
                 match_score: 95
               }}
               employmentTypeText={employmentTypeText}
+              showMatchScore={false}
             />
 
             <SeekerJobPerks perks={jobData.company_perks} />
