@@ -385,7 +385,6 @@ const JobSeekerDashboard = ({ user }) => {
   );
 
 
-
   // Filter jobs based on the current jobFilter state and search term
   const displayedJobs = allJobs.filter(job => {
     // 1. Expiration check: Filter out jobs older than 30 days (unless it's the mock job)
@@ -490,6 +489,7 @@ const JobSeekerDashboard = ({ user }) => {
                 {user.full_name?.trim() ? `היי ${user.full_name.split(' ')[0]} 👋` : 'היי 👋'}
               </h1>
             </div>
+
             <div className="space-y-6">
               {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-12 stats-grid justify-items-center">
@@ -613,9 +613,9 @@ const JobSeekerDashboard = ({ user }) => {
                           </div>
 
                           {/* Bottom Row: Match Bar */}
-                          <div className="flex flex-col md:flex-row items-center gap-1.5 md:gap-4 w-full">
+                          <div className="flex flex-col md:flex-row items-center justify-between gap-1.5 md:gap-4 w-full">
                             {/* Chips Area (Desktop Only) */}
-                            <div className="hidden md:flex gap-2 text-xs flex-wrap">
+                            <div className="hidden md:flex gap-2 text-xs flex-nowrap">
                               <span className="flex items-center gap-1 bg-[#eaf5fc] text-[#001a6e] px-2.5 py-1 rounded-lg border border-blue-100/50 font-bold whitespace-nowrap">
                                 <Clock className="w-3 h-3 ml-1 text-[#001a6e]" />{job.start_date || 'מיידית'}
                               </span>
@@ -628,7 +628,7 @@ const JobSeekerDashboard = ({ user }) => {
                             </div>
 
                             {/* Match Score Bar */}
-                            <div className="relative h-5 md:h-5 bg-gray-200 border border-gray-300/30 rounded-full overflow-hidden shadow-inner w-full">
+                            <div className="relative h-5 md:h-5 bg-gray-200 border border-gray-300/30 rounded-full overflow-hidden shadow-inner w-full md:w-[65%]">
                               <div
                                 className={`absolute right-0 top-0 h-full transition-all duration-700 ${(job.match_score ?? 0) >= 70 ? 'bg-green-500' : (job.match_score ?? 0) >= 40 ? 'bg-orange-500' : 'bg-red-500'}`}
                                 style={{ width: `${job.match_score ?? 0}%` }}
@@ -991,11 +991,6 @@ const EmployerDashboard = ({ user }) => {
       console.error("[Dashboard] Error tracking candidate view:", error);
     }
   };
-
-  const handlePrevNotification = () => setCurrentNotificationIndex(prev => prev > 0 ? prev - 1 : (notifications.length - 1 || 0));
-  const handleNextNotification = () => setCurrentNotificationIndex(prev => prev < (notifications.length - 1) ? prev + 1 : 0);
-
-
 
   const handleCandidateClick = async (candidate, match) => {
     // Show loading state if desired, or just wait

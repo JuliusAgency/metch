@@ -638,7 +638,7 @@ export default function CVGenerator() {
         </div>
       </div>
 
-      <div className={`w-full md:max-w-6xl md:mx-auto md:rounded-[2rem] md:p-14 transition-transform origin-top relative z-[1] ${choice === 'upload' ? 'md:bg-white md:shadow-none scale-90' : 'md:bg-white md:shadow-none !bg-transparent !shadow-none !border-none !p-0 !m-0 !max-w-none !w-full !rounded-none'}`}>
+      <div className={`w-full ${choice === 'upload' ? 'md:w-[90%] md:max-w-[90%]' : 'md:max-w-6xl'} md:mx-auto md:rounded-[2rem] md:p-8 md:pt-12 transition-transform origin-top relative z-[1] ${choice === 'upload' ? 'md:bg-white md:shadow-none' : 'md:bg-white md:shadow-none !bg-transparent !shadow-none !border-none !p-0 !m-0 !max-w-none !w-full !rounded-none'}`}>
         {step !== 0 && choice === 'create' && (
           <CVStepper
             currentStep={step - 1}
@@ -675,9 +675,9 @@ export default function CVGenerator() {
 
 
 
-        <div className={`min-h-[400px] flex flex-col justify-center ${step === -1
+        <div className={`min-h-[400px] flex flex-col justify-start ${step === -1
           ? 'mt-10 mb-10 bg-white rounded-3xl py-8 px-6 shadow-[0_2px_12px_rgba(0,0,0,0.05)] border border-gray-100 md:bg-transparent md:shadow-none md:border-none relative z-10 mx-4 md:mx-0'
-          : 'my-10'}`}>
+          : 'mt-6 mb-10 md:mt-8'}`}>
           {renderStep()}
         </div>
 

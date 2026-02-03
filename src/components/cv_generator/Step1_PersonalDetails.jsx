@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown, Calendar } from 'lucide-react';
 import { toast } from "sonner";
 import { WhatsAppVerificationDialog } from "@/components/dialogs/WhatsAppVerificationDialog";
 import {
@@ -23,21 +23,23 @@ import locationsList from '../../../locations.json';
 import StepIndicator from '@/components/ui/StepIndicator';
 
 
-const PillInput = ({ name, placeholder, value, onChange, type = "text", className, ...props }) => (
+const PillInput = React.forwardRef(({ name, placeholder, value, onChange, type = "text", className, ...props }, ref) => (
   <Input
+    ref={ref}
     name={name}
     placeholder={placeholder}
     value={value}
     onChange={onChange}
     type={type}
-    className={cn("w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right focus:border-blue-400 focus:ring-blue-400", className)}
+    className={cn("w-full h-12 md:h-10 bg-white border-gray-200 rounded-full px-6 text-right focus:border-blue-400 focus:ring-blue-400", className)}
     {...props}
   />
-);
+));
+PillInput.displayName = "PillInput";
 
 const PillSelect = ({ name, placeholder, value, onValueChange, children }) => (
   <Select name={name} value={value} onValueChange={onValueChange}>
-    <SelectTrigger className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right focus:border-blue-400 focus:ring-blue-400 [&>span]:w-full [&>span]:text-right flex items-center justify-between">
+    <SelectTrigger className="w-full h-12 md:h-10 bg-white border-gray-200 rounded-full px-6 text-right focus:border-blue-400 focus:ring-blue-400 [&>span]:w-full [&>span]:text-right flex items-center justify-between">
       <SelectValue placeholder={placeholder} />
     </SelectTrigger>
     <SelectContent>
@@ -67,6 +69,7 @@ const isFormComplete = (formData) => {
 };
 
 export default function Step1_PersonalDetails({ data, setData, user, onValidityChange = () => { }, isUploadFlow = false }) {
+  const birthDateRef = React.useRef(null);
   const [localData, setLocalData] = useState({
     fullName: '',
     phone: '',
@@ -205,27 +208,38 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
   };
 
   return (
-    <div className="max-w-4xl mx-auto text-center" dir="rtl">
+    <div className={cn("max-w-4xl mx-auto text-center", isUploadFlow && "md:max-w-4xl md:w-full")} dir="rtl">
       <h2 className="text-3xl font-bold text-gray-900 mb-3">פרטים אישיים</h2>
       {isUploadFlow && (
         <div className="md:hidden mb-6 mt-8">
           <StepIndicator totalSteps={5} currentStep={1} />
         </div>
       )}
-      <p className={cn("text-gray-600 mb-12 max-w-lg mx-auto", isUploadFlow && "hidden md:block")}>בחלק הזה תספקו לנו מידע נחוץ עליכם כך שמעסיקים פוטנציאליים יוכלו לפנות אליכם</p>
-      {/* Card wrapper with shadow */}
-      <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.08)] mx-3 md:mx-0">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4">
-          {/* Row 1 */}
-          <PillInput name="fullName" placeholder="שם מלא" value={localData.fullName} onChange={handleInputChange} className="md:col-span-2 order-1 md:order-none" />
-          <div className="relative order-5 md:order-none">
+      <p className={cn("text-gray-600 mb-8 md:mb-10 max-w-lg mx-auto", isUploadFlow && "hidden md:block")}>בחלק הזה תספקו לנו מידע נחוץ עליכם כך שמעסיקים פוטנציאליים יוכלו לפנות אליכם</p>
+      {/* Desktop (upload): no inner card. Mobile: keep inner card */}
+      <div className={cn(
+        "bg-white/40 backdrop-blur-sm rounded-3xl p-6 mx-3 shadow-[0_2px_12px_rgba(0,0,0,0.08)]",
+        isUploadFlow && "md:bg-transparent md:shadow-none md:rounded-none md:p-0 md:mx-0"
+      )}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 md:grid-rows-2">
+          {/* Desktop: col 1 right = name + gender. Mobile: order 1 */}
+          <PillInput
+            name="fullName"
+            placeholder="שם מלא"
+            value={localData.fullName}
+            onChange={handleInputChange}
+            className="order-1 md:col-start-1 md:row-start-1"
+          />
+
+          {/* Desktop: col 3 row 2 = phone + link only. Mobile: order 5 */}
+          <div className="relative order-5 md:order-none md:col-start-3 md:row-start-2 md:flex md:flex-col md:gap-2">
             <div className="relative">
               <PillInput
                 name="phone"
                 placeholder="מספר טלפון"
                 value={localData.phone}
                 onChange={handleInputChange}
-                className="pl-36"
+                className="pl-36 md:h-10"
                 disabled={localData.is_phone_verified}
               />
               <Button
@@ -237,7 +251,7 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
                   : 'bg-[#1e88e5] text-white hover:bg-[#1565c0]'
                   }`}
               >
-                {localData.is_phone_verified ? 'אומת ✓' : 'שליחת קוד'}
+                {localData.is_phone_verified ? 'אומת ✓' : (isUploadFlow ? 'שלח קוד' : 'שליחת קוד')}
               </Button>
             </div>
             {!localData.is_phone_verified && (
@@ -250,52 +264,58 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
             )}
           </div>
 
-          {/* Row 2 */}
-          <div className="hidden md:block md:order-none">
-            <PillSelect name="gender" placeholder="מגדר" value={localData.gender} onValueChange={handleSelectChange}>
-              <SelectItem value="male">זכר</SelectItem>
-              <SelectItem value="female">נקבה</SelectItem>
-              <SelectItem value="other">אחר</SelectItem>
-            </PillSelect>
-          </div>
+          {/* Desktop (create flow): gender dropdown. Desktop (upload): use radio pills below. */}
+          {!isUploadFlow && (
+            <div className="hidden md:block md:col-start-2 md:row-start-1">
+              <PillSelect name="gender" placeholder="מגדר" value={localData.gender} onValueChange={handleSelectChange}>
+                <SelectItem value="male">זכר</SelectItem>
+                <SelectItem value="female">נקבה</SelectItem>
+                <SelectItem value="other">אחר</SelectItem>
+              </PillSelect>
+            </div>
+          )}
 
-          {/* Mobile Gender Selection */}
-          <div className="md:hidden order-2 grid grid-cols-2 gap-4">
+          {/* Gender: mobile always radios; desktop when upload = split into cols 2 & 3 row 1 */}
+          <div className={cn(
+            "order-2 grid grid-cols-2 gap-4 md:contents",
+            !isUploadFlow && "md:hidden"
+          )}>
             <button
               type="button"
               onClick={() => handleSelectChange('male')}
-              className={`h-12 rounded-full border flex items-center justify-between px-6 transition-all ${localData.gender === 'male'
+              className={`h-12 md:h-10 rounded-full border flex items-center justify-between px-6 transition-all md:col-start-2 md:row-start-1 ${localData.gender === 'male'
                 ? 'border-blue-500 text-blue-900 bg-white'
                 : 'bg-white border-gray-200 text-gray-500'
                 }`}
             >
-              <span>זכר</span>
-              <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${localData.gender === 'male' ? 'border-[#1e40af]' : 'border-gray-400'}`}>
+              <span className="md:order-1">זכר</span>
+              <div className={`w-5 h-5 rounded-full border flex items-center justify-center md:order-2 ${localData.gender === 'male' ? 'border-[#1e40af]' : 'border-gray-400'}`}>
                 {localData.gender === 'male' && <div className="w-2.5 h-2.5 rounded-full bg-[#1e40af]" />}
               </div>
             </button>
             <button
               type="button"
               onClick={() => handleSelectChange('female')}
-              className={`h-12 rounded-full border flex items-center justify-between px-6 transition-all ${localData.gender === 'female'
+              className={`h-12 md:h-10 rounded-full border flex items-center justify-between px-6 transition-all md:col-start-3 md:row-start-1 ${localData.gender === 'female'
                 ? 'border-blue-500 text-blue-900 bg-white'
                 : 'bg-white border-gray-200 text-gray-500'
                 }`}
             >
-              <span>נקבה</span>
-              <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${localData.gender === 'female' ? 'border-[#1e40af]' : 'border-gray-400'}`}>
+              <span className="md:order-1">נקבה</span>
+              <div className={`w-5 h-5 rounded-full border flex items-center justify-center md:order-2 ${localData.gender === 'female' ? 'border-[#1e40af]' : 'border-gray-400'}`}>
                 {localData.gender === 'female' && <div className="w-2.5 h-2.5 rounded-full bg-[#1e40af]" />}
               </div>
             </button>
           </div>
 
+          {/* Desktop: col 1 row 2 = מקום מגורים. Mobile: order 3 */}
           <Popover open={openLocation} onOpenChange={setOpenLocation}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 role="combobox"
                 aria-expanded={openLocation}
-                className="w-full h-12 bg-white border-gray-200 rounded-full px-6 text-right focus:border-blue-400 focus:ring-blue-400 justify-between font-normal hover:bg-white order-3 md:order-none"
+                className="w-full h-12 md:h-10 bg-white border-gray-200 rounded-full px-6 text-right focus:border-blue-400 focus:ring-blue-400 justify-between font-normal hover:bg-white order-3 md:col-start-1 md:row-start-2 md:flex md:items-center"
               >
                 {localData.address || "מקום מגורים"}
                 <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50" />
@@ -332,18 +352,34 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
             </PopoverContent>
           </Popover>
 
-          <PillInput
-            name="birthDate"
-            placeholder="תאריך לידה"
-            value={localData.birthDate}
-            onChange={handleInputChange}
-            type={localData.birthDate ? 'date' : 'text'}
-            min={minBirthDate}
-            max={maxBirthDate}
-            onFocus={(e) => { e.target.type = 'date'; }}
-            onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }}
-            className="order-4 md:order-none [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:left-10"
-          />
+          {/* תאריך לידה: row 2 middle (desktop). Mobile: order 4 */}
+          <div className="relative order-4 md:col-start-2 md:row-start-2 flex items-center h-12 md:h-10">
+            <PillInput
+              ref={birthDateRef}
+              name="birthDate"
+              placeholder="תאריך לידה"
+              value={localData.birthDate}
+              onChange={handleInputChange}
+              type={localData.birthDate ? 'date' : 'text'}
+              min={minBirthDate}
+              max={maxBirthDate}
+              onFocus={(e) => { e.target.type = 'date'; }}
+              onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }}
+              className="pl-12 w-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:left-10"
+            />
+            <Calendar
+              className="absolute left-4 h-5 w-5 text-blue-500 cursor-pointer"
+              onClick={() => {
+                if (birthDateRef.current) {
+                  if (birthDateRef.current.showPicker) {
+                    birthDateRef.current.showPicker();
+                  } else {
+                    birthDateRef.current.focus();
+                  }
+                }
+              }}
+            />
+          </div>
         </div>
       </div>
 
