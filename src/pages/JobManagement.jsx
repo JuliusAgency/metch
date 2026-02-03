@@ -30,6 +30,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
+import settingsMobileBg from "@/assets/payment_mobile_header.png";
 
 const CustomSwitch = ({ checked, onCheckedChange, disabled, id }) => (
   <SwitchPrimitives.Root
@@ -37,232 +38,148 @@ const CustomSwitch = ({ checked, onCheckedChange, disabled, id }) => (
     onCheckedChange={onCheckedChange}
     disabled={disabled}
     id={id}
-    dir="ltr"
     className={cn(
-      "peer inline-flex h-[24px] w-[44px] shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
-      "bg-gray-100 data-[state=checked]:bg-gray-100 border border-gray-200"
+      "peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+      checked ? "bg-[#84CC9E]" : "bg-gray-200"
     )}
   >
     <SwitchPrimitives.Thumb
       className={cn(
-        "pointer-events-none block h-5 w-5 rounded-full shadow-md ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0",
-        "bg-gray-200 data-[state=checked]:bg-[#4ADE80]"
+        "pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform",
+        checked ? "translate-x-5" : "translate-x-0"
       )}
     />
   </SwitchPrimitives.Root>
 );
 
+const statusConfig = {
+  active: { label: 'פעילה', dotColor: 'bg-green-500' },
+  paused: { label: 'מושהית', dotColor: 'bg-orange-400' },
+  closed: { label: 'סגורה', dotColor: 'bg-red-500' },
+  draft: { label: 'טיוטה', dotColor: 'bg-gray-400' },
+  ended: { label: 'הסתיימה', dotColor: 'bg-gray-500' },
+  filled: { label: 'אויישה', dotColor: 'bg-blue-500' },
+  filled_via_metch: { label: 'אויישה דרך Metch', dotColor: 'bg-purple-500' }
+};
+
 export default function JobManagement() {
-  useRequireUserType(); // Ensure user has selected a user type
-  const [activeView, setActiveView] = useState('active'); // 'active' or 'ended'
-  const { user, updateProfile } = useUser();
+  useRequireUserType();
+  const { user } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [activeView, setActiveView] = useState('active'); // 'active' or 'ended'
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 5;
 
   useEffect(() => {
     loadData();
-  }, []);
-
-  useEffect(() => {
-    if (user) {
-      const credits = user.job_credits || user.profile?.job_credits || 0;
-      console.log("DEBUG - Remaining Job Credits:", credits);
-    }
   }, [user]);
 
-  useEffect(() => {
-    setCurrentPage(1); // Reset to page 1 when switching views
-  }, [activeView]);
-
   const loadData = async () => {
-    setLoading(true); // Added from outline
+    if (!user?.email) return;
+    setLoading(true);
     try {
-      const userData = await User.me();
-
-      // Load jobs created by the current user
-      const jobsData = await Job.filter({ created_by: userData.email }, "-created_date", 50);
-
-      // Sort in memory to ensure most recently updated/created jobs are first
-      const sortedJobs = jobsData.sort((a, b) => {
-        const dateA = new Date(a.created_date);
-        const dateB = new Date(b.created_date);
-        return dateB - dateA;
-      });
-
-      // Check for expired jobs and update them in database
-      const now = new Date();
-      const expiredJobs = sortedJobs.filter(job => {
-        if (job.status !== 'active' && job.status !== 'paused') return false;
-        const daysSinceCreation = differenceInDays(now, new Date(job.created_date));
-        return daysSinceCreation > 30;
-      });
-
-      if (expiredJobs.length > 0) {
-        console.log("Found expired jobs, updating status to closed:", expiredJobs.map(j => j.id));
-        await Promise.all(expiredJobs.map(job =>
-          Job.update(job.id, { status: 'closed' })
-        ));
-
-        // Update local state to reflect the changes immediately
-        const updatedJobs = sortedJobs.map(job => {
-          if (expiredJobs.find(ej => ej.id === job.id)) {
-            return { ...job, status: 'closed' };
-          }
-          return job;
-        });
-        setJobs(updatedJobs);
-      } else {
-        setJobs(sortedJobs);
-      }
-
-      // Removed applications loading as per outline
+      const userJobs = await Job.filter({ created_by: user.email }, "-created_date");
+      setJobs(userJobs || []);
     } catch (error) {
-      console.error("Error loading data:", error);
+      console.error("Error loading jobs:", error);
+      toast({
+        title: "שגיאה",
+        description: "לא הצלחנו לטעון את המשרות שלך",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const handleStatusChange = async (jobId, checked) => {
-    // Determine current job status to check if we need to validate credits
-    const job = jobs.find(j => j.id === jobId);
-
-    // If activating a draft, check for credits
-    if (job?.status === 'draft' && checked) {
-      if (!checkCredits()) return;
-    }
-
-    const newStatus = checked ? 'active' : 'paused';
-
-    // Optimistic update
-    setJobs(prevJobs => prevJobs.map(job =>
-      job.id === jobId ? { ...job, status: newStatus } : job
-    ));
-
     try {
-      await Job.update(jobId, { status: newStatus });
-    } catch (error) {
-      console.error("Error updating job status:", error);
-      // Revert change on error
+      const newStatus = checked ? 'active' : 'paused';
+      // Optimistic update
       setJobs(prevJobs => prevJobs.map(job =>
-        job.id === jobId ? { ...job, status: !checked ? 'active' : 'paused' } : job
+        job.id === jobId ? { ...job, status: newStatus } : job
       ));
+
+      await Job.update(jobId, { status: newStatus });
+
+      toast({
+        title: "סטטוס עודכן",
+        description: `המשרה הועברה לסטטוס ${newStatus === 'active' ? 'פעיל' : 'מושהה'}`,
+      });
+    } catch (error) {
+      console.error("Error updating status:", error);
+      loadData(); // Revert on error
       toast({
         title: "שגיאה",
-        description: "לא ניתן היה לעדכון את סטטוס המשרה",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // handleDeleteJob is removed as per outline
-
-  const checkCredits = () => {
-    const credits = user?.profile?.job_credits || 0;
-    if (credits <= 0) {
-      toast({
-        title: "אין יתרת משרות לפרסום",
-        description: "נגמרה חבילת המשרות שלך. ניתן לרכוש משרות נוספות בעמוד התשלומים.",
+        description: "לא הצלחנו לעדכן את הסטטוס",
         variant: "destructive",
-        action: <Button variant="outline" className="text-black border-white hover:bg-white/90" onClick={() => navigate('/payments')}>לרכישה</Button>
       });
-      return false;
     }
-    return true;
   };
 
   const handleDuplicateJob = async (job) => {
-    // No credit check needed for duplication (Rule #2) - creates as draft
-
     try {
-      // Get current user data to set created_by fields
-      const userData = await User.me();
-
-      const now = new Date().toISOString();
-      const duplicatedJob = {
-        ...job,
+      // Deep copy excluding ID and system fields
+      const { id, created_date, updated_date, created_at, updated_at, ...jobData } = job;
+      const newJob = {
+        ...jobData,
         title: `${job.title} (עותק)`,
         status: 'draft',
-        applications_count: 0,
-        created_by: userData.email,
-        created_by_id: userData.id,
-        created_date: now,
-        updated_date: now
+        created_by: user.email,
       };
-      delete duplicatedJob.id;
 
-      await Job.create(duplicatedJob);
-
-      // No credit deduction - saved as draft.
-
-      loadData(); // Reload data
-      toast({ description: "המשרה שוכפלה בהצלחה כטיוטה" });
-
-    } catch (error) {
-      console.error("Error duplicating job:", error);
+      const created = await Job.create(newJob);
+      if (created) {
+        toast({ title: "המשרה שוכפלה בהצלחה", description: "נוצרה משרה חדשה במצב טיוטה" });
+        loadData();
+      }
+    } catch (e) {
+      console.error("Error duplicating job:", e);
+      toast({
+        title: "שגיאה",
+        description: "לא הצלחנו לשכפל את המשרה",
+        variant: "destructive",
+      });
     }
   };
 
   const handleCreateNewJob = () => {
-    navigate(createPageUrl("CreateJob"));
+    navigate(createPageUrl('CreateJob'));
   };
 
-  // getJobApplicationCount and getJobStats are removed as per outline
-
-  const statusConfig = { // Updated as per outline
-    active: { label: 'משרה פעילה', dotColor: 'bg-green-500' },
-    paused: { label: 'מושהית', dotColor: 'bg-yellow-500' },
-    closed: { label: 'סגורה', dotColor: 'bg-red-500' },
-    filled: { label: 'אוישה', dotColor: 'bg-blue-500' },
-    filled_via_metch: { label: 'אוישה דרך METCH', dotColor: 'bg-purple-500' },
-    draft: { label: 'טיוטה', dotColor: 'bg-gray-400' }
-  };
-
-  // employmentTypeMap is removed as it's no longer displayed in the card.
-
-  const activeStatuses = ['active', 'paused', 'draft']; // New array
-  const endedStatuses = ['closed', 'filled', 'filled_via_metch']; // New array
-
-  const filteredJobs = jobs.filter((job) => {
-    // First, check if the job is actually expired (fallback for UI consistency)
-    const isExpired = differenceInDays(new Date(), new Date(job.created_date)) > 30;
-    const effectiveStatus = (isExpired && (job.status === 'active' || job.status === 'paused')) ? 'closed' : job.status;
-
+  const filteredJobs = jobs.filter(job => {
     if (activeView === 'active') {
-      return activeStatuses.includes(effectiveStatus);
+      return ['active', 'paused', 'draft'].includes(job.status);
     } else {
-      return endedStatuses.includes(effectiveStatus);
+      return ['closed', 'filled', 'filled_via_metch', 'ended'].includes(job.status);
     }
   });
 
-  // Pagination calculations
   const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
-
-  if (loading) {
-    return (
-      <div className="p-4 md:p-6" dir="rtl">
-        <div className="w-[85vw] mx-auto">
-          {Array(2).fill(0).map((_, i) =>
-            <div key={i} className="h-32 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl animate-pulse mb-4" />
-          )}
-        </div>
-      </div>);
-
-  }
+  const paginatedJobs = filteredJobs.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
     <TooltipProvider delayDuration={0}>
       <div className="h-full relative bg-[#fafafa] md:bg-transparent min-h-screen pb-24 md:pb-0" dir="rtl">
+        {/* Mobile-Only Background Image */}
+        <div
+          className="md:hidden fixed top-0 left-0 right-0 z-0 pointer-events-none"
+          style={{
+            width: '100%',
+            height: '230px',
+            backgroundImage: `url(${settingsMobileBg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+
         <div className="relative">
-          {/* Header */}
-          <div className="relative h-32 md:h-40 overflow-hidden w-full">
+          {/* Desktop Header */}
+          <div className="relative h-32 md:h-40 overflow-hidden w-full hidden md:block">
             <div
               className="absolute inset-0 w-full h-full"
               style={{
@@ -277,6 +194,14 @@ export default function JobManagement() {
               <h1 className="text-2xl md:text-3xl font-bold text-[#001a6e]">ניהול משרות</h1>
             </div>
           </div>
+
+          {/* Mobile Title */}
+          <div className="text-center pt-24 pb-8 md:hidden relative z-10">
+            <h1 className="text-[22px] font-bold text-[#001a6e]">
+              ניהול משרות
+            </h1>
+          </div>
+
 
           <div className="p-4 md:p-6 -mt-12 md:-mt-16 relative z-10 w-full md:w-[70%] mx-auto">
             {/* Toggle Buttons - Centered */}
