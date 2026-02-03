@@ -71,6 +71,8 @@ const isFormComplete = (formData) => {
 export default function Step1_PersonalDetails({ data, setData, user, onValidityChange = () => { }, isUploadFlow = false }) {
   const birthDateRef = React.useRef(null);
   const [localData, setLocalData] = useState({
+    firstName: '',
+    lastName: '',
     fullName: '',
     phone: '',
     address: '',
@@ -111,6 +113,9 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
 
     // TRUTH: Always prioritize existing form data (edits), fallback to user profile
     const fullName = data?.full_name || user?.full_name || '';
+    const nameParts = fullName.trim().split(/\s+/);
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
 
     const savedAddress = data?.address || user?.preferred_location || '';
     const isValidAddress = locationsList.includes(savedAddress);
@@ -123,6 +128,8 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     const genderValue = data?.gender || user?.gender || '';
 
     const initialState = {
+      firstName: firstName,
+      lastName: lastName,
       fullName: fullName,
       phone: phoneValue,
       address: isValidAddress ? savedAddress : '',
@@ -157,14 +164,22 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     if (name === 'phone' && !/^\d*$/.test(value)) return;
 
     const sanitizedValue = name === 'birthDate' ? value.trim() : value;
-    // Lenient validation for the local state to allow ISO strings from DB to pass through before being sliced by the input[type=date]
     const nextValue = name === 'birthDate' && sanitizedValue && sanitizedValue.length < 10
       ? ''
       : sanitizedValue;
 
     setLocalData(prev => {
       const updatedLocal = { ...prev, [name]: nextValue };
-      updateParentData(name, nextValue, updatedLocal);
+
+      // If first or last name changed, update fullName
+      if (name === 'firstName' || name === 'lastName') {
+        const combined = `${updatedLocal.firstName} ${updatedLocal.lastName}`.trim();
+        updatedLocal.fullName = combined;
+        updateParentData('fullName', combined, updatedLocal);
+      } else {
+        updateParentData(name, nextValue, updatedLocal);
+      }
+
       notifyValidity(updatedLocal);
       return updatedLocal;
     });
@@ -218,17 +233,30 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
       <p className={cn("text-gray-600 mb-8 md:mb-10 max-w-lg mx-auto", isUploadFlow && "hidden md:block")}>בחלק הזה תספקו לנו מידע נחוץ עליכם כך שמעסיקים פוטנציאליים יוכלו לפנות אליכם</p>
       {/* Desktop (upload): no inner card. Mobile: keep inner card */}
       <div className={cn(
-        "bg-white/40 backdrop-blur-sm rounded-3xl p-6 mx-3 shadow-[0_2px_12px_rgba(0,0,0,0.08)]",
-        isUploadFlow && "md:bg-transparent md:shadow-none md:rounded-none md:p-0 md:mx-0"
+        "bg-white/40 backdrop-blur-sm rounded-3xl p-6 mx-3 shadow-[0_2px_12px_rgba(0,0,0,0.08)] md:bg-transparent md:shadow-none md:rounded-none md:p-0 md:mx-0"
       )}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 md:grid-rows-2">
-          {/* Desktop: col 1 right = name + gender. Mobile: order 1 */}
+          {/* Desktop: First and Last name. Mobile: Full name */}
           <PillInput
             name="fullName"
             placeholder="שם מלא"
             value={localData.fullName}
             onChange={handleInputChange}
-            className="order-1 md:col-start-1 md:row-start-1"
+            className="order-1 md:hidden"
+          />
+          <PillInput
+            name="firstName"
+            placeholder="שם"
+            value={localData.firstName}
+            onChange={handleInputChange}
+            className="hidden md:block md:col-start-1 md:row-start-1"
+          />
+          <PillInput
+            name="lastName"
+            placeholder="שם משפחה"
+            value={localData.lastName}
+            onChange={handleInputChange}
+            className="hidden md:block md:col-start-2 md:row-start-1"
           />
 
           {/* Desktop: col 3 row 2 = phone + link only. Mobile: order 5 */}
@@ -266,7 +294,7 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
 
           {/* Desktop (create flow): gender dropdown. Desktop (upload): use radio pills below. */}
           {!isUploadFlow && (
-            <div className="hidden md:block md:col-start-2 md:row-start-1">
+            <div className="hidden md:block md:col-start-3 md:row-start-1">
               <PillSelect name="gender" placeholder="מגדר" value={localData.gender} onValueChange={handleSelectChange}>
                 <SelectItem value="male">זכר</SelectItem>
                 <SelectItem value="female">נקבה</SelectItem>
