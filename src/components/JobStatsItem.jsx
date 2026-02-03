@@ -10,9 +10,10 @@ export default function JobStatsItem({ job, viewsCount, applicationsCount }) {
     return (
         <div
             onClick={() => navigate(`${createPageUrl('JobDetails')}?id=${job.id}`)}
-            className="bg-white rounded-2xl p-4 shadow-md hover:shadow-lg border border-gray-100 flex items-center justify-between mb-3 transition-shadow cursor-pointer"
+            className="bg-white rounded-[16px] md:rounded-2xl p-2 md:p-4 shadow-sm md:shadow-md hover:shadow-lg border border-gray-100 flex items-center justify-between mb-2 md:mb-3 transition-shadow cursor-pointer h-16 md:h-auto"
         >
-            <div className="grid grid-cols-12 gap-4 w-full items-center justify-items-center">
+            {/* Desktop View */}
+            <div className="hidden md:grid grid-cols-12 gap-4 w-full items-center justify-items-center">
 
                 {/* Status & Title */}
                 <div className="col-span-4 flex items-center gap-3 min-w-0 pr-2 justify-self-start">
@@ -41,6 +42,43 @@ export default function JobStatsItem({ job, viewsCount, applicationsCount }) {
                 {/* Views Count */}
                 <div className="col-span-2 text-center">
                     <span className="text-gray-900 font-medium">{viewsCount || 0}</span>
+                </div>
+
+            </div>
+
+            {/* Mobile View */}
+            <div className="flex md:hidden w-full items-center justify-between px-2">
+                {/* 1. Job Info (Rightmost in RTL) */}
+                <div className="w-[45%] flex flex-col items-start pr-2 overflow-hidden">
+                    <div className="flex items-center gap-2 w-full">
+                        <h3 className="font-semibold text-[#2987cd] text-xs truncate w-full text-right leading-tight">
+                            {job.title}
+                        </h3>
+                        <div className={`flex-shrink-0 w-2 h-2 rounded-full ${job.status === 'active'
+                            ? 'bg-[#39FF14]'
+                            : job.status === 'paused'
+                                ? 'bg-yellow-500'
+                                : 'bg-gray-300'
+                            }`} />
+                    </div>
+                    <p className="text-[10px] text-gray-500 truncate w-full text-right mt-0.5">
+                        {job.location}
+                    </p>
+                </div>
+
+                {/* 2. Date (Middle Right) */}
+                <div className="w-[25%] text-center text-xs text-gray-900 font-medium">
+                    {job.created_date ? format(new Date(job.created_date), 'dd.MM.yy') : '-'}
+                </div>
+
+                {/* 3. Applications (Middle Left) */}
+                <div className="w-[15%] text-center border-r border-gray-100 h-8 flex items-center justify-center">
+                    <span className="text-gray-900 font-semibold text-sm">{applicationsCount || 0}</span>
+                </div>
+
+                {/* 4. Views (Leftmost in RTL) */}
+                <div className="w-[15%] text-center border-r border-gray-100 h-8 flex items-center justify-center">
+                    <span className="text-gray-900 font-semibold text-sm">{viewsCount || 0}</span>
                 </div>
 
             </div>
