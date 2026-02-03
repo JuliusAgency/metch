@@ -765,6 +765,14 @@ const EmployerDashboard = ({ user }) => {
     }
   };
 
+  const handleNextNotification = () => {
+    setCurrentNotificationIndex((prev) => (prev + 1) % notifications.length);
+  };
+
+  const handlePrevNotification = () => {
+    setCurrentNotificationIndex((prev) => (prev - 1 + notifications.length) % notifications.length);
+  };
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
