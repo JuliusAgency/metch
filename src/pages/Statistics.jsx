@@ -7,6 +7,7 @@ import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
+import settingsMobileBg from "@/assets/payment_mobile_header.png";
 
 export default function Statistics() {
     useRequireUserType();
@@ -91,9 +92,22 @@ export default function Statistics() {
 
     return (
         <div className="h-full relative" dir="rtl">
+            {/* Mobile-Only Background Image */}
+            <div
+                className="md:hidden fixed top-0 left-0 right-0 z-0 pointer-events-none"
+                style={{
+                    width: '100%',
+                    height: '230px',
+                    backgroundImage: `url(${settingsMobileBg})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
+                }}
+            />
+
             <div className="relative">
-                {/* Header Background */}
-                <div className="relative h-40 overflow-hidden w-full">
+                {/* Desktop Header Background */}
+                <div className="relative h-40 overflow-hidden w-full hidden md:block">
                     <div
                         className="absolute inset-0 w-full h-full"
                         style={{
@@ -116,9 +130,14 @@ export default function Statistics() {
                     </div>
                 </div>
 
-                <div className="p-4 sm:p-6 md:p-8 -mt-20 relative z-10 w-full md:w-[72%] mx-auto">
+                {/* Mobile Title */}
+                <div className="text-center pt-24 pb-4 md:hidden relative z-10">
+                    <h1 className="text-[24px] font-bold text-[#001a6e]">הסטטיסטיקות שלי</h1>
+                </div>
+
+                <div className="p-0 sm:p-6 md:p-8 mt-6 md:-mt-20 relative z-10 w-full md:w-[72%] mx-auto">
                     {/* Toggle - Centered */}
-                    <div className="flex justify-center mb-6 md:mb-8">
+                    <div className="flex justify-center mb-6 md:mb-8 pt-4 md:pt-0">
                         <div className="flex bg-white border border-blue-200 rounded-full p-1 shadow-sm">
                             <button
                                 onClick={() => setActiveView('active')}

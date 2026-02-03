@@ -27,10 +27,9 @@ import { format } from "date-fns";
 
 import { createPageUrl } from "@/utils";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
-import settingsMobileBg from "@/assets/settings_mobile_bg.jpg";
+import settingsMobileBg from "@/assets/payment_mobile_header.png";
 
 const ITEMS_PER_PAGE = 7;
-
 // Allowed notification types
 const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message'];
 const SEEKER_ALLOWED_NOTIFICATION_TYPES = ['profile_view', 'new_message', 'job_view'];
@@ -242,18 +241,12 @@ export default function Notifications() {
         </div>
 
         {/* Mobile Header: Title Center, Back Button Right */}
-        <div className="md:hidden flex items-center justify-center pt-10 pb-4 relative z-10 w-full px-6">
-          <Link
-            to={createPageUrl("Dashboard")}
-            className="absolute right-6 w-8 h-8 bg-white/50 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-800 rotate-180" />
-          </Link>
-          <h1 className="text-[28px] font-bold text-gray-800">התראות</h1>
+        <div className="md:hidden flex items-center justify-center pt-24 pb-4 relative z-10 w-full px-6">
+          <h1 className="text-[24px] font-bold text-[#001a6e]">התראות</h1>
         </div>
 
         <div className="p-0 md:p-8 mt-6 md:-mt-16 relative z-10 w-full max-w-7xl mx-auto">
-          <div className="bg-white md:bg-transparent [border-top-left-radius:80%_55px] [border-top-right-radius:80%_55px] md:rounded-0 min-h-screen md:min-h-0 pt-8 md:pt-0 px-4 md:px-0">
+          <div className="bg-transparent md:bg-transparent min-h-screen md:min-h-0 pt-0 md:pt-0 px-4 md:px-0">
             {/* Desktop only title */}
             <div className="text-center pb-8 hidden md:block">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">

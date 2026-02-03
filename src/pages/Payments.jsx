@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Eye, Download, FileOutput, Plus } from 'lucide-react';
+import { Eye, Download, FileOutput, ChevronRight } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import PaymentStep, { validationUtils } from "@/components/company_profile/PaymentStep";
 import { useToast } from "@/components/ui/use-toast";
+import settingsHeaderBg from "@/assets/settings_header_bg.png";
+import paymentsMobileBg from "@/assets/payment_mobile_header.png";
 
 export default function Payments() {
     const { toast } = useToast();
@@ -26,6 +28,8 @@ export default function Payments() {
         { id: 1, amount: 349, date: '01/01/2025', details: 'מנוי חודשי - חבילת פרימיום' },
         { id: 2, amount: 349, date: '01/01/2025', details: 'מנוי חודשי - חבילת פרימיום' },
         { id: 3, amount: 349, date: '01/01/2025', details: 'מנוי חודשי - חבילת פרימיום' },
+        { id: 4, amount: 349, date: '01/01/2025', details: 'מנוי חודשי - חבילת פרימיום' },
+        { id: 5, amount: 349, date: '01/01/2025', details: 'מנוי חודשי - חבילת פרימיום' },
     ]);
 
     const handleExport = (id) => {
@@ -194,98 +198,199 @@ ET`;
     };
 
     return (
-        <div className="relative" dir="rtl">
-            <div className="max-w-4xl mx-auto px-6 py-12 space-y-10">
+        <div className="h-full relative overflow-hidden md:overflow-visible" dir="rtl">
+            {/* Mobile-Only Background Image */}
+            <div
+                className="md:hidden fixed top-0 left-0 right-0 z-0 pointer-events-none"
+                style={{
+                    width: '100%',
+                    height: '230px',
+                    backgroundImage: `url(${paymentsMobileBg})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
+                }}
+            />
 
-                {/* Page Title */}
-                <h1 className="text-3xl font-bold text-center text-[#1E3A8A]">עמוד תשלומים</h1>
+            <div className="relative h-full">
+                {/* Desktop Header */}
+                <div className="relative h-32 overflow-hidden w-full hidden md:block">
+                    <div
+                        className="absolute inset-0 w-full h-full"
+                        style={{
+                            backgroundImage: `url(${settingsHeaderBg})`,
+                            backgroundSize: "100% 100%",
+                            backgroundPosition: "center",
+                            backgroundRepeat: "no-repeat",
+                        }}
+                    />
+                    <button
+                        onClick={() => navigate(createPageUrl("Dashboard"))}
+                        className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-10"
+                    >
+                        <ChevronRight className="w-6 h-6 text-gray-800" />
+                    </button>
+                </div>
 
-
-                {/* Payment Method Section - Updated Layout */}
-                <Card className="rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100">
-                    <CardContent className="p-3">
-                        <div className="bg-[#F8FAFC] rounded-xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-
-                            {/* Right Side: Info */}
-                            <div className="text-right space-y-1">
-                                <p className="text-gray-500 text-sm">אמצעי תשלום</p>
-                                <div className="flex items-center gap-2 justify-end">
-                                    <p className="text-gray-500 text-sm tracking-widest font-normal" dir="ltr">xxxx {paymentData.cardNumber ? paymentData.cardNumber.replace(/\D/g, '').slice(-4) : '6655'}</p>
-                                </div>
-                            </div>
-
-                            {/* Left Side: Buttons */}
-                            <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
-                                <Button
-                                    onClick={() => setShowPaymentModal(true)}
-                                    className="bg-[#1E3A8A] hover:bg-[#1e293b] text-white rounded-full px-6 py-2 h-auto text-sm font-medium shadow-none w-full md:w-auto"
-                                >
-                                    שינוי אמצעי תשלום
-                                </Button>
-                                <Button
-                                    onClick={handleSelectPackage}
-                                    className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-6 py-2 h-auto text-sm font-medium shadow-none w-full md:w-auto"
-                                >
-                                    לרכישת משרות
-                                    {/* <Plus className="w-4 h-4 mr-2" /> */}
-                                </Button>
-                            </div>
-
+                {/* Content Container */}
+                <div className="p-0 md:p-8 mt-44 md:-mt-16 relative z-10 w-full max-w-7xl mx-auto">
+                    {/* Main Card / Container */}
+                    <div className="bg-transparent md:bg-transparent min-h-screen md:min-h-0 pt-0 md:pt-0 px-0 md:px-0">
+                        {/* Desktop only title */}
+                        <div className="text-center pb-8 hidden md:block">
+                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                                עמוד תשלומים
+                            </h1>
                         </div>
-                    </CardContent>
-                </Card>
 
-                {/* Recent Transactions Section */}
-                <div className="space-y-4">
-                    <h2 className="text-lg font-bold text-gray-800 text-right">עסקאות אחרונות</h2>
+                        {/* Mobile Title */}
+                        <div className="text-center absolute top-[-90px] left-0 right-0 w-full md:hidden">
+                            <h1 className="text-[24px] font-bold text-[#001a6e]">
+                                עמוד תשלומים
+                            </h1>
+                        </div>
 
-                    <Card className="rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100 p-4">
-                        <div className="space-y-4">
-                            {transactions.map((tx) => (
-                                <div key={tx.id} className="bg-[#F8FAFC] hover:bg-gray-50 transition-colors rounded-xl p-6">
-                                    <div className="flex flex-col gap-4">
-
-                                        {/* Top Row: Date (Right) and Amount (Left) */}
-                                        <div className="flex justify-between items-center w-full">
-                                            <span className="font-normal text-gray-900">{tx.date}</span>
-                                            <span className="font-normal text-gray-900 text-lg">₪{tx.amount}</span>
+                        {/* Mobile Content Container - No "frame" or shadow, just content */}
+                        <div className="md:hidden bg-transparent p-4">
+                            {/* Payment Method Section - Mobile Updated */}
+                            <Card className="rounded-[16px] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 mb-8 bg-white">
+                                <CardContent className="p-0">
+                                    <div className="bg-white rounded-[16px] p-4 flex items-center justify-between">
+                                        {/* Left Side: Button */}
+                                        <div>
+                                            <Button
+                                                onClick={() => setShowPaymentModal(true)}
+                                                className="bg-[#001a6e] hover:bg-[#1e293b] text-white text-[12px] rounded-full px-5 py-2 h-9 font-medium shadow-none whitespace-nowrap"
+                                            >
+                                                שינוי אמצעי תשלום
+                                            </Button>
                                         </div>
 
-                                        {/* Bottom Row: Buttons (Left) */}
-                                        <div className="flex justify-end gap-3">
+                                        {/* Right Side: Info */}
+                                        <div className="text-right">
+                                            <p className="text-gray-400 text-[11px] mb-0.5">אמצעי תשלום</p>
+                                            <p className="text-gray-600 text-[14px] font-normal" dir="ltr">xxxx {paymentData.cardNumber ? paymentData.cardNumber.replace(/\D/g, '').slice(-4) : '6655'}</p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Recent Transactions - Mobile Updated */}
+                            <div>
+                                <h2 className="text-[16px] font-bold text-gray-800 text-right mb-4 pr-1">עסקאות אחרונות</h2>
+                                <div className="space-y-4">
+                                    {transactions.map((tx, index) => (
+                                        <div key={tx.id} className="bg-white p-5 rounded-[20px] shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-50/50">
+                                            <div className="flex flex-col gap-4">
+                                                {/* Top Row: Date & Amount */}
+                                                <div className="flex justify-between items-center w-full">
+                                                    <span className="text-[18px] text-gray-900 font-bold">₪{tx.amount}</span>
+                                                    {/* Date aligned to left in design? Or right. Usually dates are LTR or standard. Img shows Date on Left side (English?). Let's follow image: Date on Right side of row (left in RTL). Actually image shows Date on Right side visually. "01/01/2025" on right. Wait, image shows: Amount Left, Date Right. */}
+                                                    <span className="text-[16px] text-gray-900 font-normal tracking-wide">{tx.date}</span>
+                                                </div>
+
+                                                {/* Buttons Row - Full width buttons outlined */}
+                                                <div className="flex justify-between gap-3 mt-1">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => setSelectedInvoice(tx)}
+                                                        className="flex-1 bg-white hover:bg-gray-50 text-[#54627d] border-[#54627d]/30 rounded-full h-9 text-[13px] font-medium flex items-center justify-center gap-2"
+                                                    >
+                                                        <Eye className="w-4 h-4 text-[#54627d]" />
+                                                        צפייה
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleDownload(tx.id)}
+                                                        className="flex-1 bg-white hover:bg-gray-50 text-[#54627d] border-[#54627d]/30 rounded-full h-9 text-[13px] font-medium flex items-center justify-center gap-2"
+                                                    >
+                                                        <Download className="w-4 h-4 text-[#54627d]" />
+                                                        הורדה
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleExport(tx.id)}
+                                                        className="flex-1 bg-white hover:bg-gray-50 text-[#54627d] border-[#54627d]/30 rounded-full h-9 text-[13px] font-medium flex items-center justify-center gap-2"
+                                                    >
+                                                        <FileOutput className="w-4 h-4 text-[#54627d] scale-x-[-1]" />
+                                                        ייצא
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Desktop View (Hidden on Mobile) */}
+                        <div className="hidden md:block">
+                            {/* Payment Method Section - Desktop */}
+                            <Card className="rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100 mb-8">
+                                <CardContent className="p-3">
+                                    <div className="bg-[#F8FAFC] rounded-xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                                        <div className="text-right space-y-1">
+                                            <p className="text-gray-500 text-sm">אמצעי תשלום</p>
+                                            <div className="flex items-center gap-2 justify-end">
+                                                <p className="text-gray-500 text-sm tracking-widest font-normal" dir="ltr">xxxx {paymentData.cardNumber ? paymentData.cardNumber.replace(/\D/g, '').slice(-4) : '6655'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
                                             <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleExport(tx.id)}
-                                                className="bg-white hover:bg-blue-50 text-[#1E3A8A] border-blue-200 rounded-full px-4 py-1 h-9 flex items-center gap-2 text-xs font-medium whitespace-nowrap order-1"
+                                                onClick={() => setShowPaymentModal(true)}
+                                                className="bg-[#1E3A8A] hover:bg-[#1e293b] text-white rounded-full px-6 py-2 h-auto text-sm font-medium shadow-none w-full md:w-auto"
                                             >
-                                                <FileOutput className="w-3.5 h-3.5 scale-x-[-1]" />
-                                                ייצוא למייל
+                                                שינוי אמצעי תשלום
                                             </Button>
                                             <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleDownload(tx.id)}
-                                                className="bg-white hover:bg-blue-50 text-[#1E3A8A] border-blue-200 rounded-full px-4 py-1 h-9 flex items-center gap-2 text-xs font-medium whitespace-nowrap order-2"
+                                                onClick={handleSelectPackage}
+                                                className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-6 py-2 h-auto text-sm font-medium shadow-none w-full md:w-auto"
                                             >
-                                                <Download className="w-3.5 h-3.5" />
-                                                הורדה
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => setSelectedInvoice(tx)}
-                                                className="bg-white hover:bg-blue-50 text-[#1E3A8A] border-blue-200 rounded-full px-4 py-1 h-9 flex items-center gap-2 text-xs font-medium whitespace-nowrap order-3"
-                                            >
-                                                <Eye className="w-3.5 h-3.5" />
-                                                צפייה
+                                                לרכישת משרות
                                             </Button>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                </CardContent>
+                            </Card>
+
+                            {/* Recent Transactions Section - Desktop */}
+                            <div className="space-y-4">
+                                <h2 className="text-lg font-bold text-gray-800 text-right">עסקאות אחרונות</h2>
+                                <Card className="rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100 p-4">
+                                    <div className="space-y-4">
+                                        {transactions.map((tx) => (
+                                            <div key={tx.id} className="bg-[#F8FAFC] hover:bg-gray-50 transition-colors rounded-xl p-6">
+                                                <div className="flex flex-col gap-4">
+                                                    <div className="flex justify-between items-center w-full">
+                                                        <span className="font-normal text-gray-900">{tx.date}</span>
+                                                        <span className="font-normal text-gray-900 text-lg">₪{tx.amount}</span>
+                                                    </div>
+                                                    <div className="flex justify-end gap-3">
+                                                        <Button variant="outline" size="sm" onClick={() => handleExport(tx.id)} className="bg-white hover:bg-blue-50 text-[#1E3A8A] border-blue-200 rounded-full px-4 py-1 h-9 flex items-center gap-2 text-xs font-medium whitespace-nowrap order-1">
+                                                            <FileOutput className="w-3.5 h-3.5 scale-x-[-1]" />
+                                                            ייצוא למייל
+                                                        </Button>
+                                                        <Button variant="outline" size="sm" onClick={() => handleDownload(tx.id)} className="bg-white hover:bg-blue-50 text-[#1E3A8A] border-blue-200 rounded-full px-4 py-1 h-9 flex items-center gap-2 text-xs font-medium whitespace-nowrap order-2">
+                                                            <Download className="w-3.5 h-3.5" />
+                                                            הורדה
+                                                        </Button>
+                                                        <Button variant="outline" size="sm" onClick={() => setSelectedInvoice(tx)} className="bg-white hover:bg-blue-50 text-[#1E3A8A] border-blue-200 rounded-full px-4 py-1 h-9 flex items-center gap-2 text-xs font-medium whitespace-nowrap order-3">
+                                                            <Eye className="w-3.5 h-3.5" />
+                                                            צפייה
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Card>
+                            </div>
                         </div>
-                    </Card>
+
+                    </div>
                 </div>
             </div>
 
@@ -354,4 +459,3 @@ ET`;
         </div>
     );
 }
-
