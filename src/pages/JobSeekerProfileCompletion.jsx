@@ -200,7 +200,7 @@ export default function JobSeekerProfileCompletion() {
 
                         {/* Invisible Clickable Area for the button in the image */}
                         <button
-                            onClick={() => navigate(createPageUrl('Dashboard'), { replace: true })}
+                            onClick={() => navigate(createPageUrl('Dashboard?onboarding=complete'), { replace: true })}
                             className="absolute bottom-[18%] w-[65%] h-[12%] bg-transparent cursor-pointer rounded-full z-10 outline-none"
                             aria-label="לעמוד הראשי"
                         />
