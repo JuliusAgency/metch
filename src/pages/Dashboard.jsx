@@ -384,6 +384,7 @@ const JobSeekerDashboard = ({ user }) => {
     </Card>
   );
 
+
   // Filter jobs based on the current jobFilter state and search term
   const displayedJobs = allJobs.filter(job => {
     // 1. Expiration check: Filter out jobs older than 30 days (unless it's the mock job)
@@ -1065,9 +1066,9 @@ const EmployerDashboard = ({ user }) => {
 
   return (
     <>
-      <div className="max-w-7xl w-[72%] mx-auto space-y-4 pt-1 px-4 md:px-6 md:pb-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-right px-4 flex justify-between items-center">
-          <h1 className="text-lg font-bold text-gray-900 mb-1 mt-2">
+      <div className="max-w-7xl w-full md:w-[72%] mx-auto space-y-4 pt-4 md:pt-1 px-3 md:px-6 md:pb-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-right px-2 md:px-4 flex justify-between items-center">
+          <h1 className="text-xl md:text-lg font-bold text-[#001D3D] md:text-gray-900 mb-1 mt-2">
             {user.company_name?.trim() ? ` היי ${user.company_name} 👋` : 'היי 👋'}
           </h1>
 
@@ -1075,7 +1076,7 @@ const EmployerDashboard = ({ user }) => {
 
         <div className="space-y-4">
           {/* Enhanced Stats Grid with Real Analytics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 employer-stats">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-12 stats-grid justify-items-center">
             <EmployerStatsCard
               icon={ActiveJobsIcon}
               title="משרות פעילות"
@@ -1094,11 +1095,11 @@ const EmployerDashboard = ({ user }) => {
               value={employerStats?.total_job_views || 0}
               color="bg-blue-50 text-blue-600"
             />
-            <Card className="relative col-span-2 sm:col-span-1 bg-[#84CC9E] text-white border-0 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12)] hover:shadow-lg transition-all duration-300 rounded-2xl create-job-card">
+            <Card className="relative col-span-1 bg-[#84CC9E] text-white border-0 shadow-md md:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12)] hover:shadow-lg transition-all duration-300 rounded-[8px] md:rounded-2xl w-[148px] md:w-full h-[97px] md:h-full create-job-card">
               <Link to={createPageUrl("CreateJob")}>
-                <CardContent className="py-3 px-3 text-center flex flex-col items-center justify-center h-full">
-                  <div className="w-[44px] h-[44px] bg-white/30 rounded-full flex items-center justify-center mx-auto mb-2"><Plus className="w-[22px] h-[22px] text-white" /></div>
-                  <h3 className="font-bold text-[15px] mb-0.5">פרסום משרה חדשה</h3>
+                <CardContent className="py-2 md:py-3 px-2 md:px-3 text-center flex flex-col items-center justify-center h-full">
+                  <div className="w-[32px] md:w-[44px] h-[32px] md:h-[44px] bg-white/30 rounded-full flex items-center justify-center mx-auto mb-1 md:mb-2"><Plus className="w-[18px] md:w-[22px] h-[18px] md:h-[22px] text-white" /></div>
+                  <h3 className="font-bold text-[12px] md:text-[15px] mb-0.5 leading-tight">פרסום משרה חדשה</h3>
                 </CardContent>
               </Link>
               {showOnboardingHint && (
@@ -1156,7 +1157,7 @@ const EmployerDashboard = ({ user }) => {
             </div>
           </div>
           <div className="space-y-4 candidate-list">
-            <h2 className="text-lg font-bold text-gray-900 mb-2 px-2">מועמדים שהגישו מועמדות</h2>
+            <h2 className="text-md md:text-lg font-bold text-gray-900 mb-2 px-2">מועמדים שהגישו מועמדות</h2>
             {displayedCandidates.length > 0 ? (displayedCandidates.map((candidate, index) => {
               // Calculate a stable match score based on candidate ID to ensure consistency
               const getStableMatchScore = (id) => {
@@ -1191,11 +1192,11 @@ const EmployerDashboard = ({ user }) => {
               return (
                 <motion.div key={candidate.unique_app_id || candidate.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
                   <Card className="bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl">
-                    <CardContent className="p-4">
-                      <div className="flex flex-col gap-4">
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-4 flex-1">
-                            <div className="w-16 h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">
+                    <CardContent className="p-2 md:p-4">
+                      <div className="flex flex-col gap-1.5 md:gap-4">
+                        <div className="flex items-center justify-between gap-1.5 md:gap-4">
+                          <div className="flex items-center gap-2 md:gap-4 flex-1">
+                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">
                               {candidate.profile_picture ? (
                                 <img
                                   src={candidate.profile_picture}
@@ -1209,14 +1210,14 @@ const EmployerDashboard = ({ user }) => {
                               )}
                             </div>
                             <div className="text-right">
-                              <h3 className="font-bold text-lg text-gray-900 leading-tight">
+                              <h3 className="font-bold text-sm md:text-lg text-gray-900 leading-tight">
                                 {(() => {
                                   if (candidate.full_name && candidate.full_name.trim().length > 0) return candidate.full_name;
                                   if (candidate.email) return candidate.email;
                                   return 'מועמד ללא שם';
                                 })()}
                               </h3>
-                              <p className="text-gray-500 text-sm mt-0.5">
+                              <p className="text-gray-500 text-[11px] md:text-sm mt-0.5">
                                 {candidate.applied_job_title || jobAppliedTo || candidate.experience_level?.replace('_', ' ') || "ללא ניסיון"}
                               </p>
                             </div>
@@ -1224,24 +1225,24 @@ const EmployerDashboard = ({ user }) => {
 
                           <div className="flex-shrink-0">
                             <Button
-                              className={`text-white px-6 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-candidate-button transition-colors duration-300 ${match >= 70 ? 'bg-green-400 hover:bg-green-500' : match >= 40 ? 'bg-orange-400 hover:bg-orange-500' : 'bg-red-400 hover:bg-red-500'
+                              className={`text-white px-2 md:px-6 py-1 md:py-1.5 h-6 md:h-9 rounded-full font-bold w-16 md:w-32 text-[9px] md:text-sm view-candidate-button transition-colors duration-300 ${match >= 70 ? 'bg-green-400 hover:bg-green-500' : match >= 40 ? 'bg-orange-400 hover:bg-orange-500' : 'bg-red-400 hover:bg-red-500'
                                 }`}
                               onClick={() => handleCandidateClick(candidate, match)}
                             >
-                              לצפייה
+                              {viewedCandidates.some(vc => vc.candidate_email === candidate.email && vc.job_id === candidate.applied_job_id) ? "נצפה" : "לצפייה"}
                             </Button>
                           </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
-                          <div className="flex flex-wrap gap-2 items-center justify-start">
-                            <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg border border-blue-100/50 text-xs font-bold">
-                              <MapPin className="w-3.5 h-3.5" />
+                        <div className="flex flex-col sm:flex-row items-center gap-1.5 md:gap-4 w-full">
+                          <div className="flex flex-row flex-wrap md:flex-wrap gap-1 md:gap-2 items-center justify-start w-full md:w-auto">
+                            <div className="flex items-center gap-0.5 md:gap-1 bg-blue-50 text-blue-700 px-1.5 py-0.5 md:px-2.5 md:py-1 rounded-md md:rounded-lg border border-blue-100/50 text-[9px] md:text-xs font-bold whitespace-nowrap">
+                              <MapPin className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" />
                               <span>{candidate.preferred_location || "לא צוין"}</span>
                             </div>
 
-                            <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg border border-blue-100/50 text-xs font-bold">
-                              <Briefcase className="w-3.5 h-3.5" />
+                            <div className="flex items-center gap-0.5 md:gap-1 bg-blue-50 text-blue-700 px-1.5 py-0.5 md:px-2.5 md:py-1 rounded-md md:rounded-lg border border-blue-100/50 text-[9px] md:text-xs font-bold whitespace-nowrap">
+                              <Briefcase className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" />
                               <span>
                                 {candidate.preferred_job_types?.length > 0
                                   ? (jobTypeText[candidate.preferred_job_types[0]] || candidate.preferred_job_types[0])
@@ -1249,8 +1250,8 @@ const EmployerDashboard = ({ user }) => {
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg border border-blue-100/50 text-xs font-bold">
-                              <Clock className="w-3.5 h-3.5" />
+                            <div className="flex items-center gap-0.5 md:gap-1 bg-blue-50 text-blue-700 px-1.5 py-0.5 md:px-2.5 md:py-1 rounded-md md:rounded-lg border border-blue-100/50 text-[9px] md:text-xs font-bold whitespace-nowrap">
+                              <Clock className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" />
                               <span>
                                 {candidate.availability
                                   ? (availabilityText[candidate.availability] || candidate.availability)
