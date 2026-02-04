@@ -29,7 +29,7 @@ export default function Packages() {
     const { user, updateProfile } = useUser();
 
     const getPricePerJob = (qty) => {
-        if (qty === 1) return 600;
+        if (qty === 1) return 599;
         if (qty >= 2 && qty <= 3) return 550;
         if (qty >= 4 && qty <= 5) return 500;
         if (qty >= 6 && qty <= 7) return 450;
