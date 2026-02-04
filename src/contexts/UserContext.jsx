@@ -173,6 +173,11 @@ export const UserProvider = ({ children }) => {
     if (error) throw error;
 
     // Create user profile
+    // We separate specific metadata fields that might not exist in UserProfile schema
+    // but should be preserved in Auth User Metadata
+    // eslint-disable-next-line no-unused-vars
+    const { marketing_consent, terms_accepted, ...profileData } = metadata;
+
     if (data.user) {
       await supabase
         .from('UserProfile')
@@ -183,7 +188,7 @@ export const UserProvider = ({ children }) => {
           full_name: '',
           user_type: null, // No user type selected initially - user will select after email confirmation
           last_login_date: new Date().toISOString(),
-          ...metadata
+          ...profileData
         });
     }
 

@@ -40,7 +40,7 @@ export default function CompanyProfileCompletion() {
   const [packageData, setPackageData] = useState({
     type: 'per_job',
     quantity: 1,
-    price: 600
+    price: 0
   });
   const [paymentData, setPaymentData] = useState({
     cardNumber: "",
@@ -240,6 +240,12 @@ export default function CompanyProfileCompletion() {
       if (!saved) return;
     }
 
+    // If on Step 2 (Package Selection) and price is 0, skip Payment (Step 3)
+    if (step === 2 && packageData.price === 0) {
+      setStep(4);
+      return;
+    }
+
     if (step < STEPS.length) {
       setStep(prev => prev + 1);
     } else {
@@ -251,6 +257,11 @@ export default function CompanyProfileCompletion() {
 
   const prevStep = () => {
     if (step > 1) {
+      // If coming back from Step 4 and price is 0, skip Payment (Step 3) back to Step 2
+      if (step === 4 && packageData.price === 0) {
+        setStep(2);
+        return;
+      }
       setStep(prev => prev - 1);
     }
   };

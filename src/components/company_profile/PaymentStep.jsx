@@ -139,11 +139,11 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="space-y-12"
+        className="space-y-6 md:space-y-12"
       >
         {/* Credit Card Visual */}
-        <div className="flex flex-col items-center mb-16">
-          <div className="relative">
+        <div className="flex flex-col items-center mb-6 md:mb-16">
+          <div className="relative transform scale-90 md:scale-100 origin-top">
             <div className="w-[360px] h-[220px] bg-[#0a0f18] rounded-[18px] shadow-2xl text-white p-10 flex flex-col justify-between relative overflow-hidden">
               {/* Background Arc Effect - Two-tone split */}
               <div className="absolute top-[-50%] right-[-25%] w-[150%] h-[200%] bg-[#1c2533] rounded-[45%] rotate-[-15deg]"></div>
@@ -186,11 +186,11 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
           </div>
         </div>
 
-        {/* Payment Form - 3 Columns Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-5 max-w-[980px] mx-auto pt-6">
+        {/* Payment Form - Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 md:gap-x-6 gap-y-3 md:gap-y-5 max-w-[980px] mx-auto pt-2 md:pt-6">
 
-          {/* Row 1: Holder Name, ID, VAT */}
-          <div className="space-y-1">
+          {/* Row 1: Holder Name */}
+          <div className="col-span-2 md:col-span-1 space-y-1">
             <Input
               placeholder="שם בעל הכרטיס"
               value={paymentData.holderName || ''}
@@ -200,9 +200,9 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
             />
           </div>
 
-          <div className="space-y-1">
+          <div className="col-span-2 md:col-span-1 space-y-1">
             <Input
-              placeholder="מספר זיהוי (9 ספרות)"
+              placeholder="תעודת זהות"
               value={paymentData.idNumber || ''}
               onChange={(e) => handleInputChange('idNumber', e.target.value)}
               className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.idNumber ? 'border-red-500' : ''}`}
@@ -211,7 +211,8 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
             />
           </div>
 
-          <div className="space-y-1">
+          <div className="col-span-2 md:col-span-1 space-y-1 hidden md:block">
+            {/* Hidden VAT on mobile to save space if not critical, or keep? User image didn't show it. keeping it but maybe hidden if user insists on space? I will keep it but as full width if visible */}
             <Input
               placeholder="ח.פ. עבור חשבונית"
               value={paymentData.vatNumber || ''}
@@ -221,10 +222,10 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
             />
           </div>
 
-          {/* Row 2: Card Number, Expiry, CVV */}
-          <div className="space-y-1">
+          {/* Row 2: Card Number */}
+          <div className="col-span-2 md:col-span-1 space-y-1">
             <Input
-              placeholder="מספר כרטיס אשראי"
+              placeholder="מספר כרטיס"
               value={paymentData.cardNumber || ''}
               onChange={(e) => handleInputChange('cardNumber', e.target.value)}
               className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.cardNumber ? 'border-red-500' : ''}`}
@@ -233,9 +234,9 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
             />
           </div>
 
-          <div className="space-y-1">
+          <div className="col-span-1 space-y-1 box-border">
             <Input
-              placeholder="תוקף MM/YY"
+              placeholder="תוקף"
               value={paymentData.expiryDate || ''}
               onChange={(e) => handleInputChange('expiryDate', e.target.value)}
               className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.expiryDate ? 'border-red-500' : ''}`}
@@ -244,7 +245,7 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
             />
           </div>
 
-          <div className="space-y-1 relative">
+          <div className="col-span-1 space-y-1 relative box-border">
             <Input
               placeholder="CVV"
               value={paymentData.cvv || ''}
@@ -253,7 +254,8 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
               maxLength={3}
               dir="rtl"
             />
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300">
+            {/* Icon hidden on small mobile if tight? */}
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 hidden sm:block">
               <svg width="20" height="14" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="0.5" y="0.5" width="23" height="15" rx="1.5" stroke="currentColor" />
                 <rect x="4" y="8" width="8" height="2" fill="currentColor" />
