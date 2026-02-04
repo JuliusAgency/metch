@@ -383,9 +383,11 @@ export default function JobDetailsSeeker() {
   const employmentTypeText = {
     full_time: 'משרה מלאה',
     part_time: 'משרה חלקית',
+    shifts: 'משמרות',
     contract: 'חוזה',
     freelance: 'פרילנס',
-    internship: 'התמחות'
+    internship: 'התמחות',
+    flexible: 'גמיש/ה'
   };
 
   if (loading) {

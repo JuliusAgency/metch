@@ -30,6 +30,7 @@ const ProfileResume = ({ resume_url, full_name, cvData, onViewCv }) => {
                         href={resume_url}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={onViewCv}
                         className="text-blue-500 font-medium hover:text-blue-600 transition-colors ml-4"
                     >
                         צפייה

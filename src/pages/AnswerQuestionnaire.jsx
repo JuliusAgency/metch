@@ -216,8 +216,8 @@ export default function AnswerQuestionnaire() {
                                     disabled={submitting}
                                     size="lg"
                                     className={`px-12 h-14 rounded-full font-bold text-lg shadow-xl transition-all active:scale-95 ${isFormComplete
-                                            ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                                            : 'bg-gray-200 text-gray-400 cursor-not-allowed border-gray-100'
+                                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                                        : 'bg-gray-200 text-gray-400 cursor-not-allowed border-gray-100'
                                         }`}
                                 >
                                     {submitting ? (

@@ -696,7 +696,7 @@ export default function CandidateProfile() {
 
   useEffect(() => {
     const trackCandidateView = async () => {
-      if (candidate && user && user.role === 'employer') {
+      if (candidate && user && user.user_type === 'employer') {
         try {
           // Get jobId from query params
           const params = new URLSearchParams(location.search);
@@ -706,20 +706,8 @@ export default function CandidateProfile() {
           const jobContext = jobId ? { id: jobId, title: jobTitle } : null;
 
           await EmployerAnalytics.trackCandidateView(user.email, candidate, jobContext);
-
-          // Create notification for candidate
-          await Notification.create({
-            type: 'profile_view',
-            user_id: candidate.id || null,
-            email: candidate.email,
-            title: 'מישהו צפה לך בפרופיל!',
-            message: `מעסיק צפה בפרופיל שלך כרגע. בהצלחה!`,
-            is_read: false,
-            created_date: new Date().toISOString()
-          });
-          console.log("Notification created successfully");
         } catch (err) {
-          console.error("Error creating notification:", err);
+          console.error("Error tracking candidate view:", err);
         }
       }
     };
@@ -758,9 +746,12 @@ export default function CandidateProfile() {
 
   const availabilityText = {
     immediate: "מיידית",
+    '1_2_weeks': 'שבוע עד שבועיים',
     two_weeks: "תוך שבועיים",
+    '1_2_months': 'חודש עד חודשיים',
     one_month: "תוך חודש",
     negotiable: "גמיש/ה",
+    flexible: "גמיש/ה"
   };
 
   const jobTypeText = {
@@ -770,6 +761,7 @@ export default function CandidateProfile() {
     freelance: "פרילנס",
     internship: "התמחות",
     shifts: "משמרות",
+    flexible: "גמיש/ה",
   };
 
   return (
@@ -842,7 +834,16 @@ export default function CandidateProfile() {
                 resume_url={candidate.resume_url}
                 full_name={candidate.full_name}
                 cvData={cvData}
-                onViewCv={() => setIsCvPreviewOpen(true)}
+                onViewCv={() => {
+                  setIsCvPreviewOpen(true);
+                  if (user?.user_type === 'employer' && user?.email) {
+                    const params = new URLSearchParams(location.search);
+                    const jobId = params.get("jobId");
+                    const jobTitle = params.get("title");
+                    const jobContext = jobId ? { id: jobId, title: jobTitle } : null;
+                    EmployerAnalytics.trackResumeView(user.email, candidate, jobContext);
+                  }
+                }}
               />
             </div>
 
