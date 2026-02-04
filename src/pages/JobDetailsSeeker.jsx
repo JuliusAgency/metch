@@ -318,13 +318,6 @@ export default function JobDetailsSeeker() {
       return;
     }
 
-    try {
-      if (user.email) {
-        await UserAnalytics.trackJobApplication(user, job); // Pass full user object
-      }
-    } catch (error) {
-
-    }
 
     if (Array.isArray(job.screening_questions) && job.screening_questions.length > 0) {
       navigate(createPageUrl(`AnswerQuestionnaire?job_id=${job.id}`));
@@ -339,6 +332,16 @@ export default function JobDetailsSeeker() {
         applicant_id: user.id,
         status: 'pending'
       });
+
+      // Track application in analytics
+      try {
+        if (user.email) {
+          const { UserAnalytics } = await import("@/components/UserAnalytics");
+          await UserAnalytics.trackJobApplication(user, job);
+        }
+      } catch (error) {
+        console.warn("Analytics error", error);
+      }
 
       // Create notification for employer
       try {

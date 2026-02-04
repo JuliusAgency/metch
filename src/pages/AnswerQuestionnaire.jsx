@@ -12,6 +12,7 @@ import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { createPageUrl } from "@/utils";
 import ApplicationSuccessModal from "@/components/jobs/ApplicationSuccessModal";
 import InfoPopup from "@/components/ui/info-popup";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function AnswerQuestionnaire() {
     useRequireUserType(); // Ensure user has selected a user type
@@ -21,8 +22,14 @@ export default function AnswerQuestionnaire() {
     const [submitting, setSubmitting] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [user, setUser] = useState(null);
+    const [errors, setErrors] = useState({});
+    const { toast } = useToast();
     const location = useLocation();
     const navigate = useNavigate();
+
+    const isFormComplete = job?.screening_questions?.every((q, index) =>
+        answers[index] && (typeof answers[index] === 'string' ? answers[index].trim() !== '' : true)
+    );
 
     const loadData = React.useCallback(async () => {
         try {
@@ -68,11 +75,38 @@ export default function AnswerQuestionnaire() {
 
     const handleAnswerChange = (index, answer) => {
         setAnswers(prev => ({ ...prev, [index]: answer }));
+        // Clear error when user starts typing/answering
+        if (errors[index]) {
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[index];
+                return newErrors;
+            });
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!job || !user) return;
+
+        // Validation: Check if all questions are answered
+        const newErrors = {};
+        job.screening_questions.forEach((q, index) => {
+            if (!answers[index] || (typeof answers[index] === 'string' && answers[index].trim() === '')) {
+                newErrors[index] = true;
+            }
+        });
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            toast({
+                title: "שאלון לא הושלם",
+                description: "יש לענות על כל השאלות לפני שליחת המועמדות.",
+                variant: "destructive",
+            });
+            return;
+        }
+
         setSubmitting(true);
 
         try {
@@ -94,6 +128,14 @@ export default function AnswerQuestionnaire() {
                 applicant_id: user.id,
                 status: 'pending'
             });
+
+            // Track application in analytics
+            try {
+                const { UserAnalytics } = await import("@/components/UserAnalytics");
+                await UserAnalytics.trackJobApplication(user, job);
+            } catch (error) {
+                console.warn("Analytics error", error);
+            }
 
             // Create notification for employer
             try {
@@ -163,6 +205,7 @@ export default function AnswerQuestionnaire() {
                                         type={question.type}
                                         value={answers[index]}
                                         onAnswer={(val) => handleAnswerChange(index, val)}
+                                        error={errors[index]}
                                     />
                                 ))}
                             </div>
@@ -172,9 +215,16 @@ export default function AnswerQuestionnaire() {
                                     type="submit"
                                     disabled={submitting}
                                     size="lg"
-                                    className="px-12 h-14 rounded-full font-bold text-lg bg-blue-600 hover:bg-blue-700 shadow-xl transition-all active:scale-95"
+                                    className={`px-12 h-14 rounded-full font-bold text-lg shadow-xl transition-all active:scale-95 ${isFormComplete
+                                            ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                                            : 'bg-gray-200 text-gray-400 cursor-not-allowed border-gray-100'
+                                        }`}
                                 >
-                                    {submitting ? <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div> : "שליחת קורות חיים"}
+                                    {submitting ? (
+                                        <div className="w-5 h-5 border-t-2 border-current rounded-full animate-spin"></div>
+                                    ) : (
+                                        isFormComplete ? "שלח תשובות והגש מועמדות" : "יש לענות על כל השאלות"
+                                    )}
                                 </Button>
                             </div>
                         </form>
