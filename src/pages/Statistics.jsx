@@ -54,13 +54,40 @@ export default function Statistics() {
             const appsMap = {};
 
             // Parallelize fetching view and application counts
+            // For accurate counts, we should ideally verify if the applicant user still exists (same logic as dashboard)
             await Promise.all(userJobs.map(async (job) => {
                 const [views, apps] = await Promise.all([
                     JobView.filter({ job_id: job.id }),
                     JobApplication.filter({ job_id: job.id })
                 ]);
                 viewsMap[job.id] = views.length;
-                appsMap[job.id] = apps.length;
+
+                // Sync Stats Fix: Verify applications have valid profiles if count is small (<=20)
+                // This mimics dashboard logic to avoid mismatches
+                if (apps.length > 0 && apps.length <= 20) {
+                    try {
+                        // Quick verification of profiles without full load
+                        const validApps = await Promise.all(apps.map(async (app) => {
+                            if (app.applicant_id) {
+                                const p = await User.get(app.applicant_id).catch(() => null);
+                                return p ? app : null;
+                            } else if (app.applicant_email) {
+                                // Fallback for older records or email-based systems
+                                // We use User table for auth check, or UserProfile for profile check.
+                                // Let's purely check if a relevant profile exists in UserProfile as that drives the Dashboard list
+                                const p = await UserProfile.filter({ email: app.applicant_email }).catch(() => []);
+                                return p.length > 0 ? app : null;
+                            }
+                            return null;
+                        }));
+                        appsMap[job.id] = validApps.filter(Boolean).length;
+                    } catch (e) {
+                        console.warn('Error verifying apps for stats, using raw count', e);
+                        appsMap[job.id] = apps.length;
+                    }
+                } else {
+                    appsMap[job.id] = apps.length;
+                }
             }));
 
             setJobViews(viewsMap);
