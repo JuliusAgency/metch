@@ -531,8 +531,8 @@ const JobSeekerDashboard = ({ user }) => {
               {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-12 stats-grid justify-items-center">
                 <StatCard icon={JsRelevantJobsIcon} title="משרות רלוונטיות" value={allJobs.length} />
-                <StatCard icon={JsCvIcon} title="מועמדויות שהגשת" value={userStats?.total_applications || 0} />
-                <StatCard icon={JsApplicationsIcon} title="קורות חיים שנצפו" value={userStats?.resume_views || 0} />
+                <StatCard icon={JsApplicationsIcon} title="מועמדויות שהגשת" value={userStats?.total_applications || 0} />
+                <StatCard icon={JsCvIcon} title="קורות חיים שנצפו" value={userStats?.resume_views || 0} />
                 <StatCard icon={JsProfileViewsIcon} title="צפו בכרטיס שלי" value={userStats?.profile_views || 0} />
               </div>
 
