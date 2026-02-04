@@ -267,13 +267,22 @@ export default function CandidateProfile() {
       Generate a valid JSON object in Hebrew with the following keys:
       1. "match_score": A number (0-100) representing the match percentage.
       2. "candidate_summary": A professional paragraph (Hebrew) summarizing the candidate's background and suitability for this specific job.
-      3. "match_thoughts": A list of 5-7 bullet points (Hebrew) explaining "What Metch Thinks" - specific strengths, gaps, or highlights about the match.
+      3. "match_thoughts": A list of 5-7 bullet points (Hebrew) explaining "What Metch Thinks".
+      4. "match_analysis": An object mapping criteria to status and feedback. Criteria should be: "professional_experience", "location", "availability", "job_type", "career_fit".
+         Status must be one of: "match", "gap", "mismatch".
       
       Return ONLY valid JSON:
       {
         "match_score": 90,
         "candidate_summary": "...",
-        "match_thoughts": ["...", "..."]
+        "match_thoughts": ["...", "..."],
+        "match_analysis": {
+          "professional_experience": { "status": "match", "feedback": "ניסיון רלוונטי מאוד ב..." },
+          "location": { "status": "match", "feedback": "גר בנתניה, מתאים לתל אביב" },
+          "availability": { "status": "gap", "feedback": "זמין תוך חודש, המשרה דורשת מיידית" },
+          "job_type": { "status": "match", "feedback": "מחפש משרה מלאה כפי שמוצע" },
+          "career_fit": { "status": "match", "feedback": "התפקיד מהווה התקדמות טבעית בקריירה" }
+        }
       }
       `;
 
@@ -303,7 +312,8 @@ export default function CandidateProfile() {
             const insights = {
               summary: parsed.candidate_summary || parsed.summary,
               thoughts: parsed.match_thoughts || parsed.thoughts,
-              score: parsed.match_score || parsed.score || 90
+              score: parsed.match_score || parsed.score || 90,
+              analysis: parsed.match_analysis || null
             };
             setAiInsights(insights);
             localStorage.setItem(cacheKey, JSON.stringify(insights));
@@ -826,6 +836,7 @@ export default function CandidateProfile() {
                 bio={candidate.bio}
                 aiSummary={aiInsights.summary}
                 aiThoughts={aiInsights.thoughts}
+                aiAnalysis={aiInsights.analysis}
                 isLoading={generatingInsights}
               />
 

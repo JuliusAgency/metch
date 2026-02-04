@@ -1,4 +1,4 @@
-import { EmployerAction, EmployerStats, Job, JobApplication, JobView, Notification } from '@/api/entities';
+import { EmployerAction, EmployerStats, Job, JobApplication, JobView, Notification, CandidateView } from '@/api/entities';
 
 /**
  * Utility class for tracking employer actions and updating analytics
