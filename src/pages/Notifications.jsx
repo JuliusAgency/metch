@@ -209,10 +209,10 @@ export default function Notifications() {
     <div className="h-full relative overflow-hidden md:overflow-visible" dir="rtl">
       {/* Mobile-Only Background Image - Shortened */}
       <div
-        className="md:hidden fixed top-0 left-0 right-0 z-0 pointer-events-none"
+        className="md:hidden absolute top-[-100px] left-0 right-0 z-0 pointer-events-none"
         style={{
           width: '100%',
-          height: '230px',
+          height: '220px',
           backgroundImage: `url(${settingsMobileBg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
@@ -241,7 +241,7 @@ export default function Notifications() {
         </div>
 
         {/* Mobile Header: Title Center, Back Button Right */}
-        <div className={`md:hidden flex items-center justify-center ${user?.user_type === 'job_seeker' ? 'pt-16' : 'pt-24'} pb-4 relative z-10 w-full px-6`}>
+        <div className={`md:hidden flex items-center justify-center ${user?.user_type === 'job_seeker' ? 'pt-16' : 'pt-10'} pb-4 relative z-10 w-full px-6`}>
           <h1 className="text-[24px] font-bold text-[#001a6e]">התראות</h1>
         </div>
 

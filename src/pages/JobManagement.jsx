@@ -166,10 +166,10 @@ export default function JobManagement() {
       <div className="h-full relative bg-[#fafafa] md:bg-transparent min-h-screen pb-24 md:pb-0" dir="rtl">
         {/* Mobile-Only Background Image */}
         <div
-          className="md:hidden fixed top-0 left-0 right-0 z-0 pointer-events-none"
+          className="md:hidden absolute top-[-100px] left-0 right-0 z-0 pointer-events-none"
           style={{
             width: '100%',
-            height: '230px',
+            height: '220px',
             backgroundImage: `url(${settingsMobileBg})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -196,7 +196,7 @@ export default function JobManagement() {
           </div>
 
           {/* Mobile Title */}
-          <div className="text-center pt-24 pb-8 md:hidden relative z-10">
+          <div className="text-center pt-14 pb-8 md:hidden relative z-10">
             <h1 className="text-[22px] font-bold text-[#001a6e]">
               ניהול משרות
             </h1>
@@ -206,7 +206,6 @@ export default function JobManagement() {
           <div className="p-4 md:p-6 -mt-12 md:-mt-16 relative z-10 w-full md:w-[70%] mx-auto">
             {/* Toggle Buttons - Centered */}
             <div className="flex justify-center items-center mb-6 gap-4">
-              <BarChart className="w-6 h-6 text-[#2987cd] md:hidden" />
               <ToggleSwitch
                 options={[
                   { value: 'ended', label: 'משרות שהסתיימו' },
