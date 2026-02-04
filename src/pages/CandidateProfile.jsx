@@ -53,17 +53,43 @@ export default function CandidateProfile() {
 
   const queryParams = new URLSearchParams(location.search);
   const candidateId = queryParams.get("id");
+  const candidateEmail = queryParams.get("email");
   const jobId = queryParams.get("jobId");
   const matchScoreParam = queryParams.get("match") || "N/A";
 
   useEffect(() => {
     if (candidateId) {
       loadCandidate(candidateId);
+    } else if (candidateEmail) {
+      loadCandidateByEmail(candidateEmail);
     } else {
       setLoading(false);
     }
     loadUser();
-  }, [candidateId]);
+  }, [candidateId, candidateEmail]);
+
+  const loadCandidateByEmail = async (email) => {
+    setLoading(true);
+    try {
+      const results = await UserProfile.filter({ email: email.toLowerCase() });
+      if (results.length > 0) {
+        setCandidate(results[0]);
+        // Also fetch CV
+        try {
+          const cvs = await CV.filter({ user_email: results[0].email }, "-created_date", 1);
+          if (cvs && cvs.length > 0) {
+            setCvData(cvs[0]);
+          }
+        } catch (e) {
+          console.error("Error fetching CV", e);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading candidate by email:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchQuestionnaire = async () => {

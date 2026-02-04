@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Job } from "@/api/entities";
 import { JobApplication } from "@/api/entities";
-import { User } from "@/api/entities";
+import { User, UserProfile } from "@/api/entities";
 import { Conversation } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,16 @@ import { format } from "date-fns";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useToast } from "@/components/ui/use-toast";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
+
+const getStableMatchScore = (id) => {
+  if (!id) return 90;
+  let hash = 0;
+  const str = String(id);
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return 75 + (Math.abs(hash) % 25);
+};
 
 export default function JobApplications() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -214,7 +224,7 @@ export default function JobApplications() {
             {applications.length > 0 ? (
               applications.map((application, index) => {
                 const config = statusConfig[application.status] || statusConfig.pending;
-                const matchScore = application.match_score || Math.floor(Math.random() * (95 - 70) + 70);
+                const matchScore = application.match_score || getStableMatchScore(application.id || application.applicant_id || application.applicant_email);
 
                 return (
                   <motion.div
@@ -245,16 +255,19 @@ export default function JobApplications() {
                               </div>
                               <div className="text-right">
                                 <h3 className="font-bold text-lg text-gray-900 leading-tight">
-                                  {application.applicant_email}
+                                  {(() => {
+                                    const profile = applicantProfiles[application.applicant_id] || profilesByEmail[application.applicant_email?.toLowerCase()];
+                                    return profile?.full_name || application.applicant_email;
+                                  })()}
                                 </h3>
                                 <p className="text-gray-500 text-sm mt-0.5">
-                                  הוגש ב-{format(new Date(application.created_date), "dd/MM/yyyy")}
+                                  הוגש ב-{format(new Date(application.created_at || application.created_date || 0), "dd/MM/yyyy")}
                                 </p>
                               </div>
                             </div>
 
                             <div className="flex items-center gap-2 flex-shrink-0">
-                              <Link to={createPageUrl(`CandidateProfile?id=${applicantProfiles[application.applicant_id]?.id || profilesByEmail[application.applicant_email?.toLowerCase()]?.id || ''}`)}>
+                              <Link to={createPageUrl(`CandidateProfile?id=${applicantProfiles[application.applicant_id]?.id || profilesByEmail[application.applicant_email?.toLowerCase()]?.id || ''}&email=${application.applicant_email || ''}`)}>
                                 <Button
                                   className={`text-white px-6 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-candidate-button transition-colors duration-300 ${matchScore >= 70 ? 'bg-green-400 hover:bg-green-500 text-white' : matchScore >= 40 ? 'bg-orange-400 hover:bg-orange-500 text-white' : 'bg-red-500 hover:bg-red-600 text-white'
                                     }`}
@@ -339,6 +352,6 @@ export default function JobApplications() {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

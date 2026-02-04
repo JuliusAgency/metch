@@ -828,22 +828,6 @@ const EmployerDashboard = ({ user }) => {
         const activeJobs = allUserJobs.filter(job => activeStatuses.includes(job.status));
         console.log('[Dashboard] activeJobs:', activeJobs.length);
 
-        let realTotalApps = 0;
-        let realTotalViews = 0;
-
-        await Promise.all(activeJobs.map(async (job) => {
-          const [jobApps, jobViews] = await Promise.all([
-            JobApplication.filter({ job_id: job.id }),
-            JobView.filter({ job_id: job.id })
-          ]);
-          // Only count NON-REJECTED applications to match the list and statistics logic
-          realTotalApps += jobApps.filter(a => a.status !== 'rejected').length;
-          realTotalViews += jobViews.length;
-        }));
-        console.log('[Dashboard] Stats - Apps:', realTotalApps, 'Views:', realTotalViews);
-
-        console.log(`📊 Dashboard: Calculated - Apps: ${realTotalApps}, Views: ${realTotalViews}`);
-
         // 5. Get other dashboard data (Activity, etc.)
         const [recentActions, dashboardData] = await Promise.all([
           EmployerAction.filter({
@@ -852,6 +836,24 @@ const EmployerDashboard = ({ user }) => {
           }, "-created_date", 1000),
           EmployerAnalytics.getDashboardData(userData.email)
         ]);
+
+        const myJobIds = allUserJobs.map(j => j.id);
+
+        // Fetch ALL applications and views for ALL user jobs
+        const [allAppsFlatUnsorted, allViewsFlat] = await Promise.all([
+          (await Promise.all(myJobIds.map(async (jobId) => {
+            return await JobApplication.filter({ job_id: jobId });
+          }))).flat(),
+          (await Promise.all(myJobIds.map(async (jobId) => {
+            return await JobView.filter({ job_id: jobId });
+          }))).flat()
+        ]);
+
+        const allAppsFlat = allAppsFlatUnsorted.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+
+        const realTotalApps = allAppsFlat.length;
+        const realTotalViews = allViewsFlat.length;
+        console.log(`📊 Dashboard: Final Sync - Apps: ${realTotalApps}, Views: ${realTotalViews}`);
 
         // Map EmployerAction to a format compatible with viewedCandidates state
         const viewedCandidatesData = recentActions.map(action => ({
@@ -867,16 +869,7 @@ const EmployerDashboard = ({ user }) => {
         // Typically the candidates list shows *recent* applicants across all jobs.
         // Let's keep the broad fetch for the list but use the focused counts for the cards.
 
-        const myJobIds = allUserJobs.map(j => j.id);
         let applicantProfiles = [];
-        if (myJobIds.length > 0) {
-          const appsResults = await Promise.all(myJobIds.map(async (jobId) => {
-            return await JobApplication.filter({ job_id: jobId });
-          }));
-          // ... (rest of applicant processing logic remains similar but simplified if needed)
-          // For now, retaining the heavy logic below via existing code flow, 
-          // but we MUST ensure the counters at the top use our `realTotalApps` and `realTotalViews`.
-        }
 
         // ... (Existing applicant processing logic continues below in the file, we just need to ensure we don't break it)
         // But since we are replacing a block, we need to be careful to reconnect variables.
@@ -884,10 +877,7 @@ const EmployerDashboard = ({ user }) => {
         // Re-implementing the Applicant Profile Fetching needed for the list (lines 692-748 original)
         // because we are replacing the start of the block.
 
-        const allAppsFlat = (await Promise.all(myJobIds.map(async (jobId) => {
-          const apps = await JobApplication.filter({ job_id: jobId });
-          return apps.filter(a => a.status !== 'rejected');
-        }))).flat().sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+        // allAppsFlat is already fetched above
         console.log('[Dashboard] Total apps flat:', allAppsFlat.length);
 
         // Create job map for easy title lookup
