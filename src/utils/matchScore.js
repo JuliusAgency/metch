@@ -165,22 +165,43 @@ function calculateBottomPartScore(candidate_profile, job_posting) {
 
 /**
  * Score Specialization (תחום ההתמחות)
- * 90: Full match, 60: Close skills, 0: Irrelevant
+ * 90: Full match, 75: Close skills, 0: Irrelevant
  */
 function scoreSpecialization(candidate_profile, job_posting) {
-  const candidateSpecialization = (candidate_profile.specialization || candidate_profile.profession || '').toLowerCase();
+  const candidateSpecialization = (candidate_profile.specialization || candidate_profile.profession || candidate_profile.job_title || candidate_profile.title || '').toLowerCase();
   const jobCategory = job_posting.category?.toLowerCase() || '';
   const jobTitle = job_posting.title?.toLowerCase() || '';
   const jobDescription = (job_posting.description || '').toLowerCase();
 
-  // Full match
-  if (candidateSpecialization &&
-    (candidateSpecialization === jobCategory ||
-      jobTitle.includes(candidateSpecialization) ||
-      jobCategory.includes(candidateSpecialization) ||
-      jobDescription.includes(candidateSpecialization))) {
+  console.log('--- scoreSpecialization Debug ---');
+  console.log('Full Candidate Profile Fields:', {
+    specialization: candidate_profile.specialization,
+    profession: candidate_profile.profession,
+    job_title: candidate_profile.job_title,
+    title: candidate_profile.title,
+    bio: candidate_profile.bio
+  });
+  console.log('Job Target:', { title: jobTitle, category: jobCategory });
+
+  // Use Best Match strategy to check all candidate title fields against job title/category
+  const bestTitleMatch = getBestTitleMatch(candidate_profile, [jobCategory, jobTitle]);
+  console.log('Best Title Match Score:', bestTitleMatch);
+  
+  if (bestTitleMatch >= 80) {
+    console.log('Returning 90 (Best Match)');
     return 90;
   }
+  
+  // Also check description for strict/fuzzy match if needed, but usually title/category is enough for high score.
+  // If we want to check description too:
+  const descriptionMatch = getBestTitleMatch(candidate_profile, [jobDescription]);
+  if (descriptionMatch >= 80) {
+     console.log('Returning 90 (Description Match)');
+     return 90;
+  }
+
+  // Fallback to strict substring for description if fuzzy failed but strict exists (covered by getBestTitleMatch logic mostly)
+
 
   // Close skills - check for related terms
   const relatedTerms = getRelatedSpecializationTerms(candidateSpecialization);
@@ -191,7 +212,7 @@ function scoreSpecialization(candidate_profile, job_posting) {
   );
 
   if (hasRelatedTerm) {
-    return 60;
+    return 75; // Increased from 60 for softer matching
   }
 
   return 0;
@@ -199,43 +220,52 @@ function scoreSpecialization(candidate_profile, job_posting) {
 
 /**
  * Score Experience (ניסיון)
- * 100: Full match, 70: Similar, 0: No relevant experience
+ * 100: Full match, 85: Similar, 0: No relevant experience
  */
 function scoreExperience(candidate_profile, job_posting) {
   const candidateExperience = candidate_profile.experience || [];
   const jobRequirements = parseJsonField(job_posting.structured_requirements);
   const jobDescription = (job_posting.description || '').toLowerCase();
+  const jobTitle = (job_posting.title || '').toLowerCase();
 
-  if (candidateExperience.length === 0) {
-    return 0;
-  }
+  // Extract key experience terms from job (Now includes Job Title words!)
+  const jobExperienceTerms = extractExperienceTerms(jobRequirements, jobDescription, jobTitle);
 
-  // Extract key experience terms from job
-  const jobExperienceTerms = extractExperienceTerms(jobRequirements, jobDescription);
-
-  // Check candidate experience
   let fullMatches = 0;
   let similarMatches = 0;
 
-  candidateExperience.forEach(exp => {
-    const expText = (exp.title || exp.role || exp.description || '').toLowerCase();
-    const expType = (exp.type || '').toLowerCase();
+  if (candidateExperience.length > 0) {
+    candidateExperience.forEach(exp => {
+      const expText = (exp.title || exp.role || exp.description || '').toLowerCase();
+      const expType = (exp.type || '').toLowerCase();
 
-    jobExperienceTerms.forEach(jobTerm => {
-      if (expText.includes(jobTerm.term) || expType === jobTerm.type) {
-        if (jobTerm.isExact) {
-          fullMatches++;
-        } else {
-          similarMatches++;
+      jobExperienceTerms.forEach(jobTerm => {
+        // Check for exact phrase or tokens
+        if (expText.includes(jobTerm.term) || expType === jobTerm.type) {
+          if (jobTerm.isExact) {
+            fullMatches++;
+          } else {
+            similarMatches++;
+          }
         }
-      }
+      });
     });
-  });
+  }
 
   if (fullMatches > 0) {
     return 100;
   } else if (similarMatches > 0) {
-    return 70;
+    return 85; 
+  }
+
+  // Fallback: If no experience array match, but Candidate Title/Profession matches Job Terms
+  // (Handling case where experience parsing failed but user IS that thing)
+  const candidateTitle = (candidate_profile.job_title || candidate_profile.profession || candidate_profile.specialization || '').toLowerCase();
+  if (candidateTitle) {
+      const titleMatch = jobExperienceTerms.some(t => candidateTitle.includes(t.term) || t.term.includes(candidateTitle));
+      if (titleMatch) {
+          return 65; // Assign partial score based on Title match implication
+      }
   }
 
   return 0;
@@ -294,6 +324,8 @@ function scoreSkills(candidate_profile, job_posting) {
     return 100; // Full match
   } else if (matchRatio >= 0.5) {
     return 60; // Partial match
+  } else if (matchRatio > 0) {
+    return 30; // New: Give some points for any match instead of 0
   }
 
   return 0; // No match
@@ -340,16 +372,19 @@ function scoreCharacterTraits(candidate_profile, job_posting) {
  */
 function scoreJobDescription(candidate_profile, job_posting) {
   const jobDescription = (job_posting.description || '').toLowerCase();
+  const jobTitle = (job_posting.title || '').toLowerCase(); // Include job title in text
   const candidateBio = (candidate_profile.bio || '').toLowerCase();
   const candidateExperience = (candidate_profile.experience || [])
     .map(exp => (exp.description || exp.title || '').toLowerCase())
     .join(' ');
   const candidateSkills = (candidate_profile.skills || []).join(' ').toLowerCase();
+  const candidateTitle = (candidate_profile.job_title || candidate_profile.profession || '').toLowerCase(); // Include candidate title
 
-  const candidateText = `${candidateBio} ${candidateExperience} ${candidateSkills}`;
+  const candidateText = `${candidateBio} ${candidateExperience} ${candidateSkills} ${candidateTitle}`;
+  const jobText = `${jobDescription} ${jobTitle}`;
 
   // Simple keyword overlap calculation
-  const jobWords = extractKeywords(jobDescription);
+  const jobWords = extractKeywords(jobText);
   const candidateWords = extractKeywords(candidateText);
 
   const commonWords = jobWords.filter(word => candidateWords.includes(word));
@@ -360,7 +395,7 @@ function scoreJobDescription(candidate_profile, job_posting) {
   } else if (overlapRatio >= 0.15) {
     return 60; // Medium overlap
   } else if (overlapRatio > 0) {
-    return 20; // Low overlap
+    return 40; // Increased from 20 for softer matching
   }
 
   return 0;
@@ -373,18 +408,15 @@ function scoreJobDescription(candidate_profile, job_posting) {
  * 100: Identical profession, 70: Similar profession, 0: Different field
  */
 function scoreProfession(candidate_profile, job_posting) {
-  const candidateProfession = (candidate_profile.profession || candidate_profile.specialization || '').toLowerCase();
+  const candidateProfession = (candidate_profile.profession || candidate_profile.specialization || candidate_profile.job_title || '').toLowerCase();
   const jobTitle = (job_posting.title || '').toLowerCase();
   const jobCategory = (job_posting.category || '').toLowerCase();
 
-  if (!candidateProfession) {
-    return 0;
-  }
-
-  // Check for identical match
-  if (jobTitle.includes(candidateProfession) || jobCategory === candidateProfession) {
-    return 100;
-  }
+  // Use Best Match strategy
+  const bestMatch = getBestTitleMatch(candidate_profile, [jobTitle, jobCategory]);
+  
+  if (bestMatch >= 80) return 100;
+  if (bestMatch >= 50) return 70;
 
   // Check for similar professions
   const similarProfessions = getSimilarProfessions(candidateProfession);
@@ -438,7 +470,9 @@ function scoreAvailability(candidate_profile, job_posting) {
   // Parse availability
   const isImmediate = candidateAvailability.includes('מיידית') ||
     candidateAvailability.includes('immediate') ||
-    candidateAvailability.includes('מיד');
+    candidateAvailability.includes('מיד') ||
+    candidateAvailability.includes('negotiable') ||
+    candidateAvailability.includes('flexible');
 
   if (isImmediate) {
     if (!jobStartDate || isDateWithinMonth(jobStartDate)) {
@@ -456,6 +490,8 @@ function scoreAvailability(candidate_profile, job_posting) {
     if (!jobStartDate || isDateWithinMonth(jobStartDate)) {
       return 70; // Available within 1 month
     }
+    // If jobStartDate is beyond a month, but candidate is available within a month, it's still a partial match
+    // This logic might need refinement based on exact business rules. For now, if jobStartDate is too far, it's 0.
   }
 
   return 0;
@@ -575,9 +611,17 @@ function getRelatedSpecializationTerms(specialization) {
   return termMap[specialization] || [];
 }
 
-function extractExperienceTerms(requirements, description) {
+
+
+function extractExperienceTerms(requirements, description, jobTitle = '') {
   const terms = [];
   const commonRoles = ['מנהל', 'מפתח', 'מכירות', 'manager', 'developer', 'sales'];
+
+  // Add Job Title tokens as high-value terms
+  const titleTokens = jobTitle.split(/[\s\-\/]+/).filter(w => w.length > 2);
+  titleTokens.forEach(token => {
+      terms.push({ term: token, isExact: true });
+  });
 
   [...requirements, { value: description }].forEach(item => {
     const value = (item.value || '').toLowerCase();
@@ -660,5 +704,59 @@ function isDateWithinMonth(dateString) {
   const oneMonthFromNow = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
 
   return date <= oneMonthFromNow;
+}
+
+function calculateFuzzyMatch(str1, str2) {
+  if (!str1 || !str2) return 0;
+  
+  // Normalize and tokenize by spaces, dashes, slashes
+  const normalizeTokens = (str) => {
+    return str.toLowerCase()
+      .replace(/[\/\-,]/g, ' ') // Replace chars with space
+      .split(/\s+/)
+      .filter(w => w.length > 1); // Ignore single chars
+  };
+
+  const tokens1 = normalizeTokens(str1);
+  const tokens2 = normalizeTokens(str2);
+
+  if (tokens1.length === 0 || tokens2.length === 0) return 0;
+
+  // Calculate overlap
+  let matches = 0;
+  tokens1.forEach(t1 => {
+    if (tokens2.some(t2 => t2.includes(t1) || t1.includes(t2))) {
+      matches++;
+    }
+  });
+
+  return (matches / tokens1.length) * 100;
+}
+
+function getBestTitleMatch(candidate_profile, targets) {
+  const candidateFields = ['specialization', 'profession', 'job_title', 'title'];
+  let maxScore = 0;
+
+  for (const field of candidateFields) {
+    const val = (candidate_profile[field] || '').toLowerCase();
+    if (!val) continue;
+
+    for (const target of targets) {
+      if (!target) continue;
+      const t = target.toLowerCase();
+      
+      // Strict Check
+      if (val === t || t.includes(val) || val.includes(t)) {
+        maxScore = 100; // Max possible for strict match
+        break; 
+      }
+      
+      // Fuzzy Check
+      const score = calculateFuzzyMatch(val, t);
+      if (score > maxScore) maxScore = score;
+    }
+    if (maxScore === 100) break;
+  }
+  return maxScore;
 }
 

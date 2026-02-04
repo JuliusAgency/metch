@@ -85,8 +85,8 @@ const JobSeekerDashboard = ({ user }) => {
           return { ...job, match_score: Math.round(score * 100) };
         }));
 
-        // Filter: Match >= 60%
-        const qualifiedJobs = scoredJobs.filter(job => job.match_score >= 60);
+        // Filter: Match >= 40% (Lowered from 60% for broader visibility)
+        const qualifiedJobs = scoredJobs.filter(job => job.match_score >= 40);
 
         // Sort by match score (descending)
         qualifiedJobs.sort((a, b) => b.match_score - a.match_score);

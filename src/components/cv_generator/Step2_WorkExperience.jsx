@@ -51,6 +51,14 @@ const newExperienceItem = () => ({
 const CATEGORIES = ["מכירות", "שירות לקוחות", "תמיכה טכנית", "ניהול משרד"];
 const JOB_TYPES = ["גמיש", "מלאה", "חלקית", "משמרות"];
 const AVAILABILITIES = ["גמיש", "מיידי", "שבוע עד שבועיים", "חודש עד חודשיים"];
+const AVAILABILITY_MAPPING = {
+  "גמיש": "negotiable",
+  "גמישה": "negotiable",
+  "מיידי": "immediate",
+  "מיידית": "immediate",
+  "שבוע עד שבועיים": "two_weeks",
+  "חודש עד חודשיים": "one_month"
+};
 
 export default function Step2_WorkExperience({ data, setData, onDirtyChange, isUploadFlow = false }) {
   // --- PREFERENCES LOGIC (Upload Flow) ---
@@ -101,8 +109,8 @@ export default function Step2_WorkExperience({ data, setData, onDirtyChange, isU
                 key={cat}
                 onClick={() => handleCategoryToggle(cat)}
                 className={`py-2 px-1 rounded-full text-[11px] font-medium border transition-all truncate ${formData.categories.includes(cat)
-                    ? 'bg-blue-50 border-blue-500 text-blue-600'
-                    : 'bg-white border-blue-200 text-gray-600 hover:border-blue-400'
+                  ? 'bg-blue-50 border-blue-500 text-blue-600'
+                  : 'bg-white border-blue-200 text-gray-600 hover:border-blue-400'
                   }`}
               >
                 {cat}
@@ -148,8 +156,8 @@ export default function Step2_WorkExperience({ data, setData, onDirtyChange, isU
                 key={type}
                 onClick={() => handleJobTypeToggle(type)}
                 className={`py-2 px-1 rounded-full text-xs font-medium border transition-all ${formData.jobTypes.includes(type)
-                    ? 'bg-blue-50 border-blue-500 text-blue-600'
-                    : 'bg-white border-blue-200 text-gray-600 hover:border-blue-400'
+                  ? 'bg-blue-50 border-blue-500 text-blue-600'
+                  : 'bg-white border-blue-200 text-gray-600 hover:border-blue-400'
                   }`}
               >
                 {type}
@@ -163,10 +171,10 @@ export default function Step2_WorkExperience({ data, setData, onDirtyChange, isU
             {AVAILABILITIES.map(avail => (
               <button
                 key={avail}
-                onClick={() => handleChange('availability', avail)}
-                className={`py-2 px-1 rounded-full text-[10px] font-medium border transition-all whitespace-normal h-10 flex items-center justify-center leading-tight ${formData.availability === avail
-                    ? 'bg-blue-50 border-blue-500 text-blue-600'
-                    : 'bg-white border-blue-200 text-gray-600 hover:border-blue-400'
+                onClick={() => handleChange('availability', AVAILABILITY_MAPPING[avail] || avail)}
+                className={`py-2 px-1 rounded-full text-[10px] font-medium border transition-all whitespace-normal h-10 flex items-center justify-center leading-tight ${(formData.availability === avail || formData.availability === (AVAILABILITY_MAPPING[avail] || avail))
+                  ? 'bg-blue-50 border-blue-500 text-blue-600'
+                  : 'bg-white border-blue-200 text-gray-600 hover:border-blue-400'
                   }`}
               >
                 {avail}

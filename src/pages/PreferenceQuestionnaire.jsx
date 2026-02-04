@@ -87,7 +87,8 @@ export default function PreferenceQuestionnaire() {
         loadedJobType = JOB_TYPE_MAPPING[dbJobType] || dbJobType || '';
 
         // Availability (Map to Hebrew)
-        const loadedAvailability = AVAILABILITY_MAPPING[user.availability] || user.availability || '';
+        // Availability (Keep as English/DB value)
+        const loadedAvailability = user.availability || '';
 
         setPreferences({
           field: user.specialization || '',

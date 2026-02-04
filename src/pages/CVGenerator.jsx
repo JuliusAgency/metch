@@ -351,6 +351,23 @@ export default function CVGenerator() {
       }
 
       let payload = { ...cvData };
+
+      // Normalize availability if it's in Hebrew
+      if (payload.preferences && payload.preferences.availability) {
+        const AVAILABILITY_MAPPING = {
+          "גמיש": "negotiable",
+          "גמישה": "negotiable",
+          "מיידי": "immediate",
+          "מיידית": "immediate",
+          "שבוע עד שבועיים": "two_weeks",
+          "חודש עד חודשיים": "one_month"
+        };
+        const mappedAvailability = AVAILABILITY_MAPPING[payload.preferences.availability];
+        if (mappedAvailability) {
+          payload.preferences.availability = mappedAvailability;
+        }
+      }
+
       if (step === STEPS.length) {
         if (!payload.file_name || !payload.file_name.trim()) {
           toast({

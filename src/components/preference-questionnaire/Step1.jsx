@@ -22,6 +22,14 @@ import locationsList from '../../../locations.json';
 // Option constants
 const JOB_TYPES = ["משמרות", "חלקית", "מלאה", "גמישה"];
 const AVAILABILITIES = ["חודש עד חודשיים", "שבוע עד שבועיים", "מיידית", "גמישה"];
+const AVAILABILITY_MAPPING = {
+    "גמישה": "negotiable",
+    "גמיש": "negotiable",
+    "מיידית": "immediate",
+    "מיידי": "immediate",
+    "שבוע עד שבועיים": "two_weeks",
+    "חודש עד חודשיים": "one_month"
+};
 const FIELDS = ["מכירות", "שירות לקוחות", "תמיכה טכנית", "ניהול משרד"];
 
 const PillButton = ({ label, isSelected, onClick }) => (
@@ -52,9 +60,14 @@ export default function Step1({
     const [openLocation, setOpenLocation] = React.useState(false);
 
     const handleSelection = (category, value) => {
+        let finalValue = value;
+        if (category === 'availability' && AVAILABILITY_MAPPING[value]) {
+            finalValue = AVAILABILITY_MAPPING[value];
+        }
+
         setPreferences(prev => ({
             ...prev,
-            [category]: prev[category] === value ? '' : value
+            [category]: prev[category] === (finalValue || value) ? '' : (finalValue || value)
         }));
     };
 
@@ -198,7 +211,7 @@ export default function Step1({
                         <PillButton
                             key={avail}
                             label={avail}
-                            isSelected={preferences.availability === avail}
+                            isSelected={preferences.availability === avail || preferences.availability === AVAILABILITY_MAPPING[avail]}
                             onClick={() => handleSelection('availability', avail)}
                         />
                     ))}
