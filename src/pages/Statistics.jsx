@@ -60,8 +60,7 @@ export default function Statistics() {
                     JobApplication.filter({ job_id: job.id })
                 ]);
                 viewsMap[job.id] = views.length;
-                // Only count NON-REJECTED applications
-                appsMap[job.id] = apps.filter(a => a.status !== 'rejected').length;
+                appsMap[job.id] = apps.length;
             }));
 
             setJobViews(viewsMap);

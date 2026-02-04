@@ -126,7 +126,8 @@ export default function AnswerQuestionnaire() {
                 job_id: job.id,
                 applicant_email: user.email,
                 applicant_id: user.id,
-                status: 'pending'
+                status: 'pending',
+                created_date: new Date().toISOString()
             });
 
             // Track application in analytics

@@ -399,7 +399,7 @@ export class EmployerAnalytics {
         appsResults.forEach(({ jobId, apps }) => {
           totalAppsCount += apps.length;
           if (activeJobIds.includes(jobId)) {
-            activeAppsCount += apps.filter(app => app.status !== 'rejected').length;
+            activeAppsCount += apps.length;
             realPendingApplications += apps.filter(app => app.status === 'pending').length;
           }
           // Unique candidates across ALL relevant jobs
@@ -428,9 +428,9 @@ export class EmployerAnalytics {
           total_jobs_published: activeJobsCount,
           total_candidates_viewed: 0,
         }),
-        // These are the stats shown on the dashboard cards
-        total_applications_received: activeAppsCount,
-        total_job_views: activeViewsCount,
+        // These are the stats shown on the dashboard cards - use ALL relevant jobs (Total)
+        total_applications_received: totalAppsCount,
+        total_job_views: totalViewsCount,
         total_jobs_published: activeJobsCount,
 
         // Include "all time" stats for other potential uses
