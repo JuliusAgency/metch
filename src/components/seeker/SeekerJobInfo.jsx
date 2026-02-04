@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Sparkles, ChevronDown, Info, FileText, ClipboardList, Send } from "lucide-react";
+import { Sparkles, ChevronDown, Info, FileText, ClipboardList, Send, GraduationCap, Award } from "lucide-react";
 import {
     Accordion,
     AccordionContent,
@@ -11,15 +11,39 @@ import SeekerJobPerks from "./SeekerJobPerks";
 const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, showAiAnalysis = true, showResponsibilities = true }) => {
     const [activeTab, setActiveTab] = useState("about");
 
-    const baseRequirements = job.requirements || job.structured_requirements || [];
-    const baseResponsibilities = job.responsibilities || job.structured_education || [];
-    const baseCertifications = job.structured_certifications || [];
+    const tryParse = (val) => {
+        if (!val) return [];
+        if (typeof val !== 'string') return val;
+        try {
+            let processed = val.trim();
+            // Handle double stringification
+            if (processed.startsWith('"') && processed.endsWith('"')) {
+                try {
+                    processed = JSON.parse(processed);
+                } catch (e) {
+                    // fall back to original
+                }
+            }
+            if (processed.startsWith('[') || processed.startsWith('{')) {
+                return JSON.parse(processed);
+            }
+            return processed;
+        } catch (e) {
+            return val;
+        }
+    };
+
+    const baseRequirements = tryParse(job.requirements || job.structured_requirements || []);
+    const baseEducation = tryParse(job.structured_education || []);
+    const baseCertifications = tryParse(job.structured_certifications || []);
+    const baseResponsibilities = tryParse(job.responsibilities || []);
 
     const finalRequirements = showResponsibilities
         ? baseRequirements
         : [
             ...(Array.isArray(baseRequirements) ? baseRequirements : (baseRequirements ? [baseRequirements] : [])),
             ...(Array.isArray(baseResponsibilities) ? baseResponsibilities : (baseResponsibilities ? [baseResponsibilities] : [])),
+            ...(Array.isArray(baseEducation) ? baseEducation : (baseEducation ? [baseEducation] : [])),
             ...(Array.isArray(baseCertifications) ? baseCertifications : (baseCertifications ? [baseCertifications] : []))
         ].filter(item => {
             if (typeof item === 'object' && item !== null) {
