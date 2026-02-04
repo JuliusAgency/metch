@@ -335,12 +335,12 @@ export default function FAQ() {
         )}
 
         {/* Adjust container margin/padding for Seeker Mobile */}
-        <div className={`${user?.user_type === 'job_seeker' ? 'p-0 mt-0 pt-4' : 'p-4 sm:p-6 md:p-8 -mt-16'} relative z-10 w-full max-w-4xl mx-auto`}>
+        <div className={`${user?.user_type === 'job_seeker' ? 'p-0 mt-0 pt-4 md:-mt-20 md:p-8' : 'p-4 sm:p-6 md:p-8 -mt-16'} relative z-10 w-full max-w-4xl mx-auto`}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className={`space-y-8 ${user?.user_type === 'job_seeker' ? 'bg-white [border-top-left-radius:50%_40px] [border-top-right-radius:50%_40px] min-h-screen pt-8 px-6 shadow-[0_0_20px_rgba(0,0,0,0.1)]' : ''}`}
+            className={`space-y-8 ${user?.user_type === 'job_seeker' ? 'bg-white [border-top-left-radius:50%_40px] [border-top-right-radius:50%_40px] min-h-screen pt-8 px-6 shadow-[0_0_20px_rgba(0,0,0,0.1)] md:bg-transparent md:rounded-none md:shadow-none md:min-h-0 md:pt-0 md:px-0' : ''}`}
           >
             {/* Title */}
             <div className={`text-center ${user?.user_type === 'job_seeker' ? 'hidden md:block' : ''}`}>

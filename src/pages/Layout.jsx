@@ -151,7 +151,7 @@ export default function Layout({ children, currentPageName }) {
   // Hide header if it's an auth page OR (it's an onboarding page AND we are in onboarding mode) OR specific onboarding query param exists
   const isSettingsOnboarding = currentPageName === 'Settings' && searchParams.get('onboarding') === 'company_details';
   // Check if we are in Settings, Profile, or Notifications as a job seeker to enable mobile full-width redesign
-  const isJobSeekerMobileFlow = (currentPageName === 'Settings' || currentPageName === 'Profile' || currentPageName === 'JobDetailsSeeker' || currentPageName === 'Notifications' || currentPageName === 'Messages' || currentPageName === 'MessagesSeeker' || currentPageName === 'FAQ');
+  const isJobSeekerMobileFlow = (currentPageName === 'Settings' || currentPageName === 'Profile' || currentPageName === 'JobDetailsSeeker' || currentPageName === 'Notifications' || currentPageName === 'Messages' || currentPageName === 'MessagesSeeker' || currentPageName === 'FAQ' || currentPageName === 'Contact');
 
   const shouldHideHeader = authPages.includes(currentPageName) || (onboardingPages.includes(currentPageName) && isOnboardingActive) || isSettingsOnboarding || currentPageName === 'CompanyProfileCompletion' || currentPageName === 'JobSeekerProfileCompletion';
 

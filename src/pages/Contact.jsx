@@ -15,6 +15,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
+import settingsMobileBg from "@/assets/settings_mobile_bg.jpg";
 
 
 
@@ -46,8 +47,25 @@ export default function Contact() {
   return (
     <div className="w-full mx-auto" dir="rtl">
       <div className="relative rounded-2xl overflow-hidden mb-6">
-        {/* Header with curved background */}
-        <div className="relative h-20 overflow-hidden -m-px">
+
+        {/* Mobile Job Seeker Background */}
+        {user?.user_type === 'job_seeker' && (
+          <div
+            className="md:hidden fixed top-0 left-0 right-0 pointer-events-none"
+            style={{
+              width: '100%',
+              height: '280px',
+              backgroundImage: `url(${settingsMobileBg})`,
+              backgroundSize: '100% 100%',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              zIndex: 0
+            }}
+          />
+        )}
+
+        {/* Header with curved background - Hidden for Mobile Job Seeker */}
+        <div className={`relative h-20 overflow-hidden -m-px ${user?.user_type === 'job_seeker' ? 'hidden md:block' : ''}`}>
           <div
             className="absolute inset-0 w-full h-full"
             style={{
@@ -65,12 +83,21 @@ export default function Contact() {
           </Link>
         </div>
 
-        <div className="p-4 sm:p-6 md:p-8 -mt-6 relative z-10 bg-white/0">
+        {/* Mobile Job Seeker Custom Header */}
+        {user?.user_type === 'job_seeker' && (
+          <div className="md:hidden flex items-center px-6 pt-10 pb-4 relative z-10 w-full justify-center">
+            <Link to={createPageUrl("Dashboard")} className="absolute right-6 w-10 h-10 bg-white/50 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm">
+              <ChevronLeft className="w-6 h-6 text-gray-800 rotate-180" />
+            </Link>
+          </div>
+        )}
+
+        <div className={`relative z-10 ${user?.user_type === 'job_seeker' ? 'mt-4 px-0 md:p-8 md:-mt-6' : 'p-4 sm:p-6 md:p-8 -mt-6 bg-white/0'}`}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="flex flex-col items-center justify-center text-center space-y-8 py-4"
+            className={`flex flex-col items-center justify-center text-center space-y-8 ${user?.user_type === 'job_seeker' ? 'bg-white md:bg-transparent [border-top-left-radius:50%_40px] md:rounded-none [border-top-right-radius:50%_40px] min-h-screen md:min-h-0 pt-12 md:pt-4 px-6 md:px-0 shadow-[0_0_20px_rgba(0,0,0,0.1)] md:shadow-none' : 'py-4'}`}
           >
             {/* Title */}
             <h1 className="text-xl md:text-2xl font-bold text-gray-900">יצירת קשר</h1>
