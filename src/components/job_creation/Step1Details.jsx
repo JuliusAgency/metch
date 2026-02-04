@@ -3,10 +3,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, ArrowRight, Loader2, Info } from 'lucide-react';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 import DynamicRequirementInput from './DynamicRequirementInput';
 import jobCategoryList from '../../../jobs_category.json';
@@ -59,7 +59,7 @@ export default function Step1Details({ jobData, setJobData }) {
       </div>
 
       <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
           <CategorySelect
             value={jobData.category || ''}
             onChange={(value) => handleSelectChange('category', value)}
@@ -88,7 +88,7 @@ export default function Step1Details({ jobData, setJobData }) {
           </Select>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
           <Select
             value={jobData.employment_type || ''}
             onValueChange={(value) => handleSelectChange('employment_type', value)}
@@ -112,15 +112,15 @@ export default function Step1Details({ jobData, setJobData }) {
         </div>
 
         <div className="relative">
-          <div className="absolute top-3 -right-8 pointer-events-auto hidden md:block">
-            <Tooltip>
-              <TooltipTrigger asChild>
+          <div className="absolute top-2 left-2 md:top-3 md:-right-8 md:left-auto pointer-events-auto block w-fit z-10">
+            <Popover>
+              <PopoverTrigger asChild>
                 <Info className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs bg-[#000000] text-white p-2 text-right border-none rounded-sm shadow-lg z-[100]" side="top">
+              </PopoverTrigger>
+              <PopoverContent className="max-w-xs bg-[#000000] text-white p-2 text-right border-none rounded-sm shadow-lg z-[100]" side="top">
                 <p className="text-xs leading-relaxed font-medium">כאן ממלאים את הפתיח ומידע נוסף כגון: תיאור התפקיד/המשרה, תחומי אחריות, שכר צפוי וכל מידע שתרצו לשתף על המשרה או החברה.<br />שימו לב - כאן לא מוסיפים דרישות יתרון או חובה לתפקיד.</p>
-              </TooltipContent>
-            </Tooltip>
+              </PopoverContent>
+            </Popover>
           </div>
           <Textarea
             name="description"

@@ -156,7 +156,7 @@ export default function Layout({ children, currentPageName }) {
   const shouldHideHeader = authPages.includes(currentPageName) || (onboardingPages.includes(currentPageName) && isOnboardingActive) || isSettingsOnboarding || currentPageName === 'CompanyProfileCompletion' || currentPageName === 'JobSeekerProfileCompletion';
 
   return (
-    <div className={`min-h-screen ${currentPageName === 'Dashboard' ? 'bg-[linear-gradient(180deg,#dcedf4_0%,#dcedf4_20%,#FFFFFF_100%)] md:[background:var(--page-gradient)]' : 'page-gradient'}`} dir="rtl">
+    <div className={`min-h-screen w-full max-w-[100vw] overflow-x-hidden ${currentPageName === 'Dashboard' ? 'bg-[linear-gradient(180deg,#dcedf4_0%,#dcedf4_20%,#FFFFFF_100%)] md:[background:var(--page-gradient)]' : 'page-gradient'}`} dir="rtl">
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');

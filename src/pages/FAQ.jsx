@@ -289,7 +289,7 @@ export default function FAQ() {
     <div className="h-full relative" dir="rtl">
       <div className="relative">
         {/* ... existing header ... */}
-        <div className="relative h-32 overflow-hidden w-full">
+        <div className="relative h-36 overflow-hidden w-full">
           <div
             className="absolute inset-0 w-full h-full"
             style={{
