@@ -1,4 +1,4 @@
-import { EmployerAction, EmployerStats, Job, JobApplication, JobView, Notification } from '@/api/entities';
+import { EmployerAction, EmployerStats, Job, JobApplication, JobView, Notification, CandidateView } from '@/api/entities';
 
 /**
  * Utility class for tracking employer actions and updating analytics
@@ -181,6 +181,8 @@ export class EmployerAnalytics {
    * Track candidate profile view
    */
   static async trackCandidateView(employerEmail, candidate, jobContext = null) {
+    if (!candidate) return;
+
     const actionData = {
       candidate_email: candidate.email,
       candidate_name: candidate.full_name,
@@ -188,17 +190,30 @@ export class EmployerAnalytics {
       job_title: jobContext?.title
     };
 
+    // 1. Record EmployerAction
     const result = await this.trackAction(employerEmail, 'candidate_view', actionData);
 
-    // Create notification for the candidate
+    // 2. Create persistent CandidateView record for seeker stats (safer)
+    try {
+      await CandidateView.create({
+        candidate_name: candidate.full_name,
+        viewer_email: employerEmail,
+        candidate_email: candidate.email,
+        job_id: jobContext?.id,
+        viewed_at: new Date().toISOString()
+      });
+    } catch (viewErr) {
+      console.error('Error creating CandidateView record (non-blocking):', viewErr);
+    }
+
+    // 3. Create notification for the candidate (this is our primary source for seeker dashboard stats)
     try {
       if (candidate.id || candidate.email) {
         await Notification.create({
           type: 'profile_view',
-          user_id: candidate.id || candidate.email,
+          user_id: candidate.id || null,
           email: candidate.email,
-          created_by: candidate.id || candidate.email,
-          title: 'מישהו צפה בפרופיל שלך',
+          title: 'מישהו צפה לך בפרופיל!',
           message: `מעסיק צפה בפרופיל שלך${jobContext?.title ? ` בהקשר למשרת ${jobContext.title}` : ''}`,
           is_read: 'false',
           created_date: new Date().toISOString()
@@ -206,6 +221,55 @@ export class EmployerAnalytics {
       }
     } catch (notifErr) {
       console.error('Error creating profile_view notification for candidate:', notifErr);
+    }
+
+    return result;
+  }
+
+  /**
+   * Track candidate resume view
+   */
+  static async trackResumeView(employerEmail, candidate, jobContext = null) {
+    if (!candidate) return;
+
+    const actionData = {
+      candidate_email: candidate.email,
+      candidate_name: candidate.full_name,
+      job_id: jobContext?.id,
+      job_title: jobContext?.title
+    };
+
+    // 1. Record EmployerAction
+    const result = await this.trackAction(employerEmail, 'candidate_resume_view', actionData);
+
+    // 2. Create persistent CandidateView record for seeker stats (safer)
+    try {
+      await CandidateView.create({
+        candidate_name: candidate.full_name,
+        viewer_email: employerEmail,
+        candidate_email: candidate.email,
+        job_id: jobContext?.id,
+        viewed_at: new Date().toISOString()
+      });
+    } catch (viewErr) {
+      console.error('Error creating CandidateView (resume) record (non-blocking):', viewErr);
+    }
+
+    // 3. Create notification for the candidate
+    try {
+      if (candidate.id || candidate.email) {
+        await Notification.create({
+          type: 'resume_view',
+          user_id: candidate.id || null,
+          email: candidate.email,
+          title: 'מישהו צפה לך בקורות החיים!',
+          message: `מעסיק צפה בקורות החיים שלך${jobContext?.title ? ` בהקשר למשרת ${jobContext.title}` : ''}`,
+          is_read: 'false',
+          created_date: new Date().toISOString()
+        });
+      }
+    } catch (notifErr) {
+      console.error('Error creating resume_view notification for candidate:', notifErr);
     }
 
     return result;
@@ -335,7 +399,7 @@ export class EmployerAnalytics {
         appsResults.forEach(({ jobId, apps }) => {
           totalAppsCount += apps.length;
           if (activeJobIds.includes(jobId)) {
-            activeAppsCount += apps.length;
+            activeAppsCount += apps.filter(app => app.status !== 'rejected').length;
             realPendingApplications += apps.filter(app => app.status === 'pending').length;
           }
           // Unique candidates across ALL relevant jobs

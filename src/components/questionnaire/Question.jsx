@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 
-const Question = ({ index, text, value, onAnswer, type }) => (
+const Question = ({ index, text, value, onAnswer, type, error }) => (
     <motion.div
         key={index}
         initial={{ opacity: 0, y: 20 }}
@@ -9,7 +9,7 @@ const Question = ({ index, text, value, onAnswer, type }) => (
         transition={{ delay: index * 0.1 }}
         className="flex flex-col items-start w-full mb-6"
     >
-        <div className="bg-white border border-gray-200 rounded-[20px] px-6 py-3 mb-3 text-right shadow-sm inline-block max-w-full">
+        <div className={`bg-white border ${error ? 'border-red-500' : 'border-gray-200'} rounded-[20px] px-6 py-3 mb-3 text-right shadow-sm inline-block max-w-full transition-colors`}>
             <span className="text-gray-900 font-medium text-sm md:text-base">
                 {text}
             </span>
@@ -19,7 +19,7 @@ const Question = ({ index, text, value, onAnswer, type }) => (
                 value={value || ''}
                 onChange={(e) => onAnswer(e.target.value)}
                 placeholder="תשובה"
-                className="w-full h-12 border-gray-300 rounded-[20px] text-right px-6 bg-white focus:bg-white focus:ring-1 focus:ring-blue-200 transition-all placeholder:text-gray-300"
+                className={`w-full h-12 border ${error ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-[20px] text-right px-6 bg-white focus:bg-white focus:ring-1 focus:ring-blue-200 transition-all placeholder:text-gray-300`}
                 dir="rtl"
             />
             {type === 'yes_no' && (

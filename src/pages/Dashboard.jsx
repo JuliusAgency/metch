@@ -56,7 +56,10 @@ const JOB_TYPE_TRANSLATIONS = {
   'full_time': 'משרה מלאה',
   'part_time': 'משרה חלקית',
   'shifts': 'משמרות',
-  'flexible': 'גמיש/ה'
+  'flexible': 'גמיש/ה',
+  'contract': 'חוזה',
+  'freelance': 'פרילנס',
+  'internship': 'התמחות'
 };
 
 // --- ICONS AND ASSETS ---
@@ -261,9 +264,22 @@ const JobSeekerDashboard = ({ user }) => {
           Job.filter({ status: 'active' }, "-created_date", 100),
           JobView.filter({ viewer_id: user.id }),
           Notification.filter({ is_read: 'false', user_id: user.id }, "-created_date", 5), // Change to user_id
-          UserAnalytics.getUserStats(user.id), // Change to user.id
-          CandidateView.filter({ candidate_id: user.id }), // Change to candidate_id
-          UserProfile.filter({ id: user.id }).then(profiles => profiles[0] || null), // Change to ID
+          UserAnalytics.getUserStats(user.id),
+          Promise.all([
+            Notification.filter({ user_id: user.id, type: 'profile_view' }),
+            Notification.filter({ email: user.email, type: 'profile_view' }),
+            Notification.filter({ user_id: user.id, type: 'resume_view' }),
+            Notification.filter({ email: user.email, type: 'resume_view' })
+          ]).then(results => {
+            // results: [profileByUid, profileByEmail, resumeByUid, resumeByEmail]
+            const profileIds = new Set([...results[0], ...results[1]].map(n => n.id));
+            const resumeIds = new Set([...results[2], ...results[3]].map(n => n.id));
+            return {
+              profileCount: profileIds.size,
+              resumeCount: resumeIds.size
+            };
+          }),
+          UserProfile.filter({ id: user.id }).then(profiles => profiles[0] || null),
           JobApplication.filter({ applicant_id: user.id }), // Change to applicant_id
           CV.filter({ user_email: user.email }).then(cvs => cvs[0] || null) // Fetch user CV
         ]);
@@ -309,15 +325,17 @@ const JobSeekerDashboard = ({ user }) => {
           })
         );
 
-        // Enhance stats with profile views data
+        // Enhance stats with notification view data (which is more reliable than CandidateView right now)
+        const { profileCount, resumeCount } = profileViewsData;
+
         const enhancedStats = statsData ? {
           ...statsData,
-          profile_views: profileViewsData.length,
-          resume_views: profileViewsData.length
+          profile_views: profileCount,
+          resume_views: resumeCount
         } : {
-          profile_views: profileViewsData.length,
-          resume_views: profileViewsData.length,
-          total_applications: 0
+          profile_views: profileCount,
+          resume_views: resumeCount,
+          total_applications: applicationsData.length || 0
         };
 
         // Filter: Show all jobs with valid match scores (>= 0) OR null scores (calculation failed)
@@ -514,7 +532,7 @@ const JobSeekerDashboard = ({ user }) => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-12 stats-grid justify-items-center">
                 <StatCard icon={JsRelevantJobsIcon} title="משרות רלוונטיות" value={allJobs.length} />
                 <StatCard icon={JsCvIcon} title="מועמדויות שהגשת" value={userStats?.total_applications || 0} />
-                <StatCard icon={JsApplicationsIcon} title="קורות חיים שנצפו" value={userStats?.resume_views || userStats?.profile_views || 0} />
+                <StatCard icon={JsApplicationsIcon} title="קורות חיים שנצפו" value={userStats?.resume_views || 0} />
                 <StatCard icon={JsProfileViewsIcon} title="צפו בכרטיס שלי" value={userStats?.profile_views || 0} />
               </div>
 
@@ -818,7 +836,8 @@ const EmployerDashboard = ({ user }) => {
             JobApplication.filter({ job_id: job.id }),
             JobView.filter({ job_id: job.id })
           ]);
-          realTotalApps += jobApps.length;
+          // Only count NON-REJECTED applications to match the list and statistics logic
+          realTotalApps += jobApps.filter(a => a.status !== 'rejected').length;
           realTotalViews += jobViews.length;
         }));
         console.log('[Dashboard] Stats - Apps:', realTotalApps, 'Views:', realTotalViews);
@@ -866,7 +885,8 @@ const EmployerDashboard = ({ user }) => {
         // because we are replacing the start of the block.
 
         const allAppsFlat = (await Promise.all(myJobIds.map(async (jobId) => {
-          return await JobApplication.filter({ job_id: jobId });
+          const apps = await JobApplication.filter({ job_id: jobId });
+          return apps.filter(a => a.status !== 'rejected');
         }))).flat().sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
         console.log('[Dashboard] Total apps flat:', allAppsFlat.length);
 
@@ -1200,21 +1220,7 @@ const EmployerDashboard = ({ user }) => {
               const match = getStableMatchScore(candidate.id);
               const jobAppliedTo = candidateApplications[candidate.email];
 
-              // Helper Maps
-              const availabilityText = {
-                immediate: "מיידית",
-                two_weeks: "תוך שבועיים",
-                one_month: "תוך חודש",
-                negotiable: "גמיש/ה",
-              };
-
-              const jobTypeText = {
-                full_time: "משרה מלאה",
-                part_time: "משרה חלקית",
-                contract: "חוזה",
-                freelance: "פרילנס",
-                internship: "התמחות",
-              };
+              // Use global maps for translations
 
               return (
                 <motion.div key={candidate.unique_app_id || candidate.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
@@ -1272,7 +1278,7 @@ const EmployerDashboard = ({ user }) => {
                               <Briefcase className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" />
                               <span>
                                 {candidate.preferred_job_types?.length > 0
-                                  ? (jobTypeText[candidate.preferred_job_types[0]] || candidate.preferred_job_types[0])
+                                  ? (JOB_TYPE_TRANSLATIONS[candidate.preferred_job_types[0]] || candidate.preferred_job_types[0])
                                   : "לא צוין"}
                               </span>
                             </div>
@@ -1281,7 +1287,7 @@ const EmployerDashboard = ({ user }) => {
                               <Clock className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" />
                               <span>
                                 {candidate.availability
-                                  ? (availabilityText[candidate.availability] || candidate.availability)
+                                  ? (AVAILABILITY_TRANSLATIONS[candidate.availability] || candidate.availability)
                                   : "לא צוין"}
                               </span>
                             </div>

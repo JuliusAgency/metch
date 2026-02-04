@@ -5,7 +5,6 @@ import { ArrowLeft, ArrowRight, Loader2, Info } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
@@ -113,17 +112,15 @@ export default function Step1Details({ jobData, setJobData }) {
         </div>
 
         <div className="relative">
-          <div className="absolute top-3 -right-8 pointer-events-auto">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs bg-black text-white p-3 text-right border-none" side="left">
-                  <p className="text-sm leading-relaxed">כאן ממלאים את הפתיח ומידע נוסף כגון: תיאור התפקיד/המשרה, תחומי אחריות, שכר צפוי וכל מידע שתרצו לשתף על המשרה או החברה.<br />שימו לב - כאן לא מוסיפים דרישות יתרון או חובה לתפקיד.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+          <div className="absolute top-3 -right-8 pointer-events-auto hidden md:block">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs bg-[#000000] text-white p-2 text-right border-none rounded-sm shadow-lg z-[100]" side="top">
+                <p className="text-xs leading-relaxed font-medium">כאן ממלאים את הפתיח ומידע נוסף כגון: תיאור התפקיד/המשרה, תחומי אחריות, שכר צפוי וכל מידע שתרצו לשתף על המשרה או החברה.<br />שימו לב - כאן לא מוסיפים דרישות יתרון או חובה לתפקיד.</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           <Textarea
             name="description"

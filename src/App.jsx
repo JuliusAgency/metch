@@ -4,12 +4,16 @@ import { Toaster } from "@/components/ui/sonner"
 import { UserProvider } from "@/contexts/UserContext"
 import AccessibilityButton from "@/components/layout/AccessibilityButton"
 
+import { TooltipProvider } from "@/components/ui/tooltip"
+
 function App() {
   return (
     <UserProvider>
-      <Pages />
-      <Toaster />
-      <AccessibilityButton />
+      <TooltipProvider delayDuration={300}>
+        <Pages />
+        <Toaster />
+        <AccessibilityButton />
+      </TooltipProvider>
     </UserProvider>
   )
 }

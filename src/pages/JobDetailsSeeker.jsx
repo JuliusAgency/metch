@@ -145,6 +145,7 @@ export default function JobDetailsSeeker() {
           fetchedJob.company_perks = safeParseJSON(fetchedJob.company_perks);
           fetchedJob.structured_requirements = safeParseJSON(fetchedJob.structured_requirements);
           fetchedJob.structured_education = safeParseJSON(fetchedJob.structured_education);
+          fetchedJob.structured_certifications = safeParseJSON(fetchedJob.structured_certifications);
 
           // Also handle responsibilities/requirements if they might be stored as JSON strings
           if (typeof fetchedJob.responsibilities === 'string' && fetchedJob.responsibilities.trim().startsWith('[')) {
@@ -317,13 +318,6 @@ export default function JobDetailsSeeker() {
       return;
     }
 
-    try {
-      if (user.email) {
-        await UserAnalytics.trackJobApplication(user, job); // Pass full user object
-      }
-    } catch (error) {
-
-    }
 
     if (Array.isArray(job.screening_questions) && job.screening_questions.length > 0) {
       navigate(createPageUrl(`AnswerQuestionnaire?job_id=${job.id}`));
@@ -338,6 +332,16 @@ export default function JobDetailsSeeker() {
         applicant_id: user.id,
         status: 'pending'
       });
+
+      // Track application in analytics
+      try {
+        if (user.email) {
+          const { UserAnalytics } = await import("@/components/UserAnalytics");
+          await UserAnalytics.trackJobApplication(user, job);
+        }
+      } catch (error) {
+        console.warn("Analytics error", error);
+      }
 
       // Create notification for employer
       try {
@@ -379,9 +383,11 @@ export default function JobDetailsSeeker() {
   const employmentTypeText = {
     full_time: 'משרה מלאה',
     part_time: 'משרה חלקית',
+    shifts: 'משמרות',
     contract: 'חוזה',
     freelance: 'פרילנס',
-    internship: 'התמחות'
+    internship: 'התמחות',
+    flexible: 'גמיש/ה'
   };
 
   if (loading) {

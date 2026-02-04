@@ -159,7 +159,8 @@ const EmployerDashboard = ({ user }) => {
                 applicant_email: email,
                 job_id: app.job_id,
                 job_title: myJobMap[app.job_id] || 'משרה לא ידועה',
-                application_id: app.id
+                application_id: app.id,
+                applied_at: app.created_date // Save application timestamp
               });
               seenJobApps.add(jobAppKey);
             }
@@ -187,6 +188,7 @@ const EmployerDashboard = ({ user }) => {
                     applied_job_id: ref.job_id,
                     applied_job_title: ref.job_title,
                     application_id: ref.application_id,
+                    applied_at: ref.applied_at, // Pass timestamp
                     // Unique combined ID for React key
                     unique_app_id: `${p.id || p.email}_${ref.job_id}`
                   };
@@ -330,24 +332,14 @@ const EmployerDashboard = ({ user }) => {
 
   const handleViewCandidate = async (candidate) => {
     try {
-      // Track candidate profile view with job context
       if (user?.email) {
-        await UserAnalytics.trackAction(user.email, 'profile_view', {
-          candidate_name: candidate.full_name,
-          candidate_email: candidate.email,
-          job_id: candidate.applied_job_id,
-          job_title: candidate.applied_job_title
+        // Track candidate profile view with centralized analytics
+        await EmployerAnalytics.trackCandidateView(user.email, candidate, {
+          id: candidate.applied_job_id,
+          title: candidate.applied_job_title
         });
       }
-
-      await CandidateView.create({
-        candidate_name: candidate.full_name,
-        candidate_role: candidate.experience_level || 'N/A',
-        viewer_email: user.email,
-        candidate_email: candidate.email, // Adding email for better matching
-        job_id: candidate.applied_job_id, // Adding job_id if supported
-        viewed_at: new Date().toISOString()
-      });
+      // Refresh viewed candidates list
       const updatedViewed = await CandidateView.filter({ viewer_email: user.email }, "-created_date", 50);
       setViewedCandidates(updatedViewed);
     } catch (error) {
@@ -368,9 +360,11 @@ const EmployerDashboard = ({ user }) => {
 
   const filteredCandidates = candidates.filter(c => {
     // Check if this specific application (by candidate and job) has been viewed
+    // A view counts only if it matches this job and happened AFTER the application
     const isViewed = viewedCandidates.some(vc =>
       (vc.candidate_email === c.email || vc.candidate_name === c.full_name) &&
-      (!vc.job_id || vc.job_id === c.applied_job_id)
+      (vc.job_id === c.applied_job_id) &&
+      (new Date(vc.viewed_at || vc.created_at || vc.created_date) > new Date(c.applied_at))
     );
     return candidateFilter === 'new' ? !isViewed : isViewed;
   });
