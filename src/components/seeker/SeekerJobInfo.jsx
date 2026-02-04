@@ -89,7 +89,15 @@ const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, 
                     {filteredContent.map((item, i) => (
                         <li key={i} className="flex items-start gap-3 text-[#4a5568] text-[15px]">
                             <div className="w-1 h-1 rounded-full bg-gray-400 mt-2.5 shrink-0"></div>
-                            <span className="leading-relaxed">{typeof item === 'string' ? item : (item.value || item.label)}</span>
+                            <span className="leading-relaxed">
+                                {typeof item === 'string' ? item : (
+                                    <>
+                                        {item.value || item.label}
+                                        {item.type === 'required' && <span className="mr-1"> - חובה</span>}
+                                        {item.type === 'advantage' && <span className="mr-1"> - יתרון</span>}
+                                    </>
+                                )}
+                            </span>
                         </li>
                     ))}
                 </ul>
