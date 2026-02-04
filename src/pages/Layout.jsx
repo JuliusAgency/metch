@@ -151,7 +151,7 @@ export default function Layout({ children, currentPageName }) {
   // Hide header if it's an auth page OR (it's an onboarding page AND we are in onboarding mode) OR specific onboarding query param exists
   const isSettingsOnboarding = currentPageName === 'Settings' && searchParams.get('onboarding') === 'company_details';
   // Check if we are in Settings, Profile, or Notifications as a job seeker to enable mobile full-width redesign
-  const isJobSeekerMobileFlow = (currentPageName === 'Settings' || currentPageName === 'Profile' || currentPageName === 'JobDetailsSeeker' || currentPageName === 'Notifications' || currentPageName === 'Messages' || currentPageName === 'MessagesSeeker');
+  const isJobSeekerMobileFlow = (currentPageName === 'Settings' || currentPageName === 'Profile' || currentPageName === 'JobDetailsSeeker' || currentPageName === 'Notifications' || currentPageName === 'Messages' || currentPageName === 'MessagesSeeker' || currentPageName === 'FAQ');
 
   const shouldHideHeader = authPages.includes(currentPageName) || (onboardingPages.includes(currentPageName) && isOnboardingActive) || isSettingsOnboarding || currentPageName === 'CompanyProfileCompletion' || currentPageName === 'JobSeekerProfileCompletion';
 
@@ -399,7 +399,7 @@ export default function Layout({ children, currentPageName }) {
             <div className="flex items-center gap-2">
               <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2">
                 <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
-                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png" alt="Metch Logo" className="h-6" />
+                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png" alt="Metch Logo" className={`${isJobSeeker ? 'h-5' : 'h-6'}`} />
               </Link>
             </div>
           </div>
@@ -459,7 +459,6 @@ export default function Layout({ children, currentPageName }) {
                   </Link>
                 ))}
 
-                {/* Divider/Spacing if needed, or just the logout text */}
                 <button
                   onClick={() => {
                     closeMenu();
@@ -470,6 +469,7 @@ export default function Layout({ children, currentPageName }) {
                   התנתקות
                 </button>
               </nav>
+
             </motion.div>
           </div>
         )}

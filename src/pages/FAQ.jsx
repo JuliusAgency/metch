@@ -15,6 +15,7 @@ import { createPageUrl } from "@/utils";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useUser } from "@/contexts/UserContext";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
+import settingsMobileBg from "@/assets/settings_mobile_bg.jpg";
 
 import faqPlus from "@/assets/faq_plus.png";
 import faqMinus from "@/assets/faq_minus.png";
@@ -286,10 +287,26 @@ export default function FAQ() {
   };
 
   return (
-    <div className="h-full relative" dir="rtl">
-      <div className="relative">
-        {/* ... existing header ... */}
-        <div className="relative h-36 overflow-hidden w-full">
+    <div className="h-full relative overflow-hidden md:overflow-visible" dir="rtl">
+      {/* Mobile-Only Background Image for Seeker - Rainbow */}
+      {user?.user_type === 'job_seeker' && (
+        <div
+          className="md:hidden fixed top-0 left-0 right-0 pointer-events-none"
+          style={{
+            width: '100%',
+            height: '280px',
+            backgroundImage: `url(${settingsMobileBg})`,
+            backgroundSize: '100% 100%',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            zIndex: 0
+          }}
+        />
+      )}
+
+      <div className="relative h-full">
+        {/* Desktop Header / Employer Mobile Header */}
+        <div className={`relative h-32 overflow-hidden w-full ${user?.user_type === 'job_seeker' ? 'hidden md:block' : ''}`}>
           <div
             className="absolute inset-0 w-full h-full"
             style={{
@@ -307,15 +324,26 @@ export default function FAQ() {
           </Link>
         </div>
 
-        <div className="p-4 sm:p-6 md:p-8 -mt-16 relative z-10 w-full max-w-4xl mx-auto">
+        {/* Mobile-Only Header ABOVE Card - Seeker Only */}
+        {user?.user_type === 'job_seeker' && (
+          <div className="md:hidden flex items-center px-6 pt-10 pb-4 relative z-10 w-full justify-center">
+            <Link to={createPageUrl("Dashboard")} className="absolute right-6 w-10 h-10 bg-white/50 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm">
+              <ChevronLeft className="w-6 h-6 text-gray-800 rotate-180" />
+            </Link>
+            <h1 className="text-2xl font-bold text-gray-800">שאלות נפוצות</h1>
+          </div>
+        )}
+
+        {/* Adjust container margin/padding for Seeker Mobile */}
+        <div className={`${user?.user_type === 'job_seeker' ? 'p-0 mt-0 pt-4' : 'p-4 sm:p-6 md:p-8 -mt-16'} relative z-10 w-full max-w-4xl mx-auto`}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="space-y-8"
+            className={`space-y-8 ${user?.user_type === 'job_seeker' ? 'bg-white [border-top-left-radius:50%_40px] [border-top-right-radius:50%_40px] min-h-screen pt-8 px-6 shadow-[0_0_20px_rgba(0,0,0,0.1)]' : ''}`}
           >
             {/* Title */}
-            <div className="text-center">
+            <div className={`text-center ${user?.user_type === 'job_seeker' ? 'hidden md:block' : ''}`}>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">שאלות נפוצות</h1>
             </div>
 

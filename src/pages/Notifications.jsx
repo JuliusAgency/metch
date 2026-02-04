@@ -241,7 +241,7 @@ export default function Notifications() {
         </div>
 
         {/* Mobile Header: Title Center, Back Button Right */}
-        <div className="md:hidden flex items-center justify-center pt-10 pb-4 relative z-10 w-full px-6">
+        <div className={`md:hidden flex items-center justify-center ${user?.user_type === 'job_seeker' ? 'pt-16' : 'pt-10'} pb-4 relative z-10 w-full px-6`}>
           <h1 className="text-[24px] font-bold text-[#001a6e]">התראות</h1>
         </div>
 
