@@ -406,38 +406,72 @@ export default function Layout({ children, currentPageName }) {
         </div>
       )}
 
-      {/* Mobile Menu Sidebar */}
+      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <>
+          <div className="fixed inset-0 z-[200] md:hidden">
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeMenu}
-              className="fixed inset-0 bg-black/60 z-[100] md:hidden"
+              className="absolute inset-0 bg-black/10 backdrop-blur-sm"
             />
+
+            {/* Menu Card */}
             <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed top-0 right-0 h-full w-4/5 max-w-sm bg-white z-[101] shadow-lg md:hidden flex flex-col"
+              initial={{ y: '-100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '-100%', opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30, mass: 0.8 }}
+              className="relative w-auto mx-4 mt-4 bg-[#EBF5FA]/30 backdrop-blur-md rounded-[40px] shadow-xl border-[0.5px] border-white overflow-hidden flex flex-col pb-8 pt-2"
               dir="rtl"
             >
-              <div className="p-4 flex justify-between items-center border-b">
-                <h2 className="font-bold text-lg text-gray-800">תפריט</h2>
-                <Button variant="ghost" size="icon" onClick={closeMenu}>
-                  <X className="w-7 h-7" />
+              {/* Header: Logo (Left) & Close (Right) */}
+              <div className="p-6 flex items-center justify-between">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={closeMenu}
+                  className="hover:bg-transparent -mr-2"
+                >
+                  <X className="w-8 h-8 text-[#1A1A1A]" strokeWidth={1.5} />
                 </Button>
+
+                <div className="flex items-center gap-2 select-none">
+                  <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
+                  <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png" alt="Metch Logo" className="h-6" />
+                </div>
               </div>
-              <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+
+              {/* Menu Items */}
+              <nav className="flex flex-col items-start px-8 gap-5">
                 {navLinks.map((link) => (
-                  <MobileNavLink key={link.page} {...link} />
+                  <Link
+                    key={link.page}
+                    to={createPageUrl(link.page)}
+                    onClick={closeMenu}
+                    className="text-[19px] font-medium text-[#4A5568] hover:text-[#2B6CB0] transition-colors w-full text-right"
+                  >
+                    {link.text}
+                  </Link>
                 ))}
+
+                {/* Divider/Spacing if needed, or just the logout text */}
+                <button
+                  onClick={() => {
+                    closeMenu();
+                    handleLogout();
+                  }}
+                  className="text-[19px] font-medium text-[#4A5568] hover:text-red-500 transition-colors w-full text-right mt-2"
+                >
+                  התנתקות
+                </button>
               </nav>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
 
@@ -447,7 +481,7 @@ export default function Layout({ children, currentPageName }) {
             {children}
           </div>
         ) : (
-          <Card className={`w-full max-w-[99%] shadow-xl border border-gray-100 rounded-[50px] min-h-[92vh] overflow-hidden relative backdrop-blur-sm ${currentPageName === 'Dashboard' ? 'bg-white md:bg-white/90 shadow-lg md:shadow-xl border md:border-gray-100 rounded-[32px] md:rounded-[50px] max-w-[94%] md:max-w-[99%] mx-auto md:mx-0' : 'bg-white/90'}`}>
+          <Card className={`w-full max-w-[99%] shadow-xl border border-gray-100 rounded-[50px] min-h-[92vh] overflow-hidden relative backdrop-blur-sm ${currentPageName === 'Dashboard' ? 'bg-white md:bg-white/99 shadow-lg md:shadow-xl border md:border-gray-100 rounded-[32px] md:rounded-[50px] max-w-[94%] md:max-w-[99%] mx-auto md:mx-0' : 'bg-white/90'}`}>
             <div className="h-full">
               {children}
             </div>
