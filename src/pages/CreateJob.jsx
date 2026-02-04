@@ -351,7 +351,7 @@ export default function CreateJob() {
   };
 
   return (
-    <div className="h-full p-4 md:p-8" dir="rtl">
+    <div className="h-full px-6 py-6 md:p-8 overflow-x-hidden" dir="rtl">
       <div className={`mx-auto ${step === 4 && !isSubmitted ? 'w-full' : 'max-w-7xl'}`}>
         <div className="text-center mb-2">
           <h1 className="text-xl font-bold text-gray-900">{isEditing ? 'עריכת משרה' : 'יצירת משרה חדשה'}</h1>
@@ -373,11 +373,11 @@ export default function CreateJob() {
         </AnimatePresence>
 
         {!isSubmitted && step !== 4 && (
-          <div className="flex justify-center items-center gap-4 mt-8 pb-8">
-            {step === 1 && !isEditing ? (
+          <div className="flex flex-col-reverse md:flex-row justify-center items-center gap-4 mt-8 pb-8 w-full">
+            {!isEditing && step === 1 ? (
               <Button
                 variant="outline"
-                className="px-8 py-3 rounded-full font-bold text-lg border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
+                className="w-full md:w-auto px-6 md:px-8 py-3 rounded-full font-bold text-base md:text-lg border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
                 onClick={handleSkipOnboarding}
               >
                 לפרסם מאוחר יותר
@@ -385,7 +385,7 @@ export default function CreateJob() {
             ) : (
               <Button
                 variant="outline"
-                className="px-8 py-3 rounded-full font-bold text-lg border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
+                className="w-full md:w-auto px-6 md:px-8 py-3 rounded-full font-bold text-base md:text-lg border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
                 onClick={prevStep}
                 disabled={isSubmitting}
               >
@@ -394,7 +394,7 @@ export default function CreateJob() {
             )}
 
             <Button
-              className={`text-white px-12 py-3 rounded-full font-bold text-lg shadow-lg ${isFinalStep ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'
+              className={`w-full md:w-auto text-white px-8 md:px-12 py-3 rounded-full font-bold text-base md:text-lg shadow-lg ${isFinalStep ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'
                 }`}
               onClick={nextStep}
               disabled={isNextDisabled()}

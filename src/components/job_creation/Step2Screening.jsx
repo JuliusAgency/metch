@@ -192,7 +192,7 @@ export default function Step2Screening({ jobData, setJobData, onSave, onNext }) 
       <div className="flex justify-center mt-12">
         <Button
           onClick={onNext}
-          className="bg-[#22c55e] hover:bg-[#16a34a] text-white px-16 py-7 rounded-full text-xl font-bold shadow-lg transition-all active:scale-95"
+          className="bg-[#22c55e] hover:bg-[#16a34a] text-white px-8 md:px-16 py-7 rounded-full text-xl font-bold shadow-lg transition-all active:scale-95 w-full md:w-auto"
         >
           שמירה וסיום
           <ArrowLeft className="w-6 h-6 mr-2" />

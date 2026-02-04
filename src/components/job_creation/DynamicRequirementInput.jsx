@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { X, Info } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function DynamicRequirementInput({ label, placeholder, items = [], setItems, infoText }) {
   const [inputValue, setInputValue] = useState("");
@@ -47,61 +47,66 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
   return (
     <div className="space-y-4">
       <div className="space-y-3">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {infoText && (
-            <div className="shrink-0 hidden md:block">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs bg-[#000000] text-white p-2 text-right border-none rounded-sm shadow-lg z-[100]" side="top">
-                  <p className="text-xs leading-relaxed font-medium">{infoText}</p>
-                </TooltipContent>
-              </Tooltip>
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-1 w-full">
+            {infoText && (
+              <div className="shrink-0 block">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Info className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
+                  </PopoverTrigger>
+                  <PopoverContent className="max-w-xs bg-[#000000] text-white p-2 text-right border-none rounded-sm shadow-lg z-[100]" side="top">
+                    <p className="text-xs leading-relaxed font-medium">{infoText}</p>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
+            <Input
+              type="text"
+              placeholder={placeholder}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="flex-1 min-w-0 h-10 sm:h-11 rounded-xl border-gray-300 text-right text-sm sm:text-base px-2 sm:px-4"
+              dir="rtl"
+            />
+          </div>
+
+          <div className="flex items-center justify-between md:justify-start gap-2 w-full md:w-auto">
+            <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+              <Button
+                type="button"
+                onClick={() => setCurrentType("required")}
+                className={`px-3 sm:px-6 h-9 rounded-full text-xs sm:text-base font-normal transition-all border ${currentType === 'required'
+                  ? 'bg-[#1a73e8] text-white border-[#1a73e8] hover:bg-[#1557b0]'
+                  : 'bg-white text-[#5f6368] border-[#1a73e8] hover:bg-blue-50'
+                  }`}
+              >
+                חובה
+              </Button>
+              <Button
+                type="button"
+                onClick={() => setCurrentType("advantage")}
+                className={`px-3 sm:px-6 h-9 rounded-full text-xs sm:text-base font-normal transition-all border ${currentType === 'advantage'
+                  ? 'bg-[#1a73e8] text-white border-[#1a73e8] hover:bg-[#1557b0]'
+                  : 'bg-white text-[#5f6368] border-[#1a73e8] hover:bg-blue-50'
+                  }`}
+              >
+                יתרון
+              </Button>
             </div>
-          )}
-          <Input
-            type="text"
-            placeholder={placeholder}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="flex-1 min-w-0 h-10 sm:h-11 rounded-xl border-gray-300 text-right text-sm sm:text-base px-2 sm:px-4"
-            dir="rtl"
-          />
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <Button
               type="button"
-              onClick={() => setCurrentType("required")}
-              className={`px-3 sm:px-6 h-9 rounded-full text-xs sm:text-base font-normal transition-all border ${currentType === 'required'
-                ? 'bg-[#1a73e8] text-white border-[#1a73e8] hover:bg-[#1557b0]'
-                : 'bg-white text-[#5f6368] border-[#1a73e8] hover:bg-blue-50'
+              onClick={handleAddItem}
+              disabled={!inputValue.trim()}
+              className={`px-4 sm:px-6 h-9 rounded-full text-xs sm:text-base font-normal transition-all duration-200 ${inputValue.trim()
+                ? 'bg-[#34A853] hover:bg-[#2d9147] text-white shadow-sm'
+                : 'bg-gray-200 text-gray-400 border border-gray-200 cursor-not-allowed hover:bg-gray-200'
                 }`}
             >
-              חובה
-            </Button>
-            <Button
-              type="button"
-              onClick={() => setCurrentType("advantage")}
-              className={`px-3 sm:px-6 h-9 rounded-full text-xs sm:text-base font-normal transition-all border ${currentType === 'advantage'
-                ? 'bg-[#1a73e8] text-white border-[#1a73e8] hover:bg-[#1557b0]'
-                : 'bg-white text-[#5f6368] border-[#1a73e8] hover:bg-blue-50'
-                }`}
-            >
-              יתרון
+              שמירה
             </Button>
           </div>
-          <Button
-            type="button"
-            onClick={handleAddItem}
-            disabled={!inputValue.trim()}
-            className={`px-3 sm:px-6 h-9 rounded-full text-xs sm:text-base font-normal transition-all duration-200 ${inputValue.trim()
-              ? 'bg-[#34A853] hover:bg-[#2d9147] text-white shadow-sm'
-              : 'bg-gray-200 text-gray-400 border border-gray-200 cursor-not-allowed hover:bg-gray-200'
-              }`}
-          >
-            שמירה
-          </Button>
         </div>
       </div>
       <button
