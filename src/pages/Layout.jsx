@@ -459,6 +459,15 @@ export default function Layout({ children, currentPageName }) {
                   </Link>
                 ))}
 
+                <button
+                  onClick={() => {
+                    closeMenu();
+                    handleLogout();
+                  }}
+                  className="text-[19px] font-medium text-[#4A5568] hover:text-red-500 transition-colors w-full text-right mt-2"
+                >
+                  התנתקות
+                </button>
               </nav>
 
             </motion.div>
