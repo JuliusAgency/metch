@@ -399,7 +399,7 @@ export class EmployerAnalytics {
         appsResults.forEach(({ jobId, apps }) => {
           totalAppsCount += apps.length;
           if (activeJobIds.includes(jobId)) {
-            activeAppsCount += apps.length;
+            activeAppsCount += apps.filter(app => app.status !== 'rejected').length;
             realPendingApplications += apps.filter(app => app.status === 'pending').length;
           }
           // Unique candidates across ALL relevant jobs

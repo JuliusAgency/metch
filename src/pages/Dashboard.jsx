@@ -836,7 +836,8 @@ const EmployerDashboard = ({ user }) => {
             JobApplication.filter({ job_id: job.id }),
             JobView.filter({ job_id: job.id })
           ]);
-          realTotalApps += jobApps.length;
+          // Only count NON-REJECTED applications to match the list and statistics logic
+          realTotalApps += jobApps.filter(a => a.status !== 'rejected').length;
           realTotalViews += jobViews.length;
         }));
         console.log('[Dashboard] Stats - Apps:', realTotalApps, 'Views:', realTotalViews);

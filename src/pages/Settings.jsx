@@ -1070,7 +1070,7 @@ export default function Settings() {
 
 
             {/* Action Buttons */}
-            <div className="flex flex-col items-center space-y-4 pt-2 md:pt-6">
+            <div className="flex flex-col items-center space-y-3 pt-1 md:pt-6 pb-6 md:pb-0">
               <Button
                 type="submit"
                 disabled={isSubmitDisabled}
