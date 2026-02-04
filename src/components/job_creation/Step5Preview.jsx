@@ -192,6 +192,8 @@ export default function Step5Preview({ jobData, setJobData, onNext, onPrev, isSu
               aiAnalysis={null}
               isAiLoading={false}
               layout="grid"
+              showAiAnalysis={false}
+              showResponsibilities={false}
             />
           </div>
         </div>
