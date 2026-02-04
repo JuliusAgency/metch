@@ -208,7 +208,7 @@ ET`;
         <div className="h-full relative overflow-hidden md:overflow-visible" dir="rtl">
             {/* Mobile-Only Background Image */}
             <div
-                className="md:hidden fixed top-0 left-0 right-0 z-0 pointer-events-none"
+                className="md:hidden absolute top-[-100px] left-0 right-0 z-0 pointer-events-none"
                 style={{
                     width: '100%',
                     height: '230px',
@@ -251,7 +251,7 @@ ET`;
                         </div>
 
                         {/* Mobile Title */}
-                        <div className="text-center absolute top-[-90px] left-0 right-0 w-full md:hidden">
+                        <div className="text-center absolute top-[-130px] left-0 right-0 w-full md:hidden">
                             <h1 className="text-[24px] font-bold text-[#001a6e]">
                                 עמוד תשלומים
                             </h1>
