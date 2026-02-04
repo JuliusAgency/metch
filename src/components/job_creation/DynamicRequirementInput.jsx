@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
@@ -48,19 +47,17 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
   return (
     <div className="space-y-4">
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {infoText && (
-            <div className="shrink-0">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Info className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs bg-black text-white p-3 text-right border-none" side="left">
-                    <p className="text-sm leading-relaxed">{infoText}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+            <div className="shrink-0 hidden md:block">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs bg-[#000000] text-white p-2 text-right border-none rounded-sm shadow-lg z-[100]" side="top">
+                  <p className="text-xs leading-relaxed font-medium">{infoText}</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           )}
           <Input
@@ -69,14 +66,14 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="h-11 rounded-xl border-gray-300 text-right"
+            className="flex-1 min-w-0 h-10 sm:h-11 rounded-xl border-gray-300 text-right text-sm sm:text-base px-2 sm:px-4"
             dir="rtl"
           />
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <Button
               type="button"
               onClick={() => setCurrentType("required")}
-              className={`px-6 h-9 rounded-full text-base font-normal transition-all border ${currentType === 'required'
+              className={`px-3 sm:px-6 h-9 rounded-full text-xs sm:text-base font-normal transition-all border ${currentType === 'required'
                 ? 'bg-[#1a73e8] text-white border-[#1a73e8] hover:bg-[#1557b0]'
                 : 'bg-white text-[#5f6368] border-[#1a73e8] hover:bg-blue-50'
                 }`}
@@ -86,7 +83,7 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
             <Button
               type="button"
               onClick={() => setCurrentType("advantage")}
-              className={`px-6 h-9 rounded-full text-base font-normal transition-all border ${currentType === 'advantage'
+              className={`px-3 sm:px-6 h-9 rounded-full text-xs sm:text-base font-normal transition-all border ${currentType === 'advantage'
                 ? 'bg-[#1a73e8] text-white border-[#1a73e8] hover:bg-[#1557b0]'
                 : 'bg-white text-[#5f6368] border-[#1a73e8] hover:bg-blue-50'
                 }`}
@@ -98,7 +95,7 @@ export default function DynamicRequirementInput({ label, placeholder, items = []
             type="button"
             onClick={handleAddItem}
             disabled={!inputValue.trim()}
-            className={`px-6 h-9 rounded-full text-base font-normal transition-all duration-200 ${inputValue.trim()
+            className={`px-3 sm:px-6 h-9 rounded-full text-xs sm:text-base font-normal transition-all duration-200 ${inputValue.trim()
               ? 'bg-[#34A853] hover:bg-[#2d9147] text-white shadow-sm'
               : 'bg-gray-200 text-gray-400 border border-gray-200 cursor-not-allowed hover:bg-gray-200'
               }`}
