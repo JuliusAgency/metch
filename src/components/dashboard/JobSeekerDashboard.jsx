@@ -85,15 +85,13 @@ const JobSeekerDashboard = ({ user }) => {
           return { ...job, match_score: Math.round(score * 100) };
         }));
 
-        // Filter: Match >= 40% (Lowered from 60% for broader visibility)
-        const qualifiedJobs = scoredJobs.filter(job => job.match_score >= 40);
+        // Filter: Match >= 60% (As requested for run period)
+        const qualifiedJobs = scoredJobs.filter(job => job.match_score >= 60);
 
         // Sort by match score (descending)
         qualifiedJobs.sort((a, b) => b.match_score - a.match_score);
 
-        // Apply Limits: Max 30 displayed (we can limit the 'allJobs' state effectively)
-        // If we strictly follow "Max 30 matches per day", we should ideally only show 30.
-        // Let's cap at 30 for now as requested.
+        // Apply Limits: Max 30 displayed daily
         const limitedJobs = qualifiedJobs.slice(0, 30);
 
         setAllJobs(limitedJobs);

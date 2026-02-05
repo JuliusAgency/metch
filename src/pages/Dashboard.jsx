@@ -338,14 +338,13 @@ const JobSeekerDashboard = ({ user }) => {
           total_applications: applicationsData.length || 0
         };
 
-        // Filter: Show all jobs with valid match scores (>= 0) OR null scores (calculation failed)
-        // This ensures jobs appear even if match calculation fails
-        const qualifiedJobs = jobsWithScores.filter(job => job.match_score === null || job.match_score >= 0);
+        // Filter: Show valid match scores (>= 60%) (As requested for run period)
+        const qualifiedJobs = jobsWithScores.filter(job => job.match_score >= 60);
 
         // Sort by match score (descending), treating null as 0
         qualifiedJobs.sort((a, b) => (b.match_score ?? 0) - (a.match_score ?? 0));
 
-        // Apply Limits: Max 30
+        // Apply Limits: Max 30 displayed daily
         let limitedJobs = qualifiedJobs.slice(0, 30);
 
         // Special case: Add "מלקט/ת" job if it's not already in the top 30
@@ -956,11 +955,11 @@ const EmployerDashboard = ({ user }) => {
         const enhancedStats = {
           ...dashboardData.stats,
           total_jobs_published: activeJobs.length,      // Active + Paused jobs
-          total_applications_received: realTotalApps,   // Sum of apps for Active/Paused jobs
+          total_applications_received: applicantProfiles.length,   // SYNC: Use resolved profiles count
           total_job_views: realTotalViews,              // Sum of views for Active/Paused jobs
           total_candidates_viewed: viewedCandidatesData.length,
           conversion_rate: realTotalViews > 0
-            ? ((realTotalApps / realTotalViews) * 100).toFixed(1)
+            ? ((applicantProfiles.length / realTotalViews) * 100).toFixed(1)
             : 0
         };
 

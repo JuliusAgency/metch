@@ -217,7 +217,9 @@ export default function JobApplications() {
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
               מועמדים למשרה: {job?.title}
             </h1>
-            <p className="text-gray-600 mt-2">{applications.length} מועמדויות</p>
+            <p className="text-gray-600 mt-2">
+              {Object.keys(applicantProfiles).length + Object.keys(profilesByEmail).length} מועמדויות
+            </p>
           </div>
 
           <div className="space-y-4">
