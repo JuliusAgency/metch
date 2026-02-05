@@ -1,0 +1,19 @@
+﻿node : Employer not 
+found
+At line:1 char:1
++ node find_employer_
+jobs.js > employer_jo
+bs_output.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Employe   
+ r not found:Stri    
+ng) [], RemoteEx    
+ception
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 

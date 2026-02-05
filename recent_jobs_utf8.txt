@@ -1,0 +1,63 @@
+﻿--- RECENT JOBS ---
+[
+  {
+    "id": "656c3c34-44d0-41d7-b8b3-a188bea95caf",
+    "title": "╫₧╫á╫פ╫£ ╫ק╫⌐╫ס╫ץ╫á╫ץ╫¬ (╫ó╫ץ╫¬╫º)",
+    "status": "closed",
+    "created_date": null
+  },
+  {
+    "id": "5a2dec7d-d316-4251-b358-27578d928ffe",
+    "title": "╫₧╫á╫פ╫£ ╫ק╫⌐╫ס╫ץ╫á╫ץ╫¬ (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "status": "closed",
+    "created_date": null
+  },
+  {
+    "id": "c712fa78-e51e-4815-8401-05ab283a735e",
+    "title": "╫נ╫á╫£╫ש╫í╫ר/╫ש╫¬ ╫í╫ש╫ש╫ס╫¿",
+    "status": "draft",
+    "created_date": null
+  },
+  {
+    "id": "7b080c0a-8d8d-436c-b177-1faa92bbb689",
+    "title": "",
+    "status": "draft",
+    "created_date": null
+  },
+  {
+    "id": "37122b6a-838a-4a63-b3ce-9075a2b0a727",
+    "title": "test",
+    "status": "draft",
+    "created_date": null
+  },
+  {
+    "id": "758232c0-f9fc-4bbd-8275-98afb2d8812f",
+    "title": "╫₧╫ñ╫ó╫ש╫£/╫¬ SOC",
+    "status": "draft",
+    "created_date": null
+  },
+  {
+    "id": "f91d358f-b64a-4e7c-a57a-435d48d04819",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫ó╫ס╫ץ╫ף╫פ",
+    "status": "closed",
+    "created_date": null
+  },
+  {
+    "id": "0baf5de6-3b92-4ad7-86f2-5f23acd8bfa7",
+    "title": "╫₧╫á╫פ╫£ ╫ק╫⌐╫ס╫ץ╫á╫ץ╫¬",
+    "status": "closed",
+    "created_date": null
+  },
+  {
+    "id": "5ad93bd3-4681-4f8e-86d7-9fffbcbd2a91",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫₧╫⌐╫¿╫ף",
+    "status": "closed",
+    "created_date": null
+  },
+  {
+    "id": "059fb6d3-00ee-49b4-ad22-fb8a9bed3ff8",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫נ╫ץ╫ñ╫á╫פ",
+    "status": "closed",
+    "created_date": null
+  }
+]

@@ -1,0 +1,353 @@
+﻿--- ALL RECENT JOBS WITH EMPLOYER INFO ---
+[
+  {
+    "id": "f91d358f-b64a-4e7c-a57a-435d48d04819",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫ó╫ס╫ץ╫ף╫פ",
+    "status": "closed",
+    "employer_id": "dc423e2f-e5cd-4e98-a086-690bd79041ee",
+    "created_date": null
+  },
+  {
+    "id": "8ebc4787-e997-4ae6-8ebf-26a177e742ec",
+    "title": "╫₧╫á╫פ╫£ ╫ק╫⌐╫ס╫ץ╫á╫ץ╫¬ (╫ó╫ץ╫¬╫º)",
+    "status": "closed",
+    "employer_id": "dc423e2f-e5cd-4e98-a086-690bd79041ee",
+    "created_date": null
+  },
+  {
+    "id": "0baf5de6-3b92-4ad7-86f2-5f23acd8bfa7",
+    "title": "╫₧╫á╫פ╫£ ╫ק╫⌐╫ס╫ץ╫á╫ץ╫¬",
+    "status": "closed",
+    "employer_id": "dc423e2f-e5cd-4e98-a086-690bd79041ee",
+    "created_date": null
+  },
+  {
+    "id": "7b080c0a-8d8d-436c-b177-1faa92bbb689",
+    "title": "",
+    "status": "draft",
+    "employer_id": "02d0d8e7-c94e-4a37-821c-fe6fe5a93ad9",
+    "created_date": null
+  },
+  {
+    "id": "ba9600d8-18e8-4835-a13f-b39c1c679a92",
+    "title": "",
+    "status": "closed",
+    "employer_id": "dc423e2f-e5cd-4e98-a086-690bd79041ee",
+    "created_date": null
+  },
+  {
+    "id": "1804323e-01ea-41aa-8cae-1c3d4803301c",
+    "title": "",
+    "status": "active",
+    "employer_id": "dc423e2f-e5cd-4e98-a086-690bd79041ee",
+    "created_date": null
+  },
+  {
+    "id": "5ad93bd3-4681-4f8e-86d7-9fffbcbd2a91",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫₧╫⌐╫¿╫ף",
+    "status": "closed",
+    "employer_id": "02d0d8e7-c94e-4a37-821c-fe6fe5a93ad9",
+    "created_date": null
+  },
+  {
+    "id": "c03c0658-e9cf-40e3-80a4-9480f4d7b43f",
+    "title": " (╫ó╫ץ╫¬╫º)",
+    "status": "active",
+    "employer_id": "dc423e2f-e5cd-4e98-a086-690bd79041ee",
+    "created_date": null
+  },
+  {
+    "id": "758232c0-f9fc-4bbd-8275-98afb2d8812f",
+    "title": "╫₧╫ñ╫ó╫ש╫£/╫¬ SOC",
+    "status": "draft",
+    "employer_id": "02d0d8e7-c94e-4a37-821c-fe6fe5a93ad9",
+    "created_date": null
+  },
+  {
+    "id": "cc07ad63-2614-4055-b23e-733d565c655f",
+    "title": "╫ק╫ץ╫º╫¿/╫¬ ╫á╫ץ╫צ╫º╫ץ╫¬",
+    "status": "closed",
+    "employer_id": "02d0d8e7-c94e-4a37-821c-fe6fe5a93ad9",
+    "created_date": null
+  },
+  {
+    "id": "6e7d0a9c-983d-489d-b0f1-5b3765c2982f",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫ó╫ס╫ץ╫ף╫פ",
+    "status": "active",
+    "employer_id": null,
+    "created_date": null
+  },
+  {
+    "id": "9f3dd50c-a008-44be-8a9d-6e47b04c0040",
+    "title": "╫₧╫ץ╫₧╫ק╫פ/╫ש╫¬ ╫¬╫º╫ש╫ñ╫פ Penetration Test",
+    "status": "draft",
+    "employer_id": "02d0d8e7-c94e-4a37-821c-fe6fe5a93ad9",
+    "created_date": null
+  },
+  {
+    "id": "7e63f795-7f21-419a-9020-9f57462e1a7a",
+    "title": "",
+    "status": "closed",
+    "employer_id": "02d0d8e7-c94e-4a37-821c-fe6fe5a93ad9",
+    "created_date": null
+  },
+  {
+    "id": "518bd7da-1adf-47f9-ab1b-2ac1d7cfa0e2",
+    "title": "╫ק╫ץ╫º╫¿/╫¬ ╫á╫ץ╫צ╫º╫ץ╫¬",
+    "status": "draft",
+    "employer_id": "02d0d8e7-c94e-4a37-821c-fe6fe5a93ad9",
+    "created_date": null
+  },
+  {
+    "id": "c6d4483b-2c19-4c0a-a48a-0a2ec6d99c55",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫₧╫⌐╫¿╫ף",
+    "status": "closed",
+    "employer_id": "02d0d8e7-c94e-4a37-821c-fe6fe5a93ad9",
+    "created_date": null
+  },
+  {
+    "id": "07f78c6c-b4dd-4dd2-8483-42a7ed172b04",
+    "title": "",
+    "status": "draft",
+    "employer_id": "02d0d8e7-c94e-4a37-821c-fe6fe5a93ad9",
+    "created_date": null
+  },
+  {
+    "id": "c712fa78-e51e-4815-8401-05ab283a735e",
+    "title": "╫נ╫á╫£╫ש╫í╫ר/╫ש╫¬ ╫í╫ש╫ש╫ס╫¿",
+    "status": "draft",
+    "employer_id": "02d0d8e7-c94e-4a37-821c-fe6fe5a93ad9",
+    "created_date": null
+  },
+  {
+    "id": "5a2dec7d-d316-4251-b358-27578d928ffe",
+    "title": "╫₧╫á╫פ╫£ ╫ק╫⌐╫ס╫ץ╫á╫ץ╫¬ (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "status": "closed",
+    "employer_id": "dc423e2f-e5cd-4e98-a086-690bd79041ee",
+    "created_date": null
+  },
+  {
+    "id": "8088c99a-90df-4f9a-b6a6-aa6360ed30e4",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫º╫₧╫ñ╫ש╫ש╫ƒ (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "status": "draft",
+    "employer_id": "dc423e2f-e5cd-4e98-a086-690bd79041ee",
+    "created_date": null
+  },
+  {
+    "id": "37122b6a-838a-4a63-b3ce-9075a2b0a727",
+    "title": "test",
+    "status": "draft",
+    "employer_id": null,
+    "created_date": null
+  },
+  {
+    "id": "656c3c34-44d0-41d7-b8b3-a188bea95caf",
+    "title": "╫₧╫á╫פ╫£ ╫ק╫⌐╫ס╫ץ╫á╫ץ╫¬ (╫ó╫ץ╫¬╫º)",
+    "status": "closed",
+    "employer_id": "dc423e2f-e5cd-4e98-a086-690bd79041ee",
+    "created_date": null
+  },
+  {
+    "id": "f263e02c-68b6-4773-baad-0c8d8ab6d5e9",
+    "title": "",
+    "status": "closed",
+    "employer_id": "02d0d8e7-c94e-4a37-821c-fe6fe5a93ad9",
+    "created_date": null
+  },
+  {
+    "id": "93de718d-86e5-4887-b1df-f4bdca31a559",
+    "title": "",
+    "status": "draft",
+    "employer_id": "02d0d8e7-c94e-4a37-821c-fe6fe5a93ad9",
+    "created_date": null
+  },
+  {
+    "id": "e7ad22e2-561e-4310-ade1-a790ef8aafba",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫º╫₧╫ñ╫ש╫ש╫ƒ (╫ó╫ץ╫¬╫º)",
+    "status": "draft",
+    "employer_id": "dc423e2f-e5cd-4e98-a086-690bd79041ee",
+    "created_date": null
+  },
+  {
+    "id": "059fb6d3-00ee-49b4-ad22-fb8a9bed3ff8",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫נ╫ץ╫ñ╫á╫פ",
+    "status": "closed",
+    "employer_id": "dc423e2f-e5cd-4e98-a086-690bd79041ee",
+    "created_date": null
+  },
+  {
+    "id": "bc46f95d-63ce-4be0-910d-46263ca251fa",
+    "title": "╫ס╫ף╫ש╫º╫פ",
+    "status": "draft",
+    "employer_id": "a2307397-8777-47ca-a773-4a12fbc0aba8",
+    "created_date": null
+  },
+  {
+    "id": "17805f70-577b-4976-acdb-9ea740e8b8f7",
+    "title": "╫ק╫ץ╫º╫¿/╫¬ ╫á╫ץ╫צ╫º╫ץ╫¬",
+    "status": "closed",
+    "employer_id": "02d0d8e7-c94e-4a37-821c-fe6fe5a93ad9",
+    "created_date": null
+  },
+  {
+    "id": "c8efbc40-6103-445e-859e-5a51666a0ea5",
+    "title": "╫₧╫á╫פ╫£ ╫ק╫⌐╫ס╫ץ╫á╫ץ╫¬ (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "status": "closed",
+    "employer_id": "dc423e2f-e5cd-4e98-a086-690bd79041ee",
+    "created_date": null
+  },
+  {
+    "id": "aa4edde5-4b78-4e8d-8736-47f9098d52ee",
+    "title": "╫₧╫á╫פ╫£ ╫ק╫⌐╫ס╫ץ╫á╫ץ╫¬ (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "status": "active",
+    "employer_id": "dc423e2f-e5cd-4e98-a086-690bd79041ee",
+    "created_date": null
+  },
+  {
+    "id": "5aebbc06-5fac-43fe-bb84-fb4f2f72fa67",
+    "title": "╫₧╫á╫פ╫£ ╫ק╫⌐╫ס╫ץ╫á╫ץ╫¬ (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "status": "active",
+    "employer_id": "dc423e2f-e5cd-4e98-a086-690bd79041ee",
+    "created_date": null
+  },
+  {
+    "id": "72ac7bb1-75c7-4e89-b02c-deebbf3fd1e1",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫ó╫ס╫ץ╫ף╫פ",
+    "status": "draft",
+    "employer_id": null,
+    "created_date": "2026-02-04T20:29:04.06+00:00"
+  },
+  {
+    "id": "5f94f0ce-ab50-46b6-a0f5-e9405023a861",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫ó╫ס╫ץ╫ף╫פ (╫ó╫ץ╫¬╫º)",
+    "status": "active",
+    "employer_id": null,
+    "created_date": "2026-02-04T20:23:52.957+00:00"
+  },
+  {
+    "id": "99d2e625-513a-4b1f-b92a-64bc93d27931",
+    "title": "╫ר╫¢╫á╫ץ╫£╫ץ╫ע/╫ש╫¬ ╫₧╫צ╫ץ╫ƒ",
+    "status": "active",
+    "employer_id": null,
+    "created_date": "2026-02-04T17:58:55.95+00:00"
+  },
+  {
+    "id": "5f2ca8b5-5371-4b7e-bbfe-5b64f84a1fcb",
+    "title": "╫₧╫צ╫¢╫ש╫¿/╫פ ╫נ╫á╫ע╫£╫ש╫¬",
+    "status": "draft",
+    "employer_id": null,
+    "created_date": "2026-01-31T20:18:18.185+00:00"
+  },
+  {
+    "id": "c556a5c7-669d-40e9-bc78-0bb2eb0def3a",
+    "title": "╫₧╫£╫º╫ר/╫¬",
+    "status": "active",
+    "employer_id": null,
+    "created_date": "2026-01-29T22:01:51.965+00:00"
+  },
+  {
+    "id": "a03a8c4f-99ab-4d14-9636-e0f827a28885",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫₧╫⌐╫¿╫ף",
+    "status": "draft",
+    "employer_id": null,
+    "created_date": "2026-01-26T22:54:27.56+00:00"
+  },
+  {
+    "id": "1f820c05-b4cd-460e-92db-51feb1285262",
+    "title": "╫ק╫¬╫¥/╫¬",
+    "status": "draft",
+    "employer_id": null,
+    "created_date": "2026-01-26T16:06:02.279+00:00"
+  },
+  {
+    "id": "e493dc2b-63d1-4757-b554-bd32b49a8e53",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫ó╫ס╫ץ╫ף╫פ",
+    "status": "active",
+    "employer_id": null,
+    "created_date": "2026-01-25T14:25:13.282+00:00"
+  },
+  {
+    "id": "36914d75-bbac-4580-b2d4-1f79f375ced8",
+    "title": "╫₧╫ó╫ª╫ס/╫¬ ╫₧╫í╫ק╫¿╫ש/╫¬ / VM",
+    "status": "active",
+    "employer_id": null,
+    "created_date": "2026-01-22T18:02:25.941+00:00"
+  },
+  {
+    "id": "c7fb3c3a-2b38-4bc3-8152-b70dfc139074",
+    "title": "╫₧╫ñ╫ó╫ש╫£/╫¬ SOC (╫ó╫ץ╫¬╫º)",
+    "status": "draft",
+    "employer_id": null,
+    "created_date": "2026-01-22T11:46:10.71+00:00"
+  },
+  {
+    "id": "46b926c4-9fd7-4342-96b6-600d74bace71",
+    "title": "╫₧╫ñ╫ó╫ש╫£/╫¬ SOC",
+    "status": "active",
+    "employer_id": null,
+    "created_date": "2026-01-22T11:42:35.423+00:00"
+  },
+  {
+    "id": "7d4d2927-622e-46fe-a5a5-63cc5a92d780",
+    "title": "╫₧╫ó╫ª╫ס/╫¬ ╫נ╫ץ╫ñ╫á╫פ (╫ó╫ץ╫¬╫º)",
+    "status": "active",
+    "employer_id": null,
+    "created_date": "2026-01-21T08:19:39.836+00:00"
+  },
+  {
+    "id": "60dc407e-ac40-405b-a6b6-55da0321cd12",
+    "title": "╫₧╫ץ╫₧╫ק╫פ/╫ש╫¬ ╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "status": "active",
+    "employer_id": null,
+    "created_date": "2026-01-21T08:19:13.292+00:00"
+  },
+  {
+    "id": "a3bc3f1c-2ac4-44de-b878-0317fe61c34f",
+    "title": "╫₧╫ץ╫₧╫ק╫פ/╫ש╫¬ ╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "status": "active",
+    "employer_id": null,
+    "created_date": "2026-01-21T08:16:42.746+00:00"
+  },
+  {
+    "id": "7d7dbf92-1f72-4ce7-b7be-90acab323712",
+    "title": "╫₧╫ץ╫₧╫ק╫פ/╫ש╫¬ ╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "status": "active",
+    "employer_id": null,
+    "created_date": "2026-01-21T08:15:24.486+00:00"
+  },
+  {
+    "id": "c526c8af-f99b-4355-ba70-773bff45e5a5",
+    "title": "╫₧╫ץ╫₧╫ק╫פ/╫ש╫¬ ╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "status": "active",
+    "employer_id": null,
+    "created_date": "2026-01-21T08:12:25.596+00:00"
+  },
+  {
+    "id": "ded26a90-22d2-4260-ae6e-743fcab6186c",
+    "title": "╫₧╫ץ╫₧╫ק╫פ/╫ש╫¬ ╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó (╫ó╫ץ╫¬╫º)",
+    "status": "draft",
+    "employer_id": null,
+    "created_date": "2026-01-21T08:10:58.155+00:00"
+  },
+  {
+    "id": "cc14e08a-9cd7-497a-b754-0070046e20c1",
+    "title": "╫₧╫ñ╫ó╫ש╫£/╫¬ SOC",
+    "status": "active",
+    "employer_id": null,
+    "created_date": "2026-01-19T13:41:38.636+00:00"
+  },
+  {
+    "id": "d565731f-c5be-470d-8443-3b35832e9886",
+    "title": "╫⌐╫¿╫ר╫ר/╫¬",
+    "status": "active",
+    "employer_id": null,
+    "created_date": "2026-01-19T13:33:37.473+00:00"
+  },
+  {
+    "id": "2d770cb1-4742-45fd-8bd9-d45d31a34be5",
+    "title": "╫נ╫á╫£╫ש╫í╫ר/╫ש╫¬ ╫í╫ש╫ש╫ס╫¿",
+    "status": "active",
+    "employer_id": null,
+    "created_date": "2026-01-18T18:47:20.512+00:00"
+  }
+]

@@ -1,0 +1,1363 @@
+﻿--- LISTING ALL USER PROFILES (First 100) ---
+Total Users: 100
+[
+  {
+    "id": "8f950c51-3663-45d2-afbd-85afebb3da93",
+    "full_name": "╫נ╫¿╫ש╫נ╫£ ╫¢╫פ╫ƒ",
+    "email": "9e73t@virgilian.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "0a0fee45-dcf6-43b1-8f6b-2440e99230ba",
+    "full_name": "╫ס╫ף╫ץ╫º ╫פ╫ס╫ץ╫ף╫º╫ש╫¥",
+    "email": "boibvvvqozpmvtjaln@fxavaj.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "204fe8ca-ea66-40c9-9c93-649e8c251e85",
+    "full_name": "eewrerw wr",
+    "email": "kzczdwxumimtzeuebd@nesopf.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ע╫ץ╫ץ╫ש╫ש╫ó╫ף (╫⌐╫ס╫ר)",
+    "availability": "immediate",
+    "preferred_job_types": [
+      "full_time"
+    ]
+  },
+  {
+    "id": "5947a361-3acb-4101-82d3-e2c8f92a7de0",
+    "full_name": "╫ס╫ף╫ץ╫º ╫פ╫ס╫ץ╫ף╫º╫ש╫¥",
+    "email": "xxtcaifcegkqddurbv@nespf.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "acb65b69-3b12-41dd-b6fc-71015be03eb6",
+    "full_name": "",
+    "email": "hdq85@virgilian.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "2855a9c9-7f62-4add-a75b-477953b0b999",
+    "full_name": "╫¿╫ñ╫נ╫£ ╫£╫ץ╫ש",
+    "email": "26ucu@virgilian.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ע╫ץ╫ץ╫ש╫ש╫ó╫ף (╫⌐╫ס╫ר)",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "part_time"
+    ]
+  },
+  {
+    "id": "a68987db-789f-4082-87e4-62d887bcd5b4",
+    "full_name": "",
+    "email": "cexisiy930@fftube.com",
+    "preferred_location": "╫ש╫¿╫ץ╫⌐╫£╫ש╫¥ ╫ץ╫פ╫í╫ס╫ש╫ס╫פ",
+    "availability": "immediate",
+    "preferred_job_types": [
+      "full_time"
+    ]
+  },
+  {
+    "id": "a8c4e6d1-76fc-4794-ad97-0f25a74d70be",
+    "full_name": "",
+    "email": "013uijc6cs@lnovic.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "5386caba-ec92-4561-a5ed-1f508cb9bb0d",
+    "full_name": "veffbefbb",
+    "email": "royah73747@atinjo.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "6b47e970-9139-47e0-88fd-8e2cca85cdcb",
+    "full_name": "╫ף╫ץ╫ף",
+    "email": "dopax65109@hopesx.com",
+    "preferred_location": "╫ש╫¿╫ץ╫⌐╫£╫ש╫¥",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "part_time"
+    ]
+  },
+  {
+    "id": "6fc3b95f-93d0-46fe-9838-4e69f2df28ca",
+    "full_name": "╫¿╫ñ╫נ╫£ ╫£╫ץ╫ש",
+    "email": "yonoh23525@okexbit.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ע╫ץ╫ץ╫ש╫ש╫ó╫ף (╫⌐╫ס╫ר)",
+    "availability": "immediate",
+    "preferred_job_types": [
+      "part_time"
+    ]
+  },
+  {
+    "id": "8b4c888f-1d02-466b-8d2b-89dbe53845b6",
+    "full_name": "╫₧╫נ╫ש",
+    "email": "roperim485@hopesx.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ע╫ó╫ף╫פ",
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "19cef8bb-d412-4a90-80c3-2ec227757c98",
+    "full_name": "╫₧╫נ╫ש ",
+    "email": "lowapig671@icousd.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "5dd8b767-a57e-41af-9938-5979024f707a",
+    "full_name": "Ester",
+    "email": "estterika11@gmail.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "c51945a7-b644-4ae9-9eb0-f6e06251affd",
+    "full_name": "╫נ╫ש╫£╫פ ╫ף╫¿╫ץ╫ש╫⌐",
+    "email": "hacuju@forexzig.com",
+    "preferred_location": "╫ש╫¿╫ץ╫⌐╫£╫ש╫¥ ╫ץ╫פ╫í╫ס╫ש╫ס╫פ",
+    "availability": "immediate",
+    "preferred_job_types": [
+      "part_time"
+    ]
+  },
+  {
+    "id": "90f68f60-d5d5-4f72-8fd8-0d3e467e372f",
+    "full_name": "",
+    "email": "soozmas2@gmail.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "38b427c2-7616-449f-a102-7b61f7a3eaf0",
+    "full_name": "",
+    "email": "may.masasa@live.biu.ac.il",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "3b8e2dd5-d4bd-44ac-8750-ae346bc3da57",
+    "full_name": "╫á╫¬╫á╫נ╫£ ╫á╫ע╫ץ╫í╫פ",
+    "email": "nagosa1233211@gmail.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "64a7fd36-1cac-49cf-bd20-12f84aaca527",
+    "full_name": "xcxzczxc",
+    "email": "topoxelu@forexzig.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "9f9423be-bcc5-496d-aaae-73f0ae3f29a7",
+    "full_name": "╫₧╫נ╫ש ╫₧╫í╫í╫פ",
+    "email": "camdina1@walrage.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "80151049-c8e8-4849-ae87-1bbcb850f432",
+    "full_name": "",
+    "email": "itayshahar422@gmail.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "ea25bffa-97c4-455c-a826-ce0b23364c4d",
+    "full_name": "",
+    "email": "27hy8@airsworld.net",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "a57e507c-4fa8-4fa5-a9b0-4f18cefe2033",
+    "full_name": "",
+    "email": "copado2362@mucate.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "ac2b725a-2003-44ac-855c-98777d14df76",
+    "full_name": "",
+    "email": "lomelok797@coswz.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "22dc37d5-3c8a-4e73-9ceb-27a7a2ea2a66",
+    "full_name": "╫ק╫ש╫ק╫ש╫ק",
+    "email": "lipidil212@coswz.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "3356c943-84cd-4008-876d-1a4b3f81a285",
+    "full_name": "'╫ע╫ף╫⌐╫ף╫⌐╫ע╫ף╫⌐╫ף╫ע",
+    "email": "ejxvpezmwpcjsnwhpg@enotj.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "f731c169-0f64-4960-97ba-e02b4cecc51c",
+    "full_name": "╫£╫á╫ש╫ת",
+    "email": "pitoke2407@azeriom.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ע╫ץ╫ץ╫ש╫ש╫ó╫ף (╫⌐╫ס╫ר)",
+    "availability": "immediate",
+    "preferred_job_types": [
+      "full_time"
+    ]
+  },
+  {
+    "id": "cf347a50-501f-419b-b882-fd43e044e680",
+    "full_name": "╫ף╫ף╫ץ ╫ף╫ץ╫ף",
+    "email": "popila5665@daikoa.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ס╫£╫נ╫£",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "shifts"
+    ]
+  },
+  {
+    "id": "c70a245e-a085-4eea-b7de-9a56f0dd3079",
+    "full_name": "╫ס╫ף╫ש╫º╫פ ╫ס╫ף╫ץ╫º",
+    "email": "umjzexqpezwqbuhggq@xfavaj.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ר╫ץ╫ש╫£╫פ",
+    "availability": "negotiable",
+    "preferred_job_types": [
+      "shifts"
+    ]
+  },
+  {
+    "id": "08221743-5946-413e-885e-67ec3cb7df08",
+    "full_name": "MAY MASASA",
+    "email": "k8ub8@virgilian.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫í╫¿╫ש╫ק╫נ╫ƒ (╫⌐╫ס╫ר)",
+    "availability": "one_month",
+    "preferred_job_types": [
+      "shifts"
+    ]
+  },
+  {
+    "id": "3bd6050b-aa8f-4539-91e0-2b06bf2d935d",
+    "full_name": "adsjdsajjjcdn cmddckdknj",
+    "email": "eglqkrfdncfpahkosx@xfavaj.com",
+    "preferred_location": "╫ס╫á╫ש ╫ס╫¿╫º",
+    "availability": "negotiable",
+    "preferred_job_types": [
+      "full_time"
+    ]
+  },
+  {
+    "id": "b82b6c9f-4f08-41d2-8b28-cd5eb0f1090c",
+    "full_name": "╫ק╫₧╫¢╫ס╫ע╫¢",
+    "email": "pidowa9424@aixind.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ע╫ץ╫ץ╫ש╫ש╫ó╫ף (╫⌐╫ס╫ר)",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "part_time"
+    ]
+  },
+  {
+    "id": "3addfb7e-cfab-417a-88e4-1815126e04ed",
+    "full_name": "╫ף╫á╫ש╫נ╫£ ╫ף╫¿╫ץ╫ק╫£╫ש",
+    "email": "halon99498@akixpres.com",
+    "preferred_location": "╫ש╫¿╫ץ╫⌐╫£╫ש╫¥",
+    "availability": "immediate",
+    "preferred_job_types": [
+      "full_time"
+    ]
+  },
+  {
+    "id": "0fe79213-0a9a-499b-9a43-105449903ece",
+    "full_name": "╫¢╫á╫ע╫צ╫á╫ע╫ó╫₧╫ó╫¢╫₧╫ף╫¢╫ó╫₧╫ף╫₧╫¢",
+    "email": "talicax688@atinjo.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "04b6b65e-8341-4efe-a287-c45115adbb57",
+    "full_name": "╫¿╫ñ╫נ╫£ ╫£╫ץ╫ש",
+    "email": "kadeshli2020@gmail.com",
+    "preferred_location": "╫ש╫¿╫ץ╫⌐╫£╫ש╫¥",
+    "availability": "immediate",
+    "preferred_job_types": [
+      "flexible"
+    ]
+  },
+  {
+    "id": "0c95f71a-9f17-4f48-b2bd-18c83e545601",
+    "full_name": "╫ש╫ש╫ש╫ש╫ק╫£╫ש╫£",
+    "email": "azjv0@virgilian.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "c6e342cc-49e4-44cb-9e6d-f5a706df430b",
+    "full_name": "",
+    "email": "itayshahar224@gmail.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "3a12fb43-13b5-48b5-ac51-1189a6cf9d08",
+    "full_name": " dnhglr a",
+    "email": "dacaba5351@24faw.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "cf92c275-ccee-44c0-b267-9d70301fbab2",
+    "full_name": "╫₧╫נ╫ש",
+    "email": "benancio.311@walrage.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "81c95020-6ae7-4ec0-b605-d79f959a000b",
+    "full_name": "jb;kbj kjb;kjk",
+    "email": "gacedop269@daikoa.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ס╫£╫נ╫£",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "full_time"
+    ]
+  },
+  {
+    "id": "b257b46b-acf9-4aa3-9a89-e8459aa642e0",
+    "full_name": "nth dsvd",
+    "email": "jyporizu@forexzig.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ע╫ץ╫⌐",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "part_time"
+    ]
+  },
+  {
+    "id": "ba10cce1-8b16-454b-bf8c-abff0bea9b17",
+    "full_name": "",
+    "email": "bemar94934@fftube.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "518bf723-3c0e-4e93-b500-0aac4ce1bcf3",
+    "full_name": "",
+    "email": "ikfircohen@gmail.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "75d61318-aa6b-4ce2-bfac-05df7ef4b260",
+    "full_name": "",
+    "email": "gijegoj388@discounp.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "3d0602dd-83dc-439c-8b72-50082ee17358",
+    "full_name": "",
+    "email": "ivanovdm812@gmail.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "b24c8b87-d68b-449b-8234-e5c55768fdf5",
+    "full_name": "",
+    "email": "monet93638@roastic.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "fb5133cc-bb0a-46f5-a31a-887d101fb3cb",
+    "full_name": "╫₧╫נ╫ª ╫£╫ץ╫ש",
+    "email": "6yai769is9@ruutukf.com",
+    "preferred_location": "╫ש╫¿╫ץ╫⌐╫£╫ש╫¥",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "shifts"
+    ]
+  },
+  {
+    "id": "9be6d361-a41b-49e1-a6e8-19935d4a4493",
+    "full_name": "",
+    "email": "pavaxo1089@arugy.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "1611591e-49d7-4213-a218-152490a05984",
+    "full_name": "",
+    "email": "colir43014@mekuron.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "8b221427-c173-404e-958c-d9720898d908",
+    "full_name": "dfsfsfd",
+    "email": "jabib54044@mustaer.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "4f62c8ff-dece-467b-8ecf-7e15c553404d",
+    "full_name": "",
+    "email": "rivepa7895@mucate.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "ebf9f0a6-980c-47f6-98fd-dd758d465d82",
+    "full_name": "b;b;b b;b;kbk;",
+    "email": "lofehih976@1200b.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ע╫ó╫ף╫פ",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "part_time"
+    ]
+  },
+  {
+    "id": "77ca7478-43ba-41db-b83f-2fc86bb7ca2f",
+    "full_name": "╫ק╫ש ╫₧╫צ╫¿╫ק╫ש",
+    "email": "lajijif566@akixpres.com",
+    "preferred_location": "╫¿╫נ╫⌐ ╫פ╫ó╫ש╫ƒ",
+    "availability": "immediate",
+    "preferred_job_types": [
+      "full_time"
+    ]
+  },
+  {
+    "id": "844c7c2d-a624-41c6-9454-c2d25032ab78",
+    "full_name": "╫₧╫נ╫ª ╫£╫ץ╫ש",
+    "email": "o9kc0drc93@bltiwd.com",
+    "preferred_location": "╫נ╫ס╫á╫ש ╫נ╫ש╫¬╫ƒ",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "shifts"
+    ]
+  },
+  {
+    "id": "c9a9fb21-84e1-43bb-bb8f-06aeb3d4d111",
+    "full_name": "╫¿╫ñ╫נ╫£ ╫£╫ץ╫ש",
+    "email": "0rka3@virgilian.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "81e4a485-fd4a-4768-ad41-8286059f0a8a",
+    "full_name": "╫ס╫ף╫ש╫º╫¬╫ס╫ף╫ש╫º╫ץ╫ס╫ף╫º ╫ס╫ף╫ש╫º╫פ",
+    "email": "btmsrtheqzbzdhueaf@nespj.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫í╫á╫נ╫ƒ",
+    "availability": "one_month",
+    "preferred_job_types": [
+      "flexible"
+    ]
+  },
+  {
+    "id": "0c55fcc4-e77b-4f92-8973-57c353e56b7e",
+    "full_name": "╫¿╫ñ╫נ╫£ ╫£╫ץ╫ש",
+    "email": "ortv2@virgilian.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "061da94f-16f5-48b7-822f-53c9bb0c203f",
+    "full_name": "╫⌐╫ק╫¿╫ס╫ף╫ש╫º╫פ 4",
+    "email": "fiuhmhlpyualbubtps@nesopf.com",
+    "preferred_location": "╫¢╫ñ╫¿ ╫í╫ס╫נ",
+    "availability": "immediate",
+    "preferred_job_types": [
+      "shifts"
+    ]
+  },
+  {
+    "id": "a5cf7fbd-e5e4-43e2-ab20-23c5817db84b",
+    "full_name": "fa,bk.jc kjbfjkl",
+    "email": "nepova6171@akixpres.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "bc3d8ea7-fd12-4fff-b783-3c806f61832d",
+    "full_name": "╫ƒ╫¥╫á╫¥╫ש ╫ƒ╫¥╫ש╫á╫ץ╫פ",
+    "email": "mefil98919@1200b.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ע╫ץ╫ץ╫ש╫ש╫ó╫ף (╫⌐╫ס╫ר)",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "part_time"
+    ]
+  },
+  {
+    "id": "616bd5c1-758c-4d78-8cc3-2e0733b5641f",
+    "full_name": "╫á╫¬╫á╫נ╫£",
+    "email": "netanelnagosa11@gmail.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ק╫₧╫¿╫פ",
+    "availability": "negotiable",
+    "preferred_job_types": [
+      "full_time"
+    ]
+  },
+  {
+    "id": "5a39013d-fa0e-4c3a-8b4e-664f976f9ffd",
+    "full_name": "MAY MASASA",
+    "email": "nb253@virgilian.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ק╫₧╫¿╫פ",
+    "availability": "one_month",
+    "preferred_job_types": [
+      "shifts"
+    ]
+  },
+  {
+    "id": "8ece95c4-1545-4450-9395-bd098ef279bc",
+    "full_name": "╫ע╫⌐╫ע╫ף╫¢╫ף╫ע╫ע╫¢╫ף╫ע╫ף╫¢ ╫ע╫ף╫¢╫ף╫ע╫¢╫ף",
+    "email": "kvzixemrccxwlgdfay@enotj.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ס╫£╫נ╫£",
+    "availability": "negotiable",
+    "preferred_job_types": [
+      "flexible"
+    ]
+  },
+  {
+    "id": "c3573287-0cb5-4a61-a7dd-bc4607d13837",
+    "full_name": "╫ע╫º╫í╫¿╫ó╫ó",
+    "email": "welepa6563@akixpres.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "14f8e889-a2f2-4a07-b91e-1b7561254f7b",
+    "full_name": "",
+    "email": "begone7724@mustaer.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "e06a576b-b60f-46ac-9298-5b16c35c0395",
+    "full_name": "",
+    "email": "dapasi9171@daikoa.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "b6697b28-4b91-4099-9eba-f2897a4151a3",
+    "full_name": "",
+    "email": "fehek59850@dretnar.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "33b77f38-5d7e-4e15-9e11-9360a5480394",
+    "full_name": "╫ש╫ץ╫ó╫ת",
+    "email": "xecaw90123@azeriom.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "2550063e-4723-431f-bae2-4741e9cdd729",
+    "full_name": "",
+    "email": "bavale7924@cimario.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "8663570e-29fd-4c3c-a1e2-cfc33c73628d",
+    "full_name": "",
+    "email": "5g2bmuhbth@mkzaso.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "cdc4723e-b522-4e3a-8522-34eed9c10ab5",
+    "full_name": "",
+    "email": "micefef361@azeriom.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "6ceb229b-1d3d-4304-b1ab-560553a2bfaf",
+    "full_name": "╫ƒ╫ƒ╫פ╫ƒ╫פ",
+    "email": "kogojil552@aixind.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "f20a0c88-53c3-482c-b480-b1b5a7990e98",
+    "full_name": "╫ש╫ץ╫í╫ú ╫ש╫ץ╫í╫ñ╫ש",
+    "email": "fagim58134@cameltok.com",
+    "preferred_location": "╫¬╫£ ╫נ╫ס╫ש╫ס-╫ש╫ñ╫ץ",
+    "availability": "immediate",
+    "preferred_job_types": [
+      "full_time"
+    ]
+  },
+  {
+    "id": "c0ceb72a-4a45-44c2-a458-410952f2df8d",
+    "full_name": "",
+    "email": "shachar@julius-agency.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "1848d82e-038b-4338-bb11-fb78e745a1ba",
+    "full_name": "Neo Levin",
+    "email": "thequantumtechnologies@gmail.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "3fd56a6e-233b-401a-bc92-c672059ea349",
+    "full_name": "╫ק╫£╫ó╫ת╫פ╫ק",
+    "email": "halowox521@azeriom.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ע╫ץ╫⌐",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "part_time"
+    ]
+  },
+  {
+    "id": "f1fa2cb8-aeba-4144-b31d-a1fc6a12b841",
+    "full_name": "nkjbj knkkjbkb",
+    "email": "ranomi1286@dretnar.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫í╫¿╫ש╫ק╫נ╫ƒ (╫⌐╫ס╫ר)",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "full_time"
+    ]
+  },
+  {
+    "id": "559d1942-02f5-46f4-8d45-54ed27f7b929",
+    "full_name": "╫¿╫ñ╫נ╫£ ╫ף╫¿╫ץ╫ש╫⌐",
+    "email": "jjn3c@virgilian.com",
+    "preferred_location": "╫נ╫ס╫á╫¬",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "shifts"
+    ]
+  },
+  {
+    "id": "62f3c2ff-06f1-4688-967e-1b23257445cb",
+    "full_name": "╫נ╫ש╫¬╫ƒ ╫£╫ץ╫ש",
+    "email": "irpkb@virgilian.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "519f0470-2c3f-46a5-b399-11f1319389c6",
+    "full_name": "╫⌐╫ק╫¿╫ס╫ף╫ש╫º╫פ 5",
+    "email": "daxica3162@juhxs.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ס╫£╫נ╫£",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "part_time"
+    ]
+  },
+  {
+    "id": "a9240d88-b638-478a-8806-840295e3b84b",
+    "full_name": "╫₧╫⌐╫פ ╫₧╫ש╫⌐╫ץ╫ע",
+    "email": "david.refahl.l@gmail.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ע╫ó╫ף╫פ",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "full_time"
+    ]
+  },
+  {
+    "id": "680daf97-c7d0-43f2-a27d-5c42a90ebf40",
+    "full_name": "",
+    "email": "navec61690@okexbit.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "c0e2ecae-86e3-415d-adff-46a9af9c5872",
+    "full_name": "╫₧╫נ╫ש ╫₧╫í╫í╫פ",
+    "email": "soozmas@gmail.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ע╫ץ╫⌐",
+    "availability": "immediate",
+    "preferred_job_types": [
+      "shifts"
+    ]
+  },
+  {
+    "id": "dc423e2f-e5cd-4e98-a086-690bd79041ee",
+    "full_name": "╫¿╫ñ╫נ╫£",
+    "email": "testim@metch.co.il",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "b66ab32e-5adb-4859-9118-70508a156a06",
+    "full_name": "MAY MASASA",
+    "email": "oy2e0@virgilian.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ר╫ץ╫ש╫£╫פ",
+    "availability": "one_month",
+    "preferred_job_types": [
+      "shifts"
+    ]
+  },
+  {
+    "id": "a048dcce-64e5-4134-aa94-f04ba5128b7b",
+    "full_name": "╫ש╫ª╫ק╫º ╫ש╫ª╫ק╫º╫ש",
+    "email": "493r6@virgilian.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ס╫£╫נ╫£",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "shifts"
+    ]
+  },
+  {
+    "id": "282810e1-95b8-40a4-89e8-5f0c71c84f6a",
+    "full_name": "╫á╫ó╫ת╫ש╫פ╫ת╫ש╫ק╫פ ╫£╫ק╫á╫ק╫ת╫ש╫פ╫ש",
+    "email": "goced24455@atinjo.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫í╫¿╫ש╫ק╫נ╫ƒ (╫⌐╫ס╫ר)",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "full_time"
+    ]
+  },
+  {
+    "id": "db83a0a8-c6e6-4f57-9d99-5513a3e394f3",
+    "full_name": "╫¿╫ע╫£╫ת╫₧╫פ╫¢",
+    "email": "nenayar245@aixind.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "efde550f-4f2d-4b3f-9f7d-8115594b70cf",
+    "full_name": "vfbgfs fbadgns",
+    "email": "donodop906@coswz.com",
+    "preferred_location": "╫נ╫ס╫ץ ╫ע╫ץ╫⌐",
+    "availability": "two_weeks",
+    "preferred_job_types": [
+      "part_time"
+    ]
+  },
+  {
+    "id": "2abdc53b-f5de-4274-8c09-3efb52aff9fd",
+    "full_name": "",
+    "email": "libbykaner123@gmail.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "46374b72-aa02-4552-abfa-f564028a3237",
+    "full_name": "",
+    "email": "test222@gmail.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "3ca8eed1-30d0-48b2-a8cf-b18c6f3f5214",
+    "full_name": "",
+    "email": "rijexib670@okexbit.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "4c56ae60-64ec-4878-85da-ffcd9702e75e",
+    "full_name": "",
+    "email": "godidir424@akixpres.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "9a4dc3f0-4633-4707-a7a7-955b1b2c2349",
+    "full_name": "",
+    "email": "gowanaf981@mucate.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "49721b6a-5580-498b-adc8-b8d9e4fc0e22",
+    "full_name": "",
+    "email": "dodas68213@mekuron.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "65c00a29-8d85-4401-aad2-d31dca943471",
+    "full_name": "╫₧╫נ╫ש ╫₧╫í╫í╫פ",
+    "email": "p0i17ibz8x@zudpck.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "f01aa58a-395a-4886-a688-c4c37eab8307",
+    "full_name": "",
+    "email": "test@metch.co.il",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "4f402418-31f5-4657-a46d-491db41b100d",
+    "full_name": "╫ס╫ף╫ש╫º╫פ",
+    "email": "jikavo8539@dubokutv.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "f48797ee-1302-40aa-b56a-e8c97c1fe966",
+    "full_name": "╫ס╫ף╫ש╫º╫פ",
+    "email": "redkrispin@gmail.com",
+    "preferred_location": null,
+    "availability": "negotiable",
+    "preferred_job_types": null
+  },
+  {
+    "id": "0857023f-64c9-441d-9dd7-b7b4d0cdbdfe",
+    "full_name": "╫ס╫ע╫ס╫עdd vdvsv",
+    "email": "xoveje2606@24faw.com",
+    "preferred_location": "╫¬╫£ ╫נ╫ס╫ש╫ס-╫ש╫ñ╫ץ",
+    "availability": "negotiable",
+    "preferred_job_types": null
+  }
+]
+
+--- FETCHING ALL ACTIVE JOBS ---
+Active Jobs Found: 60
+[
+  {
+    "id": "1804323e-01ea-41aa-8cae-1c3d4803301c",
+    "title": "NO TITLE",
+    "location": "",
+    "category": "",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "6e7d0a9c-983d-489d-b0f1-5b3765c2982f",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫ó╫ס╫ץ╫ף╫פ",
+    "location": "╫ש╫¿╫ץ╫⌐╫£╫ש╫¥",
+    "category": "╫ס╫á╫ש╫ש╫פ ╫ץ╫á╫ף╫£\"╫ƒ",
+    "status": "active",
+    "structured_requirements": "[{\"value\":\"Γאó\\t╫á╫ש╫í╫ש╫ץ╫ƒ ╫₧╫ץ╫¢╫ק ╫ס╫á╫ש╫פ╫ץ╫£ ╫⌐╫£╫ף ╫ץ╫ע╫₧╫¿╫ש╫¥ ╫ס╫ñ╫¿╫ץ╫ש╫º╫ר╫ש╫¥ ╫₧╫ץ╫í╫ף╫ש╫ש╫¥ ╫ץ/╫נ╫ץ ╫₧╫ע╫ץ╫¿╫ש╫¥\",\"type\":\"required\"},{\"value\":\"╫á╫ש╫í╫ש╫ץ╫ƒ ╫ס╫á╫ש╫פ╫ץ╫£ ╫ñ╫¿╫ץ╫ש╫º╫ר╫ש╫¥ ╫ó╫ף ╫⌐╫£╫ס ╫פ╫₧╫í╫ש╫¿╫פ\",\"type\":\"required\"},{\"value\":\"Γאó\\t╫⌐╫£╫ש╫ר╫פ ╫ס╫º╫¿╫ש╫נ╫¬ ╫¬╫¢╫á╫ש╫ץ╫¬ ╫ץ╫פ╫ץ╫ס╫£╫¬ ╫¬╫פ╫£╫ש╫¢╫ש ╫ס╫ש╫ª╫ץ╫ó\",\"type\":\"required\"},{\"value\":\"Γאó\\t╫ש╫¢╫ץ╫£╫ץ╫¬ ╫á╫ש╫פ╫ץ╫£, ╫í╫ף╫¿ ╫ץ╫¿╫נ╫⌐ ╫ע╫ף╫ץ╫£\",\"type\":\"required\"},{\"value\":\"╫á╫ש╫í╫ש╫ץ╫ƒ ╫ס╫ñ╫¿╫ץ╫ש╫º╫ר╫ש ╫¬╫₧╫┤╫נ 38\",\"type\":\"advantage\"},{\"value\":\"╫פ╫í╫₧╫¢╫¬ PMP (╫á╫ש╫פ╫ץ╫£ ╫ñ╫¿╫ץ╫ש╫º╫ר╫ש╫¥)\",\"type\":\"advantage\"}]"
+  },
+  {
+    "id": "aa4edde5-4b78-4e8d-8736-47f9098d52ee",
+    "title": "╫₧╫á╫פ╫£ ╫ק╫⌐╫ס╫ץ╫á╫ץ╫¬ (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "location": "",
+    "category": "╫ק╫⌐╫ס╫ץ╫á╫נ╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"value\":\"╫¬╫ץ╫נ╫¿ ╫ס╫פ╫á╫פ╫£╫¬ ╫ק╫⌐╫ס╫ץ╫á╫ץ╫¬\",\"type\":\"required\"},{\"value\":\"12 ╫⌐╫á╫ץ╫¬ ╫£╫ש╫₧╫ץ╫ף\",\"type\":\"required\"}]"
+  },
+  {
+    "id": "5aebbc06-5fac-43fe-bb84-fb4f2f72fa67",
+    "title": "╫₧╫á╫פ╫£ ╫ק╫⌐╫ס╫ץ╫á╫ץ╫¬ (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "location": "",
+    "category": "╫ק╫⌐╫ס╫ץ╫á╫נ╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"value\":\"╫¬╫ץ╫נ╫¿ ╫ס╫פ╫á╫פ╫£╫¬ ╫ק╫⌐╫ס╫ץ╫á╫ץ╫¬\",\"type\":\"required\"},{\"value\":\"12 ╫⌐╫á╫ץ╫¬ ╫£╫ש╫₧╫ץ╫ף\",\"type\":\"required\"}]"
+  },
+  {
+    "id": "c03c0658-e9cf-40e3-80a4-9480f4d7b43f",
+    "title": " (╫ó╫ץ╫¬╫º)",
+    "location": "",
+    "category": "",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "5f94f0ce-ab50-46b6-a0f5-e9405023a861",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫ó╫ס╫ץ╫ף╫פ (╫ó╫ץ╫¬╫º)",
+    "location": "╫ש╫¿╫ץ╫⌐╫£╫ש╫¥",
+    "category": "╫ס╫á╫ש╫ש╫פ ╫ץ╫á╫ף╫£\"╫ƒ",
+    "status": "active",
+    "structured_requirements": "[{\"value\":\"Γאó\\t╫á╫ש╫í╫ש╫ץ╫ƒ ╫₧╫ץ╫¢╫ק ╫ס╫á╫ש╫פ╫ץ╫£ ╫⌐╫£╫ף ╫ץ╫ע╫₧╫¿╫ש╫¥ ╫ס╫ñ╫¿╫ץ╫ש╫º╫ר╫ש╫¥ ╫₧╫ץ╫í╫ף╫ש╫ש╫¥ ╫ץ/╫נ╫ץ ╫₧╫ע╫ץ╫¿╫ש╫¥\",\"type\":\"required\"},{\"value\":\"╫á╫ש╫í╫ש╫ץ╫ƒ ╫ס╫á╫ש╫פ╫ץ╫£ ╫ñ╫¿╫ץ╫ש╫º╫ר╫ש╫¥ ╫ó╫ף ╫⌐╫£╫ס ╫פ╫₧╫í╫ש╫¿╫פ\",\"type\":\"required\"},{\"value\":\"Γאó\\t╫⌐╫£╫ש╫ר╫פ ╫ס╫º╫¿╫ש╫נ╫¬ ╫¬╫¢╫á╫ש╫ץ╫¬ ╫ץ╫פ╫ץ╫ס╫£╫¬ ╫¬╫פ╫£╫ש╫¢╫ש ╫ס╫ש╫ª╫ץ╫ó\",\"type\":\"required\"},{\"value\":\"Γאó\\t╫ש╫¢╫ץ╫£╫ץ╫¬ ╫á╫ש╫פ╫ץ╫£, ╫í╫ף╫¿ ╫ץ╫¿╫נ╫⌐ ╫ע╫ף╫ץ╫£\",\"type\":\"required\"},{\"value\":\"╫á╫ש╫í╫ש╫ץ╫ƒ ╫ס╫ñ╫¿╫ץ╫ש╫º╫ר╫ש ╫¬╫₧╫┤╫נ 38\",\"type\":\"advantage\"},{\"value\":\"╫פ╫í╫₧╫¢╫¬ PMP (╫á╫ש╫פ╫ץ╫£ ╫ñ╫¿╫ץ╫ש╫º╫ר╫ש╫¥)\",\"type\":\"advantage\"}]"
+  },
+  {
+    "id": "99d2e625-513a-4b1f-b92a-64bc93d27931",
+    "title": "╫ר╫¢╫á╫ץ╫£╫ץ╫ע/╫ש╫¬ ╫₧╫צ╫ץ╫ƒ",
+    "location": "╫ס╫¿╫ש╫ע",
+    "category": "╫¬╫ó╫⌐╫ש╫פ / ╫ש╫ש╫ª╫ץ╫¿",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "c556a5c7-669d-40e9-bc78-0bb2eb0def3a",
+    "title": "╫₧╫£╫º╫ר/╫¬",
+    "location": "╫⌐╫ץ╫פ╫¥",
+    "category": "╫£╫ץ╫ע╫ש╫í╫ר╫ש╫º╫פ / ╫⌐╫ש╫£╫ץ╫ק",
+    "status": "active",
+    "structured_requirements": "[{\"value\":\"╫á╫¢╫ץ╫á╫ץ╫¬ ╫£╫ó╫ס╫ץ╫ף╫פ ╫ñ╫ש╫צ╫ש╫¬ ╫₧╫¬╫ץ╫á╫פ.\",\"type\":\"required\"},{\"value\":\"╫ש╫¢╫ץ╫£╫¬ ╫ó╫ס╫ץ╫ף╫פ ╫ס╫í╫ס╫ש╫ס╫פ ╫₧╫₧╫ץ╫ק╫⌐╫ס╫¬ (╫⌐╫ש╫₧╫ץ╫⌐ ╫ס╫₧╫í╫ץ╫ñ╫ץ╫ƒ).\",\"type\":\"required\"},{\"value\":\"╫נ╫ק╫¿╫ש╫ץ╫¬, ╫ף╫ש╫ש╫º╫á╫ץ╫¬ ╫ץ╫ש╫¢╫ץ╫£╫¬ ╫ó╫₧╫ש╫ף╫פ ╫ס╫ש╫ó╫ף╫ש ╫פ╫í╫ñ╫º.\",\"type\":\"required\"},{\"value\":\"╫צ╫₧╫ש╫á╫ץ╫¬ ╫£╫₧╫⌐╫₧╫¿╫ץ╫¬\",\"type\":\"advantage\"},{\"value\":\"╫á╫ש╫í╫ש╫ץ╫ƒ ╫º╫ץ╫ף╫¥\",\"type\":\"advantage\"}]"
+  },
+  {
+    "id": "e493dc2b-63d1-4757-b554-bd32b49a8e53",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫ó╫ס╫ץ╫ף╫פ",
+    "location": "╫ש╫¿╫ץ╫⌐╫£╫ש╫¥",
+    "category": "╫ס╫á╫ש╫ש╫פ ╫ץ╫á╫ף╫£\"╫ƒ",
+    "status": "active",
+    "structured_requirements": "[{\"value\":\"Γאó\\t╫á╫ש╫í╫ש╫ץ╫ƒ ╫₧╫ץ╫¢╫ק ╫ס╫á╫ש╫פ╫ץ╫£ ╫⌐╫£╫ף ╫ץ╫ע╫₧╫¿╫ש╫¥ ╫ס╫ñ╫¿╫ץ╫ש╫º╫ר╫ש╫¥ ╫₧╫ץ╫í╫ף╫ש╫ש╫¥ ╫ץ/╫נ╫ץ ╫₧╫ע╫ץ╫¿╫ש╫¥\",\"type\":\"required\"},{\"value\":\"╫á╫ש╫í╫ש╫ץ╫ƒ ╫ס╫á╫ש╫פ╫ץ╫£ ╫ñ╫¿╫ץ╫ש╫º╫ר╫ש╫¥ ╫ó╫ף ╫⌐╫£╫ס ╫פ╫₧╫í╫ש╫¿╫פ\",\"type\":\"required\"},{\"value\":\"Γאó\\t╫⌐╫£╫ש╫ר╫פ ╫ס╫º╫¿╫ש╫נ╫¬ ╫¬╫¢╫á╫ש╫ץ╫¬ ╫ץ╫פ╫ץ╫ס╫£╫¬ ╫¬╫פ╫£╫ש╫¢╫ש ╫ס╫ש╫ª╫ץ╫ó\",\"type\":\"required\"},{\"value\":\"Γאó\\t╫ש╫¢╫ץ╫£╫ץ╫¬ ╫á╫ש╫פ╫ץ╫£, ╫í╫ף╫¿ ╫ץ╫¿╫נ╫⌐ ╫ע╫ף╫ץ╫£\",\"type\":\"required\"},{\"value\":\"╫á╫ש╫í╫ש╫ץ╫ƒ ╫ס╫ñ╫¿╫ץ╫ש╫º╫ר╫ש ╫¬╫₧╫┤╫נ 38\",\"type\":\"advantage\"},{\"value\":\"╫פ╫í╫₧╫¢╫¬ PMP (╫á╫ש╫פ╫ץ╫£ ╫ñ╫¿╫ץ╫ש╫º╫ר╫ש╫¥)\",\"type\":\"advantage\"}]"
+  },
+  {
+    "id": "36914d75-bbac-4580-b2d4-1f79f375ced8",
+    "title": "╫₧╫ó╫ª╫ס/╫¬ ╫₧╫í╫ק╫¿╫ש/╫¬ / VM",
+    "location": "╫נ╫ס╫ץ ╫ע╫ó╫ף╫פ",
+    "category": "╫נ╫ץ╫ñ╫á╫פ",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "46b926c4-9fd7-4342-96b6-600d74bace71",
+    "title": "╫₧╫ñ╫ó╫ש╫£/╫¬ SOC",
+    "location": "",
+    "category": "╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "7d4d2927-622e-46fe-a5a5-63cc5a92d780",
+    "title": "╫₧╫ó╫ª╫ס/╫¬ ╫נ╫ץ╫ñ╫á╫פ (╫ó╫ץ╫¬╫º)",
+    "location": "╫נ╫ס╫ץ ╫ע╫ץ╫⌐",
+    "category": "╫נ╫ץ╫ñ╫á╫פ",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "60dc407e-ac40-405b-a6b6-55da0321cd12",
+    "title": "╫₧╫ץ╫₧╫ק╫פ/╫ש╫¬ ╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "location": "╫נ╫ס╫ץ ╫ק╫₧╫¿╫פ",
+    "category": "╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "a3bc3f1c-2ac4-44de-b878-0317fe61c34f",
+    "title": "╫₧╫ץ╫₧╫ק╫פ/╫ש╫¬ ╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "location": "╫נ╫ס╫ץ ╫ק╫₧╫¿╫פ",
+    "category": "╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "7d7dbf92-1f72-4ce7-b7be-90acab323712",
+    "title": "╫₧╫ץ╫₧╫ק╫פ/╫ש╫¬ ╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "location": "╫נ╫ס╫ץ ╫ק╫₧╫¿╫פ",
+    "category": "╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "c526c8af-f99b-4355-ba70-773bff45e5a5",
+    "title": "╫₧╫ץ╫₧╫ק╫פ/╫ש╫¬ ╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó (╫ó╫ץ╫¬╫º) (╫ó╫ץ╫¬╫º)",
+    "location": "╫נ╫ס╫ץ ╫ק╫₧╫¿╫פ",
+    "category": "╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "cc14e08a-9cd7-497a-b754-0070046e20c1",
+    "title": "╫₧╫ñ╫ó╫ש╫£/╫¬ SOC",
+    "location": "╫¢╫ñ╫¿ ╫í╫ס╫נ",
+    "category": "╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "d565731f-c5be-470d-8443-3b35832e9886",
+    "title": "╫⌐╫¿╫ר╫ר/╫¬",
+    "location": "",
+    "category": "╫ס╫á╫ש╫ש╫פ ╫ץ╫á╫ף╫£\"╫ƒ",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "2d770cb1-4742-45fd-8bd9-d45d31a34be5",
+    "title": "╫נ╫á╫£╫ש╫í╫ר/╫ש╫¬ ╫í╫ש╫ש╫ס╫¿",
+    "location": "",
+    "category": "╫נ╫ץ╫ñ╫á╫פ",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "3f150f63-962c-4cc6-9576-b20ed9815686",
+    "title": "╫₧╫ץ╫₧╫ק╫פ/╫ש╫¬ ╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó",
+    "location": "",
+    "category": "╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "50d620aa-96e6-42bd-b9a7-a46841187aee",
+    "title": "╫₧╫ó╫ª╫ס/╫¬ ╫נ╫ץ╫ñ╫á╫פ",
+    "location": "",
+    "category": "╫נ╫ץ╫ñ╫á╫פ",
+    "status": "active",
+    "structured_requirements": "[{\"value\":\"╫ע╫ó╫ע╫¢╫ó\",\"type\":\"required\"},{\"value\":\"╫ע╫¢╫ó╫ע\",\"type\":\"required\"}]"
+  },
+  {
+    "id": "7083c9dc-1580-4155-9ee5-3eb6c2231a8c",
+    "title": "╫í╫ק╫¿ ╫נ╫£╫º╫ר╫¿╫ץ╫á╫ש",
+    "location": "",
+    "category": "╫נ╫ש╫á╫ר╫¿╫á╫ר",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "ebfe2b01-be80-41c8-b293-1807521eb65d",
+    "title": "╫₧╫צ╫¢╫ש╫¿/╫פ ╫נ╫á╫ע╫£╫ש╫¬",
+    "location": "",
+    "category": "╫נ╫ף╫₧╫ש╫á╫ש╫í╫ר╫¿╫ª╫ש╫פ",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "a65bb4d0-1ab8-4ed9-85eb-0b04a08b060b",
+    "title": "╫₧╫ץ╫₧╫ק╫פ/╫ש╫¬ ╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó",
+    "location": "╫נ╫ס╫ץ ╫ק╫₧╫¿╫פ",
+    "category": "╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "790bccd2-f708-4829-984a-88e9f335bbfa",
+    "title": "╫₧╫פ╫á╫ף╫í/╫¬ ╫נ╫צ╫¿╫ק╫ש/╫¬",
+    "location": "╫נ╫ס╫ץ ╫ע╫ץ╫⌐",
+    "category": "╫ס╫á╫ש╫ש╫פ ╫ץ╫á╫ף╫£\"╫ƒ",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "caed6a77-bcac-435c-9d3c-1e2d9cefdcda",
+    "title": "╫₧╫ó╫ª╫ס/╫¬ ╫נ╫ץ╫ñ╫á╫פ",
+    "location": "╫נ╫ס╫ץ ╫ע╫ץ╫ץ╫ש╫ש╫ó╫ף (╫⌐╫ס╫ר)",
+    "category": "╫נ╫ץ╫ñ╫á╫פ",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "8eb5f7e2-1318-4004-ae13-4e15bf31f816",
+    "title": "╫₧╫ñ╫ó╫ש╫£/╫¬ SOC (╫ó╫ץ╫¬╫º)",
+    "location": "╫נ╫ס╫ץ ╫º╫ץ╫¿╫ש╫á╫נ╫¬ (╫⌐╫ס╫ר)",
+    "category": "╫נ╫ס╫ר╫ק╫¬ ╫₧╫ש╫ף╫ó",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "4714359c-b9ed-44a4-bd8e-01dcb9ad3d9d",
+    "title": "╫פ╫ף╫¿╫¢╫פ (╫ó╫ץ╫¬╫º)",
+    "location": "╫ש╫¿╫ץ╫⌐╫£╫ש╫¥ ╫ץ╫פ╫í╫ס╫ש╫ס╫פ",
+    "category": "╫פ╫ף╫¿╫¢╫פ / ╫פ╫ץ╫¿╫נ╫פ",
+    "status": "active",
+    "structured_requirements": "[]"
+  },
+  {
+    "id": "168475c0-f2b7-47e2-8d63-9615f986fb3f",
+    "title": "╫₧╫פ╫á╫ף╫í/╫¬ ╫נ╫£╫º╫ר╫¿╫ץ╫נ╫ץ╫ñ╫ר╫ש╫º╫פ (╫ó╫ץ╫¬╫º)",
+    "location": "╫₧╫¿╫¢╫צ",
+    "category": "╫פ╫ש╫ש╫ר╫º-╫ק╫ץ╫₧╫¿╫פ",
+    "status": "active",
+    "structured_requirements": "[{\"value\":\"╫₧╫⌐╫פ\",\"type\":\"required\"}]"
+  },
+  {
+    "id": "cb67a574-7a6d-4048-b495-085f3a2745c1",
+    "title": "╫₧╫á╫פ╫£/╫¬ ╫₧╫⌐╫¿╫ף",
+    "location": "╫º╫¿╫ש╫ש╫¬ ╫ó╫º╫¿╫ץ╫ƒ",
+    "category": "╫נ╫ף╫₧╫ש╫á╫ש╫í╫ר╫¿╫ª╫ש╫פ",
+    "status": "active",
+    "structured_requirements": "[{\"value\":\"kjbjkbk.bh\",\"type\":\"required\"}]"
+  },
+  {
+    "id": "25e107b2-2a4b-4b0a-b075-15e0d3c6ee47",
+    "title": "╫₧╫פ╫á╫ף╫í ╫ס╫ף╫ש╫º╫ץ╫¬ ╫¬╫ץ╫¢╫á╫פ",
+    "location": "╫¿╫₧╫¬ ╫ע╫ƒ",
+    "category": "╫¬╫¢╫á╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 3+ ╫⌐╫á╫ש╫¥ ╫ס╫ס╫ף╫ש╫º╫ץ╫¬ ╫¬╫ץ╫¢╫á╫פ\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס-Selenium ╫נ╫ץ Cypress\"}]"
+  },
+  {
+    "id": "585a5799-b718-4519-b98c-311831f90c72",
+    "title": "╫₧╫ó╫ª╫ס ╫ñ╫á╫ש╫¥",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫ó╫ש╫ª╫ץ╫ס",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 3+ ╫⌐╫á╫ש╫¥ ╫ס╫ó╫ש╫ª╫ץ╫ס ╫ñ╫á╫ש╫¥\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס-AutoCAD\"}]"
+  },
+  {
+    "id": "9010219d-f6d9-4ea7-ba8c-1539d99b5e1f",
+    "title": "╫ר╫ס╫ק ╫ס╫₧╫í╫ó╫ף╫פ",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫₧╫í╫ó╫ף╫á╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ ╫£╫ñ╫ק╫ץ╫¬ ╫⌐╫á╫פ ╫ס╫₧╫ר╫ס╫ק\"}]"
+  },
+  {
+    "id": "1228200b-8786-4874-90d6-2721ddd31d13",
+    "title": "╫₧╫á╫פ╫£ ╫ñ╫¿╫ץ╫ש╫º╫ר╫ש╫¥ - ╫פ╫¬╫ק╫£╫פ ╫ס╫נ╫ñ╫¿╫ש╫£",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫á╫ש╫פ╫ץ╫£",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 4+ ╫⌐╫á╫ש╫¥\"}]"
+  },
+  {
+    "id": "782817fd-ae3a-44d8-8b86-81df4f5bc5cf",
+    "title": "╫₧╫ñ╫¬╫ק Frontend - ╫פ╫¬╫ק╫£╫פ ╫₧╫ש╫ש╫ף╫ש╫¬",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫¬╫¢╫á╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 2+ ╫⌐╫á╫ש╫¥ ╫ס-React\"}, {\"type\": \"required\", \"value\": \"╫צ╫₧╫ש╫á╫ץ╫¬ ╫₧╫ש╫ש╫ף╫ש╫¬\"}]"
+  },
+  {
+    "id": "6ac0956b-a0f6-4118-9b97-9b0b442dd98d",
+    "title": "╫₧╫á╫פ╫£ ╫ס╫ר╫ש╫ק╫ץ╫¬",
+    "location": "╫ק╫ש╫ñ╫פ",
+    "category": "╫ס╫ר╫ש╫ק╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 5+ ╫⌐╫á╫ש╫¥ ╫ס╫á╫ש╫פ╫ץ╫£ ╫ס╫ר╫ש╫ק╫ץ╫¬\"}]"
+  },
+  {
+    "id": "5f4547d2-7b3a-415a-bf9b-4f2d51a8a150",
+    "title": "╫₧╫פ╫á╫ף╫í DevOps ╫ס╫¢╫ש╫¿",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫¬╫¢╫á╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ ╫£╫ñ╫ק╫ץ╫¬ 5 ╫⌐╫á╫ש╫¥ ╫ס-DevOps\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס-Kubernetes, Docker\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס-AWS ╫נ╫ץ Azure\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס-Linux\"}]"
+  },
+  {
+    "id": "5edf7262-4b63-4c42-8749-69cb49e51ae3",
+    "title": "╫₧╫ñ╫¬╫ק Full Stack",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫¬╫¢╫á╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ ╫£╫ñ╫ק╫ץ╫¬ 3 ╫⌐╫á╫ש╫¥ ╫ס╫ñ╫ש╫¬╫ץ╫ק Full Stack\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫₧╫ó╫₧╫ש╫º ╫ס-JavaScript, React, Node.js\"}, {\"type\": \"required\", \"value\": \"╫ó╫ס╫¿╫ש╫¬ ╫ס╫¿╫₧╫פ ╫ר╫ץ╫ס╫פ\"}]"
+  },
+  {
+    "id": "ae38b3ca-9f0e-48e1-96da-f4d5a1de5a43",
+    "title": "╫⌐╫ץ╫₧╫¿ ╫נ╫ס╫ר╫ק╫פ",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫נ╫ס╫ר╫ק╫פ",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫₧╫ª╫ס ╫ס╫¿╫ש╫נ╫ץ╫¬╫ש ╫¬╫º╫ש╫ƒ\"}]"
+  },
+  {
+    "id": "451203f0-2f47-4c4c-90f4-a486c5b3de8c",
+    "title": "╫º╫ץ╫ñ╫נ╫ש",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫₧╫¢╫ש╫¿╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"optional\", \"value\": \"╫ש╫ף╫ó ╫ס╫í╫ש╫í╫ש ╫ס╫₧╫ק╫⌐╫ס╫ש╫¥\"}]"
+  },
+  {
+    "id": "cc5ef15b-239d-4639-a89e-a5816200ac2a",
+    "title": "╫נ╫á╫£╫ש╫í╫ר ╫á╫¬╫ץ╫á╫ש╫¥",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫נ╫á╫£╫ש╫צ╫פ",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 3+ ╫⌐╫á╫ש╫¥ ╫ס╫á╫ש╫¬╫ץ╫ק ╫á╫¬╫ץ╫á╫ש╫¥\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס-SQL ╫ץ-Python\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס-Tableau ╫נ╫ץ Power BI\"}]"
+  },
+  {
+    "id": "b5186239-20ac-4ed1-8387-9533a7c8de3a",
+    "title": "╫á╫ª╫ש╫ע ╫⌐╫ש╫¿╫ץ╫¬ ╫£╫º╫ץ╫ק╫ץ╫¬",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫⌐╫ש╫¿╫ץ╫¬ ╫£╫º╫ץ╫ק╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ ╫£╫ñ╫ק╫ץ╫¬ ╫⌐╫á╫פ ╫ס╫⌐╫ש╫¿╫ץ╫¬ ╫£╫º╫ץ╫ק╫ץ╫¬\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס╫ó╫ס╫¿╫ש╫¬ ╫ץ╫נ╫á╫ע╫£╫ש╫¬\"}]"
+  },
+  {
+    "id": "7522074d-170b-4b1f-8707-d9214ac4727e",
+    "title": "╫₧╫á╫פ╫£ ╫₧╫⌐╫נ╫ס╫ש ╫נ╫á╫ץ╫⌐",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫₧╫⌐╫נ╫ס╫ש ╫נ╫á╫ץ╫⌐",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 5+ ╫⌐╫á╫ש╫¥ ╫ס-HR\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס╫ק╫ץ╫º╫ש ╫ó╫ס╫ץ╫ף╫פ\"}]"
+  },
+  {
+    "id": "024c5a3f-6c99-4780-8643-f7ddc0c785f7",
+    "title": "╫¿╫ץ╫נ╫פ ╫ק╫⌐╫ס╫ץ╫ƒ",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫ק╫⌐╫ס╫ץ╫á╫נ╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ ╫£╫ñ╫ק╫ץ╫¬ 3 ╫⌐╫á╫ש╫¥\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס-Excel ╫₧╫¬╫º╫ף╫¥\"}]"
+  },
+  {
+    "id": "f9db2041-9d7b-400a-b90f-9d6f1e331a2e",
+    "title": "╫₧╫ñ╫¬╫ק Python",
+    "location": "╫ס╫נ╫¿ ╫⌐╫ס╫ó",
+    "category": "╫¬╫¢╫á╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 3+ ╫⌐╫á╫ש╫¥ ╫ס-Python\"}, {\"type\": \"optional\", \"value\": \"╫ש╫ף╫ó ╫ס-Machine Learning - ╫ש╫¬╫¿╫ץ╫ƒ\"}]"
+  },
+  {
+    "id": "317c99c4-5b04-4ef3-b68f-afd5a0c8ff33",
+    "title": "╫₧╫á╫פ╫£ ╫₧╫ץ╫ª╫¿",
+    "location": "╫ק╫ש╫ñ╫פ",
+    "category": "╫á╫ש╫פ╫ץ╫£",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 4+ ╫⌐╫á╫ש╫¥ ╫ס╫á╫ש╫פ╫ץ╫£ ╫₧╫ץ╫ª╫¿\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס╫á╫ש╫¬╫ץ╫ק ╫á╫¬╫ץ╫á╫ש╫¥\"}]"
+  },
+  {
+    "id": "ffde6d3e-4def-4324-9352-758bf010da5e",
+    "title": "╫₧╫ñ╫¬╫ק Full Stack",
+    "location": "╫ש╫¿╫ץ╫⌐╫£╫ש╫¥",
+    "category": "╫¬╫¢╫á╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 3+ ╫⌐╫á╫ש╫¥\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס-Vue.js ╫נ╫ץ React\"}]"
+  },
+  {
+    "id": "b6c1787a-8b74-4650-87cd-76ea950c6b5e",
+    "title": "╫₧╫ó╫ª╫ס ╫ע╫¿╫ñ╫ש ╫ñ╫¿╫ש╫£╫á╫í╫¿",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫ó╫ש╫ª╫ץ╫ס",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 3+ ╫⌐╫á╫ש╫¥ ╫ס╫ó╫ש╫ª╫ץ╫ס ╫ע╫¿╫ñ╫ש\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס-Adobe Creative Suite\"}]"
+  },
+  {
+    "id": "716feab1-d4e2-4085-b31d-97ca1b1f267e",
+    "title": "╫₧╫ñ╫¬╫ק Part-Time",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫¬╫¢╫á╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ ╫£╫ñ╫ק╫ץ╫¬ 2 ╫⌐╫á╫ש╫¥\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס-Python\"}]"
+  },
+  {
+    "id": "1175cd61-bbde-4987-b338-83eb92d30c4d",
+    "title": "╫₧╫á╫פ╫£ ╫ñ╫¿╫ץ╫ש╫º╫ר╫ש╫¥ ╫ס╫¢╫ש╫¿",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫á╫ש╫פ╫ץ╫£",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ ╫£╫ñ╫ק╫ץ╫¬ 7 ╫⌐╫á╫ש╫¥ ╫ס╫á╫ש╫פ╫ץ╫£ ╫ñ╫¿╫ץ╫ש╫º╫ר╫ש╫¥\"}, {\"type\": \"optional\", \"value\": \"╫פ╫í╫₧╫¢╫פ ╫ס-PMP - ╫ש╫¬╫¿╫ץ╫ƒ\"}]"
+  },
+  {
+    "id": "29d9c68b-d3b7-4b7d-a5c6-3d609df6b483",
+    "title": "╫₧╫á╫פ╫£ ╫º╫⌐╫¿╫ש ╫£╫º╫ץ╫ק╫ץ╫¬ ╫ס╫ש╫á╫£╫נ╫ץ╫₧╫ש╫ש╫¥",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫₧╫¢╫ש╫¿╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס╫נ╫á╫ע╫£╫ש╫¬ ╫ס╫¿╫₧╫פ ╫ע╫ס╫ץ╫פ╫פ\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס╫ó╫ס╫¿╫ש╫¬ ╫ס╫¿╫₧╫פ ╫ר╫ץ╫ס╫פ\"}, {\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 3+ ╫⌐╫á╫ש╫¥\"}]"
+  },
+  {
+    "id": "452498e2-ef92-42bc-8220-13ae86426afc",
+    "title": "╫á╫פ╫ע ╫₧╫º╫ª╫ץ╫ó╫ש",
+    "location": "╫ש╫¿╫ץ╫⌐╫£╫ש╫¥",
+    "category": "╫פ╫ץ╫ס╫£╫פ",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ ╫£╫ñ╫ק╫ץ╫¬ 3 ╫⌐╫á╫ש╫¥ ╫ס╫á╫פ╫ש╫ע╫פ ╫₧╫º╫ª╫ץ╫ó╫ש╫¬\"}]"
+  },
+  {
+    "id": "f1021a7b-dbf0-4502-928f-a53fbbd0d618",
+    "title": "╫₧╫פ╫á╫ף╫í ╫¬╫ץ╫¢╫á╫פ ╫ס╫¢╫ש╫¿",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫¬╫¢╫á╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ ╫£╫ñ╫ק╫ץ╫¬ 5 ╫⌐╫á╫ש╫¥\"}]"
+  },
+  {
+    "id": "86bfc909-8f88-4f3d-9a0a-27785ba0b98d",
+    "title": "╫₧╫á╫פ╫£ ╫⌐╫ש╫ץ╫ץ╫º",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫⌐╫ש╫ץ╫ץ╫º",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ ╫£╫ñ╫ק╫ץ╫¬ 5 ╫⌐╫á╫ש╫¥ ╫ס╫⌐╫ש╫ץ╫ץ╫º ╫ף╫ש╫ע╫ש╫ר╫£╫ש\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס-Google Ads, Facebook Ads\"}]"
+  },
+  {
+    "id": "f0a2dfc3-7198-4ed7-9153-307b2eb7fb37",
+    "title": "╫á╫ª╫ש╫ע ╫₧╫¢╫ש╫¿╫ץ╫¬",
+    "location": "╫ק╫ש╫ñ╫פ",
+    "category": "╫₧╫¢╫ש╫¿╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ ╫£╫ñ╫ק╫ץ╫¬ 2 ╫⌐╫á╫ש╫¥ ╫ס╫₧╫¢╫ש╫¿╫ץ╫¬\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס╫ó╫ס╫¿╫ש╫¬ ╫ץ╫נ╫á╫ע╫£╫ש╫¬\"}]"
+  },
+  {
+    "id": "63272087-1df8-4b5f-8476-54646d737a83",
+    "title": "╫₧╫ñ╫¬╫ק Backend - Node.js",
+    "location": "╫¿╫₧╫¬ ╫ע╫ƒ",
+    "category": "╫¬╫¢╫á╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ ╫£╫ñ╫ק╫ץ╫¬ 4 ╫⌐╫á╫ש╫¥ ╫ס-Node.js\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס-MongoDB ╫נ╫ץ PostgreSQL\"}]"
+  },
+  {
+    "id": "e4e39bfa-4c9e-4e5d-9ce6-d6cd52def5c6",
+    "title": "╫₧╫ñ╫¬╫ק ╫נ╫ñ╫£╫ש╫º╫ª╫ש╫ץ╫¬ ╫₧╫ץ╫ס╫ש╫ש╫£",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫¬╫¢╫á╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 4+ ╫⌐╫á╫ש╫¥ ╫ס╫ñ╫ש╫¬╫ץ╫ק ╫₧╫ץ╫ס╫ש╫ש╫£\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס-React Native ╫נ╫ץ Flutter\"}]"
+  },
+  {
+    "id": "44666925-3a3c-4222-b0dc-dd450fc16a83",
+    "title": "╫₧╫ñ╫¬╫ק Frontend - React",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫¬╫¢╫á╫ץ╫¬",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 2+ ╫⌐╫á╫ש╫¥ ╫ס-React\"}, {\"type\": \"optional\", \"value\": \"╫ש╫ף╫ó ╫ס-TypeScript\"}]"
+  },
+  {
+    "id": "e4baddfd-2978-48ef-a3d9-6fe00dba4884",
+    "title": "╫¢╫ץ╫¬╫ס ╫¬╫ץ╫¢╫ƒ",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫¬╫ץ╫¢╫ƒ",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 2+ ╫⌐╫á╫ש╫¥ ╫ס╫¢╫¬╫ש╫ס╫¬ ╫¬╫ץ╫¢╫ƒ\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס╫ó╫ס╫¿╫ש╫¬ ╫ס╫¿╫₧╫פ ╫ע╫ס╫ץ╫פ╫פ\"}, {\"type\": \"optional\", \"value\": \"╫ש╫ף╫ó ╫ס-SEO - ╫ש╫¬╫¿╫ץ╫ƒ\"}]"
+  },
+  {
+    "id": "51d9c401-eeb8-4543-a16f-0daa8704aaa2",
+    "title": "╫נ╫á╫£╫ש╫í╫ר ╫ñ╫ש╫á╫á╫í╫ש",
+    "location": "╫¬╫£ ╫נ╫ס╫ש╫ס",
+    "category": "╫¢╫í╫ñ╫ש╫¥",
+    "status": "active",
+    "structured_requirements": "[{\"type\": \"required\", \"value\": \"╫á╫ש╫í╫ש╫ץ╫ƒ ╫⌐╫£ 4+ ╫⌐╫á╫ש╫¥ ╫ס╫á╫ש╫¬╫ץ╫ק ╫ñ╫ש╫á╫á╫í╫ש\"}, {\"type\": \"required\", \"value\": \"╫ש╫ף╫ó ╫ס-Excel ╫₧╫¬╫º╫ף╫¥\"}, {\"type\": \"optional\", \"value\": \"╫ש╫ף╫ó ╫ס-SQL - ╫ש╫¬╫¿╫ץ╫ƒ\"}]"
+  }
+]

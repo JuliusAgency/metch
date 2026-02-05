@@ -1,34 +1,51 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Job } from "@/api/entities";
 import { JobApplication } from "@/api/entities";
 import { JobView } from "@/api/entities";
-import { User } from "@/api/entities";
+import { User, UserProfile } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Trash2, Edit, StopCircle, PlayCircle, Users, Eye, ArrowRight, Save, X, RotateCcw, Copy, Share2, ClipboardList, Clock, MapPin, DollarSign, Calendar as CalendarIcon, Play, FileText, ChevronLeft, Building2, Pause, BarChart3 } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { motion } from "framer-motion";
-import { format } from "date-fns";
+import { Edit, Eye, Copy, Play, Pause, Users, Briefcase, MapPin, Award } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { EmployerAnalytics } from "@/components/EmployerAnalytics";
-import JobHeader from "@/components/job/JobHeader";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/components/ui/use-toast";
-import JobTitle from "@/components/job/JobTitle";
-import JobStats from "@/components/job/JobStats";
-import JobInfo from "@/components/job/JobInfo";
-import JobActions from "@/components/job/JobActions";
+
+// Import Seeker Components
+import SeekerHeader from "@/components/seeker/SeekerHeader";
+import SeekerJobTitle from "@/components/seeker/SeekerJobTitle";
+import SeekerJobPerks from "@/components/seeker/SeekerJobPerks";
+import SeekerJobImages from "@/components/seeker/SeekerJobImages";
+import settingsMobileBg from "@/assets/settings_mobile_bg.jpg";
+import JobStatusBanner from "@/components/jobs/JobStatusBanner";
+
+// Helper to determine match score color
+const getMatchScoreColor = (score) => {
+  if (score >= 80) return "bg-green-500";
+  if (score >= 60) return "bg-yellow-500";
+  if (score >= 40) return "bg-orange-400";
+  return "bg-red-400";
+};
+
+// Helper to generate a stable random score if missing
+const getStableMatchScore = (id) => {
+  if (!id) return 90;
+  let hash = 0;
+  const str = String(id);
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return 75 + (Math.abs(hash) % 25);
+};
 
 export default function JobDetails() {
-  useRequireUserType(); // Ensure user has selected a user type
+  useRequireUserType();
   const [job, setJob] = useState(null);
   const [applications, setApplications] = useState([]);
+  const [applicantProfiles, setApplicantProfiles] = useState({});
   const [viewsCount, setViewsCount] = useState(0);
-  const [matchesCount, setMatchesCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const { updateProfile } = useUser();
@@ -44,22 +61,61 @@ export default function JobDetails() {
       const params = new URLSearchParams(location.search);
       const jobId = params.get('id');
 
-
       if (jobId) {
         const jobResults = await Job.filter({ id: jobId });
         if (jobResults.length > 0) {
-          setJob(jobResults[0]);
+          const fetchedJob = jobResults[0];
+
+          const safeParseJSON = (data, fallback = []) => {
+            if (!data) return fallback;
+            if (typeof data !== 'string') return data;
+            try {
+              let jsonStr = data;
+              if (jsonStr.startsWith('\\x')) {
+                const hex = jsonStr.slice(2);
+                let str = '';
+                for (let i = 0; i < hex.length; i += 2) {
+                  str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+                }
+                jsonStr = str;
+              }
+              return JSON.parse(jsonStr);
+            } catch (e) {
+              return fallback;
+            }
+          };
+
+          fetchedJob.company_perks = safeParseJSON(fetchedJob.company_perks);
+          fetchedJob.attachments = safeParseJSON(fetchedJob.attachments);
+          fetchedJob.screening_questions = safeParseJSON(fetchedJob.screening_questions);
+          // Parse structured fields
+          fetchedJob.structured_requirements = safeParseJSON(fetchedJob.structured_requirements, []);
+          fetchedJob.structured_certifications = safeParseJSON(fetchedJob.structured_certifications, []);
+          fetchedJob.structured_education = safeParseJSON(fetchedJob.structured_education, []);
+
+          fetchedJob.requirements = safeParseJSON(fetchedJob.requirements, []);
+          fetchedJob.responsibilities = safeParseJSON(fetchedJob.responsibilities, []);
+
+          setJob(fetchedJob);
+
+          const views = await JobView.filter({ job_id: jobId });
+          setViewsCount(views.length);
 
           const appResults = await JobApplication.filter({ job_id: jobId });
           setApplications(appResults);
 
-          // Load view count for this job
-          const views = await JobView.filter({ job_id: jobId });
-          setViewsCount(views.length);
+          if (appResults.length > 0) {
+            const uniqueIds = [...new Set(appResults.map(a => a.applicant_id).filter(Boolean))];
 
-          // Calculate matches count - applications with match_score >= 70
-          const matches = appResults.filter(app => app.match_score && app.match_score >= 70);
-          setMatchesCount(matches.length);
+            const idMap = {};
+            await Promise.all(uniqueIds.map(async (id) => {
+              try {
+                const profiles = await UserProfile.filter({ id });
+                if (profiles.length > 0) idMap[id] = profiles[0];
+              } catch (e) { console.error(e); }
+            }));
+            setApplicantProfiles(idMap);
+          }
         }
       }
     } catch (error) {
@@ -76,41 +132,28 @@ export default function JobDetails() {
   const handleStatusChange = async (newStatus) => {
     try {
       const oldStatus = job.status;
-
-      // Credit logic for activation
       if (newStatus === 'active' && oldStatus !== 'active' && oldStatus !== 'paused') {
-        // Fetch fresh user data to be sure about credits
         const userData = await User.me();
         const credits = userData?.job_credits || 0;
-
         if (credits <= 0) {
           toast({
             title: "אין יתרת משרות לפרסום",
             description: "נגמרה חבילת המשרות שלך. ניתן לרכוש משרות נוספות בעמוד התשלומים.",
             variant: "destructive",
-            action: <Button variant="outline" className="text-black border-white hover:bg-white/90" onClick={() => navigate('/packages')}>לרכישה</Button>
+            action: <Button variant="outline" onClick={() => navigate('/packages')}>לרכישה</Button>
           });
           return;
         }
-
-        // Deduct credit
         await updateProfile({ job_credits: credits - 1 });
         toast({ description: `המשרה פורסמה בהצלחה. יתרת משרות מעודכנת: ${credits - 1}` });
       }
 
       await Job.update(job.id, { status: newStatus });
       setJob(prev => ({ ...prev, status: newStatus }));
-
-      if (user) {
-        await EmployerAnalytics.trackJobStatusChange(user.email, job, oldStatus, newStatus);
-      }
+      if (user) EmployerAnalytics.trackJobStatusChange(user.email, job, oldStatus, newStatus);
     } catch (error) {
-      console.error("Error updating job status:", error);
-      toast({
-        title: "שגיאה",
-        description: "לא ניתן היה לעדכון את סטטוס המשרה",
-        variant: "destructive"
-      });
+      console.error("Error updating status:", error);
+      toast({ title: "שגיאה", description: "לא ניתן לעדכן את הסטטוס", variant: "destructive" });
     }
   };
 
@@ -118,7 +161,6 @@ export default function JobDetails() {
     try {
       const userData = await User.me();
       const now = new Date().toISOString();
-
       const duplicatedJob = {
         ...job,
         title: `${job.title} (עותק)`,
@@ -130,6 +172,16 @@ export default function JobDetails() {
         updated_date: now
       };
       delete duplicatedJob.id;
+      if (Array.isArray(duplicatedJob.company_perks)) duplicatedJob.company_perks = JSON.stringify(duplicatedJob.company_perks);
+      if (Array.isArray(duplicatedJob.requirements)) duplicatedJob.requirements = JSON.stringify(duplicatedJob.requirements);
+      if (Array.isArray(duplicatedJob.responsibilities)) duplicatedJob.responsibilities = JSON.stringify(duplicatedJob.responsibilities);
+
+      if (Array.isArray(duplicatedJob.structured_requirements)) duplicatedJob.structured_requirements = JSON.stringify(duplicatedJob.structured_requirements);
+      if (Array.isArray(duplicatedJob.structured_certifications)) duplicatedJob.structured_certifications = JSON.stringify(duplicatedJob.structured_certifications);
+      if (Array.isArray(duplicatedJob.structured_education)) duplicatedJob.structured_education = JSON.stringify(duplicatedJob.structured_education);
+
+      if (Array.isArray(duplicatedJob.attachments)) duplicatedJob.attachments = JSON.stringify(duplicatedJob.attachments);
+      if (Array.isArray(duplicatedJob.screening_questions)) duplicatedJob.screening_questions = JSON.stringify(duplicatedJob.screening_questions);
 
       await Job.create(duplicatedJob);
       toast({ description: "המשרה שוכפלה בהצלחה כטיוטה" });
@@ -140,327 +192,275 @@ export default function JobDetails() {
   };
 
   useEffect(() => {
-    const trackJobView = async () => {
-      if (job && user) {
-        await EmployerAnalytics.trackJobView(user.email, job);
-      }
-    };
-
     if (job && user) {
-      trackJobView();
+      EmployerAnalytics.trackJobView(user.email, job).catch(console.error);
     }
   }, [job, user]);
 
-  const statusConfig = {
-    active: { label: 'פעילה', color: 'bg-green-100 text-green-800' },
-    paused: { label: 'מושהית', color: 'bg-yellow-100 text-yellow-800' },
-    closed: { label: 'סגורה', color: 'bg-red-100 text-red-800' },
-    filled: { label: 'אוישה', color: 'bg-blue-100 text-blue-800' },
-    filled_via_metch: { label: 'אוישה דרך METCH', color: 'bg-purple-100 text-purple-800' },
-    draft: { label: 'טיוטה', color: 'bg-gray-100 text-gray-800' }
+  if (loading) return <div className="flex justify-center items-center h-screen">טוען...</div>;
+  if (!job) return <div className="text-center py-12">משרה לא נמצאה</div>;
+
+  const employmentTypeText = {
+    full_time: 'משרה מלאה',
+    part_time: 'משרה חלקית',
+    shifts: 'משמרות',
+    contract: 'חוזה',
+    freelance: 'פרילנס',
+    internship: 'התמחות',
+    flexible: 'גמיש/ה'
   };
 
-  if (loading) {
-    return <div className="flex justify-center items-center h-screen">טוען...</div>;
-  }
+  const isUnavailable = ['filled', 'filled_via_metch', 'closed', 'paused'].includes(job.status);
+  const returnUrl = createPageUrl('JobManagement');
 
-  if (!job) {
-    return <div className="text-center py-12">משרה לא נמצאה</div>;
-  }
+  const renderList = (items) => {
+    if (!items) return null;
+    if (typeof items === 'string') return <p className="text-[#4a5568] text-[15px] leading-relaxed whitespace-pre-wrap">{items}</p>;
+    if (Array.isArray(items) && items.length > 0) {
+      const validItems = items.filter(i => (typeof i === 'string' && i.trim() !== '') || (typeof i === 'object' && (i.value || i.label)));
+      if (validItems.length === 0) return null;
 
-  const config = statusConfig[job.status] || statusConfig.active;
+      return (
+        <ul className="space-y-3 pt-2">
+          {validItems.map((item, i) => (
+            <li key={i} className="flex items-start gap-3 text-[#4a5568] text-[15px]">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0" />
+              <span className="leading-relaxed">{typeof item === 'string' ? item : (item.value || item.label)}</span>
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    return null;
+  };
+
+  const requirementsData = (job.structured_requirements && job.structured_requirements.length > 0)
+    ? job.structured_requirements
+    : job.requirements;
+
+  const certificationsData = (job.structured_certifications && job.structured_certifications.length > 0)
+    ? job.structured_certifications
+    : null;
 
   return (
-    <div className="" dir="rtl">
-      <div className="w-full mx-auto">
-        <Card className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
-          <div className="relative">
-            <JobHeader />
-            <CardContent className="p-4 sm:p-6 md:p-8 -mt-6 relative z-10">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-8"
-              >
-                {/* Job Header */}
-                <div className="text-center space-y-4 pt-4">
-                  <div className="w-16 h-16 bg-blue-200 rounded-full flex items-center justify-center mx-auto">
-                    <Building2 className="w-8 h-8 text-blue-600" />
+    <div className="h-full relative" dir="rtl">
+      {/* Background */}
+      <div className="md:hidden fixed top-0 left-0 right-0 pointer-events-none" style={{ width: '100%', height: '320px', backgroundImage: `url(${settingsMobileBg})`, backgroundSize: 'cover', backgroundPosition: 'top center', zIndex: '0' }} />
+
+      <div className="relative h-full overflow-y-auto pb-12">
+        <div className="w-full mx-auto">
+          {isUnavailable && (
+            <div className="px-4 md:px-0">
+              <JobStatusBanner status={job.status} className="mb-4" />
+            </div>
+          )}
+
+          <div className="md:hidden h-[80px]" />
+
+          <div className="bg-white w-full mt-[-50px] md:mt-0 rounded-t-[40px] px-4 py-8 md:p-6 md:shadow-[0_-15px_45px_rgba(0,0,0,0.06)] relative z-20 origin-top">
+            <div className="max-w-6xl mx-auto space-y-8">
+              <div className="md:hidden -mt-14 mb-6"><SeekerHeader job={job} returnUrl={returnUrl} /></div>
+              <div className="hidden md:block"><SeekerHeader job={job} returnUrl={returnUrl} /></div>
+
+              <SeekerJobTitle job={job} employmentTypeText={employmentTypeText} showMatchScore={false} />
+
+              <div className="hidden md:block">
+                <SeekerJobPerks perks={job.company_perks} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-fr">
+
+                {/* 1. About (Right in RTL) */}
+                <Card className="bg-white border border-gray-100 shadow-sm rounded-2xl md:rounded-[24px] overflow-hidden hover:shadow-md transition-all h-full">
+                  <CardContent className="p-6 md:p-8 flex flex-col h-full">
+                    <div className="flex items-center gap-3 mb-4 shrink-0">
+                      <h3 className="font-bold text-xl text-[#001a6e]">על המשרה</h3>
+                    </div>
+                    <div className="text-[#4a5568] text-[15px] leading-relaxed whitespace-pre-wrap flex-grow">
+                      {job.description || "אין תיאור למשרה זו."}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 2. Requirements (Middle) */}
+                <Card className="bg-white border border-gray-100 shadow-sm rounded-2xl md:rounded-[24px] overflow-hidden hover:shadow-md transition-all h-full">
+                  <CardContent className="p-6 md:p-8 flex flex-col h-full">
+                    <div className="flex items-center gap-3 mb-4 shrink-0">
+                      <h3 className="font-bold text-xl text-[#001a6e]">דרישות</h3>
+                    </div>
+                    <div className="flex-grow">
+                      {renderList(requirementsData) || <p className="text-gray-400">לא צוינו דרישות.</p>}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 3. Certifications (Left in RTL) */}
+                <Card className="bg-white border border-gray-100 shadow-sm rounded-2xl md:rounded-[24px] overflow-hidden hover:shadow-md transition-all h-full">
+                  <CardContent className="p-6 md:p-8 flex flex-col h-full">
+                    <div className="flex items-center gap-3 mb-4 shrink-0">
+                      <h3 className="font-bold text-xl text-[#001a6e]">הסמכות</h3>
+                    </div>
+                    <div className="flex-grow">
+                      {renderList(certificationsData) || <p className="text-gray-400">לא צוינו הסמכות.</p>}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <SeekerJobImages images={job.attachments} />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 mb-6 border-t border-gray-100 pt-12">
+
+                {/* STATS SECTION WRAPPER - Increased Shadow, BG Color, No Icons */}
+                <div className="bg-white border border-gray-200 shadow-[0_4px_24px_rgba(0,0,0,0.08)] rounded-2xl p-6">
+                  <h3 className="font-bold text-xl text-[#001a6e] mb-6 text-center md:text-right">סטטיסטיקות משרה</h3>
+                  <div className="flex gap-6 justify-center md:justify-start">
+                    <div className="flex-1 bg-[#ecf5f8] border border-blue-100 shadow-sm rounded-2xl p-6 text-center hover:border-blue-300 transition-all flex flex-col items-center justify-center gap-2">
+                      <div className="text-gray-600 font-medium text-lg">צפיות</div>
+                      <div className="text-4xl font-black text-[#001a6e]">{viewsCount}</div>
+                    </div>
+                    <Link to={createPageUrl(`JobApplications?job_id=${job.id}`)} className="flex-1 bg-[#ecf5f8] border border-blue-100 shadow-sm rounded-2xl p-6 text-center hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group flex flex-col items-center justify-center gap-2">
+                      <div className="text-gray-600 font-medium text-lg">מועמדויות</div>
+                      <div className="text-4xl font-black text-[#001a6e]">{applications.length}</div>
+                    </Link>
                   </div>
-                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{job.title}</h1>
-                  <p className="text-xl text-gray-600">{job.company}</p>
-                  <Badge className={config.color}>{config.label}</Badge>
                 </div>
 
-                {/* Job Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Card className="bg-blue-50 border-blue-200">
-                    <CardContent className="p-6 text-center">
-                      <Eye className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                      <div className="text-2xl font-bold text-gray-900">{viewsCount}</div>
-                      <p className="text-gray-600">צפיות</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-green-50 border-green-200">
-                    <CardContent className="p-6 text-center">
-                      <Users className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                      <div className="text-2xl font-bold text-gray-900">{applications.length}</div>
-                      <p className="text-gray-600">מועמדויות</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-purple-50 border-purple-200">
-                    <CardContent className="p-6 text-center">
-                      <BarChart3 className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                      <div className="text-2xl font-bold text-gray-900">{matchesCount}</div>
-                      <p className="text-gray-600">התאמות</p>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Job Details */}
-                <div className="bg-gray-50/80 p-6 rounded-xl">
-                  <h3 className="font-bold text-lg mb-4">פרטי המשרה</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-right">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-end gap-2">
-                        <span>{job.location || "לא צוין מיקום"}</span>
-                        <MapPin className="w-4 h-4 text-gray-500" />
-                      </div>
-                      <div className="flex items-center justify-end gap-2">
-                        <span>
-                          {(() => {
-                            const typeMap = {
-                              full_time: "משרה מלאה",
-                              part_time: "משרה חלקית",
-                              contract: "חוזה",
-                              freelance: "פרילנס",
-                              internship: "התמחות",
-                              hourly: "שעתי"
-                            };
-                            return typeMap[job.employment_type] || job.employment_type?.replace('_', ' ');
-                          })()}
-                        </span>
-                        <Clock className="w-4 h-4 text-gray-500" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      {(job.salary_min || job.salary_max) && (
-                        <div className="flex items-center justify-end gap-2">
-                          <span>
-                            {job.salary_min && job.salary_max
-                              ? `₪${job.salary_min.toLocaleString()} - ₪${job.salary_max.toLocaleString()}`
-                              : job.salary_min
-                                ? `מ-₪${job.salary_min.toLocaleString()}`
-                                : `עד ₪${job.salary_max?.toLocaleString()}`
-                            }
-                          </span>
-                          <DollarSign className="w-4 h-4 text-gray-500" />
-                        </div>
-                      )}
-                      <div className="flex items-center justify-end gap-2">
-                        <span>{format(new Date(job.created_date), "dd/MM/yyyy")}</span>
-                        <Clock className="w-4 h-4 text-gray-500" />
-                      </div>
-                    </div>
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="font-bold text-xl text-[#001a6e]">מועמדים שהגישו למשרה זו</h3>
+                    <Link to={createPageUrl(`JobApplications?job_id=${job.id}`)} className="text-sm text-blue-600 font-bold hover:underline">
+                      לכל המועמדים ({applications.length})
+                    </Link>
                   </div>
 
-                  <div className="mt-6">
-                    <h4 className="font-semibold mb-2">תיאור המשרה:</h4>
-                    <p className="text-gray-700 leading-relaxed">{job.description}</p>
-                  </div>
+                  <div className="bg-gray-50/50 rounded-2xl p-4 border border-gray-100 space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                    {applications.length > 0 ? (
+                      applications.slice(0, 5).map((app, idx) => {
+                        const profile = applicantProfiles[app.applicant_id];
+                        const matchScore = app.match_score || getStableMatchScore(app.applicant_id || app.applicant_email);
+                        const displayName = profile?.full_name || app.applicant_email || 'מועמד/ת';
+                        const displayTitle = profile?.job_title || profile?.title || 'מועמד/ת';
+                        const city = profile?.city || 'מרכז';
+                        const type = profile?.job_type || 'משרה מלאה';
 
-                  {job.requirements && (
-                    <div className="mt-4">
-                      <h4 className="font-semibold mb-2">דרישות:</h4>
-                      <p className="text-gray-700 leading-relaxed">{job.requirements}</p>
-                    </div>
-                  )}
+                        // Candidate Card Style - Correct RTL Order
+                        return (
+                          <div key={app.id || idx} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:border-blue-300 transition-colors relative">
 
-                  {/* Attachments Gallery */}
-                  {(() => {
-                    let attachments = job.attachments;
+                            {/* Top Row: Standard RTL Flex */}
+                            <div className="flex items-center justify-between mb-3">
 
-                    // Handle Postgres Bytea Hex format (starts with \x)
-                    if (typeof attachments === 'string' && attachments.startsWith('\\x')) {
-                      try {
-                        const hex = attachments.slice(2);
-                        let str = '';
-                        for (let i = 0; i < hex.length; i += 2) {
-                          str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-                        }
-                        attachments = str;
-                      } catch (e) {
-                        console.warn("Failed to decode hex attachment string", e);
-                      }
-                    }
-
-                    // Safely parse if it's a string
-                    if (typeof attachments === 'string') {
-                      try {
-                        attachments = JSON.parse(attachments);
-                      } catch (e) {
-                        // Try double parse or fail safely
-                        try {
-                          const cleaned = JSON.parse(JSON.stringify(attachments));
-                          attachments = JSON.parse(cleaned);
-                        } catch (e2) {
-                          attachments = [];
-                        }
-                      }
-                    }
-
-                    if (!Array.isArray(attachments) || attachments.length === 0) return null;
-
-                    return (
-                      <div className="mt-8">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          {attachments.map((file, index) => {
-                            if (!file) return null;
-
-                            const fileUrl = file.url || file;
-                            // Ensure URL is valid string
-                            const finalUrl = (typeof fileUrl === 'string') ? fileUrl : '';
-                            const fileType = file.type || 'image/png'; // Default to assuming image if unknown for now, or check extension
-
-                            const isImage = fileType.startsWith("image/") || finalUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null || !fileType;
-
-                            if (isImage) {
-                              return (
-                                <Dialog key={index}>
-                                  <DialogTrigger asChild>
-                                    <div className="relative group aspect-video rounded-xl overflow-hidden shadow-sm border border-gray-100 bg-white cursor-pointer">
-                                      <img
-                                        src={finalUrl}
-                                        alt={`Attachment ${index + 1}`}
-                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                      />
-                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                                        <Eye className="text-white opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8 drop-shadow-md" />
-                                      </div>
-                                    </div>
-                                  </DialogTrigger>
-                                  <DialogContent
-                                    hideCloseButton
-                                    className="max-w-[90vw] max-h-[95vh] p-0 bg-transparent border-0 shadow-none flex flex-col items-center justify-center outline-none"
-                                  >
-                                    <div className="w-full flex justify-end mb-2 px-2">
-                                      <DialogClose className="p-2 bg-white hover:bg-gray-100 rounded-full text-gray-800 shadow-lg transition-all outline-none focus:ring-0 ring-offset-0">
-                                        <X className="w-5 h-5" />
-                                        <span className="sr-only">Close</span>
-                                      </DialogClose>
-                                    </div>
-                                    <img
-                                      src={finalUrl}
-                                      alt={`Full size attachment ${index + 1}`}
-                                      className="w-auto h-auto max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
-                                    />
-                                  </DialogContent>
-                                </Dialog>
-                              );
-                            }
-
-                            // Fallback for non-images
-                            return (
-                              <a
-                                key={index}
-                                href={finalUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex flex-col items-center justify-center aspect-video bg-white border border-gray-200 rounded-xl hover:border-blue-400 hover:shadow-sm transition-all p-4 text-center group"
-                              >
-                                <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-2 group-hover:bg-blue-100 transition-colors">
-                                  {fileType.includes('pdf') ? <ClipboardList className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
+                              {/* Right: Info Group */}
+                              <div className="flex items-center gap-3 text-right">
+                                <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden shrink-0 border border-white shadow-sm">
+                                  {profile?.profile_picture ? (
+                                    <img src={profile.profile_picture} alt="" className="w-full h-full object-cover" />
+                                  ) : (
+                                    <Users className="w-6 h-6 text-gray-400 m-3" />
+                                  )}
                                 </div>
-                                <span className="text-xs font-medium text-gray-600 truncate w-full px-2">
-                                  {file.name || "מסמך מצורף"}
-                                </span>
-                              </a>
-                            );
-                          })}
-                        </div>
+                                <div>
+                                  <h4 className="font-bold text-gray-900 text-lg leading-tight">{displayName}</h4>
+                                  <p className="text-gray-500 text-sm mt-0.5">{displayTitle}</p>
+                                </div>
+                              </div>
+
+                              {/* Left: Button */}
+                              <Link to={createPageUrl(`CandidateProfile?id=${profile?.id || ''}`)}>
+                                <Button variant="ghost" size="sm" className="bg-[#8be29d] text-[#1c5f2b] hover:bg-[#7ad68d] rounded-full h-8 px-5 text-sm font-bold shadow-sm">
+                                  לצפייה
+                                </Button>
+                              </Link>
+                            </div>
+
+                            {/* Bottom Row: Standard RTL Flex */}
+                            <div className="flex items-center gap-3">
+                              {/* Right: Badges */}
+                              <div className="flex items-center gap-2 shrink-0">
+                                <div className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-[11px] font-medium flex items-center gap-1 whitespace-nowrap">
+                                  <MapPin className="w-3 h-3" />
+                                  {city}
+                                </div>
+                                <div className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-[11px] font-medium flex items-center gap-1 whitespace-nowrap">
+                                  <Briefcase className="w-3 h-3" />
+                                  {type}
+                                </div>
+                              </div>
+
+                              {/* Left: Match Bar */}
+                              <div className="flex-1 bg-gray-100 rounded-full h-6 relative overflow-hidden">
+                                <div
+                                  className={`h-full flex items-center justify-center text-[10px] md:text-xs font-bold text-white ${getMatchScoreColor(matchScore)}`}
+                                  style={{ width: `${matchScore}%` }}
+                                >
+                                  {matchScore}% התאמה
+                                </div>
+                              </div>
+                            </div>
+
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-center py-8 text-gray-400 text-sm">
+                        עדיין לא הוגשו מועמדויות
                       </div>
-                    );
-                  })()}
+                    )}
+                  </div>
                 </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-wrap justify-center gap-3">
-                  <Link to={createPageUrl(`CreateJob?id=${job.id}`)}>
-                    <Button variant="outline" className="border-gray-300 hover:bg-gray-100">
-                      <Edit className="w-4 h-4 ml-2" />
-                      עריכת משרה
-                    </Button>
-                  </Link>
-                  {job.status === 'active' ? (
-                    <Button
-                      variant="outline"
-                      className="border-yellow-300 hover:bg-yellow-100"
-                      onClick={() => handleStatusChange('paused')}
-                    >
-                      <Pause className="w-4 h-4 ml-2" />
-                      השהה משרה
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      className="border-green-300 hover:bg-green-100"
-                      onClick={() => handleStatusChange('active')}
-                    >
-                      <Play className="w-4 h-4 ml-2" />
-                      פעל משרה
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    className="border-blue-300 hover:bg-blue-100"
-                    onClick={handleDuplicateJob}
-                  >
-                    <Copy className="w-4 h-4 ml-2" />
-                    שכפל משרה
-                  </Button>
-                  {/* New button for Screening Questionnaire */}
-                  {(() => {
-                    let questionsData = job.screening_questions;
-                    if (!questionsData) return null;
-
-                    if (typeof questionsData === 'string') {
-                      try {
-                        if (questionsData.startsWith('\\x')) {
-                          const hex = questionsData.slice(2);
-                          let str = '';
-                          for (let i = 0; i < hex.length; i += 2) {
-                            str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-                          }
-                          questionsData = str;
-                        }
-                        questionsData = JSON.parse(questionsData);
-                      } catch (e) {
-                        return null; // Don't show if parsing fails
-                      }
-                    }
-
-                    if (!Array.isArray(questionsData) || questionsData.length === 0) return null;
-
-                    return (
-                      <Link to={createPageUrl(`ScreeningQuestionnaire?id=${job.id}`)}>
-                        <Button variant="outline" className="border-purple-300 hover:bg-purple-100">
-                          <ClipboardList className="w-4 h-4 ml-2" />
-                          שאלון סינון
-                        </Button>
-                      </Link>
-                    );
-                  })()}
-                  <Link to={createPageUrl(`JobApplications?job_id=${job.id}`)}>
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                      <Users className="w-4 h-4 ml-2" />
-                      צפייה במועמדים ({applications.length})
-                    </Button>
-                  </Link>
-                </div>
-              </motion.div>
-            </CardContent>
+              </div>
+            </div>
           </div>
-        </Card>
+
+          <div className="mt-6 flex justify-center w-full px-4 mb-6">
+            <div className="bg-white/95 backdrop-blur-md border border-gray-200 shadow-[0_8px_30px_rgba(0,0,0,0.12)] rounded-full p-2 md:p-3 flex flex-row gap-2 md:gap-4 items-center max-w-[90%] md:max-w-none overflow-x-auto no-scrollbar">
+
+              <Link to={createPageUrl(`JobApplications?job_id=${job?.id}`)} className="shrink-0">
+                <Button className="rounded-full bg-[#2987CD] hover:bg-[#2070ab] text-white font-bold h-10 md:h-12 px-4 md:px-6 shadow-md whitespace-nowrap text-sm md:text-base">
+                  <Users className="w-4 h-4 md:w-5 md:h-5 ml-2" />
+                  צפייה במועמדים
+                </Button>
+              </Link>
+
+              <div className="w-px h-8 bg-gray-200 hidden md:block" />
+
+              <Button
+                onClick={handleDuplicateJob}
+                variant="ghost"
+                className="rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium h-10 md:h-12 px-3 md:px-6 whitespace-nowrap text-sm md:text-base">
+                <Copy className="w-4 h-4 md:w-4 md:h-4 ml-2" />
+                שכפל משרה
+              </Button>
+
+              {job?.status === 'active' ? (
+                <Button
+                  onClick={() => handleStatusChange('paused')}
+                  variant="ghost"
+                  className="rounded-full bg-yellow-50 text-yellow-700 hover:bg-yellow-100 font-medium h-10 md:h-12 px-3 md:px-6 whitespace-nowrap text-sm md:text-base">
+                  <Pause className="w-4 h-4 md:w-4 md:h-4 ml-2" />
+                  השהה משרה
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => handleStatusChange('active')}
+                  variant="ghost"
+                  className="rounded-full bg-green-50 text-green-700 hover:bg-green-100 font-medium h-10 md:h-12 px-3 md:px-6 whitespace-nowrap text-sm md:text-base">
+                  <Play className="w-4 h-4 md:w-4 md:h-4 ml-2" />
+                  פרסם משרה
+                </Button>
+              )}
+
+              <Link to={createPageUrl(`CreateJob?id=${job?.id}`)} className="shrink-0">
+                <Button variant="ghost" className="rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium h-10 md:h-12 px-3 md:px-6 whitespace-nowrap text-sm md:text-base">
+                  <Edit className="w-4 h-4 md:w-4 md:h-4 ml-2" />
+                  עריכת משרה
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );
