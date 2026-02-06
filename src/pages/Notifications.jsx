@@ -209,180 +209,182 @@ export default function Notifications() {
     <div className="h-full relative overflow-hidden md:overflow-visible" dir="rtl">
       {/* Mobile-Only Background Image - Shortened */}
       <div
-        className="md:hidden absolute top-[-100px] left-0 right-0 z-0 pointer-events-none"
+        className="md:hidden fixed top-0 left-0 right-0 z-0 pointer-events-none"
         style={{
           width: '100%',
-          height: '220px',
+          height: '200px',
           backgroundImage: `url(${settingsMobileBg})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          backgroundPosition: 'top center',
           backgroundRepeat: 'no-repeat'
         }}
       />
 
       <div className="relative h-full">
-        {/* Desktop Header */}
-        <div className="relative h-32 overflow-hidden w-full hidden md:block">
-          <div
-            className="absolute inset-0 w-full h-full"
-            style={{
-              backgroundImage: `url(${settingsHeaderBg})`,
-              backgroundSize: "100% 100%",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-            }}
-          />
-          <Link
-            to={createPageUrl("Dashboard")}
-            className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-10"
-          >
-            <ChevronLeft className="w-6 h-6 text-gray-800 rotate-180" />
-          </Link>
-        </div>
-
         {/* Mobile Header: Title Center, Back Button Right */}
-        <div className={`md:hidden flex items-center justify-center ${user?.user_type === 'job_seeker' ? 'pt-16' : 'pt-10'} pb-4 relative z-10 w-full px-6`}>
+        <div className="md:hidden flex items-center justify-center pt-0 pb-8 relative z-10 w-full px-6">
           <h1 className="text-[24px] font-bold text-[#001a6e]">התראות</h1>
         </div>
 
-        <div className="p-0 md:p-8 mt-6 md:-mt-16 relative z-10 w-full max-w-7xl mx-auto">
-          <div className="bg-transparent md:bg-transparent min-h-screen md:min-h-0 pt-0 md:pt-0 px-4 md:px-0">
-            {/* Desktop only title */}
-            <div className="text-center pb-8 hidden md:block">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                התראות
-              </h1>
+        <div className="p-0 mt-6 relative z-10 w-full md:w-[98%] mx-auto md:bg-white md:rounded-[32px] md:shadow-xl md:overflow-hidden md:min-h-[88vh]">
+          {/* Desktop Header Image - Moved Inside Card */}
+          <div className="relative h-32 overflow-hidden w-full hidden md:block">
+            <div
+              className="absolute inset-0 w-full h-full"
+              style={{
+                backgroundImage: `url(${settingsHeaderBg})`,
+                backgroundSize: "100% 100%",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }}
+            />
+            <Link
+              to={createPageUrl("Dashboard")}
+              className="absolute top-4 right-6 w-10 h-10 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/50 transition-colors z-10"
+            >
+              <ChevronLeft className="w-6 h-6 text-gray-800 rotate-180" />
+            </Link>
+          </div>
+
+          <div className="md:px-8 md:pt-0">
+            <div className="bg-transparent md:bg-transparent min-h-screen md:min-h-0 pt-0 md:pt-0 px-4 md:px-0">
+              {/* Desktop only title */}
+              <div className="text-center pb-4 -mt-6 hidden md:block">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  התראות
+                </h1>
+              </div>
+
+              {loading ? (
+                <div className="flex justify-center items-center py-4">
+                  <div className="text-gray-500">טוען...</div>
+                </div>
+              ) : notifications.length === 0 ? (
+                <div className="flex justify-center items-center py-4">
+                  <div className="text-gray-500 font-bold text-lg">אין התראות כרגע</div>
+                </div>
+              ) : (
+                <div className="pb-10">
+                  {/* Mobile: Use an inner card container */}
+                  <div className="md:hidden w-full bg-white border border-gray-100 rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden">
+                    {notifications.map((notif, index) => {
+                      const config = getNotificationConfig(notif.type);
+                      const Icon = config.icon;
+                      return (
+                        <motion.div
+                          key={notif.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: index * 0.05 }}
+                          className="flex items-center gap-4 py-5 px-5 border-b border-gray-100 last:border-b-0 cursor-pointer"
+                          onClick={() => handleNotificationClick(notif)}
+                        >
+                          {/* Icon on the right */}
+                          <div className="w-10 h-10 rounded-full border border-blue-200 bg-white flex items-center justify-center flex-shrink-0">
+                            <Icon className="w-5 h-5 text-blue-500" />
+                          </div>
+
+                          {/* Content in the middle - Smaller & Truncated */}
+                          <div className="flex-1 text-right overflow-hidden">
+                            <p className="text-gray-500 text-[10px] mb-0.5 truncate">
+                              {config.title}
+                            </p>
+                            <p className="font-bold text-gray-900 text-[12px] leading-tight truncate">
+                              {notif.message || "התראה חדסה"}
+                            </p>
+                          </div>
+
+                          {/* Date on the left */}
+                          <span className="text-gray-400 text-[10px] font-medium min-w-[50px] text-left">
+                            {formatDate(notif.created_date || notif.created_at)}
+                          </span>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Desktop: Original layout with pagination */}
+                  <div className="hidden md:block space-y-0">
+                    {paginatedNotifications.map((notif, index) => {
+                      const config = getNotificationConfig(notif.type);
+                      const Icon = config.icon;
+                      return (
+                        <motion.div
+                          key={notif.id}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.5, delay: index * 0.1 }}
+                          className="flex items-center gap-8 py-6 border-b border-gray-100 last:border-b-0 cursor-pointer"
+                          onClick={() => handleNotificationClick(notif)}
+                        >
+                          {/* Icon on the right */}
+                          <div className="w-12 h-12 rounded-full border border-blue-200 bg-white flex items-center justify-center flex-shrink-0 order-1">
+                            <Icon className="w-6 h-6 text-blue-500" />
+                          </div>
+
+                          {/* Content in the middle */}
+                          <div className="flex-1 text-right order-2">
+                            <p className="text-gray-500 text-[15px] mb-1">
+                              {config.title}
+                            </p>
+                            <p className="font-bold text-gray-900 text-[18px] leading-tight">
+                              {notif.message || "התראה חדשה"}
+                            </p>
+                          </div>
+
+                          {/* Date on the left */}
+                          <span className="text-gray-400 text-sm font-medium min-w-[80px] text-left order-3">
+                            {formatDate(notif.created_date || notif.created_at)}
+                          </span>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Pagination visible only on Desktop */}
+              {notifications.length > 0 && (
+                <div className="hidden md:flex justify-center items-center pt-10 pb-16">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages || totalPages === 0}
+                    className="rounded-full hover:bg-gray-100"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
+                  <div className="flex items-center gap-2 mx-4">
+                    {pageNumbers.map((number) => (
+                      <Button
+                        key={number}
+                        variant="ghost"
+                        onClick={() => goToPage(number)}
+                        className={`rounded-full w-9 h-9 transition-colors ${currentPage === number
+                          ? "bg-blue-600 text-white font-bold shadow-md"
+                          : "text-gray-600 hover:bg-gray-100"
+                          }`}
+                      >
+                        {number}
+                      </Button>
+                    ))}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1 || totalPages === 0}
+                    className="rounded-full hover:bg-gray-100"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Added bottom padding for mobile to ensure scrollability feels right */}
+              <div className="md:hidden h-20" />
             </div>
-
-            {loading ? (
-              <div className="flex justify-center items-center py-12">
-                <div className="text-gray-500">טוען...</div>
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className="flex justify-center items-center py-12">
-                <div className="text-gray-500 font-bold text-lg">אין התראות כרגע</div>
-              </div>
-            ) : (
-              <div className="pb-10">
-                {/* Mobile: Use an inner card container */}
-                <div className="md:hidden w-full bg-white border border-gray-100 rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden">
-                  {notifications.map((notif, index) => {
-                    const config = getNotificationConfig(notif.type);
-                    const Icon = config.icon;
-                    return (
-                      <motion.div
-                        key={notif.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: index * 0.05 }}
-                        className="flex items-center gap-4 py-5 px-5 border-b border-gray-100 last:border-b-0 cursor-pointer"
-                        onClick={() => handleNotificationClick(notif)}
-                      >
-                        {/* Icon on the right */}
-                        <div className="w-10 h-10 rounded-full border border-blue-200 bg-white flex items-center justify-center flex-shrink-0">
-                          <Icon className="w-5 h-5 text-blue-500" />
-                        </div>
-
-                        {/* Content in the middle - Smaller & Truncated */}
-                        <div className="flex-1 text-right overflow-hidden">
-                          <p className="text-gray-500 text-[10px] mb-0.5 truncate">
-                            {config.title}
-                          </p>
-                          <p className="font-bold text-gray-900 text-[12px] leading-tight truncate">
-                            {notif.message || "התראה חדסה"}
-                          </p>
-                        </div>
-
-                        {/* Date on the left */}
-                        <span className="text-gray-400 text-[10px] font-medium min-w-[50px] text-left">
-                          {formatDate(notif.created_date || notif.created_at)}
-                        </span>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-
-                {/* Desktop: Original layout with pagination */}
-                <div className="hidden md:block space-y-0">
-                  {paginatedNotifications.map((notif, index) => {
-                    const config = getNotificationConfig(notif.type);
-                    const Icon = config.icon;
-                    return (
-                      <motion.div
-                        key={notif.id}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
-                        className="flex items-center gap-8 py-6 border-b border-gray-100 last:border-b-0 cursor-pointer"
-                        onClick={() => handleNotificationClick(notif)}
-                      >
-                        {/* Icon on the right */}
-                        <div className="w-12 h-12 rounded-full border border-blue-200 bg-white flex items-center justify-center flex-shrink-0 order-1">
-                          <Icon className="w-6 h-6 text-blue-500" />
-                        </div>
-
-                        {/* Content in the middle */}
-                        <div className="flex-1 text-right order-2">
-                          <p className="text-gray-500 text-[15px] mb-1">
-                            {config.title}
-                          </p>
-                          <p className="font-bold text-gray-900 text-[18px] leading-tight">
-                            {notif.message || "התראה חדשה"}
-                          </p>
-                        </div>
-
-                        {/* Date on the left */}
-                        <span className="text-gray-400 text-sm font-medium min-w-[80px] text-left order-3">
-                          {formatDate(notif.created_date || notif.created_at)}
-                        </span>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Pagination visible only on Desktop */}
-            {notifications.length > 0 && (
-              <div className="hidden md:flex justify-center items-center pt-10 pb-16">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => goToPage(currentPage + 1)}
-                  disabled={currentPage === totalPages || totalPages === 0}
-                  className="rounded-full hover:bg-gray-100"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </Button>
-                <div className="flex items-center gap-2 mx-4">
-                  {pageNumbers.map((number) => (
-                    <Button
-                      key={number}
-                      variant="ghost"
-                      onClick={() => goToPage(number)}
-                      className={`rounded-full w-9 h-9 transition-colors ${currentPage === number
-                        ? "bg-blue-600 text-white font-bold shadow-md"
-                        : "text-gray-600 hover:bg-gray-100"
-                        }`}
-                    >
-                      {number}
-                    </Button>
-                  ))}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => goToPage(currentPage - 1)}
-                  disabled={currentPage === 1 || totalPages === 0}
-                  className="rounded-full hover:bg-gray-100"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </Button>
-              </div>
-            )}
-
-            {/* Added bottom padding for mobile to ensure scrollability feels right */}
-            <div className="md:hidden h-20" />
           </div>
         </div>
       </div>

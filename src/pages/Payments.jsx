@@ -205,21 +205,19 @@ ET`;
     };
 
     return (
-        <div className="h-full relative overflow-hidden md:overflow-visible" dir="rtl">
-            {/* Mobile-Only Background Image */}
+        <div className="h-full relative overflow-visible" dir="rtl">
+            {/* Mobile-Only Background Image - Fixed to the top */}
             <div
-                className="md:hidden absolute top-[-100px] left-0 right-0 z-0 pointer-events-none"
+                className="md:hidden fixed top-0 left-0 right-0 h-[210px] z-0 pointer-events-none"
                 style={{
-                    width: '100%',
-                    height: '230px',
                     backgroundImage: `url(${paymentsMobileBg})`,
                     backgroundSize: 'cover',
-                    backgroundPosition: 'center',
+                    backgroundPosition: 'top center',
                     backgroundRepeat: 'no-repeat'
                 }}
             />
 
-            <div className="relative h-full">
+            <div className="relative h-full md:w-[98%] mx-auto">
                 {/* Desktop Header */}
                 <div className="relative h-32 overflow-hidden w-full hidden md:block">
                     <div
@@ -240,18 +238,18 @@ ET`;
                 </div>
 
                 {/* Content Container */}
-                <div className="p-0 md:p-8 mt-44 md:-mt-16 relative z-10 w-full max-w-7xl mx-auto">
+                <div className="p-0 md:p-8 mt-24 md:-mt-14 relative z-10 w-full mx-auto">
                     {/* Main Card / Container */}
                     <div className="bg-transparent md:bg-transparent min-h-screen md:min-h-0 pt-0 md:pt-0 px-0 md:px-0">
                         {/* Desktop only title */}
-                        <div className="text-center pb-8 hidden md:block">
+                        <div className="text-center pb-4 hidden md:block">
                             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                                 עמוד תשלומים
                             </h1>
                         </div>
 
                         {/* Mobile Title */}
-                        <div className="text-center absolute top-[-130px] left-0 right-0 w-full md:hidden">
+                        <div className="text-center absolute top-[-65px] left-0 right-0 w-full md:hidden">
                             <h1 className="text-[24px] font-bold text-[#001a6e]">
                                 עמוד תשלומים
                             </h1>
@@ -260,81 +258,82 @@ ET`;
                         {/* Mobile Content Container - No "frame" or shadow, just content */}
                         <div className="md:hidden bg-transparent p-4">
                             {/* Payment Method Section - Mobile Updated */}
-                            <Card className="rounded-[16px] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 mb-8 bg-white">
-                                <CardContent className="p-0">
-                                    <div className="bg-white rounded-[16px] p-4 flex items-center justify-between">
-                                        {/* Left Side: Button */}
-                                        <div>
-                                            <Button
-                                                onClick={() => setShowPaymentModal(true)}
-                                                className="bg-[#001a6e] hover:bg-[#1e293b] text-white text-[12px] rounded-full px-5 py-2 h-9 font-medium shadow-none whitespace-nowrap"
-                                            >
-                                                שינוי אמצעי תשלום
-                                            </Button>
-                                        </div>
+                            <div className="max-w-md mx-auto">
+                                <Card className="rounded-[16px] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 mb-8 bg-white">
+                                    <CardContent className="p-0">
+                                        <div className="bg-white rounded-[16px] p-4 flex items-center justify-between">
+                                            {/* Left Side: Button */}
+                                            <div>
+                                                <Button
+                                                    onClick={() => setShowPaymentModal(true)}
+                                                    className="bg-[#001a6e] hover:bg-[#1e293b] text-white text-[12px] rounded-full px-5 py-2 h-9 font-medium shadow-none whitespace-nowrap"
+                                                >
+                                                    שינוי אמצעי תשלום
+                                                </Button>
+                                            </div>
 
-                                        {/* Right Side: Info */}
-                                        <div className="text-right">
-                                            <p className="text-gray-400 text-[11px] mb-0.5">אמצעי תשלום</p>
-                                            <p className="text-gray-600 text-[14px] font-normal" dir="ltr">xxxx {paymentData.cardNumber ? paymentData.cardNumber.replace(/\D/g, '').slice(-4) : '6655'}</p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            {/* Recent Transactions - Mobile Updated */}
-                            <div>
-                                <h2 className="text-[16px] font-bold text-gray-800 text-right mb-4 pr-1">עסקאות אחרונות</h2>
-                                <div className="space-y-4">
-                                    {transactions.map((tx, index) => (
-                                        <div key={tx.id} className="bg-white p-5 rounded-[20px] shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-50/50">
-                                            <div className="flex flex-col gap-4">
-                                                {/* Top Row: Date & Amount */}
-                                                <div className="flex justify-between items-center w-full">
-                                                    <span className="text-[18px] text-gray-900 font-bold">₪{tx.amount}</span>
-                                                    {/* Date aligned to left in design? Or right. Usually dates are LTR or standard. Img shows Date on Left side (English?). Let's follow image: Date on Right side of row (left in RTL). Actually image shows Date on Right side visually. "01/01/2025" on right. Wait, image shows: Amount Left, Date Right. */}
-                                                    <span className="text-[16px] text-gray-900 font-normal tracking-wide">{tx.date}</span>
-                                                </div>
-
-                                                {/* Buttons Row - Full width buttons outlined */}
-                                                <div className="flex justify-between gap-3 mt-1">
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => setSelectedInvoice(tx)}
-                                                        className="flex-1 bg-white hover:bg-gray-50 text-[#54627d] border-[#54627d]/30 rounded-full h-9 text-[13px] font-medium flex items-center justify-center gap-2"
-                                                    >
-                                                        <Eye className="w-4 h-4 text-[#54627d]" />
-                                                        צפייה
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleDownload(tx.id)}
-                                                        className="flex-1 bg-white hover:bg-gray-50 text-[#54627d] border-[#54627d]/30 rounded-full h-9 text-[13px] font-medium flex items-center justify-center gap-2"
-                                                    >
-                                                        <Download className="w-4 h-4 text-[#54627d]" />
-                                                        הורדה
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleExport(tx.id)}
-                                                        className="flex-1 bg-white hover:bg-gray-50 text-[#54627d] border-[#54627d]/30 rounded-full h-9 text-[13px] font-medium flex items-center justify-center gap-2"
-                                                    >
-                                                        <FileOutput className="w-4 h-4 text-[#54627d] scale-x-[-1]" />
-                                                        ייצא
-                                                    </Button>
-                                                </div>
+                                            {/* Right Side: Info */}
+                                            <div className="text-right">
+                                                <p className="text-gray-400 text-[11px] mb-0.5">אמצעי תשלום</p>
+                                                <p className="text-gray-600 text-[14px] font-normal" dir="ltr">xxxx {paymentData.cardNumber ? paymentData.cardNumber.replace(/\D/g, '').slice(-4) : '6655'}</p>
                                             </div>
                                         </div>
-                                    ))}
+                                    </CardContent>
+                                </Card>
+
+                                {/* Recent Transactions - Mobile Updated */}
+                                <div>
+                                    <h2 className="text-[16px] font-bold text-gray-800 text-right mb-4 pr-1">עסקאות אחרונות</h2>
+                                    <div className="space-y-4">
+                                        {transactions.map((tx, index) => (
+                                            <div key={tx.id} className="bg-white p-5 rounded-[20px] shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-50/50">
+                                                <div className="flex flex-col gap-4">
+                                                    {/* Top Row: Date & Amount */}
+                                                    <div className="flex justify-between items-center w-full">
+                                                        <span className="text-[18px] text-gray-900 font-bold">₪{tx.amount}</span>
+                                                        <span className="text-[16px] text-gray-900 font-normal tracking-wide">{tx.date}</span>
+                                                    </div>
+
+                                                    {/* Buttons Row - Full width buttons outlined */}
+                                                    <div className="flex justify-between gap-3 mt-1">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => setSelectedInvoice(tx)}
+                                                            className="flex-1 bg-white hover:bg-gray-50 text-[#54627d] border-[#54627d]/30 rounded-full h-9 text-[13px] font-medium flex items-center justify-center gap-2"
+                                                        >
+                                                            <Eye className="w-4 h-4 text-[#54627d]" />
+                                                            צפייה
+                                                        </Button>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => handleDownload(tx.id)}
+                                                            className="flex-1 bg-white hover:bg-gray-50 text-[#54627d] border-[#54627d]/30 rounded-full h-9 text-[13px] font-medium flex items-center justify-center gap-2"
+                                                        >
+                                                            <Download className="w-4 h-4 text-[#54627d]" />
+                                                            הורדה
+                                                        </Button>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => handleExport(tx.id)}
+                                                            className="flex-1 bg-white hover:bg-gray-50 text-[#54627d] border-[#54627d]/30 rounded-full h-9 text-[13px] font-medium flex items-center justify-center gap-2"
+                                                        >
+                                                            <FileOutput className="w-4 h-4 text-[#54627d] scale-x-[-1]" />
+                                                            ייצא
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Desktop View (Hidden on Mobile) */}
-                        <div className="hidden md:block">
+                        <div className="hidden md:block max-w-5xl mx-auto">
                             {/* Payment Method Section - Desktop */}
                             <Card className="rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100 mb-8">
                                 <CardContent className="p-3">

@@ -160,11 +160,11 @@ export default function Statistics() {
                 </div>
 
                 {/* Mobile Title */}
-                <div className="text-center pt-24 pb-4 md:hidden relative z-10">
+                <div className="text-center pt-11 pb-4 md:hidden relative z-10">
                     <h1 className="text-[24px] font-bold text-[#001a6e]">הסטטיסטיקות שלי</h1>
                 </div>
 
-                <div className="p-0 sm:p-6 md:p-8 mt-6 md:-mt-20 relative z-10 w-full md:w-[72%] mx-auto">
+                <div className="p-0 sm:p-6 md:p-8 mt-2 md:-mt-10 relative z-10 w-full md:w-[72%] mx-auto">
                     {/* Toggle - Centered */}
                     <div className="flex justify-center mb-6 md:mb-8 pt-4 md:pt-0">
                         <div className="flex bg-white border border-blue-200 rounded-full p-1 shadow-sm">

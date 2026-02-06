@@ -155,6 +155,8 @@ export default function Layout({ children, currentPageName }) {
 
   const shouldHideHeader = authPages.includes(currentPageName) || (onboardingPages.includes(currentPageName) && isOnboardingActive) || isSettingsOnboarding || currentPageName === 'CompanyProfileCompletion' || currentPageName === 'JobSeekerProfileCompletion';
 
+  const isFullWidthPage = currentPageName === 'CreateJob' || currentPageName === 'CandidateProfile' || currentPageName === 'Payments' || currentPageName === 'JobManagement' || currentPageName === 'Statistics' || currentPageName === 'Notifications' || currentPageName === 'JobDetails' || onboardingPages.includes(currentPageName);
+
   return (
     <div className={`min-h-screen w-full max-w-[100vw] overflow-x-hidden ${currentPageName === 'Dashboard' ? 'bg-[linear-gradient(180deg,#dcedf4_0%,#dcedf4_20%,#FFFFFF_100%)] md:[background:var(--page-gradient)]' : 'page-gradient'}`} dir="rtl">
       <style>
@@ -389,105 +391,127 @@ export default function Layout({ children, currentPageName }) {
         </div>
       )}
 
-      {/* Mobile Navbar */}
+      {/* Mobile Navbar (Expandable Toolbar) */}
       {!shouldHideHeader && (
-        <div className="md:hidden pb-2 px-4 sticky top-4 z-40 pt-2 bg-transparent">
-          <div className="flex items-center justify-between bg-white/30 backdrop-blur-md rounded-full px-4 border-2 border-white h-[54px]">
-            <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(true)}>
-              <Menu className="w-8 h-8 text-gray-800" />
-            </Button>
-            <div className="flex items-center gap-2">
-              <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2">
-                <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
-                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png" alt="Metch Logo" className={`${isJobSeeker ? 'h-5' : 'h-6'}`} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
+        <div className="md:hidden fixed top-4 left-0 right-0 z-50 h-[54px] px-4 w-full monitor-fixed-header">
+          <motion.div
+            initial={false}
+            animate={isMobileMenuOpen ? "open" : "closed"}
+            variants={{
+              closed: { height: 54, backgroundColor: "rgba(255, 255, 255, 0.3)", borderRadius: 50 },
+              open: { height: "auto", backgroundColor: "rgba(235, 245, 250, 0.95)", borderRadius: 32 }
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className={`border-2 border-white shadow-sm overflow-hidden backdrop-blur-md relative mx-auto w-full ${isMobileMenuOpen ? 'border-[0.5px]' : ''}`}
+            dir="rtl"
+          >
+            {/* Header Row: Always Visible (but changes content/icon) */}
+            <div className="flex items-center justify-between px-4 h-[54px] w-full">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="hover:bg-transparent -mr-2"
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  {isMobileMenuOpen ? (
+                    <motion.div
+                      key="close"
+                      initial={{ opacity: 0, rotate: -90 }}
+                      animate={{ opacity: 1, rotate: 0 }}
+                      exit={{ opacity: 0, rotate: 90 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <X className="w-8 h-8 text-[#1A1A1A]" strokeWidth={1.5} />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="menu"
+                      initial={{ opacity: 0, rotate: 90 }}
+                      animate={{ opacity: 1, rotate: 0 }}
+                      exit={{ opacity: 0, rotate: -90 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Menu className="w-8 h-8 text-gray-800" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </Button>
 
-      {/* Mobile Menu Overlay */}
-      {/* Mobile Menu Overlay */}
+              <div className="flex items-center gap-2 select-none">
+                <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2" onClick={() => isMobileMenuOpen && setIsMobileMenuOpen(false)}>
+                  <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
+                  <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png" alt="Metch Logo" className="h-4 mb-0.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Expanded Menu Content */}
+            <AnimatePresence>
+              {isMobileMenuOpen && (
+                <motion.nav
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex flex-col items-start px-8 pb-8 gap-5"
+                >
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.page}
+                      to={createPageUrl(link.page)}
+                      onClick={closeMenu}
+                      className="flex items-center gap-3 text-[19px] font-medium text-[#4A5568] hover:text-[#2B6CB0] transition-colors w-full text-right"
+                    >
+                      <link.icon className="w-5 h-5" strokeWidth={1.5} />
+                      {link.text}
+                    </Link>
+                  ))}
+
+                  <button
+                    onClick={() => {
+                      closeMenu();
+                      handleLogout();
+                    }}
+                    className="flex items-center gap-3 text-[19px] font-medium text-[#4A5568] hover:text-red-500 transition-colors w-full text-right mt-2"
+                  >
+                    <LogOut className="w-5 h-5" strokeWidth={1.5} />
+                    התנתקות
+                  </button>
+                </motion.nav>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </div>
+      )
+      }
+
+      {/* Mobile Menu Backdrop */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 z-[200] md:hidden">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeMenu}
-              className="absolute inset-0 bg-black/10 backdrop-blur-sm"
-            />
-
-            {/* Menu Card */}
-            <motion.div
-              initial={{ y: '-100%', opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: '-100%', opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30, mass: 0.8 }}
-              className="relative w-auto mx-4 mt-4 bg-[#EBF5FA]/30 backdrop-blur-md rounded-[40px] shadow-xl border-[0.5px] border-white overflow-hidden flex flex-col pb-8 pt-2"
-              dir="rtl"
-            >
-              {/* Header: Logo (Left) & Close (Right) */}
-              <div className="p-6 flex items-center justify-between">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={closeMenu}
-                  className="hover:bg-transparent -mr-2"
-                >
-                  <X className="w-8 h-8 text-[#1A1A1A]" strokeWidth={1.5} />
-                </Button>
-
-                <div className="flex items-center gap-2 select-none">
-                  <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
-                  <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/689c85a409a96fa6a10f1aca/4654a1b94_image.png" alt="Metch Logo" className="h-6" />
-                </div>
-              </div>
-
-              {/* Menu Items */}
-              <nav className="flex flex-col items-start px-8 gap-5">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.page}
-                    to={createPageUrl(link.page)}
-                    onClick={closeMenu}
-                    className="text-[19px] font-medium text-[#4A5568] hover:text-[#2B6CB0] transition-colors w-full text-right"
-                  >
-                    {link.text}
-                  </Link>
-                ))}
-
-                <button
-                  onClick={() => {
-                    closeMenu();
-                    handleLogout();
-                  }}
-                  className="text-[19px] font-medium text-[#4A5568] hover:text-red-500 transition-colors w-full text-right mt-2"
-                >
-                  התנתקות
-                </button>
-              </nav>
-
-            </motion.div>
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 z-40 md:hidden bg-black/10 backdrop-blur-sm"
+          />
         )}
       </AnimatePresence>
 
-      <main className={`flex-1 flex justify-center w-full mt-[18px] mb-4 ${(currentPageName === 'CreateJob' || currentPageName === 'CandidateProfile' || currentPageName === 'Payments' || currentPageName === 'JobManagement' || currentPageName === 'Statistics' || currentPageName === 'Notifications' || onboardingPages.includes(currentPageName)) ? 'px-0 mt-0' : (isJobSeekerMobileFlow ? 'px-0 md:px-2 mt-0 md:mt-[18px]' : 'px-2')}`}>
-        {(currentPageName === 'CreateJob' || currentPageName === 'CandidateProfile' || currentPageName === 'Payments' || currentPageName === 'JobManagement' || currentPageName === 'Statistics' || currentPageName === 'Notifications' || onboardingPages.includes(currentPageName) || (isJobSeekerMobileFlow && (typeof window !== 'undefined' ? window.innerWidth < 768 : false))) ? (
+      <main className={`flex-1 flex justify-center w-full mb-4 ${(isFullWidthPage || currentPageName === 'Dashboard') ? 'mt-24 md:mt-4' : (isJobSeekerMobileFlow ? 'mt-[90px] md:mt-[18px]' : 'mt-[90px]')} ${isFullWidthPage ? 'px-0' : (isJobSeekerMobileFlow ? 'px-0 md:px-2' : 'px-2')}`}>
+        {(isFullWidthPage || (isJobSeekerMobileFlow && (typeof window !== 'undefined' ? window.innerWidth < 768 : false))) ? (
           <div className="w-full h-full">
             {children}
           </div>
         ) : (
-          <Card className={`w-full max-w-[99%] shadow-xl border border-gray-100 rounded-[50px] min-h-[92vh] overflow-hidden relative backdrop-blur-sm ${currentPageName === 'Dashboard' ? 'bg-white md:bg-white/99 shadow-lg md:shadow-xl border md:border-gray-100 rounded-[32px] md:rounded-[50px] max-w-[94%] md:max-w-[99%] mx-auto md:mx-0' : 'bg-white/90'}`}>
+          <Card className={`w-full max-w-[99%] shadow-[0_15px_40px_rgba(0,0,0,0.08)] md:shadow-[0_25px_60px_rgba(0,0,0,0.15)] border border-gray-100 rounded-[50px] min-h-[92vh] overflow-hidden relative backdrop-blur-sm ${currentPageName === 'Dashboard' ? 'bg-white md:bg-white/99 md:shadow-[0_30px_70px_rgba(0,0,0,0.18)] border md:border-gray-100 rounded-[32px] md:rounded-[50px] max-w-[94%] md:max-w-[99%] mx-auto md:mx-0' : 'bg-white/90'}`}>
             <div className="h-full">
               {children}
             </div>
           </Card>
         )}
       </main>
-    </div>
+    </div >
   );
 }

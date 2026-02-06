@@ -25,7 +25,7 @@ const SeekerHeader = ({ company, job, returnUrl }) => {
       {/* Back button visible on both mobile and desktop */}
       <Link
         to={targetUrl}
-        className="flex absolute top-[-65px] md:top-4 right-2 md:right-4 w-9 h-9 bg-white rounded-full items-center justify-center shadow-md hover:bg-gray-50 transition-colors z-[60]"
+        className="hidden md:flex absolute top-[-65px] md:top-4 right-2 md:right-4 w-9 h-9 bg-white rounded-full items-center justify-center shadow-md hover:bg-gray-50 transition-colors z-[60]"
       >
         <ChevronRight className="w-5 h-5 text-blue-500" />
       </Link>

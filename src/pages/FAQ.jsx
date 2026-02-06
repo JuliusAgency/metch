@@ -281,9 +281,7 @@ export default function FAQ() {
     }
 
     if (typeof window === "undefined") return;
-
-    const whatsappUrl = "https://api.whatsapp.com/send/?phone=%2B972501234567&text=%D7%A9%D7%9C%D7%95%D7%9D%21+%D7%90%D7%A0%D7%99+%D7%96%D7%A7%D7%95%D7%A7%2F%D7%94+%D7%9C%D7%AA%D7%9E%D7%99%D7%9B%D7%94+%D7%9E%D7%A6%D7%95%D7%95%D7%AA+Metch&type=phone_number&app_absent=0";
-    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    navigate(createPageUrl("Contact"));
   };
 
   return (
@@ -294,10 +292,10 @@ export default function FAQ() {
           className="md:hidden fixed top-0 left-0 right-0 pointer-events-none"
           style={{
             width: '100%',
-            height: '280px',
+            height: '200px',
             backgroundImage: `url(${settingsMobileBg})`,
-            backgroundSize: '100% 100%',
-            backgroundPosition: 'center',
+            backgroundSize: 'cover',
+            backgroundPosition: 'top center',
             backgroundRepeat: 'no-repeat',
             zIndex: 0
           }}
@@ -326,11 +324,10 @@ export default function FAQ() {
 
         {/* Mobile-Only Header ABOVE Card - Seeker Only */}
         {user?.user_type === 'job_seeker' && (
-          <div className="md:hidden flex items-center px-6 pt-10 pb-4 relative z-10 w-full justify-center">
-            <Link to={createPageUrl("Dashboard")} className="absolute right-6 w-10 h-10 bg-white/50 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm">
+          <div className="md:hidden relative z-10 w-full h-16">
+            <Link to={createPageUrl("Dashboard")} className="absolute right-6 top-4 w-10 h-10 bg-white/50 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm">
               <ChevronLeft className="w-6 h-6 text-gray-800 rotate-180" />
             </Link>
-            <h1 className="text-2xl font-bold text-gray-800">שאלות נפוצות</h1>
           </div>
         )}
 
@@ -343,7 +340,7 @@ export default function FAQ() {
             className={`space-y-8 ${user?.user_type === 'job_seeker' ? 'bg-white [border-top-left-radius:50%_40px] [border-top-right-radius:50%_40px] min-h-screen pt-8 px-6 shadow-[0_0_20px_rgba(0,0,0,0.1)] md:bg-transparent md:rounded-none md:shadow-none md:min-h-0 md:pt-0 md:px-0' : ''}`}
           >
             {/* Title */}
-            <div className={`text-center ${user?.user_type === 'job_seeker' ? 'hidden md:block' : ''}`}>
+            <div className="text-center pb-2 md:pb-8 block">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">שאלות נפוצות</h1>
             </div>
 

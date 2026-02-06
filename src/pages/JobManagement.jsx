@@ -166,18 +166,18 @@ export default function JobManagement() {
       <div className="h-full relative bg-[#fafafa] md:bg-transparent min-h-screen pb-24 md:pb-0" dir="rtl">
         {/* Mobile-Only Background Image */}
         <div
-          className="md:hidden absolute top-[-100px] left-0 right-0 z-0 pointer-events-none"
+          className="md:hidden fixed top-0 left-0 right-0 z-0 pointer-events-none"
           style={{
             width: '100%',
-            height: '220px',
+            height: '200px',
             backgroundImage: `url(${settingsMobileBg})`,
             backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundPosition: 'top center',
             backgroundRepeat: 'no-repeat'
           }}
         />
 
-        <div className="relative">
+        <div className="relative z-10 w-full md:w-[98%] mx-auto md:bg-white md:rounded-[32px] md:shadow-xl md:overflow-hidden md:min-h-[88vh]">
           {/* Desktop Header */}
           <div className="relative h-32 md:h-40 overflow-hidden w-full hidden md:block">
             <div
@@ -196,14 +196,14 @@ export default function JobManagement() {
           </div>
 
           {/* Mobile Title */}
-          <div className="text-center pt-14 pb-8 md:hidden relative z-10">
+          <div className="text-center pt-6 pb-2 md:hidden relative z-10">
             <h1 className="text-[22px] font-bold text-[#001a6e]">
               ניהול משרות
             </h1>
           </div>
 
 
-          <div className="p-4 md:p-6 -mt-12 md:-mt-16 relative z-10 w-full md:w-[70%] mx-auto">
+          <div className="p-4 md:px-8 md:pt-0 mt-8 relative z-10 w-full md:w-[70%] mx-auto">
             {/* Toggle Buttons - Centered */}
             <div className="flex justify-center items-center mb-6 gap-4">
               <ToggleSwitch
@@ -384,49 +384,22 @@ export default function JobManagement() {
               </div>
 
               {/* Create New Job Button - Right Side (Desktop) */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>
-                    <Button
-                      onClick={() => {
-                        const hasCredits = (user?.job_credits > 0 || user?.profile?.job_credits > 0);
-                        if (hasCredits) {
-                          handleCreateNewJob();
-                        }
-                      }}
-                      disabled={!(user?.job_credits > 0 || user?.profile?.job_credits > 0)}
-                      className={`px-8 py-3 rounded-full font-bold text-lg shadow-lg ${(user?.job_credits > 0 || user?.profile?.job_credits > 0)
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300'
-                        }`}
-                    >
-                      <Plus className="w-5 h-5 ml-2" />
-                      יצירת משרה חדשה
-                    </Button>
-                  </div>
-                </TooltipTrigger>
-                {!(user?.job_credits > 0 || user?.profile?.job_credits > 0) && (
-                  <TooltipContent>
-                    <p>נגמרה חבילת המשרות שלך</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
+              <div>
+                <Button
+                  onClick={handleCreateNewJob}
+                  className="px-8 py-3 rounded-full font-bold text-lg shadow-lg bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Plus className="w-5 h-5 ml-2" />
+                  יצירת משרה חדשה
+                </Button>
+              </div>
             </div>
 
             {/* Mobile Create Job Button (Fixed/Sticky or just at bottom) */}
             <div className="fixed md:hidden bottom-8 left-0 right-0 px-6 z-40 transform translate-y-0">
               <Button
-                onClick={() => {
-                  const hasCredits = (user?.job_credits > 0 || user?.profile?.job_credits > 0);
-                  if (hasCredits) {
-                    handleCreateNewJob();
-                  }
-                }}
-                disabled={!(user?.job_credits > 0 || user?.profile?.job_credits > 0)}
-                className={`w-full py-6 rounded-full font-bold text-xl shadow-[0_4px_14px_0_rgba(0,0,0,0.2)] ${(user?.job_credits > 0 || user?.profile?.job_credits > 0)
-                  ? 'bg-[#2987CD] hover:bg-[#2070ab] text-white'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300'
-                  }`}
+                onClick={handleCreateNewJob}
+                className="w-full py-6 rounded-full font-bold text-xl shadow-[0_4px_14px_0_rgba(0,0,0,0.2)] bg-[#2987CD] hover:bg-[#2070ab] text-white"
               >
                 צור משרה חדשה +
               </Button>

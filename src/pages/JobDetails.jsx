@@ -222,12 +222,21 @@ export default function JobDetails() {
 
       return (
         <ul className="space-y-3 pt-2">
-          {validItems.map((item, i) => (
-            <li key={i} className="flex items-start gap-3 text-[#4a5568] text-[15px]">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0" />
-              <span className="leading-relaxed">{typeof item === 'string' ? item : (item.value || item.label)}</span>
-            </li>
-          ))}
+          {validItems.map((item, i) => {
+            const text = typeof item === 'string' ? item : (item.value || item.label);
+            const type = typeof item === 'object' ? item.type : null;
+
+            return (
+              <li key={i} className="flex items-start gap-3 text-[#4a5568] text-[15px]">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0" />
+                <span className="leading-relaxed">
+                  {text}
+                  {type === 'required' && ' - חובה'}
+                  {type === 'advantage' && ' - יתרון'}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       );
     }
@@ -247,7 +256,7 @@ export default function JobDetails() {
       {/* Background */}
       <div className="md:hidden fixed top-0 left-0 right-0 pointer-events-none" style={{ width: '100%', height: '320px', backgroundImage: `url(${settingsMobileBg})`, backgroundSize: 'cover', backgroundPosition: 'top center', zIndex: '0' }} />
 
-      <div className="relative h-full overflow-y-auto pb-12">
+      <div className="relative h-full md:overflow-y-auto overflow-visible pb-12 w-full md:w-[98%] mx-auto md:bg-white md:rounded-[32px] md:shadow-[0_30px_70px_rgba(0,0,0,0.18)] md:overflow-hidden md:min-h-[88vh]">
         <div className="w-full mx-auto">
           {isUnavailable && (
             <div className="px-4 md:px-0">
@@ -257,16 +266,18 @@ export default function JobDetails() {
 
           <div className="md:hidden h-[80px]" />
 
-          <div className="bg-white w-full mt-[-50px] md:mt-0 rounded-t-[40px] px-4 py-8 md:p-6 md:shadow-[0_-15px_45px_rgba(0,0,0,0.06)] relative z-20 origin-top">
+          {/* Mobile SeekerHeader - Positioned above the container to avoid clipping */}
+          <div className="md:hidden relative z-30 -mb-12">
+            <SeekerHeader job={job} returnUrl={returnUrl} />
+          </div>
+
+          <div className="bg-white w-full mt-[-60px] md:mt-0 [border-top-left-radius:50%_40px] [border-top-right-radius:50%_40px] md:rounded-none px-4 py-8 md:p-6 relative z-20 origin-top">
             <div className="max-w-6xl mx-auto space-y-8">
-              <div className="md:hidden -mt-14 mb-6"><SeekerHeader job={job} returnUrl={returnUrl} /></div>
               <div className="hidden md:block"><SeekerHeader job={job} returnUrl={returnUrl} /></div>
 
               <SeekerJobTitle job={job} employmentTypeText={employmentTypeText} showMatchScore={false} />
 
-              <div className="hidden md:block">
-                <SeekerJobPerks perks={job.company_perks} />
-              </div>
+              <SeekerJobPerks perks={job.company_perks} />
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-fr">
 

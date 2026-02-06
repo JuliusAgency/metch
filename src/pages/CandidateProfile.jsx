@@ -806,7 +806,7 @@ export default function CandidateProfile() {
         {/* Header Background */}
         <ProfileHeader />
 
-        <CardContent className="p-4 sm:p-6 md:p-8 -mt-20 relative z-10 flex-grow">
+        <CardContent className="p-4 sm:p-6 md:p-8 mt-6 relative z-10 flex-grow">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}

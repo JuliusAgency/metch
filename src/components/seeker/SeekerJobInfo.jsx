@@ -9,20 +9,17 @@ import {
 import SeekerJobPerks from "./SeekerJobPerks";
 
 const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, showAiAnalysis = true, showResponsibilities = true }) => {
-    const [activeTab, setActiveTab] = useState("about");
+    const [activeTab, setActiveTab] = useState("match_analysis");
 
     const tryParse = (val) => {
         if (!val) return [];
         if (typeof val !== 'string') return val;
         try {
             let processed = val.trim();
-            // Handle double stringification
             if (processed.startsWith('"') && processed.endsWith('"')) {
                 try {
                     processed = JSON.parse(processed);
-                } catch (e) {
-                    // fall back to original
-                }
+                } catch (e) { }
             }
             if (processed.startsWith('[') || processed.startsWith('{')) {
                 return JSON.parse(processed);
@@ -53,28 +50,20 @@ const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, 
         });
 
     const sections = [
-        { id: "about", label: "על המשרה", icon: Info, content: job.description },
+        { id: "match_analysis", label: "מה מאצ' חושב?", icon: Sparkles, content: null },
+        { id: "about", label: "תיאור משרה", icon: Info, content: job.description },
         { id: "requirements", label: "דרישות", icon: FileText, content: finalRequirements }
     ];
 
     if (showResponsibilities) {
-        if (baseResponsibilities.length > 0) {
-            sections.push({ id: "responsibilities", label: "תחומי אחריות", icon: ClipboardList, content: baseResponsibilities });
-        }
-        if (baseEducation.length > 0) {
-            sections.push({ id: "education", label: "השכלה", icon: GraduationCap, content: baseEducation });
-        }
         if (baseCertifications.length > 0) {
             sections.push({ id: "certifications", label: "הסמכות", icon: Award, content: baseCertifications });
         }
     }
 
-    sections.push({ id: "apply", label: "הגשת מועמדות", icon: Send, content: "כאן ניתן להגיש מועמדות למשרה" });
-
     // Helper to render content based on type (string or array)
     const renderContent = (content) => {
         if (Array.isArray(content)) {
-            // Filter out empty items
             const filteredContent = content.filter(item => {
                 if (typeof item === 'object' && item !== null) {
                     return (item.value && item.value.trim() !== "") || (item.label && item.label.trim() !== "");
@@ -133,7 +122,7 @@ const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, 
                 {/* Perks/Points Section below Navigation */}
                 {perks && perks.length > 0 && (
                     <div className="pt-4 pb-2 px-2">
-                        <SeekerJobPerks perks={perks} />
+                        <SeekerJobPerks perks={perks} compact={true} />
                     </div>
                 )}
 
@@ -152,8 +141,17 @@ const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, 
                                 </div>
                             </AccordionTrigger>
                             <AccordionContent className="text-right">
-                                {s.id === "apply" ? (
-                                    <div className="pt-2 text-gray-500 italic">השתמש בכפתורי הפעולה למטה כדי להגיש מועמדות.</div>
+                                {s.id === "match_analysis" ? (
+                                    <div className="text-[#4a5568] text-[15px] leading-relaxed pt-2">
+                                        {isAiLoading ? (
+                                            <div className="space-y-2 animate-pulse">
+                                                <div className="h-4 bg-gray-200/50 rounded w-full"></div>
+                                                <div className="h-4 bg-gray-200/50 rounded w-5/6"></div>
+                                            </div>
+                                        ) : (
+                                            <p>{aiAnalysis?.why_suitable || aiAnalysis?.summary || "נתונים אינם זמינים כעת"}</p>
+                                        )}
+                                    </div>
                                 ) : (
                                     renderContent(s.content)
                                 )}
