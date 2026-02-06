@@ -38,7 +38,13 @@ export async function calculate_match_score(candidate_profile, job_posting, user
   const bottomPartScore = calculateBottomPartScore(candidate_profile, job_posting);
 
   // Final Score Formula: Final_Match_Score = (0.75 * Score_Top_Part) + (0.25 * Score_Bottom_Part)
-  const finalScore = (0.75 * topPartScore) + (0.25 * bottomPartScore);
+  let finalScore = (0.75 * topPartScore) + (0.25 * bottomPartScore);
+
+  // Phase 1 Adjustments: Apply Soft Penalties from "Hard Filters"
+  if (disqualificationResult.penalty > 0) {
+    console.log(`Applying filter penalty: -${disqualificationResult.penalty}`);
+    finalScore -= disqualificationResult.penalty;
+  }
 
   // Ensure score is between 0.0 and 1.0
   return Math.max(0.0, Math.min(1.0, finalScore));
@@ -48,35 +54,23 @@ export async function calculate_match_score(candidate_profile, job_posting, user
  * Phase 1: Check for disqualification conditions
  */
 async function checkDisqualification(candidate_profile, job_posting, user_settings) {
-  // 1.1 Hard Filters
+  let penalty = 0;
+
+  // 1.1 Hard Filters -> Soft Penalties
 
   // Parse JSON fields from database
   const structuredEducation = parseJsonField(job_posting.structured_education);
   const structuredRequirements = parseJsonField(job_posting.structured_requirements);
   const structuredCertifications = parseJsonField(job_posting.structured_certifications);
 
-  // Required Education Check
-  const requiredEducation = structuredEducation.filter(
-    edu => edu.type === 'required' && edu.value
-  );
-  if (requiredEducation.length > 0) {
-    const candidateEducation = candidate_profile.education || [];
-    const hasRequiredEducation = checkEducationMatch(candidateEducation, requiredEducation);
-    if (!hasRequiredEducation) {
-      return { disqualified: true, reason: 'השכלת חובה לא מספיק' };
-    }
-  }
+  // Required Education - Handled by Phase 2 Scoring (returns 0 if no match)
+  // No explicit penalty needed here, as losing the weighted score is sufficient.
 
-  // Required Experience Check
-  const requiredExperience = extractExperienceRequirements(structuredRequirements);
-  if (requiredExperience) {
-    const candidateExperience = calculateCandidateExperience(candidate_profile.experience || []);
-    if (candidateExperience < requiredExperience.years) {
-      return { disqualified: true, reason: 'ניסון חובה לא מספיק' };
-    }
-  }
+  // Required Experience - Handled by Phase 2 Scoring (returns 0 if no match)
+  // No explicit penalty needed here.
 
   // Required Certification/License Check
+  // NOT handled in Phase 2, so we add a specific penalty.
   const requiredCertifications = structuredCertifications.filter(
     cert => cert.type === 'required' && cert.value
   );
@@ -84,21 +78,24 @@ async function checkDisqualification(candidate_profile, job_posting, user_settin
     const candidateCertifications = candidate_profile.certifications || [];
     const hasRequiredCert = checkCertificationsMatch(candidateCertifications, requiredCertifications);
     if (!hasRequiredCert) {
-      return { disqualified: true, reason: 'הסמכה/רישיון חובה לא קיימת' };
+      console.log('Soft Penalty: Missing Required Certification (-10%)');
+      penalty += 0.10;
     }
   }
 
   // Required Language Check
+  // NOT handled in Phase 2, so we add a specific penalty.
   const requiredLanguages = extractLanguageRequirements(structuredRequirements);
   if (requiredLanguages.length > 0) {
     const candidateLanguages = candidate_profile.languages || [];
     const hasRequiredLanguage = checkLanguagesMatch(candidateLanguages, requiredLanguages);
     if (!hasRequiredLanguage) {
-      return { disqualified: true, reason: 'שפה' };
+      console.log('Soft Penalty: Missing Required Language (-5%)');
+      penalty += 0.05;
     }
   }
 
-  // 1.2 Soft Filter: Career Change Preference
+  // 1.2 Soft Filter: Career Change Preference (Keep Strict)
   if (user_settings.prefers_no_career_change === true) {
     const isCareerChange = await is_career_change(candidate_profile, job_posting);
     if (isCareerChange) {
@@ -106,7 +103,7 @@ async function checkDisqualification(candidate_profile, job_posting, user_settin
     }
   }
 
-  return { disqualified: false };
+  return { disqualified: false, penalty };
 }
 
 /**
