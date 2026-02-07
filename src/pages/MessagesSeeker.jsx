@@ -226,7 +226,7 @@ export default function MessagesSeeker() {
         }
     };
 
-    const loadMessages = async (conversationId, allIds = []) => {
+    const loadMessages = useCallback(async (conversationId, allIds = []) => {
         setLoadingMessages(true);
         try {
             if (conversationId === "support") {
@@ -292,7 +292,7 @@ export default function MessagesSeeker() {
         } finally {
             setLoadingMessages(false);
         }
-    };
+    }, [user?.email, refreshUnreadCount]);
 
     const filteredConversations = conversations.filter(conv =>
         conv.employer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -399,7 +399,7 @@ export default function MessagesSeeker() {
         }
     };
 
-    const handleConversationSelect = (conversation) => {
+    const handleConversationSelect = useCallback((conversation) => {
         setSelectedConversation(conversation);
         loadMessages(conversation.id, conversation.all_ids || []);
 
@@ -409,7 +409,7 @@ export default function MessagesSeeker() {
                 ? { ...c, is_unread: false }
                 : c
         ));
-    };
+    }, [loadMessages]);
 
     const startSupportConversation = useCallback(() => {
         // Check if we already have a support conversation
@@ -449,9 +449,12 @@ export default function MessagesSeeker() {
     useEffect(() => {
         if (location.state?.supportChat) {
             startSupportConversation();
-            navigate(location.pathname, { replace: true, state: null });
+            // Important: Clear the state after handling it to prevent infinite loop
+            const state = { ...location.state };
+            delete state.supportChat;
+            navigate(location.pathname, { replace: true, state });
         }
-    }, [location.state, location.pathname, navigate, startSupportConversation]);
+    }, [location.state?.supportChat, location.pathname, navigate, startSupportConversation]);
 
     if (selectedConversation) {
         return (

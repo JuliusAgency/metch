@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+import { SendEmail } from "@/api/integrations";
 import {
   ChevronLeft,
   Mail,
@@ -8,9 +12,11 @@ import {
   Facebook,
   Instagram,
   Linkedin,
-  Youtube
+  Youtube,
+  Send,
+  X
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
@@ -22,9 +28,16 @@ import paymentsMobileBg from "@/assets/payment_mobile_header.png";
 
 export default function Contact() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { user } = useRequireUserType(); // Ensure user has selected a user type
   const supportEmail = user?.user_type === "employer" ? "business@metch.co.il" : "support@metch.co.il";
   const [chatLoading, setChatLoading] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [formData, setFormData] = useState({
+    subject: "",
+    message: ""
+  });
 
   const handleSupportChat = () => {
     setChatLoading(true);
@@ -39,10 +52,55 @@ export default function Contact() {
   };
 
   const handleEmailContact = () => {
-    const subject = encodeURIComponent("פניה לתמיכה - Metch");
-    const body = encodeURIComponent("שלום,\n\nאני מעוניין/ת לקבל תמיכה בנושא הבא:\n\n");
-    const emailUrl = `mailto:${supportEmail}?subject=${subject}&body=${body}`;
-    window.location.href = emailUrl;
+    setShowEmailForm(true);
+  };
+
+  const handleSendEmail = async (e) => {
+    e.preventDefault();
+    if (!formData.subject || !formData.message) {
+      toast({
+        title: "חסרים פרטים",
+        description: "אנא מלאו את נושא ההודעה ואת התוכן.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      const userDetails = `
+        <br/><br/>
+        ---<br/>
+        <b>פרטי שולח:</b><br/>
+        שם: ${user?.full_name || user?.company_name || 'לא צוין'}<br/>
+        מייל: ${user?.email || 'לא צוין'}<br/>
+        סוג משתמש: ${user?.user_type === 'employer' ? 'מעסיק' : 'מחפש עבודה'}<br/>
+      `;
+
+      await SendEmail({
+        to: supportEmail,
+        subject: `פנייה חדשה מהאתר: ${formData.subject}`,
+        html: `<div dir="rtl" style="text-align: right;">${formData.message.replace(/\n/g, '<br/>')}${userDetails}</div>`,
+        text: `${formData.message}\n\nפרטי שולח:\nשם: ${user?.full_name || user?.company_name}\nמייל: ${user?.email}`,
+      });
+
+      toast({
+        title: "ההודעה נשלחה",
+        description: "קיבלנו את פנייתך ונחזור אליך בהקדם.",
+      });
+
+      setShowEmailForm(false);
+      setFormData({ subject: "", message: "" });
+    } catch (error) {
+      console.error("Error sending support email:", error);
+      toast({
+        title: "שגיאה בשליחה",
+        description: "לא הצלחנו לשלוח את המייל. ניתן לנסות שוב או לפנות אלינו ישירות.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -114,34 +172,106 @@ export default function Contact() {
               : 'bg-white rounded-[24px] shadow-2xl pt-6 px-4 pb-24 mt-0 md:mt-0 md:bg-transparent md:shadow-none md:rounded-none md:p-0'}`}
           >
             {/* Title */}
-            <h1 className={`text-[24px] md:text-2xl font-bold absolute top-[-65px] left-0 right-0 md:relative md:top-0 ${user?.user_type === 'employer' ? 'text-[#001a6e]' : 'text-gray-900'} md:text-gray-900`}>יצירת קשר</h1>
+            <h1 className={`text-[24px] md:text-2xl font-bold absolute ${user?.user_type === 'employer' ? 'top-[-105px]' : 'top-[-65px]'} left-0 right-0 md:relative md:top-0 ${user?.user_type === 'employer' ? 'text-[#001a6e]' : 'text-gray-900'} md:text-gray-900`}>יצירת קשר</h1>
 
             <div className={`${user?.user_type === 'job_seeker' ? 'mt-0 md:mt-0 flex flex-col items-center space-y-8 w-full' : 'contents'}`}>
-              {/* Action Buttons */}
-              <div className={`flex flex-col gap-3 w-full max-w-xs ${user?.user_type === 'job_seeker' ? 'mt-[-20px] md:mt-0' : ''}`}>
-                <Button
-                  onClick={handleEmailContact}
-                  className="bg-[#3B82F6] hover:bg-[#2563EB] text-white px-6 py-2 rounded-full font-bold h-12 text-base"
-                >
-                  <Mail className="w-4 h-4 ml-2" />
-                  שליחת מייל
-                </Button>
-                <Button
-                  onClick={handleSupportChat}
-                  disabled={chatLoading}
-                  className="bg-[#3B82F6] hover:bg-[#2563EB] text-white px-6 py-2 rounded-full font-bold h-12 text-base"
-                >
-                  {chatLoading ? 'מתחבר...' : (
-                    <>
-                      <MessageCircle className="w-4 h-4 ml-2" />
-                      התחלת צ'אט
-                    </>
+              {/* Action Buttons & Email Form */}
+              <div className={`relative w-full max-w-sm md:mt-12 ${user?.user_type === 'job_seeker' ? 'mt-[-20px] md:mt-0' : ''}`}>
+                <AnimatePresence mode="wait">
+                  {!showEmailForm ? (
+                    <motion.div
+                      key="buttons"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="flex flex-col gap-3 w-full"
+                    >
+                      <Button
+                        onClick={handleEmailContact}
+                        className="bg-[#3B82F6] hover:bg-[#2563EB] text-white px-6 py-2 rounded-full font-bold h-12 text-base transition-all active:scale-95 shadow-md"
+                      >
+                        <Mail className="w-4 h-4 ml-2" />
+                        שליחת מייל
+                      </Button>
+                      <Button
+                        onClick={handleSupportChat}
+                        disabled={chatLoading}
+                        className="bg-[#3B82F6] hover:bg-[#2563EB] text-white px-6 py-2 rounded-full font-bold h-12 text-base transition-all active:scale-95 shadow-md"
+                      >
+                        {chatLoading ? 'מתחבר...' : (
+                          <>
+                            <MessageCircle className="w-4 h-4 ml-2" />
+                            התחלת צ'אט
+                          </>
+                        )}
+                      </Button>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="form"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 20 }}
+                      className="bg-[#f8f9fd] p-6 rounded-[24px] border border-blue-100 shadow-inner w-full"
+                    >
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-bold text-[#001a6e]">שליחת מייל לתמיכה</h3>
+                        <button
+                          onClick={() => setShowEmailForm(false)}
+                          className="p-1 hover:bg-red-50 rounded-full text-red-400 transition-colors"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      <form onSubmit={handleSendEmail} className="space-y-4">
+                        <div className="text-right">
+                          <label className="text-xs text-gray-500 mr-2 mb-1 block">נושא הפנייה</label>
+                          <Input
+                            placeholder="על מה תרצו לדבר?"
+                            value={formData.subject}
+                            onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                            className="bg-white border-blue-50 focus:border-blue-300 rounded-xl"
+                            dir="rtl"
+                          />
+                        </div>
+
+                        <div className="text-right">
+                          <label className="text-xs text-gray-500 mr-2 mb-1 block">תוכן ההודעה</label>
+                          <Textarea
+                            placeholder="פרטו כאן את פנייתכם..."
+                            value={formData.message}
+                            onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                            className="bg-white border-blue-50 focus:border-blue-300 rounded-xl min-h-[120px]"
+                            dir="rtl"
+                          />
+                        </div>
+
+                        <Button
+                          type="submit"
+                          disabled={isSending}
+                          className="w-full bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-full font-bold h-12 shadow-lg transition-all active:scale-95"
+                        >
+                          {isSending ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              שולח...
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <Send className="w-4 h-4 ml-1" />
+                              שלח פנייה
+                            </div>
+                          )}
+                        </Button>
+                      </form>
+                    </motion.div>
                   )}
-                </Button>
+                </AnimatePresence>
               </div>
 
               {/* Social Media Links */}
-              <div className="space-y-4">
+              <div className="space-y-4 md:mt-16">
                 <p className="text-gray-600 font-medium">עקבו אחרינו ברשתות</p>
                 <div className="flex items-center gap-4" dir="ltr">
                   <a href="https://www.facebook.com/metchjobs" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center bg-white border border-[#3B82F6] rounded-full hover:bg-blue-50 transition-colors"><Facebook className="w-6 h-6 text-[#3B82F6]" /></a>
@@ -159,10 +289,10 @@ export default function Contact() {
               </div>
 
               {/* Email Display */}
-              <p className="text-gray-700 font-semibold pt-6">{supportEmail}</p>
+              <p className="text-gray-700 font-semibold pt-6 md:pt-12">{supportEmail}</p>
 
               {/* Legal Links */}
-              <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
+              <div className="flex items-center gap-4 text-sm text-gray-500 mt-2 md:mt-10">
                 <a href="https://metch.co.il/%d7%9e%d7%93%d7%99%d7%a0%d7%99%d7%95%d7%aa-%d7%94%d7%a4%d7%a8%d7%98%d7%99%d7%95%d7%aa/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors underline md:no-underline">
                   מדיניות פרטיות
                 </a>

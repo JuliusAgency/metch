@@ -37,8 +37,8 @@ export async function calculate_match_score(candidate_profile, job_posting, user
   const topPartScore = calculateTopPartScore(candidate_profile, job_posting);
   const bottomPartScore = calculateBottomPartScore(candidate_profile, job_posting);
 
-  // Final Score Formula: Final_Match_Score = (0.75 * Score_Top_Part) + (0.25 * Score_Bottom_Part)
-  let finalScore = (0.75 * topPartScore) + (0.25 * bottomPartScore);
+  // Final Score Formula: Final_Match_Score = (0.60 * Score_Top_Part) + (0.40 * Score_Bottom_Part)
+  let finalScore = (0.60 * topPartScore) + (0.40 * bottomPartScore);
 
   // Phase 1 Adjustments: Apply Soft Penalties from "Hard Filters"
   if (disqualificationResult.penalty > 0) {
@@ -132,7 +132,7 @@ function calculateTopPartScore(candidate_profile, job_posting) {
 
   // Sum all weighted scores
   const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
-  return totalScore;
+  return Math.min(1.0, totalScore / 0.95);
 }
 
 /**
@@ -185,16 +185,16 @@ function scoreSpecialization(candidate_profile, job_posting) {
   console.log('Best Title Match Score:', bestTitleMatch);
   
   if (bestTitleMatch >= 80) {
-    console.log('Returning 90 (Best Match)');
-    return 90;
+    console.log('Returning 100 (Best Match)');
+    return 100;
   }
   
   // Also check description for strict/fuzzy match if needed, but usually title/category is enough for high score.
   // If we want to check description too:
   const descriptionMatch = getBestTitleMatch(candidate_profile, [jobDescription]);
   if (descriptionMatch >= 80) {
-     console.log('Returning 90 (Description Match)');
-     return 90;
+     console.log('Returning 100 (Description Match)');
+     return 100;
   }
 
   // Fallback to strict substring for description if fuzzy failed but strict exists (covered by getBestTitleMatch logic mostly)
@@ -449,7 +449,7 @@ function scoreLocation(candidate_profile, job_posting) {
     jobLocation.includes(area) || area.includes(jobLocation)
   );
 
-  return isNearby ? 75 : 0;
+  return isNearby ? 100 : 0;
 }
 
 /**
@@ -677,7 +677,9 @@ function getSimilarProfessions(profession) {
   const professionMap = {
     'מכירות': ['שיווק', 'sales', 'marketing'],
     'ביטוח': ['נדלן', 'real estate', 'insurance'],
-    // Add more mappings
+    'מלקט': ['מחסן', 'לוגיסטיקה', 'סדרן', 'picker', 'warehouse', 'logistics'],
+    'מחסן': ['מלקט', 'לוגיסטיקה', 'סדרן', 'warehouse', 'logistics', 'picker'],
+    'נהג': ['הפצה', 'שליח', 'driver', 'delivery'],
   };
 
   return professionMap[profession] || [];
@@ -685,9 +687,13 @@ function getSimilarProfessions(profession) {
 
 function getNearbyAreas(location) {
   const areaMap = {
-    'תל אביב': ['רמת גן', 'גבעתיים', 'חולון', 'ramat gan', 'givatayim'],
-    'ירושלים': ['בית שמש', 'מודיעין', 'jerusalem'],
-    // Add more mappings
+    'תל אביב': ['רמת גן', 'גבעתיים', 'חולון', 'בת ים', 'בני ברק', 'ramat gan', 'givatayim', 'holon'],
+    'ירושלים': ['בית שמש', 'מודיעין', 'מבשרת ציון', 'jerusalem'],
+    'רמלה': ['לוד', 'צריפין', 'באר יעקב', 'נס ציונה', 'רחובות', 'ramla', 'lod', 'tzrifin'],
+    'לוד': ['רמלה', 'צריפין', 'באר יעקב', 'שוהם', 'lod', 'ramla'],
+    'צריפין': ['רמלה', 'לוד', 'באר יעקב', 'ראשון לציון', 'tzrifin', 'ramla', 'lod'],
+    'ראשון לציון': ['צריפין', 'חולון', 'בת ים', 'נס ציונה', 'rishon lezion', 'rishon'],
+    'פתח תקווה': ['בני ברק', 'ראש העין', 'גבעת שמואל', 'אלעד', 'petah tikva'],
   };
 
   return areaMap[location] || [];
