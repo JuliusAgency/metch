@@ -158,7 +158,7 @@ export default function Layout({ children, currentPageName }) {
   const isFullWidthPage = currentPageName === 'CreateJob' || currentPageName === 'CandidateProfile' || currentPageName === 'Payments' || currentPageName === 'JobManagement' || currentPageName === 'Statistics' || currentPageName === 'Notifications' || currentPageName === 'JobDetails' || onboardingPages.includes(currentPageName);
 
   return (
-    <div className={`min-h-screen w-full max-w-[100vw] overflow-x-hidden ${currentPageName === 'Dashboard' ? 'bg-[linear-gradient(180deg,#dcedf4_0%,#dcedf4_20%,#FFFFFF_100%)] md:[background:var(--page-gradient)]' : 'page-gradient'}`} dir="rtl">
+    <div className={`min-h-screen w-full max-w-[100vw] ${currentPageName === 'Dashboard' ? 'bg-[linear-gradient(180deg,#dcedf4_0%,#dcedf4_20%,#FFFFFF_100%)] md:[background:var(--page-gradient)]' : 'page-gradient'}`} dir="rtl">
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
@@ -192,7 +192,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Desktop Navbar Wrapper */}
       {!shouldHideHeader && (
-        <div className="hidden md:block pt-[20px] sticky top-0 z-50 pointer-events-none">
+        <div className="hidden md:block sticky top-0 z-50 pointer-events-none pt-4">
           <header className="navbar-custom w-[75%] md:w-[68%] max-w-7xl mx-auto rounded-full shadow-md border border-white/60 pointer-events-auto transition-all duration-300">
             <div className="flex items-center justify-between px-4 lg:px-8 py-3.5">
               {/* Icons - Moved to be first for RTL rendering on the right */}
@@ -393,7 +393,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Mobile Navbar (Expandable Toolbar) */}
       {!shouldHideHeader && (
-        <div className="md:hidden fixed top-4 left-0 right-0 z-50 h-[54px] px-4 w-full monitor-fixed-header">
+        <div className="md:hidden sticky top-4 left-0 right-0 z-50 h-[54px] px-4 w-full monitor-fixed-header">
           <motion.div
             initial={false}
             animate={isMobileMenuOpen ? "open" : "closed"}
@@ -499,7 +499,7 @@ export default function Layout({ children, currentPageName }) {
         )}
       </AnimatePresence>
 
-      <main className={`flex-1 flex justify-center w-full mb-4 ${shouldHideHeader ? 'mt-0 md:mt-4' : ((isFullWidthPage || currentPageName === 'Dashboard' || currentPageName === 'Packages') ? 'mt-24 md:mt-4' : (isJobSeekerMobileFlow ? 'mt-[90px] md:mt-[18px]' : 'mt-[90px]'))} ${isFullWidthPage ? 'px-0' : (isJobSeekerMobileFlow ? 'px-0 md:px-2' : 'px-2')}`}>
+      <main className={`flex-1 flex justify-center w-full mb-4 ${shouldHideHeader ? 'mt-0 md:mt-4' : ((isFullWidthPage || currentPageName === 'Dashboard' || currentPageName === 'Packages') ? 'mt-4 md:mt-4' : (isJobSeekerMobileFlow ? 'mt-4 md:mt-4' : 'mt-4'))} ${isFullWidthPage ? 'px-0' : (isJobSeekerMobileFlow ? 'px-0 md:px-2' : 'px-2')}`}>
         {(isFullWidthPage || (isJobSeekerMobileFlow && (typeof window !== 'undefined' ? window.innerWidth < 768 : false))) ? (
           <div className="w-full h-full">
             {children}
