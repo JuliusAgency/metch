@@ -499,7 +499,7 @@ export default function Layout({ children, currentPageName }) {
         )}
       </AnimatePresence>
 
-      <main className={`flex-1 flex justify-center w-full mb-4 ${shouldHideHeader ? 'mt-0 md:mt-4' : ((isFullWidthPage || currentPageName === 'Dashboard') ? 'mt-24 md:mt-4' : (isJobSeekerMobileFlow ? 'mt-[90px] md:mt-[18px]' : 'mt-[90px]'))} ${isFullWidthPage ? 'px-0' : (isJobSeekerMobileFlow ? 'px-0 md:px-2' : 'px-2')}`}>
+      <main className={`flex-1 flex justify-center w-full mb-4 ${shouldHideHeader ? 'mt-0 md:mt-4' : ((isFullWidthPage || currentPageName === 'Dashboard' || currentPageName === 'Packages') ? 'mt-24 md:mt-4' : (isJobSeekerMobileFlow ? 'mt-[90px] md:mt-[18px]' : 'mt-[90px]'))} ${isFullWidthPage ? 'px-0' : (isJobSeekerMobileFlow ? 'px-0 md:px-2' : 'px-2')}`}>
         {(isFullWidthPage || (isJobSeekerMobileFlow && (typeof window !== 'undefined' ? window.innerWidth < 768 : false))) ? (
           <div className="w-full h-full">
             {children}

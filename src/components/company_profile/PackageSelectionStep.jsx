@@ -1,17 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Minus, ChevronRight, Sparkles, MessageCircle } from "lucide-react";
+import { Plus, Minus, ChevronRight, Sparkles, MessageCircle, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { useUser } from "@/contexts/UserContext";
 
 export default function PackageSelectionStep({ packageData = {}, setPackageData, onBack }) {
+  const { user } = useUser();
   const [quantity, setQuantity] = useState(packageData.quantity || 1);
   const navigate = useNavigate();
+  const [isFreeJobEligible, setIsFreeJobEligible] = useState(false);
+  const [checkingEligibility, setCheckingEligibility] = useState(true);
+
+  // Check if user is eligible for free job
+  useEffect(() => {
+    const checkEligibility = async () => {
+      if (!user?.email) return;
+      try {
+        if (user.profile?.is_free_job_redeemed) {
+          setIsFreeJobEligible(false);
+          setCheckingEligibility(false);
+          return;
+        }
+        const { Job } = await import('@/api/entities');
+        const userJobs = await Job.filter({ created_by: user.email });
+        setIsFreeJobEligible(!userJobs || userJobs.length === 0);
+      } catch (error) {
+        console.error("Error checking free job eligibility:", error);
+      } finally {
+        setCheckingEligibility(false);
+      }
+    };
+    checkEligibility();
+  }, [user?.email, user.profile?.is_free_job_redeemed]);
 
   const getTierPrice = (qty) => {
-    if (qty === 1) return 0;
+    if (qty === 1) return 599;
     if (qty >= 2 && qty <= 3) return 550;
     if (qty >= 4 && qty <= 5) return 500;
     if (qty >= 6 && qty <= 7) return 450;
@@ -20,10 +46,26 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
   };
 
   const calculateTotal = (qty) => {
-    if (qty === 1) return 0;
-    // Calculation: (Total Jobs - 1 Free Job) * Tier Price
-    return (qty - 1) * getTierPrice(qty);
+    const price = getTierPrice(qty);
+    if (qty === 1) return isFreeJobEligible ? 0 : price;
+
+    // If eligible for free job: first job is 0, rest are at tier price
+    if (isFreeJobEligible) {
+      return (qty - 1) * price;
+    }
+    return qty * price;
   };
+
+  useEffect(() => {
+    // Initial sync and sync on eligibility change
+    if (setPackageData && !checkingEligibility) {
+      setPackageData({
+        type: 'per_job',
+        quantity: quantity,
+        price: calculateTotal(quantity)
+      });
+    }
+  }, [checkingEligibility, quantity, isFreeJobEligible]);
 
   const handleQuantityChange = (amount) => {
     const newQuantity = Math.max(1, quantity + amount);
@@ -121,7 +163,9 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
                 ) : (
                   <>
                     <div className="flex items-baseline gap-1 text-[#003566]">
-                      {quantity === 1 ? (
+                      {checkingEligibility ? (
+                        <Loader2 className="w-8 h-8 animate-spin" />
+                      ) : quantity === 1 && isFreeJobEligible ? (
                         <span className="text-[45px] font-normal font-['Rubik']">חינם</span>
                       ) : (
                         <>

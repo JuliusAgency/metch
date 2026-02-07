@@ -249,8 +249,21 @@ export default function CompanyProfileCompletion() {
     if (step < STEPS.length) {
       setStep(prev => prev + 1);
     } else {
-      // Final step action
-      await updateProfile({ is_onboarding_completed: true });
+      // Final step action - Save credits and redemption status
+      const updates = { is_onboarding_completed: true };
+
+      // Calculate and save job credits acquired during onboarding
+      if (packageData.quantity > 0) {
+        const currentCredits = user?.profile?.job_credits || 0;
+        updates.job_credits = currentCredits + packageData.quantity;
+
+        // If they chose the free job (1 job for 0 NIS)
+        if (packageData.quantity === 1 && packageData.price === 0) {
+          updates.is_free_job_redeemed = true;
+        }
+      }
+
+      await updateProfile(updates);
       navigate(`${createPageUrl('Dashboard')}?onboarding=complete`, { replace: true });
     }
   };

@@ -27,6 +27,35 @@ export default function Packages() {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const { user, updateProfile } = useUser();
+    const [isFreeJobEligible, setIsFreeJobEligible] = useState(false);
+    const [checkingEligibility, setCheckingEligibility] = useState(true);
+
+    // Check if user is eligible for free job
+    React.useEffect(() => {
+        const checkEligibility = async () => {
+            if (!user?.email) return;
+            try {
+                // If the flag is already set in profile, respect it
+                if (user.profile?.is_free_job_redeemed) {
+                    setIsFreeJobEligible(false);
+                    setCheckingEligibility(false);
+                    return;
+                }
+
+                // Otherwise check if they have any jobs created
+                const { Job } = await import('@/api/entities');
+                const userJobs = await Job.filter({ created_by: user.email });
+                const hasUsedFreeJob = userJobs && userJobs.length > 0;
+
+                setIsFreeJobEligible(!hasUsedFreeJob);
+            } catch (error) {
+                console.error("Error checking free job eligibility:", error);
+            } finally {
+                setCheckingEligibility(false);
+            }
+        };
+        checkEligibility();
+    }, [user?.email, user.profile?.is_free_job_redeemed]);
 
     const getPricePerJob = (qty) => {
         if (qty === 1) return 599;
@@ -36,6 +65,18 @@ export default function Packages() {
         if (qty >= 8 && qty <= 9) return 400;
         return 0; // 10+
     };
+
+    const calculateTotal = (qty) => {
+        const price = getTierPrice(qty);
+        if (qty === 1) return isFreeJobEligible ? 0 : price;
+        if (isFreeJobEligible) {
+            return (qty - 1) * price;
+        }
+        return qty * price;
+    };
+
+    // Helper to match Tier Price function name check below
+    const getTierPrice = getPricePerJob;
 
     const handleSavePaymentMethod = () => {
         const newErrors = {};
@@ -77,8 +118,10 @@ export default function Packages() {
     };
 
     const handlePurchase = async () => {
-        // Validate if payment info exists
-        if (!paymentData.cardNumber || !paymentData.expiryDate || !paymentData.cvv) {
+        // Validate if payment info exists (only if price > 0)
+        const totalAmount = calculateTotal(quantity);
+
+        if (totalAmount > 0 && (!paymentData.cardNumber || !paymentData.expiryDate || !paymentData.cvv)) {
             toast({
                 title: "חסרים פרטי תשלום",
                 description: "נא לעדכון את אמצעי התשלום לפני ביצוע הרכישה",
@@ -88,25 +131,33 @@ export default function Packages() {
             return;
         }
 
-        const totalAmount = getPricePerJob(quantity) * quantity;
 
         setLoading(true);
         try {
-            await MetchApi.createTransaction({
-                Amount: totalAmount,
-                CardNumber: paymentData.cardNumber,
-                CardExpirationMMYY: paymentData.expiryDate.replace('/', ''), // Format adjustment
-                CVV2: paymentData.cvv,
-                CardOwnerName: paymentData.holderName,
-                CardOwnerIdentityNumber: paymentData.idNumber,
-                NumberOfPayments: 1
-            });
+            if (totalAmount > 0) {
+                await MetchApi.createTransaction({
+                    Amount: totalAmount,
+                    CardNumber: paymentData.cardNumber,
+                    CardExpirationMMYY: paymentData.expiryDate.replace('/', ''), // Format adjustment
+                    CVV2: paymentData.cvv,
+                    CardOwnerName: paymentData.holderName,
+                    CardOwnerIdentityNumber: paymentData.idNumber,
+                    NumberOfPayments: 1
+                });
+            }
 
             // 1. Update User Credits in Supabase
             const currentCredits = user?.profile?.job_credits || 0;
             const newCredits = currentCredits + quantity;
 
-            await updateProfile({ job_credits: newCredits });
+            const updates = { job_credits: newCredits };
+
+            // If they just used their free job, mark it as redeemed
+            if (quantity === 1 && isFreeJobEligible) {
+                updates.is_free_job_redeemed = true;
+            }
+
+            await updateProfile(updates);
 
             // 2. Add Transaction to List (handled by backend or Payments page re-fetch usually)
             // For now just success indication
@@ -141,7 +192,7 @@ export default function Packages() {
                 </Button>
             </div>
 
-            <div className="max-w-4xl mx-auto px-6 py-12 space-y-10">
+            <div className="max-w-4xl mx-auto px-6 pt-4 md:pt-4 pb-12 space-y-10">
 
                 {/* Page Title */}
                 <div className="text-center space-y-2">
@@ -217,12 +268,20 @@ export default function Packages() {
                                     ) : (
                                         <>
                                             <div className="flex items-baseline gap-1 text-[#003566]">
-                                                <span className="text-[45px] font-normal font-['Rubik']">₪{getPricePerJob(quantity)}</span>
-                                                <span className="text-2xl font-normal">/למשרה</span>
+                                                {checkingEligibility ? (
+                                                    <Loader2 className="w-8 h-8 animate-spin" />
+                                                ) : quantity === 1 && isFreeJobEligible ? (
+                                                    <span className="text-[45px] font-normal font-['Rubik']">חינם</span>
+                                                ) : (
+                                                    <>
+                                                        <span className="text-[45px] font-normal font-['Rubik']">₪{getPricePerJob(quantity)}</span>
+                                                        <span className="text-2xl font-normal">/למשרה</span>
+                                                    </>
+                                                )}
                                             </div>
                                             {quantity > 1 && (
                                                 <div className="text-lg md:text-xl text-[#003566] mt-1 font-['Rubik'] font-bold">
-                                                    ({(getPricePerJob(quantity) * quantity).toLocaleString()}₪ סה״כ)
+                                                    ({calculateTotal(quantity).toLocaleString()}₪ סה״כ)
                                                 </div>
                                             )}
                                             <div className="w-full h-[3px] bg-[#003566] mt-1 rounded-full"></div>

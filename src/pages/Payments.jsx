@@ -238,7 +238,7 @@ ET`;
                 </div>
 
                 {/* Content Container */}
-                <div className="p-0 md:p-8 mt-24 md:-mt-14 relative z-10 w-full mx-auto">
+                <div className="p-0 md:p-8 mt-24 md:-mt-20 relative z-10 w-full mx-auto">
                     {/* Main Card / Container */}
                     <div className="bg-transparent md:bg-transparent min-h-screen md:min-h-0 pt-0 md:pt-0 px-0 md:px-0">
                         {/* Desktop only title */}
