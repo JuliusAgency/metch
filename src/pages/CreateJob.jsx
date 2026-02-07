@@ -25,6 +25,7 @@ import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/components/ui/use-toast";
 import { createPageUrl } from "@/utils";
+import NoCreditsDialog from "@/components/dialogs/NoCreditsDialog";
 
 
 const STEPS = ["פרטי המשרה", "פרטי החברה", "שאלון סינון", "תצוגה מקדימה"]; // Removed "חבילות"
@@ -405,37 +406,11 @@ export default function CreateJob() {
           </div>
         )}
       </div>
-
-      {/* No Credits Modal */}
-      <Dialog open={showNoCreditsModal} onOpenChange={setShowNoCreditsModal}>
-        <DialogContent className="sm:max-w-[425px]" dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="text-center text-xl font-bold">נגמרה חבילת המשרות</DialogTitle>
-          </DialogHeader>
-          <div className="text-center space-y-4 py-4">
-            <p className="text-gray-600">
-              אין לך יתרת משרות לפרסום, לכן המשרה נשמרה כטיוטה בלבד.
-              <br />
-              כדי לפרסם את המשרה, יש לרכוש חבילת משרות חדשה.
-            </p>
-            <div className="flex flex-col gap-3">
-              <Button
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-full"
-                onClick={() => navigate('/packages')}
-              >
-                לרכישת חבילה
-              </Button>
-              <Button
-                variant="outline"
-                className="rounded-full w-full"
-                onClick={() => setShowNoCreditsModal(false)}
-              >
-                סגור (המשך כטיוטה)
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <NoCreditsDialog
+        open={showNoCreditsModal}
+        onOpenChange={setShowNoCreditsModal}
+        isActivation={false}
+      />
     </div >
   );
 }

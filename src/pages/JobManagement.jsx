@@ -29,6 +29,7 @@ import ToggleSwitch from "@/components/dashboard/ToggleSwitch";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import NoCreditsDialog from "@/components/dialogs/NoCreditsDialog";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
 import settingsMobileBg from "@/assets/payment_mobile_header.png";
 
@@ -64,13 +65,14 @@ const statusConfig = {
 
 export default function JobManagement() {
   useRequireUserType();
-  const { user } = useUser();
+  const { user, updateProfile } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState('active'); // 'active' or 'ended'
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const ITEMS_PER_PAGE = 5;
 
   useEffect(() => {
@@ -97,10 +99,29 @@ export default function JobManagement() {
 
   const handleStatusChange = async (jobId, checked) => {
     try {
+      const job = jobs.find(j => j.id === jobId);
+      if (!job) return;
+
       const newStatus = checked ? 'active' : 'paused';
+
+      // If activating a draft job, check for credits
+      if (newStatus === 'active' && job.status === 'draft') {
+        const credits = user?.profile?.job_credits || 0;
+        if (credits <= 0) {
+          setShowNoCreditsModal(true);
+          return;
+        }
+
+        // Deduct credit
+        await updateProfile({ job_credits: credits - 1 });
+        toast({
+          description: `המשרה פורסמה בהצלחה. יתרת משרות מעודכנת: ${credits - 1}`,
+        });
+      }
+
       // Optimistic update
-      setJobs(prevJobs => prevJobs.map(job =>
-        job.id === jobId ? { ...job, status: newStatus } : job
+      setJobs(prevJobs => prevJobs.map(j =>
+        j.id === jobId ? { ...j, status: newStatus } : job
       ));
 
       await Job.update(jobId, { status: newStatus });
@@ -408,6 +429,10 @@ export default function JobManagement() {
           </div>
         </div>
       </div>
+      <NoCreditsDialog
+        open={showNoCreditsModal}
+        onOpenChange={setShowNoCreditsModal}
+      />
     </TooltipProvider>);
 
 }

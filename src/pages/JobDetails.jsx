@@ -20,6 +20,7 @@ import SeekerJobPerks from "@/components/seeker/SeekerJobPerks";
 import SeekerJobImages from "@/components/seeker/SeekerJobImages";
 import settingsMobileBg from "@/assets/settings_mobile_bg.jpg";
 import JobStatusBanner from "@/components/jobs/JobStatusBanner";
+import NoCreditsDialog from "@/components/dialogs/NoCreditsDialog";
 
 // Helper to determine match score color
 const getMatchScoreColor = (score) => {
@@ -48,6 +49,7 @@ export default function JobDetails() {
   const [viewsCount, setViewsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const { updateProfile } = useUser();
   const { toast } = useToast();
   const location = useLocation();
@@ -136,12 +138,7 @@ export default function JobDetails() {
         const userData = await User.me();
         const credits = userData?.job_credits || 0;
         if (credits <= 0) {
-          toast({
-            title: "אין יתרת משרות לפרסום",
-            description: "נגמרה חבילת המשרות שלך. ניתן לרכוש משרות נוספות בעמוד התשלומים.",
-            variant: "destructive",
-            action: <Button variant="outline" onClick={() => navigate('/packages')}>לרכישה</Button>
-          });
+          setShowNoCreditsModal(true);
           return;
         }
         await updateProfile({ job_credits: credits - 1 });
@@ -473,6 +470,10 @@ export default function JobDetails() {
 
         </div>
       </div>
+      <NoCreditsDialog
+        open={showNoCreditsModal}
+        onOpenChange={setShowNoCreditsModal}
+      />
     </div>
   );
 }
