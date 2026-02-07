@@ -16,6 +16,7 @@ import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useUser } from "@/contexts/UserContext";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
 import settingsMobileBg from "@/assets/settings_mobile_bg.jpg";
+import paymentsMobileBg from "@/assets/payment_mobile_header.png";
 
 import faqPlus from "@/assets/faq_plus.png";
 import faqMinus from "@/assets/faq_minus.png";
@@ -286,8 +287,8 @@ export default function FAQ() {
 
   return (
     <div className="h-full relative overflow-hidden md:overflow-visible" dir="rtl">
-      {/* Mobile-Only Background Image for Seeker - Rainbow */}
-      {user?.user_type === 'job_seeker' && (
+      {/* Mobile-Only Background Images */}
+      {user?.user_type === 'job_seeker' ? (
         <div
           className="md:hidden fixed top-0 left-0 right-0 pointer-events-none"
           style={{
@@ -300,11 +301,22 @@ export default function FAQ() {
             zIndex: 0
           }}
         />
+      ) : (
+        <div
+          className="md:hidden fixed top-0 left-0 right-0 h-[210px] z-0 pointer-events-none"
+          style={{
+            backgroundImage: `url(${paymentsMobileBg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'top center',
+            backgroundRepeat: 'no-repeat',
+            zIndex: 0
+          }}
+        />
       )}
 
       <div className="relative h-full">
         {/* Desktop Header / Employer Mobile Header */}
-        <div className={`relative h-32 overflow-hidden w-full ${user?.user_type === 'job_seeker' ? 'hidden md:block' : ''}`}>
+        <div className={`relative h-32 overflow-hidden w-full hidden md:block`}>
           <div
             className="absolute inset-0 w-full h-full"
             style={{
@@ -331,17 +343,19 @@ export default function FAQ() {
           </div>
         )}
 
-        {/* Adjust container margin/padding for Seeker Mobile */}
-        <div className={`${user?.user_type === 'job_seeker' ? 'p-0 mt-0 pt-4 md:-mt-20 md:p-8' : 'p-4 sm:p-6 md:p-8 -mt-16'} relative z-10 w-full max-w-4xl mx-auto`}>
+        {/* Adjust container margin/padding */}
+        <div className={`${user?.user_type === 'job_seeker' ? 'p-0 mt-0 pt-4 md:-mt-20 md:p-8' : 'px-4 sm:p-6 md:p-8 mt-24 md:-mt-16'} relative z-10 w-full max-w-4xl mx-auto`}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className={`space-y-8 ${user?.user_type === 'job_seeker' ? 'bg-white [border-top-left-radius:50%_40px] [border-top-right-radius:50%_40px] min-h-screen pt-8 px-6 shadow-[0_0_20px_rgba(0,0,0,0.1)] md:bg-transparent md:rounded-none md:shadow-none md:min-h-0 md:pt-0 md:px-0' : ''}`}
+            className={`${user?.user_type === 'employer' ? 'space-y-4' : 'space-y-8'} ${user?.user_type === 'job_seeker'
+              ? 'bg-white [border-top-left-radius:50%_40px] [border-top-right-radius:50%_40px] min-h-[calc(100vh-100px)] pt-8 px-6 shadow-[0_0_20px_rgba(0,0,0,0.1)] md:bg-transparent md:rounded-none md:shadow-none md:min-h-0 md:pt-0 md:px-0'
+              : 'bg-white rounded-[24px] shadow-xl px-6 pb-6 pt-0 mt-[-30px] md:mt-0 md:bg-transparent md:shadow-none md:rounded-none md:p-0'}`}
           >
             {/* Title */}
-            <div className="text-center pb-2 md:pb-8 block">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">שאלות נפוצות</h1>
+            <div className={`text-center block ${user?.user_type === 'employer' ? 'absolute top-[-65px] left-0 right-0 md:relative md:top-0 md:pb-8' : 'pb-2 md:pb-8'}`}>
+              <h1 className={`text-2xl md:text-3xl font-bold ${user?.user_type === 'employer' ? 'text-[#001a6e]' : 'text-gray-900'}`}>שאלות נפוצות</h1>
             </div>
 
             {/* Search Bar */}

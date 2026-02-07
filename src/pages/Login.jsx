@@ -203,7 +203,7 @@ const Login = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-center">
                 <div className="w-16 h-px bg-gray-300"></div>
-                <span className="px-4 text-[#6a6a6a] text-sm" dir="auto">
+                <span className="px-4 text-[#6a6a6a] text-sm whitespace-nowrap" dir="auto">
                   או התחברות באמצעות
                 </span>
                 <div className="w-16 h-px bg-gray-300"></div>

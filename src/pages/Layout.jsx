@@ -151,7 +151,7 @@ export default function Layout({ children, currentPageName }) {
   // Hide header if it's an auth page OR (it's an onboarding page AND we are in onboarding mode) OR specific onboarding query param exists
   const isSettingsOnboarding = currentPageName === 'Settings' && searchParams.get('onboarding') === 'company_details';
   // Check if we are in Settings, Profile, or Notifications as a job seeker to enable mobile full-width redesign
-  const isJobSeekerMobileFlow = (currentPageName === 'Settings' || currentPageName === 'Profile' || currentPageName === 'JobDetailsSeeker' || currentPageName === 'Notifications' || currentPageName === 'Messages' || currentPageName === 'MessagesSeeker' || currentPageName === 'FAQ' || currentPageName === 'Contact');
+  const isJobSeekerMobileFlow = (currentPageName === 'Settings' || currentPageName === 'Profile' || currentPageName === 'JobDetailsSeeker' || currentPageName === 'Notifications' || currentPageName === 'Messages' || currentPageName === 'MessagesSeeker' || currentPageName === 'FAQ' || currentPageName === 'Contact' || currentPageName === 'Insights');
 
   const shouldHideHeader = authPages.includes(currentPageName) || (onboardingPages.includes(currentPageName) && isOnboardingActive) || isSettingsOnboarding || currentPageName === 'CompanyProfileCompletion' || currentPageName === 'JobSeekerProfileCompletion';
 
@@ -499,7 +499,7 @@ export default function Layout({ children, currentPageName }) {
         )}
       </AnimatePresence>
 
-      <main className={`flex-1 flex justify-center w-full mb-4 ${(isFullWidthPage || currentPageName === 'Dashboard') ? 'mt-24 md:mt-4' : (isJobSeekerMobileFlow ? 'mt-[90px] md:mt-[18px]' : 'mt-[90px]')} ${isFullWidthPage ? 'px-0' : (isJobSeekerMobileFlow ? 'px-0 md:px-2' : 'px-2')}`}>
+      <main className={`flex-1 flex justify-center w-full mb-4 ${shouldHideHeader ? 'mt-0 md:mt-4' : ((isFullWidthPage || currentPageName === 'Dashboard') ? 'mt-24 md:mt-4' : (isJobSeekerMobileFlow ? 'mt-[90px] md:mt-[18px]' : 'mt-[90px]'))} ${isFullWidthPage ? 'px-0' : (isJobSeekerMobileFlow ? 'px-0 md:px-2' : 'px-2')}`}>
         {(isFullWidthPage || (isJobSeekerMobileFlow && (typeof window !== 'undefined' ? window.innerWidth < 768 : false))) ? (
           <div className="w-full h-full">
             {children}

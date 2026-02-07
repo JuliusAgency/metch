@@ -227,11 +227,11 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     <div className={cn("max-w-4xl mx-auto text-center", isUploadFlow && "md:max-w-4xl md:w-full")} dir="rtl">
       <h2 className="text-3xl font-bold text-gray-900 mb-3">פרטים אישיים</h2>
       {isUploadFlow && (
-        <div className="md:hidden mb-6 mt-8">
+        <div className="md:hidden mb-6 mt-2">
           <StepIndicator totalSteps={5} currentStep={1} />
         </div>
       )}
-      <p className={cn("text-gray-600 mb-8 md:mb-10 max-w-lg mx-auto", isUploadFlow && "hidden md:block")}>בחלק הזה תספקו לנו מידע נחוץ עליכם כך שמעסיקים פוטנציאליים יוכלו לפנות אליכם</p>
+      <p className={cn("text-gray-600 mb-4 md:mb-10 max-w-lg mx-auto", isUploadFlow && "hidden md:block")}>בחלק הזה תספקו לנו מידע נחוץ עליכם כך שמעסיקים פוטנציאליים יוכלו לפנות אליכם</p>
       {/* Desktop (upload): no inner card. Mobile: keep inner card */}
       <div className={cn(
         "bg-white/40 backdrop-blur-sm rounded-3xl p-6 mx-3 shadow-[0_2px_12px_rgba(0,0,0,0.08)] md:bg-transparent md:shadow-none md:rounded-none md:p-0 md:mx-0"

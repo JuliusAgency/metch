@@ -638,7 +638,7 @@ export default function CVGenerator() {
   }
 
   return (
-    <div className={`min-h-screen ${choice === 'upload' ? 'p-0 pt-4' : 'p-0 md:p-8'} relative bg-gradient-to-b from-[#dbecf3] to-white via-white via-[20%]`} dir="rtl">
+    <div className={`min-h-screen ${choice === 'upload' ? 'p-0 pt-0' : 'p-0 md:p-8'} relative bg-gradient-to-b from-[#dbecf3] to-white via-white via-[20%]`} dir="rtl">
       {/* Mobile Background Gradient - Only Top 25% (Optional additional overlay or removed if main bg is enough) */}
       <div className="absolute top-0 left-0 right-0 h-[15vh] bg-gradient-to-b from-[#dbecf3] to-transparent md:hidden opacity-100 pointer-events-none" />
 
@@ -667,7 +667,7 @@ export default function CVGenerator() {
         )}
 
         {step !== 0 && choice === 'upload' && (
-          <div className={`${step === 1 ? "hidden md:block" : ""} pt-6 md:pt-0`}>
+          <div className={`${step === 1 ? "hidden md:block" : ""} pt-2 md:pt-0`}>
             {/* Mobile Header for Upload Step: Title + Back Button */}
             {step === -1 && (
               <div className="flex items-center justify-between mb-4 md:hidden relative px-2">
@@ -694,7 +694,7 @@ export default function CVGenerator() {
 
         <div className={`min-h-[400px] flex flex-col justify-start ${step === -1
           ? 'mt-10 mb-10 bg-white rounded-3xl py-8 px-6 shadow-[0_2px_12px_rgba(0,0,0,0.05)] border border-gray-100 md:bg-transparent md:shadow-none md:border-none relative z-10 mx-4 md:mx-0'
-          : 'mt-6 mb-10 md:mt-8'}`}>
+          : 'mt-2 mb-10 md:mt-8'}`}>
           {renderStep()}
         </div>
 

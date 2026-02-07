@@ -8,6 +8,7 @@ import cvExistsIcon from '@/assets/cv_exists_icon.png';
 import astronautWindow from '@/assets/astronaut_window.png';
 import globeGrid from '@/assets/globe_grid.png';
 import VectorLogo from '@/assets/Vector.svg';
+import metchStar from '@/assets/metch_star.png';
 import CVChoiceModal from '@/components/CVChoiceModal';
 
 
@@ -29,6 +30,8 @@ const imgEllipse480Mobile = "http://localhost:3845/assets/89b89e723ec104e845beb6
 const imgHugeiconsAiMagic = "http://localhost:3845/assets/289919713a3bb46a7fa4929734053736f1a07e8a.svg";
 
 
+
+import { Menu } from 'lucide-react';
 
 const UserTypeSelection = () => {
   const [selectedType, setSelectedType] = useState(null);
@@ -117,10 +120,10 @@ const UserTypeSelection = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#f0f9ff] flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
+    <div className="min-h-screen w-full bg-gradient-to-b from-[#dbecf3] to-white md:bg-none md:bg-[#f0f9ff] flex flex-col md:flex-row items-start md:items-center justify-start md:justify-center p-0 md:p-4 relative overflow-hidden" dir="rtl">
 
-      {/* Globe Background - Bottom Left */}
-      <div className="absolute bottom-[-5vh] left-[-5vh] w-[77vh] h-[77vh] pointer-events-none z-20">
+      {/* Globe Background - Desktop Only */}
+      <div className="hidden md:block absolute bottom-[-5vh] left-[-5vh] w-[77vh] h-[77vh] pointer-events-none z-20">
         <img
           src={globeGrid}
           alt="Globe Grid"
@@ -131,61 +134,94 @@ const UserTypeSelection = () => {
         />
       </div>
 
+      <div className="md:hidden fixed top-4 left-0 right-0 z-50 h-[54px] px-4 w-full pointer-events-none">
+        <div className="mx-auto w-full h-[54px] bg-[rgba(255,255,255,0.3)] backdrop-blur-md border border-white rounded-[50px] shadow-sm flex items-center justify-between px-4" dir="rtl">
+          <Menu className="w-8 h-8 text-gray-800" />
+          <div className="flex items-center gap-1.5 translate-y-[-1px]">
+            <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
+            <img src={metchStar} alt="Star" className="w-3.5 h-3.5 mb-0.5" />
+          </div>
+        </div>
+      </div>
+
       {/* Main Card */}
-      <div className="bg-white rounded-[40px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] w-[99%] max-w-[1800px] h-[85vh] min-h-[600px] relative z-10 flex overflow-hidden border border-white">
+      <div className="bg-transparent md:bg-white md:rounded-[40px] shadow-none md:shadow-[0_4px_20px_rgba(0,0,0,0.03)] w-full md:w-[99%] max-w-[1800px] h-auto md:h-[85vh] min-h-[auto] md:min-h-[600px] relative z-10 flex flex-col md:flex-row overflow-visible md:overflow-hidden border-none md:border border-white mt-0 md:mt-0 pt-24 md:pt-0">
 
         {/* Right Side: Content (Visual Right in RTL, First in DOM) */}
-        <div className="w-1/2 h-full flex flex-col justify-center px-16 lg:px-24">
-          <div className="max-w-md w-full mx-auto space-y-12">
+        <div className="w-full md:w-1/2 h-auto md:h-full flex flex-col justify-start md:justify-center px-0 md:px-16 lg:px-24 mb-0 md:mb-0 items-center flex-grow">
+
+          {/* Card Wrapper for Mobile Content - Extended to Bottom */}
+          <div className="bg-white rounded-t-[30px] rounded-b-none shadow-[0_-5px_20px_rgba(0,0,0,0.03)] p-6 pt-10 md:p-0 md:bg-transparent md:shadow-none md:rounded-none w-[92%] md:w-full max-w-none md:max-w-md mx-auto space-y-8 md:space-y-12 flex-grow md:flex-grow-0 min-h-[calc(100vh-120px)] md:min-h-0 flex flex-col relative overflow-hidden">
 
             {/* Headlines */}
-            <div className="space-y-4 text-center">
-              <h1 className="text-[40px] font-bold text-[#1a1f36] leading-tight">
-                ברוכים הבאים למאצ׳!
+            <div className="space-y-2 md:space-y-4 text-center z-10 relative">
+              <h1 className="text-[28px] md:text-[40px] font-bold text-[#1a1f36] leading-tight">
+                איך תשתמש במאצ׳?
               </h1>
-              <p className="text-xl text-gray-500 font-normal">
+              <p className="text-base md:text-xl text-gray-500 font-normal">
                 יש לבחור את האפשרות המתאימה עבורך
               </p>
             </div>
 
             {/* Buttons */}
-            <div className="space-y-5 w-full max-w-[360px] mx-auto">
+            <div className="space-y-4 md:space-y-5 w-full max-w-[360px] mx-auto z-30 relative">
               <button
                 onClick={() => handleTypeSelection('job_seeker')}
                 disabled={loading}
-                className={`w-full py-4 px-6 rounded-full text-xl font-bold transition-all duration-300 transform hover:-translate-y-1 shadow-md hover:shadow-lg
+                className={`w-full py-3 md:py-4 px-6 rounded-full text-lg md:text-xl font-bold transition-all duration-300 transform hover:-translate-y-1 shadow-md hover:shadow-lg
                   ${selectedType === 'job_seeker'
                     ? 'bg-[#2987cd] text-white ring-4 ring-blue-200'
                     : 'bg-[#2987cd] text-white hover:bg-[#1f6ba8]'
                   } ${loading ? 'opacity-70 cursor-wait' : ''}`}
               >
-                חיפוש עבודה
+                אני מחפש עבודה
               </button>
 
               <button
                 onClick={() => handleTypeSelection('employer')}
                 disabled={loading}
-                className={`w-full py-4 px-6 rounded-full text-xl font-medium transition-all duration-300 transform hover:-translate-y-1 hover:shadow-md border border-gray-200
+                className={`w-full py-3 md:py-4 px-6 rounded-full text-lg md:text-xl font-medium transition-all duration-300 transform hover:-translate-y-1 hover:shadow-md border border-gray-200 shadow-sm
                   ${selectedType === 'employer'
                     ? 'bg-gray-50 text-[#1a1f36] ring-4 ring-gray-200'
                     : 'bg-white text-[#1a1f36] hover:bg-gray-50'
                   } ${loading ? 'opacity-70 cursor-wait' : ''}`}
               >
-                פרסום משרה
+                אני מפרסם משרה
               </button>
             </div>
 
+            {/* Mobile Astronaut Image - Inside Card at Bottom */}
+            <div className="md:hidden absolute bottom-[18%] left-0 right-0 w-full h-[50%] flex items-end justify-center pointer-events-none z-30">
+              <img
+                src={astronautWindow}
+                alt="Astronaut"
+                className="w-[85%] h-full object-contain object-bottom"
+              />
+            </div>
+
+          </div>
+
+          {/* Mobile Globe - Outside Card to Allow Overflow */}
+          <div className="md:hidden absolute bottom-[-10vh] left-[-18vh] w-[60vh] h-[60vh] pointer-events-none z-50">
+            <img
+              src={globeGrid}
+              alt="Globe Grid"
+              className="w-full h-full object-contain object-bottom-left opacity-90"
+              style={{
+                filter: 'brightness(0) saturate(100%) invert(56%) sepia(65%) saturate(2469%) hue-rotate(184deg) brightness(96%) contrast(91%)'
+              }}
+            />
           </div>
         </div>
 
-        {/* Left Side: Illustration (Visual Left in RTL, Second in DOM) */}
-        <div className="w-1/2 h-full relative flex items-center justify-center bg-white">
+        {/* Left Side: Illustration (Desktop Only) */}
+        <div className="hidden md:flex w-full md:w-1/2 h-[40vh] md:h-full relative items-end md:items-center justify-center bg-transparent md:bg-white mt-auto md:mt-0">
           {/* Astronaut Image - Scaled Up and Positioned */}
-          <div className="w-[85%] h-[85%] relative flex items-center justify-center -translate-y-10 translate-x-12">
+          <div className="w-[85%] h-[85%] relative flex items-center justify-center md:-translate-y-10 md:translate-x-12">
             <img
               src={astronautWindow}
               alt="Astronaut"
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain object-bottom md:object-center"
             />
           </div>
         </div>
