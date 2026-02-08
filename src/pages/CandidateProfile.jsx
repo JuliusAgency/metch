@@ -806,7 +806,11 @@ export default function CandidateProfile() {
   const params = new URLSearchParams(location.search);
   const jobTitle = params.get("title");
   const matchFromUrl = params.get("match");
-  const matchScore = calculatedMatchScore !== null ? calculatedMatchScore : (matchFromUrl ? parseInt(matchFromUrl, 10) : (candidate ? getStableMatchScore(candidate.id) : 90));
+
+  // Prioritize URL match score if valid, then calculated, then stable hash
+  const matchScore = (matchFromUrl && matchFromUrl !== "N/A" && matchFromUrl !== "0")
+    ? parseInt(matchFromUrl, 10)
+    : (calculatedMatchScore !== null ? calculatedMatchScore : (candidate ? getStableMatchScore(candidate.id) : 90));
 
   const availabilityText = {
     immediate: "מיידית",

@@ -298,7 +298,7 @@ export default function JobApplications() {
                             </div>
 
                             <div className="flex items-center gap-2 flex-shrink-0">
-                              <Link to={createPageUrl(`CandidateProfile?id=${applicantProfiles[application.applicant_id]?.id || profilesByEmail[application.applicant_email?.toLowerCase()]?.id || ''}&email=${application.applicant_email || ''}`)}>
+                              <Link to={createPageUrl(`CandidateProfile?id=${applicantProfiles[application.applicant_id]?.id || profilesByEmail[application.applicant_email?.toLowerCase()]?.id || ''}&email=${application.applicant_email || ''}&jobId=${job?.id || ''}&match=${matchScore}`)}>
                                 <Button
                                   className={`text-white px-6 py-1.5 h-9 rounded-full font-bold w-32 text-sm view-candidate-button transition-colors duration-300 ${matchScore >= 70 ? 'bg-green-400 hover:bg-green-500 text-white' : matchScore >= 40 ? 'bg-orange-400 hover:bg-orange-500 text-white' : 'bg-red-500 hover:bg-red-600 text-white'
                                     }`}
