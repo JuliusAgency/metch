@@ -216,9 +216,27 @@ export default function JobDetailsSeeker() {
     const generateAnalysis = async () => {
       if (!job || !user || !profile || !cvData || aiAnalysis || isAiLoading) return;
 
-      // If mock job, use partial mock data but structured correctly if possible, or skip matches
+      // Unique cache key for this user + job combo
+      const cacheKey = `metch_job_insight_v1_${user.id}_${job.id}`;
+
+      // 1. Try to load from cache
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          const parsedCache = JSON.parse(cached);
+          if (parsedCache.why_suitable && parsedCache.match_analysis) {
+            console.log("[JobDetails] Loaded AI analysis from cache");
+            setAiAnalysis(parsedCache);
+            return;
+          }
+        } catch (e) {
+          localStorage.removeItem(cacheKey);
+        }
+      }
+
+      // If mock job, use partial mock data (and cache it if needed, or just set it)
       if (job.id === 'f0000000-0000-0000-0000-000000000001' && job.metch_analysis) {
-        // Adapt mock structure to our new expected structure
+        // Adapt mock structure
         setAiAnalysis({
           why_suitable: job.metch_analysis.reasoning || job.metch_analysis.summary,
           match_analysis: [
@@ -281,6 +299,9 @@ export default function JobDetailsSeeker() {
             const parsed = JSON.parse(clean);
             if (parsed.why_suitable && parsed.match_analysis) {
               setAiAnalysis(parsed);
+              // 2. Save to cache
+              localStorage.setItem(cacheKey, JSON.stringify(parsed));
+              console.log("[JobDetails] Generated and cached AI analysis");
             }
           } catch (e) {
             console.error("Failed to parse AI response", e);
