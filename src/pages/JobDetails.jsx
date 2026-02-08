@@ -477,30 +477,53 @@ export default function JobDetails() {
                 שכפל משרה
               </Button>
 
-              {job?.status === 'active' ? (
-                <Button
-                  onClick={() => handleStatusChange('paused')}
-                  variant="ghost"
-                  className="rounded-full bg-yellow-50 text-yellow-700 hover:bg-yellow-100 font-medium h-10 md:h-12 px-3 md:px-6 whitespace-nowrap text-sm md:text-base">
-                  <Pause className="w-4 h-4 md:w-4 md:h-4 ml-2" />
-                  השהה משרה
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => handleStatusChange('active')}
-                  variant="ghost"
-                  className="rounded-full bg-green-50 text-green-700 hover:bg-green-100 font-medium h-10 md:h-12 px-3 md:px-6 whitespace-nowrap text-sm md:text-base">
-                  <Play className="w-4 h-4 md:w-4 md:h-4 ml-2" />
-                  פרסם משרה
-                </Button>
-              )}
+              {/* Status Toggle / Publish Button */}
+              {(() => {
+                const daysSinceCreation = job?.created_date ? Math.floor((new Date() - new Date(job.created_date)) / (1000 * 60 * 60 * 24)) : 0;
+                const isExpired = daysSinceCreation >= 30;
 
-              <Link to={createPageUrl(`CreateJob?id=${job?.id}`)} className="shrink-0">
-                <Button variant="ghost" className="rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium h-10 md:h-12 px-3 md:px-6 whitespace-nowrap text-sm md:text-base">
-                  <Edit className="w-4 h-4 md:w-4 md:h-4 ml-2" />
-                  עריכת משרה
-                </Button>
-              </Link>
+                return (
+                  <>
+                    {job?.status === 'active' ? (
+                      <Button
+                        onClick={() => handleStatusChange('paused')}
+                        variant="ghost"
+                        disabled={isExpired}
+                        className="rounded-full bg-yellow-50 text-yellow-700 hover:bg-yellow-100 font-medium h-10 md:h-12 px-3 md:px-6 whitespace-nowrap text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed">
+                        <Pause className="w-4 h-4 md:w-4 md:h-4 ml-2" />
+                        השהה משרה
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => handleStatusChange('active')}
+                        variant="ghost"
+                        disabled={isExpired}
+                        className="rounded-full bg-green-50 text-green-700 hover:bg-green-100 font-medium h-10 md:h-12 px-3 md:px-6 whitespace-nowrap text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed">
+                        <Play className="w-4 h-4 md:w-4 md:h-4 ml-2" />
+                        פרסם משרה
+                      </Button>
+                    )}
+
+                    {/* Edit Job Button */}
+                    {!isExpired ? (
+                      <Link to={createPageUrl(`CreateJob?id=${job?.id}`)} className="shrink-0">
+                        <Button variant="ghost" className="rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium h-10 md:h-12 px-3 md:px-6 whitespace-nowrap text-sm md:text-base">
+                          <Edit className="w-4 h-4 md:w-4 md:h-4 ml-2" />
+                          עריכת משרה
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        disabled
+                        className="rounded-full bg-gray-100 text-gray-400 font-medium h-10 md:h-12 px-3 md:px-6 whitespace-nowrap text-sm md:text-base cursor-not-allowed opacity-50">
+                        <Edit className="w-4 h-4 md:w-4 md:h-4 ml-2" />
+                        עריכת משרה (נסגר)
+                      </Button>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
 

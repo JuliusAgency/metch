@@ -172,10 +172,13 @@ export default function JobManagement() {
   };
 
   const filteredJobs = jobs.filter(job => {
+    const daysSinceCreation = differenceInDays(new Date(), new Date(job.created_date));
+    const isExpired = daysSinceCreation >= 30;
+
     if (activeView === 'active') {
-      return ['active', 'paused', 'draft'].includes(job.status);
+      return ['active', 'paused', 'draft'].includes(job.status) && !isExpired;
     } else {
-      return ['closed', 'filled', 'filled_via_metch', 'ended'].includes(job.status);
+      return ['closed', 'filled', 'filled_via_metch', 'ended'].includes(job.status) || isExpired;
     }
   });
 
@@ -241,8 +244,9 @@ export default function JobManagement() {
             <div className="space-y-3 mb-4">
               {paginatedJobs.length > 0 ?
                 paginatedJobs.map((job, index) => {
-                  const config = statusConfig[job.status] || statusConfig.draft;
                   const daysSinceCreation = differenceInDays(new Date(), new Date(job.created_date));
+                  const isExpired = daysSinceCreation >= 30;
+                  const config = isExpired ? statusConfig.ended : (statusConfig[job.status] || statusConfig.draft);
                   const daysRemaining = Math.max(0, 30 - daysSinceCreation);
 
                   return (
@@ -270,18 +274,29 @@ export default function JobManagement() {
                               onCheckedChange={(checked) =>
                                 handleStatusChange(job.id, checked)
                               }
-                              disabled={job.status !== 'active' && job.status !== 'paused' && job.status !== 'draft'}
+                              disabled={daysRemaining <= 0 || (job.status !== 'active' && job.status !== 'paused' && job.status !== 'draft')}
                             />
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Link to={createPageUrl(`CreateJob?id=${job.id}`)}>
-                                  <Edit className="w-5 h-5 cursor-pointer hover:text-blue-600 font-light" strokeWidth={1.5} />
-                                </Link>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>עריכת משרה</p>
-                              </TooltipContent>
-                            </Tooltip>
+                            {daysRemaining > 0 ? (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Link to={createPageUrl(`CreateJob?id=${job.id}`)}>
+                                    <Edit className="w-5 h-5 cursor-pointer hover:text-blue-600 font-light" strokeWidth={1.5} />
+                                  </Link>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>עריכת משרה</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            ) : (
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <Edit className="w-5 h-5 text-gray-200 cursor-not-allowed" strokeWidth={1.5} />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>משרה שהסתיימה אינה ניתנת לעריכה</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
 
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -327,7 +342,7 @@ export default function JobManagement() {
                             onCheckedChange={(checked) =>
                               handleStatusChange(job.id, checked)
                             }
-                            disabled={job.status !== 'active' && job.status !== 'paused' && job.status !== 'draft'}
+                            disabled={daysRemaining <= 0 || (job.status !== 'active' && job.status !== 'paused' && job.status !== 'draft')}
                           />
                         </div>
 
@@ -340,9 +355,13 @@ export default function JobManagement() {
                             <p className="text-gray-500 text-sm">{job.location}</p>
                           </div>
                           <div className="flex gap-3 pt-1">
-                            <Link to={createPageUrl(`CreateJob?id=${job.id}`)}>
-                              <Edit className="w-5 h-5 text-gray-300" strokeWidth={1.5} />
-                            </Link>
+                            {daysRemaining > 0 ? (
+                              <Link to={createPageUrl(`CreateJob?id=${job.id}`)}>
+                                <Edit className="w-5 h-5 text-gray-300" strokeWidth={1.5} />
+                              </Link>
+                            ) : (
+                              <Edit className="w-5 h-5 text-gray-100" strokeWidth={1.5} />
+                            )}
                             <Copy
                               className="w-5 h-5 text-gray-300"
                               strokeWidth={1.5}
