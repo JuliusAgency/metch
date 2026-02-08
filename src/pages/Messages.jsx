@@ -15,6 +15,7 @@ import {
     CheckCheck,
     Search
 } from "lucide-react";
+import { SendEmail } from "@/api/integrations";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import ConversationStatusIndicator from "@/components/conversations/ConversationStatusIndicator";
@@ -436,23 +437,59 @@ export default function Messages() {
                 last_message_time: currentDate
             });
 
-            // Create notification for recipient
+            // Create notification for recipient (only if not support)
+            if (recipientEmail !== SUPPORT_EMAIL) {
+                try {
+                    const notificationData = {
+                        type: 'new_message',
+                        user_id: selectedConversation.candidate_id || null,
+                        email: recipientEmail,
+                        created_by: user.id,
+                        title: 'הודעה חדשה',
+                        message: `הודעה חדשה מ-${user.company_name || user.full_name || 'מעסיק'}`,
+                        is_read: false,
+                        created_date: currentDate
+                    };
+                    console.log('[Messages] Creating notification:', notificationData);
+                    await Notification.create(notificationData);
+                } catch (e) {
+                    console.error("Error creating notification for candidate:", e);
+                }
+            }
+
+            // --- Explicitly Send Email Notification ---
+            // Send email to recipient (Candidate or Support)
             try {
-                const notificationData = {
-                    type: 'new_message',
-                    user_id: selectedConversation.candidate_id || null,
-                    email: recipientEmail,
-                    created_by: user.id,
-                    title: 'הודעה חדשה',
-                    message: `הודעה חדשה מ-${user.company_name || user.full_name || 'מעסיק'}`,
-                    is_read: false,
-                    created_date: currentDate
-                };
-                console.log('[Messages] Creating notification:', notificationData);
-                const createdNotif = await Notification.create(notificationData);
-                console.log('[Messages] Notification created successfully:', createdNotif);
-            } catch (e) {
-                console.error("Error creating notification for candidate:", e);
+                const isSupport = recipientEmail === SUPPORT_EMAIL;
+                const subject = isSupport
+                    ? `הודעה חדשה מ-${user.company_name || user.full_name || 'מעסיק'}`
+                    : `הודעה חדשה מ-${user.company_name || user.full_name || 'מעסיק'} ב-Metch`;
+
+                const emailHtml = `
+                    <div dir="rtl" style="text-align: right; font-family: sans-serif;">
+                        <h2>${subject}</h2>
+                        <p>התקבלה הודעה חדשה:</p>
+                        <blockquote style="background: #f9f9f9; padding: 10px; border-right: 4px solid #007bff; margin: 10px 0;">
+                            ${newMessage.trim().replace(/\n/g, '<br/>')}
+                        </blockquote>
+                        <br/>
+                        <a href="https://metch.co.il/MessagesSeeker" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                            למעבר להודעות
+                        </a>
+                        <br/><br/>
+                        <p style="color: #666; font-size: 12px;">הודעה זו נשלחה באופן אוטומטי ממערכת Metch.</p>
+                    </div>
+                `;
+
+                await SendEmail({
+                    to: recipientEmail,
+                    subject: subject,
+                    html: emailHtml,
+                    text: `הודעה חדשה מ-${user.company_name || user.full_name}:\n\n${newMessage.trim()}\n\nלמעבר להודעות: https://metch.co.il/MessagesSeeker`
+                });
+                console.log('[Messages] Email sent successfully to:', recipientEmail);
+            } catch (emailErr) {
+                console.error('[Messages] Error sending email notification:', emailErr);
             }
 
             if (selectedConversation.id === "support") {
