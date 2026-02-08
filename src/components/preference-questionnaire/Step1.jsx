@@ -79,19 +79,7 @@ export default function Step1({
         <div className="flex flex-col items-center text-center space-y-3 md:space-y-10 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
 
             {/* Field Selection Section - NEW */}
-            <div className="w-full space-y-2 md:space-y-6">
-                <h2 className="text-lg md:text-3xl font-bold text-gray-900">באיזה תחום?</h2>
-                <div className="grid grid-cols-4 gap-1 md:flex md:flex-wrap md:justify-center md:gap-4">
-                    {FIELDS.map(field => (
-                        <PillButton
-                            key={field}
-                            label={field}
-                            isSelected={preferences.field === field}
-                            onClick={() => handleSelection('field', field)}
-                        />
-                    ))}
-                </div>
-            </div>
+
 
             {/* Dropdowns Section */}
             <div className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-4">
