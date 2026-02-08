@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { createPortal, flushSync } from 'react-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Edit, Download, Eye, X } from 'lucide-react';
@@ -10,6 +10,7 @@ import cvPreviewTemplate from '@/assets/cv_preview_template.png';
 
 export default function Step7_Preview({ cvData, setData, onEdit }) {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [isPrinting, setIsPrinting] = useState(false);
 
     const handleFileNameChange = (e) => {
         setData({ file_name: e.target.value });
@@ -20,14 +21,22 @@ export default function Step7_Preview({ cvData, setData, onEdit }) {
         if (cvData.file_name?.trim()) {
             document.title = cvData.file_name;
         }
+
+        // Force synchronous render of the portal before printing
+        flushSync(() => {
+            setIsPrinting(true);
+        });
+
         window.print();
-        // Restore title after print dialog closes (for blocking browsers) or via event
+
+        // Cleanup after print dialog usage (immediate or delayed doesn't matter much for portal, but cleaner to remove)
+        setIsPrinting(false);
+
         if ('onafterprint' in window) {
             window.addEventListener('afterprint', () => {
                 document.title = originalTitle;
             }, { once: true });
         } else {
-            // Fallback for browsers where print() is blocking
             document.title = originalTitle;
         }
     };
@@ -120,6 +129,14 @@ export default function Step7_Preview({ cvData, setData, onEdit }) {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Print Portal */}
+            {isPrinting && createPortal(
+                <div className="print-portal-root">
+                    <CVPreview cvData={cvData} />
+                </div>,
+                document.body
+            )}
         </>
     );
 }

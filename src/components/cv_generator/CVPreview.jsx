@@ -95,22 +95,45 @@ const CVPreview = ({ cvData }) => {
         <div className="p-8 bg-white text-gray-800 text-sm cv-print-area text-right" dir="rtl">
             <style>{`
                 @page {
-                    margin: 0;
                     size: auto;
+                    margin: 0mm;
                 }
                 @media print {
-                    body * {
-                        visibility: hidden;
+                    /* Hide the main app */
+                    #root {
+                        display: none !important;
                     }
-                    .cv-print-area, .cv-print-area * {
-                        visibility: visible;
-                    }
-                    .cv-print-area {
+                    
+                    /* Show ONLY the portal content */
+                    .print-portal-root {
+                        display: block !important;
                         position: absolute;
-                        left: 0;
                         top: 0;
+                        left: 0;
                         width: 100%;
                         margin: 0;
+                        padding: 0;
+                        z-index: 9999;
+                    }
+
+                    html, body {
+                        height: auto !important;
+                        overflow: visible !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: white !important;
+                    }
+
+                    .cv-print-area {
+                        padding: 40px !important;
+                        background: white !important;
+                        min-height: 100vh;
+                        width: 100%;
+                    }
+                    
+                    /* Utility to hide elements marked as print:hidden inside the component */
+                    .print\:hidden {
+                        display: none !important;
                     }
                 }
             `}</style>
@@ -129,77 +152,87 @@ const CVPreview = ({ cvData }) => {
             </div>
 
             {/* Summary */}
-            {summary && <div className="mb-4">
-                <h2 className="text-base font-bold border-b-2 border-blue-500 pb-1 mb-2">תמצית</h2>
-                <p className="text-xs text-gray-700">{summary}</p>
-            </div>}
+            {
+                summary && <div className="mb-4">
+                    <h2 className="text-base font-bold border-b-2 border-blue-500 pb-1 mb-2">תמצית</h2>
+                    <p className="text-xs text-gray-700">{summary}</p>
+                </div>
+            }
 
             {/* Work Experience */}
-            {work_experience?.length > 0 && <div className="mb-4">
-                <h2 className="text-base font-bold border-b-2 border-blue-500 pb-1 mb-2">ניסיון תעסוקתי</h2>
-                <div className="space-y-3">
-                    {work_experience.map((exp, index) => (
-                        <div key={exp.id || index} className="text-xs">
-                            <div className="flex justify-between items-baseline">
-                                <h3 className="font-semibold">{exp.title}</h3>
-                                <p className="text-gray-500">{formatDate(exp.start_date)} - {exp.is_current ? 'היום' : formatDate(exp.end_date)}</p>
+            {
+                work_experience?.length > 0 && <div className="mb-4">
+                    <h2 className="text-base font-bold border-b-2 border-blue-500 pb-1 mb-2">ניסיון תעסוקתי</h2>
+                    <div className="space-y-3">
+                        {work_experience.map((exp, index) => (
+                            <div key={exp.id || index} className="text-xs">
+                                <div className="flex justify-between items-baseline">
+                                    <h3 className="font-semibold">{exp.title}</h3>
+                                    <p className="text-gray-500">{formatDate(exp.start_date)} - {exp.is_current ? 'היום' : formatDate(exp.end_date)}</p>
+                                </div>
+                                <p className="font-medium text-gray-700">{exp.company} | {exp.location}</p>
+                                <p className="mt-1 text-gray-600 whitespace-pre-wrap">{exp.description}</p>
                             </div>
-                            <p className="font-medium text-gray-700">{exp.company} | {exp.location}</p>
-                            <p className="mt-1 text-gray-600 whitespace-pre-wrap">{exp.description}</p>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
-            </div>}
+            }
 
             {/* Education */}
-            {educationEntries.length > 0 && <div className="mb-4">
-                <h2 className="text-base font-bold border-b-2 border-blue-500 pb-1 mb-2">השכלה</h2>
-                <div className="space-y-3">
-                    {educationEntries.map((edu, index) => {
-                        const dateRange = formatDateRange(edu);
-                        const subtitle = [edu?.degree, getEducationTypeLabel(edu?.education_type)]
-                            .filter(Boolean)
-                            .join(' • ');
-                        return (
-                            <div key={edu?.id || `education-${index}`} className="text-xs">
-                                <div className="flex justify-between items-baseline gap-3">
-                                    <h3 className="font-semibold">{edu?.institution || 'מוסד לימודים'}</h3>
+            {
+                educationEntries.length > 0 && <div className="mb-4">
+                    <h2 className="text-base font-bold border-b-2 border-blue-500 pb-1 mb-2">השכלה</h2>
+                    <div className="space-y-3">
+                        {educationEntries.map((edu, index) => {
+                            const dateRange = formatDateRange(edu);
+                            const subtitle = [edu?.degree, getEducationTypeLabel(edu?.education_type)]
+                                .filter(Boolean)
+                                .join(' • ');
+                            return (
+                                <div key={edu?.id || `education-${index}`} className="text-xs">
+                                    <div className="flex justify-between items-baseline gap-3">
+                                        <h3 className="font-semibold">{edu?.institution || 'מוסד לימודים'}</h3>
+                                    </div>
+                                    {subtitle && <p className="font-medium text-gray-700">{subtitle}</p>}
+                                    {dateRange && <p className="text-gray-500">{dateRange}</p>}
+                                    {edu?.description && <p className="mt-1 text-gray-600 whitespace-pre-wrap">{edu.description}</p>}
                                 </div>
-                                {subtitle && <p className="font-medium text-gray-700">{subtitle}</p>}
-                                {dateRange && <p className="text-gray-500">{dateRange}</p>}
-                                {edu?.description && <p className="mt-1 text-gray-600 whitespace-pre-wrap">{edu.description}</p>}
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
                 </div>
-            </div>}
+            }
 
             {/* Certifications */}
-            {certifications?.length > 0 && <div className="mb-4">
-                <h2 className="text-base font-bold border-b-2 border-blue-500 pb-1 mb-2">הסמכות</h2>
-                <div className="space-y-3">
-                    {certifications.map((cert, index) => (
-                        <div key={cert.id || `cert-${index}`} className="text-xs">
-                            <h3 className="font-semibold">{getCertificationLabel(cert)}</h3>
-                            {cert.notes && <p className="mt-1 text-gray-600 whitespace-pre-wrap">{cert.notes}</p>}
-                            {cert.description && <p className="mt-1 text-gray-600 whitespace-pre-wrap">{cert.description}</p>}
-                        </div>
-                    ))}
+            {
+                certifications?.length > 0 && <div className="mb-4">
+                    <h2 className="text-base font-bold border-b-2 border-blue-500 pb-1 mb-2">הסמכות</h2>
+                    <div className="space-y-3">
+                        {certifications.map((cert, index) => (
+                            <div key={cert.id || `cert-${index}`} className="text-xs">
+                                <h3 className="font-semibold">{getCertificationLabel(cert)}</h3>
+                                {cert.notes && <p className="mt-1 text-gray-600 whitespace-pre-wrap">{cert.notes}</p>}
+                                {cert.description && <p className="mt-1 text-gray-600 whitespace-pre-wrap">{cert.description}</p>}
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            </div>}
+            }
 
             {/* Skills */}
-            {skills?.length > 0 && <div className="mb-4">
-                <h2 className="text-base font-bold border-b-2 border-blue-500 pb-1 mb-2">כישורים</h2>
-                <div className="flex flex-wrap gap-2">
-                    {skills.map((skill, index) => (
-                        <span key={index} className="bg-gray-100 px-2 py-1 rounded text-xs text-gray-700">
-                            {skill}
-                        </span>
-                    ))}
+            {
+                skills?.length > 0 && <div className="mb-4">
+                    <h2 className="text-base font-bold border-b-2 border-blue-500 pb-1 mb-2">כישורים</h2>
+                    <div className="flex flex-wrap gap-2">
+                        {skills.map((skill, index) => (
+                            <span key={index} className="bg-gray-100 px-2 py-1 rounded text-xs text-gray-700">
+                                {skill}
+                            </span>
+                        ))}
+                    </div>
                 </div>
-            </div>}
-        </div>
+            }
+        </div >
     );
 };
 
