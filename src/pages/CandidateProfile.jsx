@@ -4,6 +4,7 @@ import { User } from "@/api/entities";
 import { UserProfile } from "@/api/entities";
 import { QuestionnaireResponse, Job, JobApplication, CV, Conversation, Notification } from "@/api/entities";
 import { Core } from "@/api/integrations";
+import { calculate_match_score } from "@/utils/matchScore";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { User as UserIcon, Loader2, X } from "lucide-react";
@@ -50,6 +51,8 @@ export default function CandidateProfile() {
   const [isCvPreviewOpen, setIsCvPreviewOpen] = useState(false);
   const [markingNotRelevant, setMarkingNotRelevant] = useState(false);
   const [appliedJob, setAppliedJob] = useState(null);
+  const [fullJobData, setFullJobData] = useState(null);
+  const [calculatedMatchScore, setCalculatedMatchScore] = useState(null);
 
   const queryParams = new URLSearchParams(location.search);
   const candidateId = queryParams.get("id");
@@ -108,34 +111,59 @@ export default function CandidateProfile() {
   }, [candidate]);
 
   useEffect(() => {
-    const fetchAppliedJob = async () => {
-      if (!user?.email || !candidate?.email) return;
+    const fetchAppliedJobAndCalculateMatch = async () => {
+      if (!user?.email || !candidate) return;
+
+      let jobToUse = null;
 
       try {
-        // 1. Get employer's jobs
-        const myJobs = await Job.filter({ created_by: user.email });
-        if (!myJobs || myJobs.length === 0) return;
+        // 1. If we have a specific jobId from URL, try to fetch it first
+        if (jobId) {
+          try {
+            const jobResults = await Job.filter({ id: jobId });
+            if (jobResults.length > 0) {
+              jobToUse = jobResults[0];
+            }
+          } catch (e) { console.error("Error fetching specific job", e); }
+        }
 
-        const myJobIds = myJobs.map(j => j.id);
+        // 2. If no job yet, try to find one from employer's jobs that matches candidate applications
+        if (!jobToUse) {
+          const myJobs = await Job.filter({ created_by: user.email });
+          if (myJobs && myJobs.length > 0) {
+            const myJobIds = myJobs.map(j => j.id);
+            // Get candidate's applications
+            let apps = await JobApplication.filter({ applicant_id: candidate.id });
+            // Find match
+            const relevantApp = apps.find(app => myJobIds.some(id => String(id) === String(app.job_id)));
 
-        // 2. Get candidate's applications - Try ID first, then email
-        let apps = await JobApplication.filter({ applicant_id: candidate.id });
-
-        // 3. Find match (handling potential string/number mismatches)
-        const relevantApp = apps.find(app => myJobIds.some(id => String(id) === String(app.job_id)));
-
-        if (relevantApp) {
-          const job = myJobs.find(j => String(j.id) === String(relevantApp.job_id));
-          if (job) {
-            setAppliedJob({ title: job.title, location: job.location });
+            if (relevantApp) {
+              jobToUse = myJobs.find(j => String(j.id) === String(relevantApp.job_id));
+            }
           }
         }
+
+        // 3. Set State & Calculate
+        if (jobToUse) {
+          setAppliedJob({ title: jobToUse.title, location: jobToUse.location });
+          setFullJobData(jobToUse);
+
+          try {
+            const score = await calculate_match_score(candidate, jobToUse);
+            if (score !== null) {
+              setCalculatedMatchScore(Math.round(score * 100));
+            }
+          } catch (e) {
+            console.error("Error calculating match score in profile", e);
+          }
+        }
+
       } catch (err) {
         console.error("Error fetching applied job details", err);
       }
     };
-    fetchAppliedJob();
-  }, [user, candidate]);
+    fetchAppliedJobAndCalculateMatch();
+  }, [user, candidate, jobId]);
 
   useEffect(() => {
     // Only trigger if we have a candidate, the questionnaire is loaded, insights are empty, and we aren't already generating
@@ -778,7 +806,7 @@ export default function CandidateProfile() {
   const params = new URLSearchParams(location.search);
   const jobTitle = params.get("title");
   const matchFromUrl = params.get("match");
-  const matchScore = matchFromUrl ? parseInt(matchFromUrl, 10) : (candidate ? getStableMatchScore(candidate.id) : 90);
+  const matchScore = calculatedMatchScore !== null ? calculatedMatchScore : (matchFromUrl ? parseInt(matchFromUrl, 10) : (candidate ? getStableMatchScore(candidate.id) : 90));
 
   const availabilityText = {
     immediate: "מיידית",
@@ -859,7 +887,7 @@ export default function CandidateProfile() {
             {/* Content Sections Container - Constrained Width */}
             <div className="w-full max-w-4xl mx-auto space-y-7">
               {/* Match Score */}
-              <ProfileMatchScore matchScore={aiInsights.score} />
+              <ProfileMatchScore matchScore={matchScore} />
 
               {/* Info Cards */}
               <ProfileInfo

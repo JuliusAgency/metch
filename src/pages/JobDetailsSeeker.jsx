@@ -174,15 +174,24 @@ export default function JobDetailsSeeker() {
             try {
               await UserAnalytics.trackJobView(userData, fetchedJob); // Pass full user object
 
-              // Check if user already applied - Try ID first, fallback to email
-              let existingApps = await JobApplication.filter({
+              // Check if user already applied - Check by ID OR Email for robustness
+              const existingAppsById = await JobApplication.filter({
                 job_id: jobId,
                 applicant_id: userData.id
               });
 
-              setHasExistingApplication(existingApps.length > 0);
-            } catch (error) {
+              let existingAppsByEmail = [];
+              if (userData.email) {
+                existingAppsByEmail = await JobApplication.filter({
+                  job_id: jobId,
+                  applicant_email: userData.email
+                });
+              }
 
+              const hasApplied = existingAppsById.length > 0 || (existingAppsByEmail && existingAppsByEmail.length > 0);
+              setHasExistingApplication(hasApplied);
+            } catch (error) {
+              console.error("Error checking existing application:", error);
             }
           }
         } else {
@@ -196,7 +205,7 @@ export default function JobDetailsSeeker() {
     } finally {
       setLoading(false);
     }
-  }, [jobIdParam, navigate]);
+  }, [jobIdParam, navigate]); // Closing loadData
 
   useEffect(() => {
     loadData();

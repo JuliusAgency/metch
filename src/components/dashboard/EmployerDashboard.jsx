@@ -4,6 +4,7 @@ import { UserProfile } from "@/api/entities";
 import { Notification } from "@/api/entities";
 import { CandidateView } from "@/api/entities";
 import { JobApplication, Job } from "@/api/entities";
+import { calculate_match_score } from "@/utils/matchScore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +62,7 @@ const EmployerDashboard = ({ user }) => {
 
   // State for storing application info per candidate (email -> jobTitle)
   const [candidateApplications, setCandidateApplications] = useState({});
+  const [matchScores, setMatchScores] = useState({});
 
   useEffect(() => {
     const filterParam = searchParams.get('filter');
@@ -202,7 +204,33 @@ const EmployerDashboard = ({ user }) => {
               return null;
             }));
             applicantProfiles = profiles.filter(p => p !== null);
+            applicantProfiles = profiles.filter(p => p !== null);
             console.log('[EmployerDashboard] Final applicant profiles loaded:', applicantProfiles.length);
+
+            // Calculate matches
+            const scores = {};
+            await Promise.all(applicantProfiles.map(async (profile) => {
+              // Find the job this profile applied to
+              const appliedJobId = profile.applied_job_id;
+              if (!appliedJobId) return;
+
+              // We need the full job object. We have myJobs which is a list of Jobs.
+              const jobObj = myJobs.find(j => j.id === appliedJobId);
+              if (jobObj) {
+                try {
+                  const score = await calculate_match_score(profile, jobObj);
+                  // Store by unique_app_id to handle same candidate applying to multiple jobs
+                  if (score !== null) {
+                    scores[profile.unique_app_id] = Math.round(score * 100);
+                  } else {
+                    scores[profile.unique_app_id] = 0;
+                  }
+                } catch (e) {
+                  console.error("Error calc match for dashboard:", e);
+                }
+              }
+            }));
+            setMatchScores(scores);
           }
         }
 
@@ -511,7 +539,7 @@ const EmployerDashboard = ({ user }) => {
             <div className="space-y-4 candidate-list">
               <h2 className="text-lg font-bold text-gray-900 mb-2 px-2">מועמדים שהגישו מועמדות</h2>
               {filteredCandidates.length > 0 ? (filteredCandidates.map((candidate, index) => {
-                const match = Math.floor(Math.random() * 24) + 75;
+                const match = matchScores[candidate.unique_app_id] || 0;
                 const jobAppliedTo = candidateApplications[candidate.email];
 
                 // Helper Maps

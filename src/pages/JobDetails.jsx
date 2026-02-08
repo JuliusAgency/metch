@@ -21,6 +21,7 @@ import SeekerJobImages from "@/components/seeker/SeekerJobImages";
 import settingsMobileBg from "@/assets/settings_mobile_bg.jpg";
 import JobStatusBanner from "@/components/jobs/JobStatusBanner";
 import NoCreditsDialog from "@/components/dialogs/NoCreditsDialog";
+import { calculate_match_score } from "@/utils/matchScore";
 
 // Helper to determine match score color
 const getMatchScoreColor = (score) => {
@@ -46,6 +47,7 @@ export default function JobDetails() {
   const [job, setJob] = useState(null);
   const [applications, setApplications] = useState([]);
   const [applicantProfiles, setApplicantProfiles] = useState({});
+  const [matchScores, setMatchScores] = useState({});
   const [viewsCount, setViewsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -130,6 +132,26 @@ export default function JobDetails() {
               })
             ]);
             setApplicantProfiles(idMap);
+
+            // Calculate Match Scores
+            const scores = {};
+            await Promise.all(appResults.map(async (app) => {
+              const profile = idMap[app.applicant_id] || idMap[app.applicant_email?.toLowerCase()];
+              if (profile && fetchedJob) {
+                try {
+                  const score = await calculate_match_score(profile, fetchedJob);
+                  if (score !== null) {
+                    scores[app.id] = Math.round(score * 100);
+                  } else {
+                    scores[app.id] = 0;
+                  }
+                } catch (err) {
+                  console.error("Match calc error:", err);
+                  scores[app.id] = 0;
+                }
+              }
+            }));
+            setMatchScores(scores);
           }
         }
       }
@@ -359,7 +381,7 @@ export default function JobDetails() {
                     {applications.length > 0 ? (
                       applications.slice(0, 5).map((app, idx) => {
                         const profile = applicantProfiles[app.applicant_id] || applicantProfiles[app.applicant_email?.toLowerCase()];
-                        const matchScore = app.match_score || getStableMatchScore(app.applicant_id || app.applicant_email);
+                        const matchScore = matchScores[app.id] || 0; // Default to 0 instead of fake score
                         const displayName = profile?.full_name || app.applicant_email || 'מועמד/ת';
                         const displayTitle = profile?.job_title || profile?.title || 'מועמד/ת';
                         const city = profile?.city || 'מרכז';
@@ -410,11 +432,12 @@ export default function JobDetails() {
                               </div>
 
                               {/* Left: Match Bar */}
-                              <div className="flex-1 bg-gray-100 rounded-full h-6 relative overflow-hidden">
+                              <div className="flex-1 bg-gray-100 rounded-full h-6 relative overflow-hidden text-center">
                                 <div
-                                  className={`h-full flex items-center justify-center text-[10px] md:text-xs font-bold text-white ${getMatchScoreColor(matchScore)}`}
+                                  className={`h-full absolute top-0 right-0 ${getMatchScoreColor(matchScore)}`}
                                   style={{ width: `${matchScore}%` }}
-                                >
+                                ></div>
+                                <div className="absolute inset-0 flex items-center justify-center text-[10px] md:text-xs font-bold text-black z-10">
                                   {matchScore}% התאמה
                                 </div>
                               </div>

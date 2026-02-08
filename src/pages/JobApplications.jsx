@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Job } from "@/api/entities";
+import { calculate_match_score } from "@/utils/matchScore";
 import { JobApplication } from "@/api/entities";
 import { User, UserProfile } from "@/api/entities";
 import { Conversation } from "@/api/entities";
@@ -42,6 +43,7 @@ export default function JobApplications() {
   const [creatingConversation, setCreatingConversation] = useState(false);
   const [applicantProfiles, setApplicantProfiles] = useState({});
   const [profilesByEmail, setProfilesByEmail] = useState({});
+  const [matchScores, setMatchScores] = useState({});
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -95,6 +97,30 @@ export default function JobApplications() {
 
         setApplicantProfiles(idMap);
         setProfilesByEmail(emailMap);
+
+        // Calculate Match Scores
+        const scores = {};
+        const jobData = jobResults.length > 0 ? jobResults[0] : null;
+
+        if (jobData) {
+          await Promise.all(appResults.map(async (app) => {
+            const profile = idMap[app.applicant_id] || emailMap[app.applicant_email?.toLowerCase()];
+            if (profile) {
+              try {
+                const score = await calculate_match_score(profile, jobData);
+                if (score !== null) {
+                  scores[app.id] = Math.round(score * 100);
+                } else {
+                  scores[app.id] = 0;
+                }
+              } catch (err) {
+                console.error("Match calc error:", err);
+                scores[app.id] = 0;
+              }
+            }
+          }));
+          setMatchScores(scores);
+        }
       }
     } catch (error) {
       console.error("Error loading applications:", error);
@@ -229,7 +255,7 @@ export default function JobApplications() {
             {applications.length > 0 ? (
               applications.map((application, index) => {
                 const config = statusConfig[application.status] || statusConfig.pending;
-                const matchScore = application.match_score || getStableMatchScore(application.id || application.applicant_id || application.applicant_email);
+                const matchScore = matchScores[application.id] || 0;
 
                 return (
                   <motion.div
