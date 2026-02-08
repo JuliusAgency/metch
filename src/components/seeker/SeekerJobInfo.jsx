@@ -50,7 +50,7 @@ const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, 
         });
 
     const sections = [
-        { id: "match_analysis", label: "מה מאצ' חושב?", icon: Sparkles, content: null },
+        { id: "match_analysis", label: "מה מאצ' חושב?", icon: Sparkles, content: aiAnalysis?.match_analysis },
         { id: "about", label: "תיאור משרה", icon: Info, content: job.description },
         { id: "requirements", label: "דרישות", icon: FileText, content: finalRequirements }
     ];
@@ -59,6 +59,16 @@ const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, 
         if (baseCertifications.length > 0) {
             sections.push({ id: "certifications", label: "הסמכות", icon: Award, content: baseCertifications });
         }
+    }
+
+    // Add Why Suitable section for Mobile
+    if (showAiAnalysis) {
+        sections.push({
+            id: "why_suitable",
+            label: "למה זה מתאים לך?",
+            icon: Sparkles,
+            content: aiAnalysis?.why_suitable
+        });
     }
 
     // Helper to render content based on type (string or array)
@@ -77,7 +87,7 @@ const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, 
                 <ul className="space-y-3 pt-2">
                     {filteredContent.map((item, i) => (
                         <li key={i} className="flex items-start gap-3 text-[#4a5568] text-[15px]">
-                            <div className="w-1 h-1 rounded-full bg-gray-400 mt-2.5 shrink-0"></div>
+                            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2.5 shrink-0"></div>
                             <span className="leading-relaxed">
                                 {typeof item === 'string' ? item : (
                                     <>
@@ -132,26 +142,27 @@ const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, 
                         <AccordionItem
                             key={s.id}
                             value={s.id}
-                            className="border rounded-2xl px-4 py-2 bg-white shadow-sm data-[state=open]:border-blue-400 data-[state=open]:ring-1 data-[state=open]:ring-blue-400 transition-all"
+                            className={`border rounded-2xl px-4 py-2 bg-white shadow-sm transition-all ${activeTab === s.id && s.id === 'why_suitable'
+                                ? 'border-[#3d83f6] ring-1 ring-[#3d83f6]'
+                                : 'data-[state=open]:border-blue-400 data-[state=open]:ring-1 data-[state=open]:ring-blue-400'
+                                }`}
                         >
                             <AccordionTrigger className="hover:no-underline py-2">
                                 <div className="flex items-center gap-3 w-full text-right">
-                                    <s.icon className="w-5 h-5 text-gray-500" />
+                                    <s.icon className={`w-5 h-5 ${s.iconColor || 'text-gray-500'}`} />
                                     <span className="font-bold text-lg text-[#003566] flex-1">{s.label}</span>
                                 </div>
                             </AccordionTrigger>
                             <AccordionContent className="text-right">
-                                {s.id === "match_analysis" ? (
-                                    <div className="text-[#4a5568] text-[15px] leading-relaxed pt-2">
-                                        {isAiLoading ? (
-                                            <div className="space-y-2 animate-pulse">
-                                                <div className="h-4 bg-gray-200/50 rounded w-full"></div>
-                                                <div className="h-4 bg-gray-200/50 rounded w-5/6"></div>
-                                            </div>
-                                        ) : (
-                                            <p>{aiAnalysis?.why_suitable || aiAnalysis?.summary || "נתונים אינם זמינים כעת"}</p>
-                                        )}
+                                {(s.id === "match_analysis" || s.id === "why_suitable") && isAiLoading ? (
+                                    <div className="space-y-2 animate-pulse pt-2">
+                                        <div className="h-4 bg-gray-200/50 rounded w-full"></div>
+                                        <div className="h-4 bg-gray-200/50 rounded w-5/6"></div>
                                     </div>
+                                ) : (s.id === "why_suitable" && !s.content) ? (
+                                    <p className="text-[#4a5568] text-[15px] leading-relaxed whitespace-pre-wrap pt-2">
+                                        {aiAnalysis?.summary || "נתונים אינם זמינים כעת"}
+                                    </p>
                                 ) : (
                                     renderContent(s.content)
                                 )}
@@ -181,9 +192,11 @@ const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, 
                 )}
             </div>
 
-            {/* DESKTOP (Existing Original Design maintained for Desktop) */}
+            {/* DESKTOP (Reordered Layout) */}
             <div className="hidden md:block bg-white md:border-0 md:shadow-[0_4px_25px_rgba(0,0,0,0.05)] rounded-[32px] overflow-hidden mb-8">
                 <div className="p-12 space-y-12 text-right" dir="rtl">
+
+                    {/* 1. AI Match Highlights (What Metch Thinks - Bullets) */}
                     {showAiAnalysis && (
                         <section className="space-y-4">
                             <h3 className="font-bold text-xl text-[#003566] flex items-center gap-2">
@@ -197,12 +210,24 @@ const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, 
                                         <div className="h-4 bg-gray-100 rounded w-5/6"></div>
                                     </div>
                                 ) : (
-                                    <p>{aiAnalysis?.why_suitable || aiAnalysis?.summary || "נתונים אינם זמינים כעת"}</p>
+                                    aiAnalysis?.match_analysis && Array.isArray(aiAnalysis.match_analysis) ? (
+                                        <ul className="space-y-3">
+                                            {aiAnalysis.match_analysis.map((item, i) => (
+                                                <li key={i} className="flex items-start gap-3">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></div>
+                                                    <span>{item}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p>{aiAnalysis?.why_suitable || "נתונים אינם זמינים כעת"}</p>
+                                    )
                                 )}
                             </div>
                         </section>
                     )}
 
+                    {/* 2. Job Description */}
                     <section className="space-y-4">
                         <h3 className="font-bold text-xl text-[#003566]">תיאור משרה</h3>
                         <p className="text-[#4a5568] text-[15px] leading-relaxed whitespace-pre-wrap">
@@ -210,14 +235,46 @@ const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, 
                         </p>
                     </section>
 
-                    {sections.filter(s => s.id !== "about" && s.id !== "apply").map(s => (
-                        <section key={s.id} className="space-y-4">
-                            <h3 className="font-bold text-xl text-[#003566]">{s.label}</h3>
+                    {/* 3. Requirements */}
+                    {finalRequirements && finalRequirements.length > 0 && (
+                        <section className="space-y-4">
+                            <h3 className="font-bold text-xl text-[#003566]">דרישות</h3>
                             <div className="space-y-3">
-                                {renderContent(s.content)}
+                                {renderContent(finalRequirements)}
                             </div>
                         </section>
-                    ))}
+                    )}
+
+                    {/* 4. Certifications */}
+                    {baseCertifications && baseCertifications.length > 0 && (
+                        <section className="space-y-4">
+                            <h3 className="font-bold text-xl text-[#003566]">הסמכות</h3>
+                            <div className="space-y-3">
+                                {renderContent(baseCertifications)}
+                            </div>
+                        </section>
+                    )}
+
+                    {/* 5. Why it fits you (AI Reasoning - Text) */}
+                    {showAiAnalysis && (
+                        <section className="space-y-4">
+                            <h3 className="font-bold text-xl text-[#003566] flex items-center gap-2">
+                                <Sparkles className="w-5 h-5 text-[#3d83f6] shrink-0" />
+                                למה המשרה מתאימה לך?
+                            </h3>
+                            <div className="text-[#4a5568] text-[15px] leading-relaxed whitespace-pre-wrap">
+                                {isAiLoading ? (
+                                    <div className="space-y-3 animate-pulse">
+                                        <div className="h-4 bg-gray-100 rounded w-full"></div>
+                                        <div className="h-4 bg-gray-100 rounded w-5/6"></div>
+                                        <div className="h-4 bg-gray-100 rounded w-2/3"></div>
+                                    </div>
+                                ) : (
+                                    aiAnalysis?.why_suitable || aiAnalysis?.summary || "נתונים אינם זמינים כעת"
+                                )}
+                            </div>
+                        </section>
+                    )}
                 </div>
             </div>
         </div>
