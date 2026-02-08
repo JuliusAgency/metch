@@ -250,21 +250,43 @@ export default function CompanyProfileCompletion() {
       setStep(prev => prev + 1);
     } else {
       // Final step action - Save credits and redemption status
-      const updates = { is_onboarding_completed: true };
+      try {
+        // Fetch fresh user data to ensure we have the latest credits
+        const freshUser = await User.me();
+        const currentCredits = freshUser.profile?.job_credits || 0;
 
-      // Calculate and save job credits acquired during onboarding
-      if (packageData.quantity > 0) {
-        const currentCredits = user?.profile?.job_credits || 0;
-        updates.job_credits = currentCredits + packageData.quantity;
+        const updates = { is_onboarding_completed: true };
 
-        // If they chose the free job (1 job for 0 NIS)
-        if (packageData.quantity === 1 && packageData.price === 0) {
-          updates.is_free_job_redeemed = true;
+        // Calculate and save job credits acquired during onboarding
+        if (packageData.quantity > 0) {
+          updates.job_credits = currentCredits + packageData.quantity;
+
+          // If they chose the free job (1 job for 0 NIS)
+          if (packageData.quantity === 1 && packageData.price === 0) {
+            updates.is_free_job_redeemed = true;
+            // Force credit to be at least 1 if it's the free job claim
+            if (updates.job_credits < 1) {
+              updates.job_credits = 1;
+            }
+          }
+        } else {
+          // Fallback: If for some reason quantity is 0 but it's the first time
+          // and they are eligible, give them 1 credit.
+          // This safeguards against UI glitches.
+          const isFreeEligible = !freshUser.profile?.is_free_job_redeemed;
+          if (isFreeEligible && packageData.price === 0) {
+            updates.job_credits = currentCredits + 1;
+            updates.is_free_job_redeemed = true;
+          }
         }
-      }
 
-      await updateProfile(updates);
-      navigate(`${createPageUrl('Dashboard')}?onboarding=complete`, { replace: true });
+        await updateProfile(updates);
+        navigate(`${createPageUrl('Dashboard')}?onboarding=complete`, { replace: true });
+
+      } catch (err) {
+        console.error("Error finalizing onboarding:", err);
+        toast.error("שגיאה בסיום התהליך, אנא נסה שנית");
+      }
     }
   };
 
