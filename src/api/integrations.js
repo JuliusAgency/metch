@@ -299,84 +299,16 @@ export async function InvokeAssistant({
   assistantId,
   prompt
 }) {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-
-  if (!apiKey) {
-    throw new Error('VITE_OPENAI_API_KEY environment variable is not set');
-  }
-
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${apiKey}`,
-    'OpenAI-Beta': 'assistants=v2'
-  };
-
-  // 1. Create Thread with Message
-  const threadResponse = await fetch('https://api.openai.com/v1/threads', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      messages: [{ role: 'user', content: prompt }]
-    })
+  const { data, error } = await supabase.functions.invoke('invoke-assistant', {
+    body: { assistantId, prompt }
   });
 
-  if (!threadResponse.ok) {
-    const err = await threadResponse.json();
-    console.error("DEBUG: OpenAI Thread Error:", err);
-    throw new Error(`Failed to create thread: ${JSON.stringify(err)}`);
-  }
-  const thread = await threadResponse.json();
-  console.log("DEBUG: OpenAI Thread created:", thread.id);
-
-  // 2. Run Assistant
-  const runResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ assistant_id: assistantId })
-  });
-
-  if (!runResponse.ok) {
-    const err = await runResponse.json();
-    console.error("DEBUG: OpenAI Run Error:", err);
-    throw new Error(`Failed to create run: ${JSON.stringify(err)}`);
-  }
-  const run = await runResponse.json();
-  console.log("DEBUG: OpenAI Run started:", run.id, "status:", run.status);
-
-  // 3. Poll for completion
-  let runStatus = run.status;
-  while (runStatus === 'queued' || runStatus === 'in_progress') {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const statusResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs/${run.id}`, {
-      headers
-    });
-    const statusData = await statusResponse.json();
-    runStatus = statusData.status;
-    console.log("DEBUG: OpenAI Run Status:", runStatus);
-
-    if (['failed', 'cancelled', 'expired'].includes(runStatus)) {
-      console.error("DEBUG: OpenAI Run Failed:", statusData.last_error);
-      throw new Error(`Assistant run failed: ${runStatus} - ${JSON.stringify(statusData.last_error)}`);
-    }
+  if (error) {
+    console.error('Error invoking assistant:', error);
+    throw new Error(`Failed to invoke assistant: ${error.message}`);
   }
 
-  // 4. Get Messages
-  const messagesResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
-    headers
-  });
-  const messagesData = await messagesResponse.json();
-  const lastMessage = messagesData.data.find(m => m.role === 'assistant');
-
-  if (!lastMessage) {
-    throw new Error('No response from assistant');
-  }
-
-  const content = lastMessage.content[0].text.value;
-
-  return {
-    content,
-    threadId: thread.id
-  };
+  return data;
 }
 
 /**
