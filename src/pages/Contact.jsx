@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { SendEmail } from "@/api/integrations";
+import { Message, Conversation, Notification } from "@/api/entities";
 import {
   ChevronLeft,
   Mail,
@@ -67,6 +68,10 @@ export default function Contact() {
     }
 
     setIsSending(true);
+    let emailSuccess = false;
+    let chatSuccess = false;
+
+    // 1. Try sending email
     try {
       const userDetails = `
         <br/><br/>
@@ -83,23 +88,108 @@ export default function Contact() {
         html: `<div dir="rtl" style="text-align: right;">${formData.message.replace(/\n/g, '<br/>')}${userDetails}</div>`,
         text: `${formData.message}\n\nפרטי שולח:\nשם: ${user?.full_name || user?.company_name}\nמייל: ${user?.email}`,
       });
+      emailSuccess = true;
+    } catch (error) {
+      console.error("Error sending support email:", error);
+    }
+
+    // 2. Try saving to Chat (Redundancy)
+    try {
+      if (user) {
+        const isEmployer = user.user_type === 'employer';
+        // Logic should match Messages.jsx / MessagesSeeker.jsx
+        // Employer view: candidate_email is support
+        // Seeker view: employer_email is support
+
+        const supportName = "צוות התמיכה";
+        let conversation = null;
+
+        // Find existing conversation
+        if (isEmployer) {
+          const convs = await Conversation.filter({
+            employer_id: user.id,
+            candidate_email: supportEmail
+          });
+          if (convs.length > 0) conversation = convs[0];
+        } else {
+          const convs = await Conversation.filter({
+            candidate_id: user.id,
+            employer_email: supportEmail
+          });
+          if (convs.length > 0) conversation = convs[0];
+        }
+
+        const currentDate = new Date().toISOString();
+
+        // Create if not exists
+        if (!conversation) {
+          const newConvData = {
+            last_message: formData.message,
+            last_message_time: currentDate,
+            job_title: isEmployer ? "תמיכה עסקית" : "תמיכה טכנית"
+          };
+
+          if (isEmployer) {
+            newConvData.employer_id = user.id;
+            newConvData.employer_email = user.email;
+            newConvData.candidate_email = supportEmail;
+            newConvData.candidate_name = supportName;
+          } else {
+            newConvData.candidate_id = user.id;
+            newConvData.candidate_email = user.email;
+            newConvData.employer_email = supportEmail;
+            newConvData.employer_name = supportName;
+          }
+
+          conversation = await Conversation.create(newConvData);
+        } else {
+          // Update existing
+          await Conversation.update(conversation.id, {
+            last_message: formData.message,
+            last_message_time: currentDate
+          });
+        }
+
+        // Create Message
+        await Message.create({
+          conversation_id: conversation.id,
+          sender_email: user.email,
+          sender_id: user.id,
+          recipient_email: supportEmail,
+          content: `[פנייה מטופס צור קשר]\nנושא: ${formData.subject}\n\n${formData.message}`,
+          is_read: false, // Support hasn't read it yet
+          created_date: currentDate
+        });
+
+        chatSuccess = true;
+      }
+    } catch (chatError) {
+      console.error("Error saving support message to chat:", chatError);
+    }
+
+    setIsSending(false);
+
+    if (emailSuccess || chatSuccess) {
+      let desc = "קיבלנו את פנייתך ונחזור אליך בהקדם.";
+      if (chatSuccess && !emailSuccess) {
+        desc = "המייל לא נשלח, אך הפנייה נשמרה בצ'אט התמיכה ונטפל בה בהקדם.";
+      } else if (chatSuccess && emailSuccess) {
+        desc = "פנייתך נשלחה במייל וגם תועדה בצ'אט מול התמיכה.";
+      }
 
       toast({
         title: "ההודעה נשלחה",
-        description: "קיבלנו את פנייתך ונחזור אליך בהקדם.",
+        description: desc,
       });
 
       setShowEmailForm(false);
       setFormData({ subject: "", message: "" });
-    } catch (error) {
-      console.error("Error sending support email:", error);
+    } else {
       toast({
         title: "שגיאה בשליחה",
-        description: "לא הצלחנו לשלוח את המייל. ניתן לנסות שוב או לפנות אלינו ישירות.",
+        description: "לא הצלחנו לשלוח את ההודעה. אנא נסה שוב מאוחר יותר או פנה ישירות לוואטסאפ.",
         variant: "destructive"
       });
-    } finally {
-      setIsSending(false);
     }
   };
 
