@@ -176,8 +176,13 @@ const EmployerDashboard = ({ user }) => {
                   const results = await UserProfile.filter({ id: ref.applicant_id });
                   if (results.length > 0) p = results[0];
                 }
+
                 if (!p && ref.applicant_email) {
-                  const results = await UserProfile.filter({ email: ref.applicant_email });
+                  // Try exact email first, then lowercase
+                  let results = await UserProfile.filter({ email: ref.applicant_email });
+                  if (results.length === 0) {
+                    results = await UserProfile.filter({ email: ref.applicant_email.toLowerCase() });
+                  }
                   if (results.length > 0) p = results[0];
                 }
 

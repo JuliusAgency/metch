@@ -29,8 +29,10 @@ const SeekerHeader = ({ company, job, returnUrl }) => {
       >
         <ChevronRight className="w-5 h-5 text-blue-500" />
       </Link>
-      <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-white mx-auto mt-0 md:-mt-4 mb-4 relative z-10">
-        {job?.company === "Google" ? (
+      <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-white mx-auto mt-0 md:-mt-4 mb-4 relative z-10 overflow-hidden">
+        {job?.company_logo_url ? (
+          <img src={job.company_logo_url} alt={job.company} className="w-full h-full object-cover" />
+        ) : job?.company === "Google" ? (
           <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" className="w-8 h-8" />
         ) : (
           <Building2 className="w-8 h-8 text-gray-600" />

@@ -82,7 +82,10 @@ export default function JobApplications() {
           ...uniqueEmails.map(async (email) => {
             if (Object.values(idMap).some(p => p.email?.toLowerCase() === email)) return;
             try {
-              const results = await UserProfile.filter({ email });
+              let results = await UserProfile.filter({ email });
+              if (results.length === 0) {
+                results = await UserProfile.filter({ email: email.toLowerCase() });
+              }
               if (results.length > 0) emailMap[email] = results[0];
             } catch (e) {
               console.error(`Error fetching profile for ${email}`, e);

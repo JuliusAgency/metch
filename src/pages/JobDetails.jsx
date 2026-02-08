@@ -108,14 +108,27 @@ export default function JobDetails() {
 
           if (appResults.length > 0) {
             const uniqueIds = [...new Set(appResults.map(a => a.applicant_id).filter(Boolean))];
+            const uniqueEmails = [...new Set(appResults.map(a => a.applicant_email?.toLowerCase()).filter(Boolean))];
 
             const idMap = {};
-            await Promise.all(uniqueIds.map(async (id) => {
-              try {
-                const profiles = await UserProfile.filter({ id });
-                if (profiles.length > 0) idMap[id] = profiles[0];
-              } catch (e) { console.error(e); }
-            }));
+            await Promise.all([
+              ...uniqueIds.map(async (id) => {
+                try {
+                  const profiles = await UserProfile.filter({ id });
+                  if (profiles.length > 0) idMap[id] = profiles[0];
+                } catch (e) { console.error(e); }
+              }),
+              ...uniqueEmails.map(async (email) => {
+                if (Object.values(idMap).some(p => p.email?.toLowerCase() === email)) return;
+                try {
+                  let results = await UserProfile.filter({ email });
+                  if (results.length === 0) {
+                    results = await UserProfile.filter({ email: email.toLowerCase() });
+                  }
+                  if (results.length > 0) idMap[email] = results[0];
+                } catch (e) { console.error(e); }
+              })
+            ]);
             setApplicantProfiles(idMap);
           }
         }
@@ -345,7 +358,7 @@ export default function JobDetails() {
                   <div className="bg-gray-50/50 rounded-2xl p-4 border border-gray-100 space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                     {applications.length > 0 ? (
                       applications.slice(0, 5).map((app, idx) => {
-                        const profile = applicantProfiles[app.applicant_id];
+                        const profile = applicantProfiles[app.applicant_id] || applicantProfiles[app.applicant_email?.toLowerCase()];
                         const matchScore = app.match_score || getStableMatchScore(app.applicant_id || app.applicant_email);
                         const displayName = profile?.full_name || app.applicant_email || 'מועמד/ת';
                         const displayTitle = profile?.job_title || profile?.title || 'מועמד/ת';

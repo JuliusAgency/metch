@@ -367,6 +367,30 @@ const JobSeekerDashboard = ({ user }) => {
           created_date: new Date().toISOString()
         };
 
+        // Enrich jobs with company logos from employer profiles
+        const creatorEmails = [...new Set(limitedJobs.map(j => j.created_by).filter(Boolean))];
+        if (creatorEmails.length > 0) {
+          try {
+            const employerProfiles = await Promise.all(
+              creatorEmails.map(email => UserProfile.filter({ email: email.toLowerCase() }))
+            );
+            const logoMap = employerProfiles.flat().reduce((acc, profile) => {
+              if (profile?.email && profile?.profile_picture) {
+                acc[profile.email.toLowerCase()] = profile.profile_picture;
+              }
+              return acc;
+            }, {});
+
+            limitedJobs.forEach(j => {
+              if (!j.company_logo_url && j.created_by) {
+                j.company_logo_url = logoMap[j.created_by.toLowerCase()];
+              }
+            });
+          } catch (e) {
+            console.error("Error fetching employer profiles for logos:", e);
+          }
+        }
+
         setUserStats(enhancedStats);
 
         // DEBUG: Log all jobs and their match scores
@@ -914,7 +938,10 @@ const EmployerDashboard = ({ user }) => {
                 if (results.length > 0) p = results[0];
               }
               if (!p && ref.applicant_email) {
-                const results = await UserProfile.filter({ email: ref.applicant_email });
+                let results = await UserProfile.filter({ email: ref.applicant_email });
+                if (results.length === 0) {
+                  results = await UserProfile.filter({ email: ref.applicant_email.toLowerCase() });
+                }
                 if (results.length > 0) p = results[0];
               }
 

@@ -94,7 +94,6 @@ const JobSeekerDashboard = ({ user }) => {
         // Apply Limits: Max 30 displayed daily
         const limitedJobs = qualifiedJobs.slice(0, 30);
 
-        setAllJobs(limitedJobs);
         setViewedJobIds(new Set(jobViewsData.map(view => view.job_id)));
 
         // Fetch seeker dashboard data (stats + notifications)
@@ -104,6 +103,32 @@ const JobSeekerDashboard = ({ user }) => {
           Notification.filter({ email: user.email }, "-created_date"),
           Notification.filter({ created_by: user.id }, "-created_date")
         ]);
+
+        // Enrich jobs with company logos from employer profiles
+        const creatorEmails = [...new Set(limitedJobs.map(j => j.created_by).filter(Boolean))];
+        if (creatorEmails.length > 0) {
+          try {
+            const employerProfiles = await Promise.all(
+              creatorEmails.map(email => UserProfile.filter({ email: email.toLowerCase() }))
+            );
+            const logoMap = employerProfiles.flat().reduce((acc, profile) => {
+              if (profile?.email && profile?.profile_picture) {
+                acc[profile.email.toLowerCase()] = profile.profile_picture;
+              }
+              return acc;
+            }, {});
+
+            limitedJobs.forEach(j => {
+              if (!j.company_logo_url && j.created_by) {
+                j.company_logo_url = logoMap[j.created_by.toLowerCase()];
+              }
+            });
+          } catch (e) {
+            console.error("Error fetching employer profiles for logos:", e);
+          }
+        }
+
+        setAllJobs(limitedJobs);
 
         const mergedNotifs = [...(byUserId || []), ...(byEmail || []), ...(byCreatedBy || [])]
           .reduce((acc, current) => {

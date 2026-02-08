@@ -157,6 +157,18 @@ export default function JobDetailsSeeker() {
 
           setJob(fetchedJob);
 
+          // Fetch company logo from employer profile
+          if (fetchedJob.created_by) {
+            try {
+              const employerProfiles = await UserProfile.filter({ email: fetchedJob.created_by.toLowerCase() });
+              if (employerProfiles.length > 0 && employerProfiles[0].profile_picture) {
+                setJob(prev => ({ ...prev, company_logo_url: employerProfiles[0].profile_picture }));
+              }
+            } catch (e) {
+              console.error("Error fetching employer logo:", e);
+            }
+          }
+
           // Check for existing application
           if (userData?.email) {
             try {
