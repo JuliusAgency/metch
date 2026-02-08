@@ -33,25 +33,30 @@ const ProfileInfo = ({ looking_for_summary, bio, aiThoughts, aiSummary, aiAnalys
                     <Sparkles className="w-4 h-4 text-blue-500 shrink-0" />
                     מה מאצ' חושב
                 </h3>
-                <div className="w-full space-y-4">
+                <div className="w-full space-y-6">
                     {isLoading ? (
                         <LoadingState />
                     ) : aiAnalysis ? (
-                        <div className="flex flex-col gap-3 w-full">
-                            {Object.entries(aiAnalysis).map(([key, data]) => (
-                                <div key={key} className="flex flex-col p-3 rounded-xl bg-gray-50/50 border border-gray-100/50">
-                                    <div className="flex items-center justify-between mb-1">
-                                        <div className="flex items-center gap-2 text-[#003566] font-semibold text-sm">
-                                            {criteriaLabels[key]?.icon}
-                                            {criteriaLabels[key]?.label || key}
+                        <div className="flex flex-col gap-4 w-full">
+                            {Object.entries(aiAnalysis).map(([key, data]) => {
+                                const labelConfig = criteriaLabels[key];
+                                return (
+                                    <div key={key} className="flex gap-3 items-start relative pr-3">
+                                        {/* Blue Dot - Smaller and lighter */}
+                                        <div className="absolute top-[0.6rem] right-0 w-1 h-1 rounded-full bg-blue-300 shrink-0" />
+
+                                        {/* Content - Uniform text */}
+                                        <div className="space-y-1">
+                                            <p className="text-sm text-gray-500 leading-relaxed">
+                                                <span className="text-gray-500 ml-1">
+                                                    {labelConfig?.label || key}
+                                                </span>
+                                                {data.feedback}
+                                            </p>
                                         </div>
-                                        {getStatusIcon(data.status)}
                                     </div>
-                                    <p className="text-xs text-gray-500 mr-6">
-                                        {data.feedback}
-                                    </p>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
                         <ul className="list-disc list-inside space-y-2 marker:text-blue-500 w-full text-right text-sm text-gray-600">
