@@ -22,6 +22,7 @@ import settingsHeaderBg from "@/assets/settings_header_bg.png";
 import settingsMobileBg from "@/assets/settings_mobile_bg.jpg"; // Using the same mobile background
 import CVPreview from '@/components/cv_generator/CVPreview';
 import InfoPopup from '@/components/ui/info-popup';
+import { triggerInsightsGeneration, invalidateInsightsCache } from '@/services/insightsService';
 
 export default function Profile() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -165,6 +166,19 @@ export default function Profile() {
         title: "הפרופיל הושלם בהצלחה",
         description: "פרטים אישיים נשמרו בהצלחה לקריאה",
       });
+
+      // Trigger AI insights generation in background
+      if (currentUser?.id && userEmail) {
+        console.log("[Profile] Triggering AI insights generation after CV upload");
+        invalidateInsightsCache(currentUser.id); // Clear old cache
+        triggerInsightsGeneration(currentUser.id, userEmail)
+          .then(success => {
+            if (success) {
+              console.log("[Profile] AI insights generated successfully");
+            }
+          })
+          .catch(err => console.error("[Profile] Error generating insights:", err));
+      }
 
     } catch (error) {
       console.error("Error uploading file:", error);

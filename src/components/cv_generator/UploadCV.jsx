@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { UploadCloud, FileText, Loader2, CheckCircle, AlertCircle, Eye, Trash2, Upload, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import skipInfoIcon from '@/assets/skip_info_icon.png';
+import { triggerInsightsGeneration, invalidateInsightsCache } from '@/services/insightsService';
 
 export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDelete, onSkip, showSkipDisclaimer }) {
     const [file, setFile] = useState(null);
@@ -72,6 +73,19 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
             }
 
             setUploadStatus('success');
+
+            // Trigger AI insights generation in background
+            if (user?.id && userEmail) {
+                console.log("[UploadCV] Triggering AI insights generation after CV upload");
+                invalidateInsightsCache(user.id); // Clear old cache
+                triggerInsightsGeneration(user.id, userEmail)
+                    .then(success => {
+                        if (success) {
+                            console.log("[UploadCV] AI insights generated successfully");
+                        }
+                    })
+                    .catch(err => console.error("[UploadCV] Error generating insights:", err));
+            }
 
             // Notify parent about success but DO NOT navigate automatically
             if (onUploadSuccess) {

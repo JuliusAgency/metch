@@ -25,6 +25,7 @@ import CVChoiceModal from '@/components/CVChoiceModal';
 import globeGrid from '@/assets/globe_grid.png';
 import StepIndicator from '@/components/ui/StepIndicator';
 import VectorLogo from '@/assets/Vector.svg';
+import { triggerInsightsGeneration, invalidateInsightsCache } from '@/services/insightsService';
 
 const STEPS = ["פרטים אישיים", "ניסיון תעסוקתי", "השכלה", "הסמכות", "כישורים", "תמצית", "תצוגה מקדימה"];
 const STEPS_MOBILE = ["פרטים", "ניסיון", "השכלה", "הסמכות", "כישורים", "תמצית", "קו\"ח"];
@@ -383,9 +384,25 @@ export default function CVGenerator() {
       let savedCv;
       if (cvId) {
         savedCv = await CV.update(cvId, payload);
+        // Invalidate insights cache on CV update
+        if (user?.id) {
+          invalidateInsightsCache(user.id);
+        }
       } else {
         savedCv = await CV.create({ ...payload, user_email: userEmail });
         setCvId(savedCv.id);
+      }
+
+      // Trigger AI insights generation in background after CV save
+      if (user?.id && userEmail && step === STEPS.length) {
+        console.log("[CVGenerator] Triggering AI insights generation after CV creation");
+        triggerInsightsGeneration(user.id, userEmail)
+          .then(success => {
+            if (success) {
+              console.log("[CVGenerator] AI insights generated successfully");
+            }
+          })
+          .catch(err => console.error("[CVGenerator] Error generating insights:", err));
       }
 
 
