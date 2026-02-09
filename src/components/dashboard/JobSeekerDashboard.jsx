@@ -63,20 +63,36 @@ const JobSeekerDashboard = ({ user }) => {
       if (!user) return;
 
       try {
-        const [jobsData, jobViewsData, cvList] = await Promise.all([
-          Job.filter({ status: 'active' }, "-created_date", 100), // Fetch more to filter down
-          JobView.filter({ user_email: user.email }),
+        // 1. Fetch Job Views first to know which IDs we MUST have
+        const jobViewsData = await JobView.filter({ user_email: user.email });
+        const viewedJobIdsSet = new Set(jobViewsData.map(v => v.job_id));
+        const viewedJobIdsArray = Array.from(viewedJobIdsSet);
+
+        // 2. Fetch Recent Jobs (limit 100) AND Viewed Jobs
+        // Since we can't easily do "OR" with the simple entity helper, we'll do parallel fetches
+        const [recentJobs, viewedJobsRaw, cvList] = await Promise.all([
+          Job.filter({ status: 'active' }, "-created_date", 100),
+          viewedJobIdsArray.length > 0
+            ? supabase.from('Job').select('*').in('id', viewedJobIdsArray)
+            : { data: [] },
           CV.filter({ user_email: user.email })
         ]);
 
-        const userCv = cvList.length > 0 ? cvList[0] : {};
-        // Use CV data for matching if available, otherwise fallback to user object
-        // The calculate_match_score utility expects a flat profile structure somewhat, 
-        // or a structure matching what CVGenerator produces. 
-        // We'll pass the merged profile to be safe.
-        // But calculate_match_score expects e.g. 'education' as array. 
-        // If userCv is empty, matching might be poor. 
+        const viewedJobsData = viewedJobsRaw.data || [];
 
+        // 3. Merge unique jobs
+        const jobMap = new Map();
+        recentJobs.forEach(j => jobMap.set(j.id, j));
+        viewedJobsData.forEach(j => {
+          // Only add if active (viewed jobs might have ended)
+          if (j.status === 'active') {
+            jobMap.set(j.id, j);
+          }
+        });
+
+        const jobsData = Array.from(jobMap.values());
+
+        const userCv = cvList.length > 0 ? cvList[0] : {};
         const candidateProfile = userCv.id ? userCv : user;
 
         // Calculate matches and filter
@@ -85,16 +101,21 @@ const JobSeekerDashboard = ({ user }) => {
           return { ...job, match_score: Math.round(score * 100) };
         }));
 
-        // Filter: Match >= 60% (As requested for run period)
-        const qualifiedJobs = scoredJobs.filter(job => job.match_score >= 60);
+        // Filter: Match >= 60% OR if the job was viewed
+        const viewedIds = new Set(jobViewsData.map(view => view.job_id));
+
+        const qualifiedOrViewedJobs = scoredJobs.filter(job =>
+          job.match_score >= 60 || viewedIds.has(job.id)
+        );
 
         // Sort by match score (descending)
-        qualifiedJobs.sort((a, b) => b.match_score - a.match_score);
+        qualifiedOrViewedJobs.sort((a, b) => b.match_score - a.match_score);
 
-        // Apply Limits: Max 30 displayed daily
-        const limitedJobs = qualifiedJobs.slice(0, 30);
+        // Apply Limits: Max 50 displayed daily
+        const limitedJobs = qualifiedOrViewedJobs.slice(0, 50);
 
-        setViewedJobIds(new Set(jobViewsData.map(view => view.job_id)));
+        setViewedJobIds(viewedIds);
+        setAllJobs(limitedJobs);
 
         // Fetch seeker dashboard data (stats + notifications)
         const [dashData, byUserId, byEmail, byCreatedBy] = await Promise.all([
@@ -109,7 +130,7 @@ const JobSeekerDashboard = ({ user }) => {
         if (creatorEmails.length > 0) {
           try {
             const employerProfiles = await Promise.all(
-              creatorEmails.map(email => UserProfile.filter({ email: email.toLowerCase() }))
+              creatorEmails.map(email => UserAnalytics.getUserProfileByEmail(email.toLowerCase()))
             );
             const logoMap = employerProfiles.flat().reduce((acc, profile) => {
               if (profile?.email && profile?.profile_picture) {
@@ -127,8 +148,6 @@ const JobSeekerDashboard = ({ user }) => {
             console.error("Error fetching employer profiles for logos:", e);
           }
         }
-
-        setAllJobs(limitedJobs);
 
         const mergedNotifs = [...(byUserId || []), ...(byEmail || []), ...(byCreatedBy || [])]
           .reduce((acc, current) => {

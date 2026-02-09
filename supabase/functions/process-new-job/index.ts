@@ -21,7 +21,17 @@ serve(async (req) => {
         const payload = await req.json()
         const job = payload.record // The new job record from the webhook
 
-        // 1. Fetch all job seekers
+        // 1. Fetch existing applications for this job
+        const { data: applications, error: appError } = await supabaseClient
+            .from('JobApplication')
+            .select('applicant_id')
+            .eq('job_id', job.id)
+
+        if (appError) throw appError
+
+        const applicantIds = new Set((applications || []).map(app => app.applicant_id))
+
+        // 2. Fetch all job seekers
         const { data: profiles, error: profileError } = await supabaseClient
             .from('UserProfile')
             .select('*')
@@ -29,10 +39,13 @@ serve(async (req) => {
 
         if (profileError) throw profileError
 
-        console.log(`Processing ${profiles.length} profiles for new job: ${job.title}`)
+        console.log(`Processing ${profiles.length} profiles for job: ${job.title}. Exclude ${applicantIds.size} existing applicants.`)
 
         for (const profile of profiles) {
-            // 2. Fast heuristic check before full calculation
+            // 3. Skip if already applied
+            if (applicantIds.has(profile.id)) continue
+
+            // 4. Fast heuristic check before full calculation
             const candSpec = (profile.specialization || '').toLowerCase()
             const jobCat = (job.category || '').toLowerCase()
 
