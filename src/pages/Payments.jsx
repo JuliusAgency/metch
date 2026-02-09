@@ -373,7 +373,7 @@ ET`;
                                                 <div className="flex items-center gap-2 whitespace-nowrap">
                                                     <span className="text-gray-900 font-bold text-lg">חבילת משרות פעילה:</span>
                                                     <span className="text-gray-900 font-bold text-xl">
-                                                        {(userProfile?.credits_balance || 0) + (userJobs.filter(j => j.status === 'active').length || 0) + (userJobs.filter(j => j.status === 'closed' || j.status === 'ended').length || 0)}
+                                                        {(userProfile?.job_credits || 0) + (userJobs.filter(j => j.status === 'active').length || 0) + (userJobs.filter(j => j.status === 'closed' || j.status === 'ended').length || 0)}
                                                     </span>
                                                 </div>
                                             </div>
@@ -381,7 +381,7 @@ ET`;
                                             <div className="flex-1 text-right border-l border-gray-200 pl-8">
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-gray-500 text-sm">זמינות לפרסום:</span>
-                                                    <span className="text-gray-500 font-bold text-lg">{userProfile?.credits_balance || 0}</span>
+                                                    <span className="text-gray-500 font-bold text-lg">{userProfile?.job_credits || 0}</span>
                                                 </div>
                                             </div>
 

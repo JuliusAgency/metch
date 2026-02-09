@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Eye, Check, MessageCircle, ChevronRight } from 'lucide-react';
+import { Eye, Check, MessageCircle, ChevronRight, Trash2 } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
@@ -78,6 +78,8 @@ export default function Packages() {
     // Helper to match Tier Price function name check below
     const getTierPrice = getPricePerJob;
 
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
     const handleSavePaymentMethod = () => {
         const newErrors = {};
 
@@ -110,6 +112,15 @@ export default function Packages() {
         toast({
             title: "אמצעי תשלום עודכן",
             description: "פרטי האשראי עודכנו בהצלחה במערכת",
+        });
+    };
+
+    const handleDeletePaymentMethod = () => {
+        setPaymentData({});
+        setShowDeleteConfirm(false);
+        toast({
+            title: "אמצעי התשלום הוסר",
+            description: "פרטי האשראי נמחקו מהמערכת",
         });
     };
 
@@ -321,7 +332,7 @@ export default function Packages() {
 
                     {/* CTA Button */}
                     {quantity < 10 && (
-                        <div className="flex justify-center pt-6">
+                        <div className="flex flex-col items-center gap-4 pt-6">
                             <Button
                                 onClick={handlePurchase}
                                 disabled={loading}
@@ -334,11 +345,53 @@ export default function Packages() {
                                     </>
                                 )}
                             </Button>
+
+                            {paymentData.cardNumber && (
+                                <button
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                    className="text-gray-400 hover:text-red-500 text-sm flex items-center gap-1.5 transition-colors"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    מחיקת אמצעי תשלום
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
 
                 <div className="my-16 h-px bg-gray-100 w-full max-w-2xl mx-auto"></div>
+
+                {/* Delete Confirmation Modal */}
+                <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+                    <DialogContent className="sm:max-w-[400px] p-8 rounded-[30px]" dir="rtl">
+                        <div className="flex flex-col items-center text-center space-y-6">
+                            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
+                                <Trash2 className="w-8 h-8 text-red-500" />
+                            </div>
+
+                            <div className="space-y-2">
+                                <h2 className="text-xl font-bold text-gray-900">מחיקת אמצעי תשלום</h2>
+                                <p className="text-gray-500">האם אתה בטוח שברצונך למחוק את פרטי כרטיס האשראי מהמערכת?</p>
+                            </div>
+
+                            <div className="flex flex-col w-full gap-3">
+                                <Button
+                                    onClick={handleDeletePaymentMethod}
+                                    className="bg-red-500 hover:bg-red-600 text-white rounded-full py-4 font-bold"
+                                >
+                                    מחק לצמיתות
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    className="text-gray-500 hover:text-gray-700 font-medium"
+                                >
+                                    ביטול
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
 
                 {/* Change Payment Method Modal (Replicated here for purchasing flow) */}
                 <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
