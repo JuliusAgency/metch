@@ -7,7 +7,7 @@ import { User, UserProfile } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Edit, Eye, Copy, Play, Pause, Users, Briefcase, MapPin, Award } from "lucide-react";
-import { createPageUrl } from "@/utils";
+import { createPageUrl, safeParseJSON } from "@/utils";
 import { EmployerAnalytics } from "@/components/EmployerAnalytics";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useUser } from "@/contexts/UserContext";
@@ -70,24 +70,7 @@ export default function JobDetails() {
         if (jobResults.length > 0) {
           const fetchedJob = jobResults[0];
 
-          const safeParseJSON = (data, fallback = []) => {
-            if (!data) return fallback;
-            if (typeof data !== 'string') return data;
-            try {
-              let jsonStr = data;
-              if (jsonStr.startsWith('\\x')) {
-                const hex = jsonStr.slice(2);
-                let str = '';
-                for (let i = 0; i < hex.length; i += 2) {
-                  str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-                }
-                jsonStr = str;
-              }
-              return JSON.parse(jsonStr);
-            } catch (e) {
-              return fallback;
-            }
-          };
+          // safeParseJSON is now imported from utils
 
           fetchedJob.company_perks = safeParseJSON(fetchedJob.company_perks);
           fetchedJob.attachments = safeParseJSON(fetchedJob.attachments);

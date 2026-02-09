@@ -18,7 +18,7 @@ import {
   Star
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { createPageUrl } from "@/utils";
+import { createPageUrl, safeParseJSON } from "@/utils";
 import { format } from "date-fns";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import { useToast } from "@/components/ui/use-toast";
@@ -107,7 +107,17 @@ export default function JobApplications() {
             const profile = idMap[app.applicant_id] || emailMap[app.applicant_email?.toLowerCase()];
             if (profile) {
               try {
-                const score = await calculate_match_score(profile, jobData);
+                // Parse structured fields using safeParseJSON to handle hex strings like JobDetails does
+                const parsedJob = { ...jobData };
+                parsedJob.structured_requirements = safeParseJSON(jobData.structured_requirements, []);
+                parsedJob.structured_certifications = safeParseJSON(jobData.structured_certifications, []);
+                parsedJob.structured_education = safeParseJSON(jobData.structured_education, []);
+
+                // Also parse standard fields if they are JSON strings
+                parsedJob.requirements = safeParseJSON(jobData.requirements, []);
+                parsedJob.responsibilities = safeParseJSON(jobData.responsibilities, []);
+
+                const score = await calculate_match_score(profile, parsedJob);
                 if (score !== null) {
                   scores[app.id] = Math.round(score * 100);
                 } else {

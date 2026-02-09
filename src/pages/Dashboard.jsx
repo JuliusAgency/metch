@@ -29,7 +29,8 @@ import {
   Sparkles
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { createPageUrl } from "@/utils";
+import { calculate_match_score } from "@/utils/matchScore";
+import { createPageUrl, safeParseJSON } from "@/utils";
 import { UserAnalytics } from "@/components/UserAnalytics";
 import { EmployerAnalytics } from "@/components/EmployerAnalytics";
 import EmployerStatsCard from "@/components/employer/EmployerStatsCard";
@@ -37,7 +38,6 @@ import EmployerActivityFeed from "@/components/employer/EmployerActivityFeed";
 import JobSeekerGuide from "@/components/guides/JobSeekerGuide";
 import EmployerGuide from "@/components/guides/EmployerGuide";
 import CareerStageModal from "@/components/dashboard/CareerStageModal";
-import { calculate_match_score } from "@/utils/matchScore";
 const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message'];
 
 const AVAILABILITY_TRANSLATIONS = {
@@ -947,7 +947,7 @@ const EmployerDashboard = ({ user }) => {
 
               if (p) {
                 // Enrich profile with application context
-                return {
+                const profileWithContext = {
                   ...p,
                   applied_job_id: ref.job_id,
                   applied_job_title: ref.job_title,
@@ -955,6 +955,37 @@ const EmployerDashboard = ({ user }) => {
                   // Unique combined ID for React key
                   unique_app_id: `${p.id || p.email}_${ref.job_id}`
                 };
+
+                // Calculate Real Match Score
+                const job = allUserJobs.find(j => j.id === ref.job_id);
+                if (job) {
+                  try {
+                    // Parse structured fields using safeParseJSON to handle hex strings like JobDetails does
+                    const parsedJob = { ...job };
+                    if (safeParseJSON) {
+                      parsedJob.structured_requirements = safeParseJSON(job.structured_requirements, []);
+                      parsedJob.structured_certifications = safeParseJSON(job.structured_certifications, []);
+                      parsedJob.structured_education = safeParseJSON(job.structured_education, []);
+
+                      // Also parse standard fields if they are JSON strings
+                      parsedJob.requirements = safeParseJSON(job.requirements, []);
+                      parsedJob.responsibilities = safeParseJSON(job.responsibilities, []);
+                    }
+
+                    if (typeof calculate_match_score === 'function') {
+                      const score = await calculate_match_score(p, parsedJob);
+                      profileWithContext.match_score = score !== null ? Math.round(score * 100) : 0;
+                    } else {
+                      console.error("calculate_match_score is not a function");
+                      profileWithContext.match_score = 0;
+                    }
+                  } catch (err) {
+                    console.error("Dashboard match calc error:", err);
+                    profileWithContext.match_score = 0;
+                  }
+                }
+
+                return profileWithContext;
               } else {
                 console.warn('[Dashboard] Profile not found for ref:', ref.applicant_email);
               }
@@ -1222,18 +1253,8 @@ const EmployerDashboard = ({ user }) => {
           <div className="space-y-4 candidate-list">
             <h2 className="text-md md:text-lg font-bold text-gray-900 mb-2 px-2">מועמדים שהגישו מועמדות</h2>
             {displayedCandidates.length > 0 ? (displayedCandidates.map((candidate, index) => {
-              // Calculate a stable match score based on candidate ID to ensure consistency
-              const getStableMatchScore = (id) => {
-                if (!id) return 90;
-                let hash = 0;
-                const str = String(id);
-                for (let i = 0; i < str.length; i++) {
-                  hash = str.charCodeAt(i) + ((hash << 5) - hash);
-                }
-                return 75 + (Math.abs(hash) % 25);
-              };
-
-              const match = getStableMatchScore(candidate.id);
+              // Use real calculated match score if available, fallback to 0 (or hide?)
+              const match = candidate.match_score !== undefined ? candidate.match_score : 0;
               const jobAppliedTo = candidateApplications[candidate.email];
 
               // Use global maps for translations

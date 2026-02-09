@@ -9,7 +9,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { User as UserIcon, Loader2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { createPageUrl } from "@/utils";
+import { createPageUrl, safeParseJSON } from "@/utils";
 import { EmployerAnalytics } from "@/components/EmployerAnalytics";
 import ProfileHeader from "@/components/candidate/ProfileHeader";
 import ProfileBadges from "@/components/candidate/ProfileBadges";
@@ -145,11 +145,21 @@ export default function CandidateProfile() {
 
         // 3. Set State & Calculate
         if (jobToUse) {
+          // Parse structured fields using safeParseJSON to handle hex strings like JobDetails does
+          const parsedJob = { ...jobToUse };
+          parsedJob.structured_requirements = safeParseJSON(jobToUse.structured_requirements, []);
+          parsedJob.structured_certifications = safeParseJSON(jobToUse.structured_certifications, []);
+          parsedJob.structured_education = safeParseJSON(jobToUse.structured_education, []);
+
+          // Also parse standard fields if they are JSON strings
+          parsedJob.requirements = safeParseJSON(jobToUse.requirements, []);
+          parsedJob.responsibilities = safeParseJSON(jobToUse.responsibilities, []);
+
           setAppliedJob({ title: jobToUse.title, location: jobToUse.location });
-          setFullJobData(jobToUse);
+          setFullJobData(parsedJob); // Store the parsed version
 
           try {
-            const score = await calculate_match_score(candidate, jobToUse);
+            const score = await calculate_match_score(candidate, parsedJob);
             if (score !== null) {
               setCalculatedMatchScore(Math.round(score * 100));
             }
