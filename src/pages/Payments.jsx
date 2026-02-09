@@ -4,6 +4,8 @@ import { Eye, Download, FileOutput, ChevronRight } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { useUser } from "@/contexts/UserContext";
+import { UserProfile, Job } from "@/api/entities";
 import {
     Dialog,
     DialogContent,
@@ -29,6 +31,34 @@ export default function Payments() {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // Fetch User Profile and Jobs for Statistics
+    const { user } = useUser();
+    const [userProfile, setUserProfile] = useState(null);
+    const [userJobs, setUserJobs] = useState([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (user?.id) {
+                try {
+                    // Fetch Profile for Credits
+                    const profileData = await UserProfile.filter({ id: user.id });
+                    if (profileData && profileData.length > 0) {
+                        setUserProfile(profileData[0]);
+                    }
+
+                    // Fetch Jobs for Stats
+                    const jobsData = await Job.filter({ created_by: user.email }); // Assuming filter by email based on JobManagement.jsx
+                    if (jobsData) {
+                        setUserJobs(jobsData);
+                    }
+                } catch (error) {
+                    console.error("Error fetching payment stats data:", error);
+                }
+            }
+        };
+        fetchData();
+    }, [user]);
 
     // Mock data initial state
     const [transactions, setTransactions] = useState([
@@ -334,26 +364,46 @@ ET`;
 
                         {/* Desktop View (Hidden on Mobile) */}
                         <div className="hidden md:block max-w-5xl mx-auto">
-                            {/* Payment Method Section - Desktop */}
+                            {/* Statistics Bar - Desktop */}
                             <Card className="rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100 mb-8">
-                                <CardContent className="p-3">
-                                    <div className="bg-[#F8FAFC] rounded-xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-                                        <div className="text-right space-y-1">
-                                            <p className="text-gray-500 text-sm">אמצעי תשלום</p>
-                                            <div className="flex items-center gap-2 justify-end">
-                                                <p className="text-gray-500 text-sm tracking-widest font-normal" dir="ltr">xxxx {paymentData.cardNumber ? paymentData.cardNumber.replace(/\D/g, '').slice(-4) : '6655'}</p>
+                                <CardContent className="p-1">
+                                    <div className="bg-[#F8FAFC] rounded-xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 h-20">
+                                        <div className="flex items-center gap-8 w-full">
+                                            <div className="flex-1 text-right border-l border-gray-200 pl-8">
+                                                <div className="flex items-center gap-2 whitespace-nowrap">
+                                                    <span className="text-gray-900 font-bold text-lg">חבילת משרות פעילה:</span>
+                                                    <span className="text-gray-900 font-bold text-xl">
+                                                        {(userProfile?.credits_balance || 0) + (userJobs.filter(j => j.status === 'active').length || 0) + (userJobs.filter(j => j.status === 'closed' || j.status === 'ended').length || 0)}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex-1 text-right border-l border-gray-200 pl-8">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-gray-500 text-sm">זמינות לפרסום:</span>
+                                                    <span className="text-gray-500 font-bold text-lg">{userProfile?.credits_balance || 0}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex-1 text-right border-l border-gray-200 pl-8">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-gray-500 text-sm">בפרסום פעיל:</span>
+                                                    <span className="text-gray-500 font-bold text-lg">{userJobs.filter(j => j.status === 'active').length || 0}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex-1 text-right">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-gray-500 text-sm">משרות שהסתיימו:</span>
+                                                    <span className="text-gray-500 font-bold text-lg">{userJobs.filter(j => j.status === 'closed' || j.status === 'ended').length || 0}</span>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
-                                            <Button
-                                                onClick={() => setShowPaymentModal(true)}
-                                                className="bg-[#1E3A8A] hover:bg-[#1e293b] text-white rounded-full px-6 py-2 h-auto text-sm font-medium shadow-none w-full md:w-auto"
-                                            >
-                                                שינוי אמצעי תשלום
-                                            </Button>
+
+                                        <div className="flex items-center gap-3 w-auto">
                                             <Button
                                                 onClick={handleSelectPackage}
-                                                className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-6 py-2 h-auto text-sm font-medium shadow-none w-full md:w-auto"
+                                                className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-8 py-2 h-10 text-sm font-bold shadow-none whitespace-nowrap"
                                             >
                                                 לרכישת משרות
                                             </Button>
