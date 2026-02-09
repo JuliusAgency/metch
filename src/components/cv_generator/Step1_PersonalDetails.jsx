@@ -109,10 +109,13 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     return input.split('T')[0];
   };
 
-  useEffect(() => {
-    console.log("[Step1] Initializing with data:", { data, user });
+  const [isInitialized, setIsInitialized] = useState(false);
 
-    // TRUTH: Always prioritize existing form data (edits), fallback to user profile
+  useEffect(() => {
+    if (isInitialized) return;
+
+    console.log("[Step1] Initializing with data:", { data, user });
+    // ... rest of the initialization logic remains similar but only runs once or when forced
     const fullName = data?.full_name || user?.full_name || '';
     const nameParts = fullName.trim().split(/\s+/);
     const firstName = nameParts[0] || '';
@@ -124,7 +127,6 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     const profileBirthDate = getBirthDateValue(user);
     const cvBirthDate = getBirthDateValue(data);
 
-    // For phone/gender, update prioritization too
     const phoneValue = data?.phone || user?.phone || '';
     const genderValue = data?.gender || user?.gender || '';
 
@@ -134,15 +136,15 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
       fullName: fullName,
       phone: phoneValue,
       address: isValidAddress ? savedAddress : '',
-      birthDate: sanitizeDateForInput(cvBirthDate || profileBirthDate), // Prioritize CV data for birthdate too
+      birthDate: sanitizeDateForInput(cvBirthDate || profileBirthDate),
       gender: genderValue,
       is_phone_verified: data?.is_phone_verified || false
     };
 
-    console.log("[Step1] Final Initial State:", initialState);
     setLocalData(initialState);
     notifyValidity(initialState);
-  }, [data, user, notifyValidity]);
+    setIsInitialized(true);
+  }, [user?.id, data?.id, isInitialized, notifyValidity]); // Removed undefined cvId, added data?.id as a safe alternative if available
 
   const updateParentData = (key, value, currentLocalData) => {
     setData(parentData => {
@@ -172,11 +174,22 @@ export default function Step1_PersonalDetails({ data, setData, user, onValidityC
     setLocalData(prev => {
       const updatedLocal = { ...prev, [name]: nextValue };
 
-      // If first or last name changed, update fullName
-      if (name === 'firstName' || name === 'lastName') {
+      // If fullName changed (mobile), update firstName and lastName
+      if (name === 'fullName') {
+        const parts = nextValue.trim().split(/\s+/);
+        updatedLocal.firstName = parts[0] || '';
+        updatedLocal.lastName = parts.slice(1).join(' ') || '';
+        updateParentData('fullName', nextValue, updatedLocal);
+        updateParentData('firstName', updatedLocal.firstName, updatedLocal);
+        updateParentData('lastName', updatedLocal.lastName, updatedLocal);
+      }
+      // If first or last name changed (desktop), update fullName
+      else if (name === 'firstName' || name === 'lastName') {
         const combined = `${updatedLocal.firstName} ${updatedLocal.lastName}`.trim();
         updatedLocal.fullName = combined;
         updateParentData('fullName', combined, updatedLocal);
+        updateParentData('firstName', updatedLocal.firstName, updatedLocal);
+        updateParentData('lastName', updatedLocal.lastName, updatedLocal);
       } else {
         updateParentData(name, nextValue, updatedLocal);
       }

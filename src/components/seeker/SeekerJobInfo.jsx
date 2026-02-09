@@ -108,52 +108,29 @@ const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, 
 
     return (
         <div className="space-y-6">
-            {/* MOBILE: Tabs + Accordion */}
-            <div className="md:hidden space-y-4">
-                {/* Tabs Navigation */}
-                <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-sm -mx-4 px-4 py-2 border-b">
-                    <div className="flex justify-between border-b overflow-x-auto no-scrollbar">
-                        {sections.map((s) => (
-                            <button
-                                key={s.id}
-                                onClick={() => setActiveTab(s.id)}
-                                className={`pb-2 px-2 text-sm font-bold whitespace-nowrap transition-colors relative ${activeTab === s.id ? 'text-[#003566]' : 'text-gray-400'
-                                    }`}
-                            >
-                                {s.label}
-                                {activeTab === s.id && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-400 rounded-t-full" />
-                                )}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Perks/Points Section below Navigation */}
+            {/* MOBILE: Continuous List (No Tabs/Accordions) */}
+            <div className="md:hidden space-y-8">
+                {/* Perks/Points Section */}
                 {perks && perks.length > 0 && (
-                    <div className="pt-4 pb-2 px-2">
+                    <div className="pb-2">
                         <SeekerJobPerks perks={perks} compact={true} />
                     </div>
                 )}
 
-                {/* Accordion Sections */}
-                <Accordion type="single" collapsible value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                    {sections.map((s) => (
-                        <AccordionItem
-                            key={s.id}
-                            value={s.id}
-                            className={`border rounded-2xl px-4 py-2 bg-white shadow-sm transition-all ${activeTab === s.id && s.id === 'why_suitable'
-                                ? 'border-[#3d83f6] ring-1 ring-[#3d83f6]'
-                                : 'data-[state=open]:border-blue-400 data-[state=open]:ring-1 data-[state=open]:ring-blue-400'
-                                }`}
-                        >
-                            <AccordionTrigger className="hover:no-underline py-2">
-                                <div className="flex items-center gap-3 w-full text-right">
-                                    <s.icon className={`w-5 h-5 ${s.iconColor || 'text-gray-500'}`} />
-                                    <span className="font-bold text-lg text-[#003566] flex-1">{s.label}</span>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="text-right">
+                {sections.map((s) => {
+                    // specific check for AI sections to show loading or empty states correctly
+                    if ((s.id === "match_analysis" || s.id === "why_suitable") && !isAiLoading && !s.content) return null;
+                    if (s.id !== "match_analysis" && s.id !== "why_suitable" && (!s.content || (Array.isArray(s.content) && s.content.length === 0))) return null;
+
+                    return (
+                        <div key={s.id} className="space-y-3">
+                            <h3 className="font-bold text-xl text-[#003566] flex items-center gap-2">
+                                {(s.id === "match_analysis" || s.id === "why_suitable") && (
+                                    <s.icon className={`w-5 h-5 ${s.iconColor || 'text-blue-500'}`} />
+                                )}
+                                {s.label}
+                            </h3>
+                            <div className="text-[#4a5568] text-[15px] leading-relaxed text-right">
                                 {(s.id === "match_analysis" || s.id === "why_suitable") && isAiLoading ? (
                                     <div className="space-y-2 animate-pulse pt-2">
                                         <div className="h-4 bg-gray-200/50 rounded w-full"></div>
@@ -166,30 +143,10 @@ const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, 
                                 ) : (
                                     renderContent(s.content)
                                 )}
-                            </AccordionContent>
-                        </AccordionItem>
-                    ))}
-                </Accordion>
-
-                {/* AI Thoughts (Metch Thoughts) - HIDDEN ON MOBILE */}
-                {showAiAnalysis && (
-                    <section className="hidden md:block mt-8 p-4 bg-blue-50/50 rounded-2xl space-y-3">
-                        <h3 className="font-bold text-lg text-[#003566] flex items-center justify-end gap-2">
-                            מה מאצ' חושב על ההתאמה?
-                            <Sparkles className="w-5 h-5 text-blue-500 shrink-0" />
-                        </h3>
-                        <div className="text-[#4a5568] text-[15px] leading-relaxed text-right">
-                            {isAiLoading ? (
-                                <div className="space-y-2 animate-pulse">
-                                    <div className="h-4 bg-gray-200/50 rounded w-full"></div>
-                                    <div className="h-4 bg-gray-200/50 rounded w-5/6"></div>
-                                </div>
-                            ) : (
-                                <p>{aiAnalysis?.why_suitable || aiAnalysis?.summary || "נתונים אינם זמינים כעת"}</p>
-                            )}
+                            </div>
                         </div>
-                    </section>
-                )}
+                    );
+                })}
             </div>
 
             {/* DESKTOP (Reordered Layout) */}

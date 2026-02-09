@@ -41,23 +41,37 @@ export async function is_career_change(candidate_profile, job_posting) {
     // Create prompt for AI analysis
     const prompt = createCareerChangePrompt(candidateBackground, jobRequirements);
 
-    // Call AI to analyze
-    const response = await InvokeLLM({
-      prompt,
-      model: 'gpt-3.5-turbo',
-      temperature: 0.3,
-      max_tokens: 200
-    });
+    // Call AI to analyze with timeout protection
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('AI analysis timeout')), 8000)
+    );
 
-    // Parse AI response
-    const result = parseCareerChangeResponse(response.content);
-    
-    // Save to cache
-    careerChangeCache.set(cacheKey, result);
-    
-    return result;
+    try {
+      const response = await Promise.race([
+        InvokeLLM({
+          prompt,
+          model: 'gpt-3.5-turbo',
+          temperature: 0.3,
+          max_tokens: 200
+        }),
+        timeoutPromise
+      ]);
+
+      // Parse AI response
+      const result = parseCareerChangeResponse(response.content);
+      
+      // Save to cache
+      careerChangeCache.set(cacheKey, result);
+      
+      return result;
+    } catch (aiError) {
+      console.warn(`Career change AI failed for job ${job_posting.id}:`, aiError.message);
+      // Fallback: If AI fails (network, timeout, etc.), default to NO career change
+      // to avoid blocking the user from potentially relevant jobs.
+      return false; 
+    }
   } catch (error) {
-    console.error('Error in career change detection:', error);
+    console.error('Critical error in career change detection:', error);
     return false;
   }
 }

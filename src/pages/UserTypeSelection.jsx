@@ -134,18 +134,10 @@ const UserTypeSelection = () => {
         />
       </div>
 
-      <div className="md:hidden fixed top-4 left-0 right-0 z-50 h-[54px] px-4 w-full pointer-events-none">
-        <div className="mx-auto w-full h-[54px] bg-[rgba(255,255,255,0.3)] backdrop-blur-md border border-white rounded-[50px] shadow-sm flex items-center justify-between px-4" dir="rtl">
-          <Menu className="w-8 h-8 text-gray-800" />
-          <div className="flex items-center gap-1.5 translate-y-[-1px]">
-            <h1 className="text-gray-800 text-2xl metch-logo-font">Metch</h1>
-            <img src={metchStar} alt="Star" className="w-3.5 h-3.5 mb-0.5" />
-          </div>
-        </div>
-      </div>
+
 
       {/* Main Card */}
-      <div className="bg-transparent md:bg-white md:rounded-[40px] shadow-none md:shadow-[0_4px_20px_rgba(0,0,0,0.03)] w-full md:w-[99%] max-w-[1800px] h-auto md:h-[85vh] min-h-[auto] md:min-h-[600px] relative z-10 flex flex-col md:flex-row overflow-visible md:overflow-hidden border-none md:border border-white mt-0 md:mt-0 pt-24 md:pt-0">
+      <div className="bg-transparent md:bg-white md:rounded-[40px] shadow-none md:shadow-[0_4px_20px_rgba(0,0,0,0.03)] w-full md:w-[99%] max-w-[1800px] h-auto md:h-[85vh] min-h-[auto] md:min-h-[600px] relative z-10 flex flex-col md:flex-row overflow-visible md:overflow-hidden border-none md:border border-white mt-0 md:mt-0 pt-10 md:pt-0">
 
         {/* Right Side: Content (Visual Right in RTL, First in DOM) */}
         <div className="w-full md:w-1/2 h-auto md:h-full flex flex-col justify-start md:justify-center px-0 md:px-16 lg:px-24 mb-0 md:mb-0 items-center flex-grow">
@@ -195,14 +187,14 @@ const UserTypeSelection = () => {
               <img
                 src={astronautWindow}
                 alt="Astronaut"
-                className="w-[85%] h-full object-contain object-bottom"
+                className="w-[79%] h-full object-contain object-bottom"
               />
             </div>
 
           </div>
 
           {/* Mobile Globe - Outside Card to Allow Overflow */}
-          <div className="md:hidden absolute bottom-[-10vh] left-[-18vh] w-[60vh] h-[60vh] pointer-events-none z-50">
+          <div className="md:hidden absolute bottom-[-10vh] left-[-18vh] w-[54vh] h-[54vh] pointer-events-none z-50">
             <img
               src={globeGrid}
               alt="Globe Grid"

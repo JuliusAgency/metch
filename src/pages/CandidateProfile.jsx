@@ -195,11 +195,32 @@ export default function CandidateProfile() {
     const INSIGHTS_ASSISTANT_ID = 'asst_y0XNCLBkyuYcbzxjYUdmHbxr';
     const cacheKey = `employer_insights_v3_${candidateData.id}_${jobId || 'general'}`;
 
+    // 1. Try to fetch from Database first if we have a jobId context
+    if (jobId) {
+      try {
+        const apps = await JobApplication.filter({
+          job_id: jobId,
+          applicant_email: candidateData.email
+        });
+
+        if (apps.length > 0 && apps[0].ai_insights) {
+          console.log("Loaded insights from DB");
+          setAiInsights(apps[0].ai_insights);
+          return;
+        }
+      } catch (dbErr) {
+        console.warn("Details fetching insights from DB:", dbErr);
+      }
+    }
+
+    // Fallback to local storage if DB fetch failed or no jobId
     const cachedData = localStorage.getItem(cacheKey);
     if (cachedData) {
       try {
         const parsed = JSON.parse(cachedData);
         setAiInsights(parsed);
+        // If we found local cache but valid DB context exists, we should probably save it to DB
+        // But for now, let's respect the cache and lazily migrate on next generation
         return;
       } catch (e) {
         console.error("Error parsing cached insights", e);
@@ -381,6 +402,27 @@ export default function CandidateProfile() {
             };
             setAiInsights(insights);
             localStorage.setItem(cacheKey, JSON.stringify(insights));
+
+            // Save to DB
+            if (jobId) {
+              try {
+                // Find application again to get ID, or use filter
+                const apps = await JobApplication.filter({
+                  job_id: jobId,
+                  applicant_email: candidateData.email
+                });
+
+                if (apps.length > 0) {
+                  await JobApplication.update(apps[0].id, {
+                    ...apps[0],
+                    ai_insights: insights
+                  });
+                  console.log("Saved insights to DB");
+                }
+              } catch (saveErr) {
+                console.error("Error saving insights to DB:", saveErr);
+              }
+            }
           }
         } catch (e) {
           console.error("Failed to parse AI JSON", e, response.content);

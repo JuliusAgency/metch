@@ -303,27 +303,34 @@ const JobSeekerDashboard = ({ user }) => {
           ...(userCv || {})
         };
 
-        // Calculate match scores for each job
-        const jobsWithScores = await Promise.all(
-          jobsData.map(async (job) => {
-            let matchScore = null;
-            if (enhancedProfile) {
-              try {
-                const userSettings = {
-                  prefers_no_career_change: enhancedProfile.prefers_no_career_change || false
-                };
-                const score = await calculate_match_score(enhancedProfile, job, userSettings);
-                matchScore = score !== null ? Math.round(score * 100) : null;
-              } catch (error) {
-                console.error(`Error calculating match score for job ${job.id}:`, error);
+        // Calculate match scores for each job in chunks to prevent network/AI stalls
+        const jobsWithScores = [];
+        const CHUNK_SIZE = 5;
+
+        for (let i = 0; i < jobsData.length; i += CHUNK_SIZE) {
+          const chunk = jobsData.slice(i, i + CHUNK_SIZE);
+          const chunkResults = await Promise.all(
+            chunk.map(async (job) => {
+              let matchScore = null;
+              if (enhancedProfile) {
+                try {
+                  const userSettings = {
+                    prefers_no_career_change: enhancedProfile.prefers_no_career_change || false
+                  };
+                  const score = await calculate_match_score(enhancedProfile, job, userSettings);
+                  matchScore = score !== null ? Math.round(score * 100) : null;
+                } catch (error) {
+                  console.error(`Error calculating match score for job ${job.id}:`, error);
+                }
               }
-            }
-            return {
-              ...job,
-              match_score: matchScore
-            };
-          })
-        );
+              return {
+                ...job,
+                match_score: matchScore
+              };
+            })
+          );
+          jobsWithScores.push(...chunkResults);
+        }
 
         // Enhance stats with notification view data (which is more reliable than CandidateView right now)
         const { profileCount, resumeCount } = profileViewsData;
@@ -1256,7 +1263,7 @@ const EmployerDashboard = ({ user }) => {
             <h2 className="text-md md:text-lg font-bold text-gray-900 mb-2 px-2">מועמדים שהגישו מועמדות</h2>
             {displayedCandidates.length > 0 ? (displayedCandidates.map((candidate, index) => {
               // Use real calculated match score if available, fallback to 0 (or hide?)
-              const match = candidate.match_score !== undefined ? candidate.match_score : 0;
+              const match = (candidate.match_score !== undefined && candidate.match_score !== null) ? candidate.match_score : 0;
               const jobAppliedTo = candidateApplications[candidate.email];
 
               // Use global maps for translations
@@ -1332,13 +1339,13 @@ const EmployerDashboard = ({ user }) => {
                             </div>
                           </div>
 
-                          {match !== null && (
-                            <div className="flex-1 relative h-5 bg-gray-200 rounded-full overflow-hidden shadow-inner w-full">
+                          {match >= 0 && (
+                            <div className="w-full md:flex-1 relative h-3.5 bg-gray-200 rounded-full overflow-hidden shadow-inner mt-2 md:mt-0">
                               <div
                                 className={`absolute right-0 top-0 h-full transition-all duration-700 ${match >= 70 ? 'bg-green-400/90' : match >= 40 ? 'bg-orange-400/90' : 'bg-red-400/90'}`}
                                 style={{ width: `${match}%` }}
                               ></div>
-                              <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-black z-10 pointer-events-none">
+                              <div className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-black z-10 pointer-events-none">
                                 {match}% התאמה
                               </div>
                             </div>
