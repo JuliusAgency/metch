@@ -150,11 +150,13 @@ export default function JobManagement() {
         title: `${job.title} (עותק)`,
         status: 'draft',
         created_by: user.email,
+        created_date: new Date().toISOString(), // Ensure fresh creation date
       };
 
       const created = await Job.create(newJob);
       if (created) {
         toast({ title: "המשרה שוכפלה בהצלחה", description: "נוצרה משרה חדשה במצב טיוטה" });
+        setActiveView('active'); // Switch to active jobs tab
         loadData();
       }
     } catch (e) {
