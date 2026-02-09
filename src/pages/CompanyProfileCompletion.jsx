@@ -258,13 +258,18 @@ export default function CompanyProfileCompletion() {
         const updates = { is_onboarding_completed: true };
 
         // Calculate and save job credits acquired during onboarding
+        const isFreeEligible = !freshUser.profile?.is_free_job_redeemed;
+
         if (packageData.quantity > 0) {
           updates.job_credits = currentCredits + packageData.quantity;
 
-          // If they chose the free job (1 job for 0 NIS)
-          if (packageData.quantity === 1 && packageData.price === 0) {
+          // If they were eligible for the intro offer and made a purchase, mark it as redeemed
+          if (isFreeEligible) {
             updates.is_free_job_redeemed = true;
-            // Force credit to be at least 1 if it's the free job claim
+          }
+
+          // If they chose the free job (1 job for 0 NIS), ensure they get at least 1 credit
+          if (packageData.quantity === 1 && packageData.price === 0) {
             if (updates.job_credits < 1) {
               updates.job_credits = 1;
             }
@@ -272,8 +277,6 @@ export default function CompanyProfileCompletion() {
         } else {
           // Fallback: If for some reason quantity is 0 but it's the first time
           // and they are eligible, give them 1 credit.
-          // This safeguards against UI glitches.
-          const isFreeEligible = !freshUser.profile?.is_free_job_redeemed;
           if (isFreeEligible && packageData.price === 0) {
             updates.job_credits = currentCredits + 1;
             updates.is_free_job_redeemed = true;

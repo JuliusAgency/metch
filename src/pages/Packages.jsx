@@ -152,8 +152,9 @@ export default function Packages() {
 
             const updates = { job_credits: newCredits };
 
-            // If they just used their free job, mark it as redeemed
-            if (quantity === 1 && isFreeJobEligible) {
+            // If they are eligible for the free/introductory offer, mark it as redeemed
+            // regardless of whether they took the free job (qty=1) or a discounted bundle
+            if (isFreeJobEligible) {
                 updates.is_free_job_redeemed = true;
             }
 
