@@ -872,7 +872,9 @@ const EmployerDashboard = ({ user }) => {
           }))).flat()
         ]);
 
-        const allAppsFlat = allAppsFlatUnsorted.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+        const allAppsFlat = allAppsFlatUnsorted
+          .filter(app => app.status !== 'rejected' && app.status !== 'irrelevant') // Filter out rejected/irrelevant applications
+          .sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
 
         const realTotalApps = allAppsFlat.length;
         const realTotalViews = allViewsFlat.length;
@@ -1013,7 +1015,7 @@ const EmployerDashboard = ({ user }) => {
         const enhancedStats = {
           ...dashboardData.stats,
           total_jobs_published: activeJobs.length,      // Active + Paused jobs
-          total_applications_received: applicantProfiles.length,   // SYNC: Use resolved profiles count
+          total_applications_received: allAppsFlatUnsorted.length,   // SYNC: Use total unfiltered applications count (matches "CVs submitted" statistic)
           total_job_views: realTotalViews,              // Sum of views for Active/Paused jobs
           total_candidates_viewed: viewedCandidatesData.length,
           conversion_rate: realTotalViews > 0
