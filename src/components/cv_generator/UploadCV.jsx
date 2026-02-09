@@ -7,12 +7,15 @@ import { UploadCloud, FileText, Loader2, CheckCircle, AlertCircle, Eye, Trash2, 
 import { motion, AnimatePresence } from 'framer-motion';
 import skipInfoIcon from '@/assets/skip_info_icon.png';
 import { triggerInsightsGeneration, invalidateInsightsCache } from '@/services/insightsService';
+import { extractTextFromPdf } from '@/utils/pdfUtils';
+import { useToast } from "@/components/ui/use-toast";
 
 export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDelete, onSkip, showSkipDisclaimer }) {
     const [file, setFile] = useState(null);
     const [uploadStatus, setUploadStatus] = useState('idle'); // idle, uploading, success, error
     const [errorMessage, setErrorMessage] = useState('');
     const fileInputRef = useRef(null);
+    const { toast } = useToast();
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -57,13 +60,33 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
             // 2. Update the User entity with the new resume URL
             await User.updateMyUserData({ resume_url: fileUrl });
 
-            // 3. Find existing CV record or create a new one to store metadata
+            // 3. Extract text found in PDF (Frontend parsing)
+            let extractedText = null;
+            if (fileProcess.type === 'application/pdf') {
+                try {
+                    console.log("[UploadCV] Extracting text from PDF...");
+                    // We need a URL for pdfjs to read. We can use the public URL or create a blob URL.
+                    // Using blob URL avoids CORS issues with the public bucket immediately after upload.
+                    const blobUrl = URL.createObjectURL(fileProcess);
+                    extractedText = await extractTextFromPdf(blobUrl);
+                    URL.revokeObjectURL(blobUrl);
+                    console.log("[UploadCV] Text extracted successfully, length:", extractedText.length);
+                } catch (err) {
+                    console.error("[UploadCV] Failed to extract text from PDF:", err);
+                    // Continue without text - backend might handle it or user can try again
+                }
+            } else {
+                console.log("[UploadCV] File is not PDF, skipping frontend extraction");
+            }
+
+            // 4. Find existing CV record or create a new one to store metadata
             const existingCvs = await CV.filter({ user_email: userEmail });
             const cvMetadata = {
                 user_email: userEmail,
                 file_name: fileProcess.name,
                 file_size_kb: String(Math.round(fileProcess.size / 1024)),
                 last_modified: new Date().toISOString(),
+                parsed_content: extractedText // Update with extracted text or null
             };
 
             if (existingCvs.length > 0) {
