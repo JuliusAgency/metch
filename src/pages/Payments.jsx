@@ -289,51 +289,45 @@ ET`;
                         <div className="md:hidden bg-transparent p-4">
                             {/* Payment Method Section - Mobile Updated */}
                             <div className="max-w-md mx-auto">
-                                {/* Mobile Statistics Bar (One Line) */}
-                                <div className="bg-white rounded-[16px] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-4 mb-6 relative z-10">
-                                    <div className="flex justify-between items-center text-center w-full px-1">
-                                        <div className="flex flex-col items-center flex-1 border-l border-gray-100 px-1">
-                                            <span className="text-gray-900 font-bold text-lg leading-tight">
-                                                {(userProfile?.job_credits || 0) + (userJobs.filter(j => j.status === 'active').length || 0) + (userJobs.filter(j => j.status === 'closed' || j.status === 'ended').length || 0)}
-                                            </span>
-                                            <span className="text-gray-500 text-[10px] whitespace-nowrap pt-1">חבילה</span>
+                                {/* Mobile Statistics Bar with Integrated Button (Side-by-side) */}
+                                <div className="bg-white rounded-[20px] shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100 p-3 mb-6 relative z-10">
+                                    <div className="flex items-center gap-2">
+                                        {/* Statistics Row (NARROWER) */}
+                                        <div className="flex-1 flex justify-between items-center text-center">
+                                            <div className="flex flex-col items-center flex-1 border-l border-gray-100 px-0.5">
+                                                <span className="text-gray-900 font-bold text-base leading-tight">
+                                                    {(userProfile?.job_credits || 0) + (userJobs.filter(j => j.status === 'active').length || 0) + (userJobs.filter(j => j.status === 'closed' || j.status === 'ended').length || 0)}
+                                                </span>
+                                                <span className="text-gray-500 text-[9px] whitespace-nowrap">חבילה</span>
+                                            </div>
+
+                                            <div className="flex flex-col items-center flex-1 border-l border-gray-100 px-0.5">
+                                                <span className="text-gray-500 font-bold text-base leading-tight">{userProfile?.job_credits || 0}</span>
+                                                <span className="text-gray-500 text-[9px] whitespace-nowrap">יתרה</span>
+                                            </div>
+
+                                            <div className="flex flex-col items-center flex-1 border-l border-gray-100 px-0.5">
+                                                <span className="text-gray-500 font-bold text-base leading-tight">{userJobs.filter(j => j.status === 'active').length || 0}</span>
+                                                <span className="text-gray-500 text-[9px] whitespace-nowrap">בפרסום</span>
+                                            </div>
+
+                                            <div className="flex flex-col items-center flex-1 px-0.5">
+                                                <span className="text-gray-500 font-bold text-base leading-tight">{userJobs.filter(j => j.status === 'closed' || j.status === 'ended').length || 0}</span>
+                                                <span className="text-gray-500 text-[9px] whitespace-nowrap">הסתיימו</span>
+                                            </div>
                                         </div>
 
-                                        <div className="flex flex-col items-center flex-1 border-l border-gray-100 px-1">
-                                            <span className="text-gray-500 font-bold text-lg leading-tight">{userProfile?.job_credits || 0}</span>
-                                            <span className="text-gray-500 text-[10px] whitespace-nowrap pt-1">יתרה</span>
-                                        </div>
-
-                                        <div className="flex flex-col items-center flex-1 border-l border-gray-100 px-1">
-                                            <span className="text-gray-500 font-bold text-lg leading-tight">{userJobs.filter(j => j.status === 'active').length || 0}</span>
-                                            <span className="text-gray-500 text-[10px] whitespace-nowrap pt-1">בפרסום</span>
-                                        </div>
-
-                                        <div className="flex flex-col items-center flex-1 px-1">
-                                            <span className="text-gray-500 font-bold text-lg leading-tight">{userJobs.filter(j => j.status === 'closed' || j.status === 'ended').length || 0}</span>
-                                            <span className="text-gray-500 text-[10px] whitespace-nowrap pt-1">הסתיימו</span>
+                                        {/* Side Button */}
+                                        <div className="w-[75px] flex-shrink-0">
+                                            <Button
+                                                onClick={handleSelectPackage}
+                                                className="w-full bg-[#2987cd] hover:bg-[#1f6ba8] text-white text-[11px] leading-tight rounded-xl h-[40px] font-bold shadow-sm p-1"
+                                            >
+                                                לרכישה
+                                            </Button>
                                         </div>
                                     </div>
                                 </div>
-
-                                <Card className="rounded-[16px] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 mb-8 bg-white">
-                                    <CardContent className="p-0">
-                                        <div className="bg-white rounded-[16px] p-4 flex flex-row items-center justify-between gap-3">
-                                            <Button
-                                                onClick={() => setShowPaymentModal(true)}
-                                                className="flex-1 bg-[#001a6e] hover:bg-[#1e293b] text-white text-[11px] rounded-full px-2 h-10 font-medium shadow-none"
-                                            >
-                                                שינוי אמצעי תשלום
-                                            </Button>
-                                            <Button
-                                                onClick={handleSelectPackage}
-                                                className="flex-1 bg-[#2987cd] hover:bg-[#1f6ba8] text-white text-[11px] rounded-full px-2 h-10 font-bold shadow-none"
-                                            >
-                                                רכישת חבילות
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
 
                                 {/* Recent Transactions - Mobile Updated */}
                                 <div>

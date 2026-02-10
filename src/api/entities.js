@@ -30,12 +30,10 @@ export const CV = {
   ...defaultCvMethods,
   // Override create to avoid 'select *' schema cache issues
   async create(data) {
-      // Remove parsed_content if it sneaks in
-      const { parsed_content, ...cleanData } = data;
       const { data: result, error } = await supabase
         .from('CV')
-        .insert(cleanData)
-        .select('id, user_email, file_name, file_size_kb, last_modified') // Explicit columns
+        .insert(data)
+        .select('id, user_email, file_name, file_size_kb, last_modified, parsed_content')
         .single();
       
       if (error) throw error;
@@ -43,16 +41,39 @@ export const CV = {
   },
   // Override update too
   async update(id, data) {
-      const { parsed_content, ...cleanData } = data;
       const { data: result, error } = await supabase
         .from('CV')
-        .update(cleanData)
+        .update(data)
         .eq('id', id)
-        .select('id, user_email, file_name, file_size_kb, last_modified')
+        .select('id, user_email, file_name, file_size_kb, last_modified, parsed_content')
         .single();
       
       if (error) throw error;
       return result;
+  },
+  // Override filter to ensure parsed_content is included
+  async filter(filters = {}, orderBy = null, limit = null) {
+      let query = supabase.from('CV').select('id, user_email, file_name, file_size_kb, last_modified, parsed_content');
+      
+      if (filters && Object.keys(filters).length > 0) {
+        Object.entries(filters).forEach(([key, value]) => {
+          query = query.eq(key, value);
+        });
+      }
+      
+      if (orderBy) {
+        const isDescending = orderBy.startsWith('-');
+        const column = isDescending ? orderBy.substring(1) : orderBy;
+        query = query.order(column, { ascending: !isDescending });
+      }
+      
+      if (limit) {
+        query = query.limit(limit);
+      }
+      
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || [];
   }
 };
 

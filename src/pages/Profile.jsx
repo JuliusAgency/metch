@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2, Compass, ChevronRight, Eye, X, Plus } from 'lucide-react';
+import { FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2, Compass, ChevronRight, Eye, X, Plus, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ import settingsMobileBg from "@/assets/settings_mobile_bg.jpg"; // Using the sam
 import CVPreview from '@/components/cv_generator/CVPreview';
 import InfoPopup from '@/components/ui/info-popup';
 import { triggerInsightsGeneration, invalidateInsightsCache } from '@/services/insightsService';
+import { extractTextFromPdf } from '@/utils/pdfUtils'; // Import the improved utility
 
 // pdfjs-dist removed from top-level to prevent crashes
 // We will dynamically import it only when needed
@@ -68,6 +69,7 @@ export default function Profile() {
     fetchData();
   }, [contextUser]);
 
+
   const performStatusUpdate = async (checked, reason = null) => {
     setIsLookingForJob(checked);
     try {
@@ -109,34 +111,7 @@ export default function Profile() {
     performStatusUpdate(checked);
   };
 
-  // Helper to extract text from PDF (Lazy loaded to prevent crash on page load)
-  const extractTextFromPDF = async (file) => {
-    try {
-      // Dynamically import pdfjs-dist only when needed
-      const pdfjsLib = await import('pdfjs-dist');
-
-      // Configure worker using CDN if not already set
-      if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-      }
-
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      let fullText = '';
-
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map((item) => item.str).join(' ');
-        fullText += pageText + ' ';
-      }
-
-      return fullText.trim();
-    } catch (error) {
-      console.error("Error parsing PDF:", error);
-      return null;
-    }
-  };
+  // Local extractTextFromPDF removed in favor of improved utility in pdfUtils.js
 
   const processFile = async (file) => {
     if (!file) return;
@@ -167,9 +142,15 @@ export default function Profile() {
       // 2. Extract Text (if PDF)
       let parsedContent = null;
       if (file.type === 'application/pdf') {
-        console.log("[Profile] Extracting text from PDF...");
-        parsedContent = await extractTextFromPDF(file);
-        console.log("[Profile] Extraction complete, length:", parsedContent?.length);
+        try {
+          console.log("[Profile] Extracting text from PDF...");
+          const blobUrl = URL.createObjectURL(file);
+          parsedContent = await extractTextFromPdf(blobUrl);
+          URL.revokeObjectURL(blobUrl);
+          console.log("[Profile] Extraction complete, length:", parsedContent?.length);
+        } catch (err) {
+          console.error("[Profile] Failed to extract text from PDF:", err);
+        }
       }
 
       // 3. Update User entity
@@ -381,6 +362,7 @@ export default function Profile() {
             </button>
           </div>
 
+
           <div className="flex items-center justify-end gap-6 text-sm font-medium px-2">
             <button
               onClick={handleDeleteFile}
@@ -449,47 +431,48 @@ export default function Profile() {
               </div>
             </div>
 
+          </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center justify-between px-2 text-sm font-bold">
-              <button
-                onClick={handleDeleteFile}
-                className="flex items-center gap-1.5 text-[#FF4D4D] hover:text-red-700 transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-                מחק קובץ
-              </button>
+          {/* Action Buttons */}
+          <div className="flex items-center justify-between px-2 text-sm font-bold mt-4">
+            <button
+              onClick={handleDeleteFile}
+              className="flex items-center gap-1.5 text-[#FF4D4D] hover:text-red-700 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              מחק קובץ
+            </button>
 
-              <Link
-                to={createPageUrl('CVGenerator?choice=create&step=1')}
-                className="flex items-center gap-1.5 text-[#4D8EFF] hover:text-blue-700 transition-colors"
-              >
-                {(cvData.personal_details && Object.keys(cvData.personal_details).length > 0) ? (
-                  <>
-                    <img src="/edit_icon.png" alt="Edit" className="w-4 h-4" />
-                    ערוך קובץ
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-4 h-4" />
-                    צור חדש
-                  </>
-                )}
-              </Link>
+            <Link
+              to={createPageUrl('CVGenerator?choice=create&step=1')}
+              className="flex items-center gap-1.5 text-[#4D8EFF] hover:text-blue-700 transition-colors"
+            >
+              {(cvData.personal_details && Object.keys(cvData.personal_details).length > 0) ? (
+                <>
+                  <img src="/edit_icon.png" alt="Edit" className="w-4 h-4" />
+                  ערוך קובץ
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  צור חדש
+                </>
+              )}
+            </Link>
 
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-1.5 text-[#4D8EFF] hover:text-blue-700 transition-colors"
-              >
-                <img src="/replace_icon.png" alt="Replace" className="w-4 h-4" />
-                החלף קובץ
-              </button>
-            </div>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-1.5 text-[#4D8EFF] hover:text-blue-700 transition-colors"
+            >
+              <img src="/replace_icon.png" alt="Replace" className="w-4 h-4" />
+              החלף קובץ
+            </button>
           </div>
         </div>
       </>
     );
   };
+
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen"><div className="w-12 h-12 border-t-2 border-blue-600 rounded-full animate-spin"></div></div>;

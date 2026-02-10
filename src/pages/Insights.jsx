@@ -11,6 +11,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import logo from "@/assets/Vector.svg";
 import InfoPopup from "@/components/ui/info-popup";
+import { generateAIInsights } from "@/services/insightsService";
 
 export default function Insights() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -57,121 +58,7 @@ export default function Insights() {
     return data;
   };
 
-  const generateAIInsights = async (stats, userProfile, cvText, cvDataRaw) => {
-    // Check cache first
-    const cacheKey = `metch_insights_v2_${userProfile?.id}`;
-    const cachedData = localStorage.getItem(cacheKey);
-    if (cachedData) {
-      try {
-        const parsedCache = JSON.parse(cachedData);
-        // Optional: Expiry check (e.g., 7 days)
-        // For now, valid implies "exists" to solve "re-fetching every time"
-        console.log("Using cached insights");
-        return parsedCache;
-      } catch (e) {
-        localStorage.removeItem(cacheKey);
-      }
-    }
 
-    setAnalyzing(true);
-    try {
-      // Calculate derived data
-      const age = userProfile?.birth_date
-        ? Math.floor((new Date() - new Date(userProfile.birth_date)) / 31557600000)
-        : "N/A";
-
-      const specialization = userProfile?.specialization || "Not specified";
-      const preferences = {
-        locations: userProfile?.preferred_locations || [],
-        availability: userProfile?.availability || [],
-        job_types: userProfile?.job_types || [],
-        flexibility: userProfile?.is_flexible || false
-      };
-
-      const prompt = `
-      Analyze the following job seeker profile and data to provide a comprehensive career insight report.
-      
-      User Profile:
-      - Age: ${age}
-      - Specialization: ${specialization}
-      - Preferences: ${JSON.stringify(preferences)}
-      
-      CV Content & Experience:
-      "${cvText ? cvText.substring(0, 4000).replace(/"/g, "'") : 'No CV content available'}"
-      
-      Match History Stats:
-      - Total Applications: ${stats.totalApplications}
-      - Responses: ${stats.responses}
-      - Profile Views: ${stats.profileViews}
-      
-      Act as an expert career coach. Analyze the profile deeply.
-      Return a STRICT VALID JSON object in Hebrew with the following keys:
-      {
-        "general_summary": "Paragraph summarizing the candidate's profile, tone: professional & empowering.",
-        "key_strengths": ["Strength 1 (bullet)", "Strength 2 (bullet)", "Strength 3 (bullet)"],
-        "interview_strength": "A specific strength to highlight in interviews.",
-        "improvements": ["Point for improvement 1", "Point for improvement 2 (e.g. detailed projects, skills)"],
-        "practical_recommendation": "One actionable recommendation.",
-        "resume_tips": ["Tip 1 for CV", "Tip 2 for CV"],
-        "career_path_status": "A concluding encouraging sentence about their process state (e.g., 'You are on the right path...')."
-      }
-      
-      Guidelines:
-      - general_summary: ~2 sentences. Professional.
-      - key_strengths: 3 bullets. Focus on concrete skills/traits.
-      - interview_strength: 1 sentence explaining what to sell in interviews.
-      - improvements: 2-3 bullets. Constructive.
-      - practical_recommendation: 1 sentence.
-      - resume_tips: 1-2 bullets.
-      - career_path_status: 1 inspiring sentence.
-      
-      Do not format as markdown. Do not include newlines in strings. Return ONLY the JSON.
-      `;
-
-      // Use the Assistant API with the provided ID
-      // If VITE_MY_INSIGHTS_EMPLOYEE_KEY is meant for this page, use it. Otherwise, use a general assistant or create one. 
-      // Assuming VITE_MY_INSIGHTS_EMPLOYEE_KEY is correct for "My Insights".
-      const INSIGHTS_ASSISTANT_ID = import.meta.env.VITE_MY_INSIGHTS_EMPLOYEE_KEY;
-
-      if (!INSIGHTS_ASSISTANT_ID) {
-        console.warn("VITE_MY_INSIGHTS_EMPLOYEE_KEY is missing from env");
-        return null;
-      }
-
-      const response = await Core.InvokeAssistant({
-        prompt,
-        assistantId: INSIGHTS_ASSISTANT_ID
-      });
-
-      console.log("AI Response (Assistant):", response);
-
-      let parsed = null;
-      try {
-        let cleanContent = response.content.replace(/```json/g, '').replace(/```/g, '').trim();
-        const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          cleanContent = jsonMatch[0];
-        }
-        parsed = JSON.parse(cleanContent);
-
-        // Cache the result
-        if (parsed && userProfile?.id) {
-          localStorage.setItem(cacheKey, JSON.stringify(parsed));
-        }
-
-      } catch (e) {
-        console.error("Failed to parse AI response", e);
-      }
-
-      return parsed;
-
-    } catch (error) {
-      console.error("Error generating AI insights:", error);
-      return null;
-    } finally {
-      setAnalyzing(false);
-    }
-  };
 
   useEffect(() => {
     const loadInsightsData = async () => {
@@ -278,7 +165,9 @@ export default function Insights() {
 
         console.log("Constructed CV Text for AI:", cvText.length > 0 ? "Yes (" + cvText.length + " chars)" : "No");
 
+        setAnalyzing(true);
         const aiRecommendations = await generateAIInsights(statsForAI, profile, cvText, cvDataRaw);
+        setAnalyzing(false);
 
         setInsightsData({
           totalApplications,

@@ -14,6 +14,7 @@ import StepIndicator from '@/components/ui/StepIndicator';
 import { Info, ChevronRight, Menu } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import VectorLogo from '@/assets/Vector.svg';
+import { invalidateInsightsCache } from '@/services/insightsService';
 
 const AVAILABILITY_MAPPING = {
   'immediate': 'מיידית',
@@ -136,6 +137,12 @@ export default function PreferenceQuestionnaire() {
       };
 
       await updateProfile(updateData);
+
+      // Invalidate insights cache so they refresh with new preferences
+      const { data: { user } } = await User.me_auth();
+      if (user?.id) {
+        invalidateInsightsCache(user.id);
+      }
 
       const returnTo = searchParams.get('returnTo');
       const isOnboarding = searchParams.get('onboarding') === 'true';

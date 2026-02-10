@@ -3,7 +3,7 @@ import { UploadFile } from '@/api/integrations';
 import { User } from '@/api/entities';
 import { CV } from '@/api/entities';
 import { Button } from '@/components/ui/button';
-import { UploadCloud, FileText, Loader2, CheckCircle, AlertCircle, Eye, Trash2, Upload, Info } from 'lucide-react';
+import { UploadCloud, FileText, Loader2, CheckCircle, AlertCircle, Eye, Trash2, Upload, Info, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import skipInfoIcon from '@/assets/skip_info_icon.png';
 import { triggerInsightsGeneration, invalidateInsightsCache } from '@/services/insightsService';
@@ -14,8 +14,8 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
     const [file, setFile] = useState(null);
     const [uploadStatus, setUploadStatus] = useState('idle'); // idle, uploading, success, error
     const [errorMessage, setErrorMessage] = useState('');
-    const fileInputRef = useRef(null);
     const { toast } = useToast();
+
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -65,35 +65,39 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
             if (fileProcess.type === 'application/pdf') {
                 try {
                     console.log("[UploadCV] Extracting text from PDF...");
-                    // We need a URL for pdfjs to read. We can use the public URL or create a blob URL.
-                    // Using blob URL avoids CORS issues with the public bucket immediately after upload.
                     const blobUrl = URL.createObjectURL(fileProcess);
                     extractedText = await extractTextFromPdf(blobUrl);
                     URL.revokeObjectURL(blobUrl);
-                    console.log("[UploadCV] Text extracted successfully, length:", extractedText.length);
+                    console.log("[UploadCV] Text extracted successfully, length:", extractedText?.length);
                 } catch (err) {
                     console.error("[UploadCV] Failed to extract text from PDF:", err);
-                    // Continue without text - backend might handle it or user can try again
                 }
             } else {
                 console.log("[UploadCV] File is not PDF, skipping frontend extraction");
             }
 
-            // 4. Find existing CV record or create a new one to store metadata
+            // 4. Find existing CV records and delete them to ensure only ONE record exists
             const existingCvs = await CV.filter({ user_email: userEmail });
+            console.log(`[UploadCV] Found ${existingCvs.length} existing CV records. Deleting all before creating new...`);
+            for (const oldCv of existingCvs) {
+                try {
+                    await CV.delete(oldCv.id);
+                } catch (delErr) {
+                    console.warn("[UploadCV] Failed to delete old CV record:", delErr);
+                }
+            }
+
+            // Create fresh CV metadata record
             const cvMetadata = {
                 user_email: userEmail,
                 file_name: fileProcess.name,
                 file_size_kb: String(Math.round(fileProcess.size / 1024)),
                 last_modified: new Date().toISOString(),
-                // parsed_content: extractedText // Column missing in DB, commented out to fix upload
+                parsed_content: extractedText
             };
 
-            if (existingCvs.length > 0) {
-                await CV.update(existingCvs[0].id, cvMetadata);
-            } else {
-                await CV.create(cvMetadata);
-            }
+            console.log("[UploadCV] Creating new CV record with parsed content length:", extractedText?.length || 0);
+            await CV.create(cvMetadata);
 
             setUploadStatus('success');
 
@@ -101,13 +105,17 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
             if (user?.id && userEmail) {
                 console.log("[UploadCV] Triggering AI insights generation after CV upload");
                 invalidateInsightsCache(user.id); // Clear old cache
-                triggerInsightsGeneration(user.id, userEmail)
-                    .then(success => {
-                        if (success) {
-                            console.log("[UploadCV] AI insights generated successfully");
-                        }
-                    })
-                    .catch(err => console.error("[UploadCV] Error generating insights:", err));
+
+                // Allow a tiny delay for DB consistency if needed, though await should handle it
+                setTimeout(() => {
+                    triggerInsightsGeneration(user.id, userEmail)
+                        .then(success => {
+                            if (success) {
+                                console.log("[UploadCV] AI insights triggered/generated successfully");
+                            }
+                        })
+                        .catch(err => console.error("[UploadCV] Error generating insights:", err));
+                }, 500);
             }
 
             // Notify parent about success but DO NOT navigate automatically
@@ -201,6 +209,11 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
                     await CV.delete(existingCvs[0].id);
                 }
                 await User.updateMyUserData({ resume_url: null });
+
+                // Invalidate insights cache when CV is deleted
+                if (user.id) {
+                    invalidateInsightsCache(user.id);
+                }
             }
         } catch (error) {
             console.error("Error deleting CV:", error);
@@ -247,6 +260,7 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
                     הועלה בהצלחה
                 </div>
             </div>
+
         </div>
     );
 
@@ -298,6 +312,7 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
                         </motion.div>
                     )}
                 </AnimatePresence>
+
             </div>
         </motion.div>
     );

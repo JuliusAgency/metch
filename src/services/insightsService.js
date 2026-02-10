@@ -163,9 +163,11 @@ export const triggerInsightsGeneration = async (userId, userEmail) => {
 
     // Construct CV text
     let cvText = "";
-    if (cv.parsed_content) {
+    if (cv.parsed_content && cv.parsed_content.length > 50) {
+      console.log("[InsightsService] Using parsed_content from PDF, length:", cv.parsed_content.length);
       cvText = cv.parsed_content;
     } else {
+      console.log("[InsightsService] parsed_content is missing or too short, attempting fallback to structured fields");
       // Build text from structured fields
       const parts = [];
       if (cv.summary) parts.push(`Summary: ${cv.summary}`);
@@ -185,10 +187,12 @@ export const triggerInsightsGeneration = async (userId, userEmail) => {
       }
 
       if (cv.skills && Array.isArray(cv.skills)) {
-        parts.push(`Skills: ${cv.skills.join(', ')}`);
+        const skillsText = Array.isArray(cv.skills) ? cv.skills.join(', ') : cv.skills;
+        parts.push(`Skills: ${skillsText}`);
       }
 
       cvText = parts.join("\n\n");
+      console.log("[InsightsService] Fallback CV text length:", cvText.length);
     }
 
     // Calculate stats
@@ -202,6 +206,8 @@ export const triggerInsightsGeneration = async (userId, userEmail) => {
       conversionRate: totalApplications > 0 ? Math.round((responses / totalApplications) * 100) : 0,
       profileViews
     };
+
+    console.log("[InsightsService] Generating insights with CV text length:", cvText.length);
 
     // Generate insights
     const insights = await generateAIInsights(stats, profile, cvText, cv);
