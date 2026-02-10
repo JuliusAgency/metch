@@ -318,28 +318,19 @@ ET`;
 
                                 <Card className="rounded-[16px] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 mb-8 bg-white">
                                     <CardContent className="p-0">
-                                        <div className="bg-white rounded-[16px] p-3.5 flex items-center justify-between gap-2">
-                                            {/* Left Side: Buttons */}
-                                            <div className="flex flex-col gap-2">
-                                                <Button
-                                                    onClick={() => setShowPaymentModal(true)}
-                                                    className="bg-[#001a6e] hover:bg-[#1e293b] text-white text-[11px] rounded-full px-4 h-8 font-medium shadow-none whitespace-nowrap"
-                                                >
-                                                    שינוי אמצעי תשלום
-                                                </Button>
-                                                <Button
-                                                    onClick={handleSelectPackage}
-                                                    className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white text-[11px] rounded-full px-4 h-8 font-bold shadow-none whitespace-nowrap"
-                                                >
-                                                    רכישת חבילות
-                                                </Button>
-                                            </div>
-
-                                            {/* Right Side: Info */}
-                                            <div className="text-right">
-                                                <p className="text-gray-400 text-[10px] mb-0.5 whitespace-nowrap">אמצעי תשלום</p>
-                                                <p className="text-gray-600 text-[13px] font-normal" dir="ltr">xxxx {paymentData.cardNumber ? paymentData.cardNumber.replace(/\D/g, '').slice(-4) : '6655'}</p>
-                                            </div>
+                                        <div className="bg-white rounded-[16px] p-4 flex flex-row items-center justify-between gap-3">
+                                            <Button
+                                                onClick={() => setShowPaymentModal(true)}
+                                                className="flex-1 bg-[#001a6e] hover:bg-[#1e293b] text-white text-[11px] rounded-full px-2 h-10 font-medium shadow-none"
+                                            >
+                                                שינוי אמצעי תשלום
+                                            </Button>
+                                            <Button
+                                                onClick={handleSelectPackage}
+                                                className="flex-1 bg-[#2987cd] hover:bg-[#1f6ba8] text-white text-[11px] rounded-full px-2 h-10 font-bold shadow-none"
+                                            >
+                                                רכישת חבילות
+                                            </Button>
                                         </div>
                                     </CardContent>
                                 </Card>

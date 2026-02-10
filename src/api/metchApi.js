@@ -1,7 +1,7 @@
 import { supabase } from './supabaseClient';
 
 // כתובת השרת - יש לוודא שמוגדר בקובץ .env
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
 
 /**
  * Metch Backend API Integration
@@ -30,27 +30,28 @@ export const MetchApi = {
 
         const token = session.access_token;
 
-        // MOCK PAYMENT FOR DEVELOPMENT - Bypass backend requirement
-        console.warn("MetchApi: Payment transaction mocked for development (No backend detected).");
-        return { success: true, message: "Transaction simulated successfully", transactionId: "mock_tx_123" };
+        try {
+            // Call Supabase Edge Function 'create-payment'
+            const { data, error } = await supabase.functions.invoke('create-payment', {
+                body: transactionData
+            });
 
-        /*
-        const response = await fetch(`${BASE_URL}/payments/transaction`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` 
-            },
-            body: JSON.stringify(transactionData)
-        });
+            if (error) {
+                console.error("Supabase Function Error:", error);
+                throw new Error("Payment service unavailable");
+            }
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `Transaction failed: ${response.status}`);
+            if (!data.success) {
+                console.error("Payment Failed Details:", data); // Log full details for debugging
+                const detailedError = `${data.message} (Code: ${data.data?.responseCode || 'N/A'})`;
+                throw new Error(detailedError);
+            }
+
+            return data;
+        } catch (err) {
+            console.error("API Error Details:", err);
+            throw err;
         }
-
-        return await response.json();
-        */
     },
 
 

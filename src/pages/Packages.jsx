@@ -33,7 +33,7 @@ export default function Packages() {
 
 
     const getPricePerJob = (qty) => {
-        if (qty === 1) return 599;
+        if (qty === 1) return 1; // 599; // TESTING: Changed to 1 NIS for Cardcom test
         if (qty >= 2 && qty <= 3) return 550;
         if (qty >= 4 && qty <= 5) return 500;
         if (qty >= 6 && qty <= 7) return 450;

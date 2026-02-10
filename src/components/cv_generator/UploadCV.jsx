@@ -86,7 +86,7 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
                 file_name: fileProcess.name,
                 file_size_kb: String(Math.round(fileProcess.size / 1024)),
                 last_modified: new Date().toISOString(),
-                parsed_content: extractedText // Update with extracted text or null
+                // parsed_content: extractedText // Column missing in DB, commented out to fix upload
             };
 
             if (existingCvs.length > 0) {
