@@ -426,7 +426,8 @@ export default function Notifications() {
                 variant="default"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-full h-12 font-bold shadow-lg shadow-blue-100"
                 onClick={() => {
-                  navigate(`/CandidateProfile?email=${selectedNotification.data.applicant_email}`);
+                  const jobIdParam = selectedNotification.data?.job_id ? `&jobId=${selectedNotification.data.job_id}` : '';
+                  navigate(`/CandidateProfile?email=${selectedNotification.data.applicant_email}${jobIdParam}`);
                   closeDialog();
                 }}
               >

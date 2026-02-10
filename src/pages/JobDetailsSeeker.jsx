@@ -395,6 +395,10 @@ export default function JobDetailsSeeker() {
           title: 'הוגשה מועמדות חדשה',
           message: `מועמד הגיש מועמדות למשרת ${job.title}`,
           is_read: false,
+          data: {
+            applicant_email: user.email,
+            job_id: job.id
+          },
           created_date: new Date().toISOString()
         });
         console.log('[JobDetailsSeeker] Notification created for employer:', job.created_by);
