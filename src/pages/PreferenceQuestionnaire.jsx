@@ -165,23 +165,32 @@ export default function PreferenceQuestionnaire() {
     }
   };
 
+  const choice = searchParams.get('choice');
+  const isOnboarding = searchParams.get('onboarding') === 'true';
+
+  // Show functional mobile header only when coming from CV flow (choice=upload)
+  // Hide it during initial onboarding to let Layout's decorative header show
+  const showMobileHeader = choice === 'upload';
+
   return (
     <div className="h-full relative" dir="rtl">
       {/* Mobile Background Gradient - Only Top 25% */}
       <div className="absolute top-0 left-0 right-0 h-[15vh] bg-gradient-to-b from-[#dbecf3] to-transparent md:hidden opacity-100 pointer-events-none z-0" />
 
-      {/* Mobile Header - Pill Shape */}
-      <div className="w-full px-2 pt-1 pb-2 md:hidden sticky top-0 z-10">
-        <div className="bg-[#e0eef5]/90 backdrop-blur-md border border-white/40 rounded-full px-6 py-3 flex items-center justify-between shadow-sm">
-          <button className="text-[#001d3d] p-1">
-            <Menu className="w-6 h-6" />
-          </button>
-          <div className="flex items-center gap-1">
-            <p className="font-['Poppins',_sans-serif] text-2xl text-[#001d3d] font-light pt-0.5 tracking-tight">Metch</p>
-            <img src={VectorLogo} alt="Metch Logo" className="w-3.5 h-3.5 object-contain" />
+      {/* Mobile Header - Pill Shape - Only show when coming from CV flow */}
+      {showMobileHeader && (
+        <div className="w-full px-2 pt-1 pb-2 md:hidden sticky top-0 z-10">
+          <div className="bg-[#e0eef5]/90 backdrop-blur-md border border-white/40 rounded-full px-6 py-3 flex items-center justify-between shadow-sm">
+            <button className="text-[#001d3d] p-1">
+              <Menu className="w-6 h-6" />
+            </button>
+            <div className="flex items-center gap-1">
+              <p className="font-['Poppins',_sans-serif] text-2xl text-[#001d3d] font-light pt-0.5 tracking-tight">Metch</p>
+              <img src={VectorLogo} alt="Metch Logo" className="w-3.5 h-3.5 object-contain" />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <button
         onClick={() => {

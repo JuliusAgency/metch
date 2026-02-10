@@ -440,8 +440,15 @@ export default function Profile() {
                     {cvData.file_size_kb} KB
                   </p>
                 </div>
+                <button
+                  onClick={handleViewCV}
+                  className="bg-[#4D8EFF] text-white text-xs font-bold px-3 py-1.5 rounded-md hover:bg-blue-600 transition-colors flex items-center gap-1 mr-2"
+                >
+                  <span>לצפיה</span>
+                </button>
               </div>
             </div>
+
 
             {/* Action Buttons */}
             <div className="flex items-center justify-between px-2 text-sm font-bold">

@@ -79,7 +79,7 @@ export default function Step6_Summary({ data, setData }) {
                         onChange={(e) => setData(e.target.value)}
                         className="min-h-[350px] md:min-h-[300px] text-right bg-white/50 border-transparent focus:border-blue-400 focus:ring-0 rounded-2xl p-4 text-gray-700 placeholder:text-gray-400"
                     />
-                    <div className="absolute bottom-3 left-3 hidden md:block">
+                    <div className="absolute bottom-3 left-3 md:block">
                         <Button
                             variant="ghost"
                             size="sm"
