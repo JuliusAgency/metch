@@ -1,7 +1,33 @@
 import { InvokeLLM } from '@/api/integrations';
 
-// Simple in-memory cache for the session
-const careerChangeCache = new Map();
+// Persistent cache using localStorage
+const CACHE_KEY = 'metch_career_change_cache_v1';
+let careerChangeCache = new Map();
+
+// Initialize cache from localStorage
+try {
+  const savedCache = localStorage.getItem(CACHE_KEY);
+  if (savedCache) {
+    careerChangeCache = new Map(JSON.parse(savedCache));
+  }
+} catch (e) {
+  console.warn('Failed to load career change cache from localStorage', e);
+}
+
+// Helper to save cache
+const saveCache = () => {
+  try {
+    // Convert Map to array for JSON serialization
+    const cacheArray = Array.from(careerChangeCache.entries());
+    // Limit cache size to prevent quota errors (keep last 500)
+    if (cacheArray.length > 500) {
+      cacheArray.splice(0, cacheArray.length - 500);
+    }
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheArray));
+  } catch (e) {
+    console.warn('Failed to save career change cache', e);
+  }
+};
 
 /**
  * AI-powered function to determine if a job represents a significant career change
@@ -62,12 +88,16 @@ export async function is_career_change(candidate_profile, job_posting) {
       
       // Save to cache
       careerChangeCache.set(cacheKey, result);
+      saveCache();
       
       return result;
     } catch (aiError) {
       console.warn(`Career change AI failed for job ${job_posting.id}:`, aiError.message);
       // Fallback: If AI fails (network, timeout, etc.), default to NO career change
       // to avoid blocking the user from potentially relevant jobs.
+      // IMPORTANT: Cache this fallback result so we don't retry and block again on next load
+      careerChangeCache.set(cacheKey, false);
+      saveCache();
       return false; 
     }
   } catch (error) {
