@@ -173,11 +173,7 @@ export default function CreateJob() {
       // force 'draft' if no credits, UNLESS we are resuming a paused job (which is already paid for)
       console.log('DEBUG: Job Submission - Credits:', credits, 'Status:', jobData.status);
 
-      if (credits <= 0 && jobData.status !== 'paused') {
-        targetStatus = 'draft';
-        showPaymentPrompt = true;
-        console.log('DEBUG: No credits, forcing draft');
-      }
+
 
       const now = new Date().toISOString();
 
@@ -202,9 +198,10 @@ export default function CreateJob() {
         createdOrUpdatedJob = await Job.update(jobData.id, updatedJobData);
         await EmployerAnalytics.trackJobEdit(userData.email, createdOrUpdatedJob);
 
-        // Deduct credit for any active job update (per user request), 
-        // UNLESS we are resuming from "paused" (per Rule 4)
-        if (targetStatus === 'active' && jobData.status !== 'paused') {
+        // Deduct credit ONLY if we are activating a draft (status changed from draft -> active)
+        // Active jobs being edited don't cost credits.
+        // Paused jobs being resumed don't cost credits (Rule 4).
+        if (targetStatus === 'active' && jobData.status !== 'active' && jobData.status !== 'paused') {
           await updateProfile({ job_credits: credits - 1 });
         }
 

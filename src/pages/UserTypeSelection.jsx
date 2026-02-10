@@ -156,7 +156,7 @@ const UserTypeSelection = () => {
             </div>
 
             {/* Buttons */}
-            <div className="space-y-4 md:space-y-5 w-full max-w-[360px] mx-auto z-30 relative">
+            <div className="space-y-4 md:space-y-5 w-[97%] max-w-[350px] mx-auto z-30 relative">
               <button
                 onClick={() => handleTypeSelection('job_seeker')}
                 disabled={loading}
@@ -183,18 +183,18 @@ const UserTypeSelection = () => {
             </div>
 
             {/* Mobile Astronaut Image - Inside Card at Bottom */}
-            <div className="md:hidden absolute bottom-[18%] left-0 right-0 w-full h-[50%] flex items-end justify-center pointer-events-none z-30">
+            <div className="md:hidden absolute bottom-[14%] left-0 right-0 w-full h-[50%] flex items-end justify-center pointer-events-none z-30">
               <img
                 src={astronautWindow}
                 alt="Astronaut"
-                className="w-[79%] h-full object-contain object-bottom"
+                className="w-[75%] h-full object-contain object-bottom"
               />
             </div>
 
           </div>
 
           {/* Mobile Globe - Outside Card to Allow Overflow */}
-          <div className="md:hidden absolute bottom-[-10vh] left-[-18vh] w-[54vh] h-[54vh] pointer-events-none z-50">
+          <div className="md:hidden absolute bottom-[-10vh] left-[-18vh] w-[50vh] h-[50vh] pointer-events-none z-50">
             <img
               src={globeGrid}
               alt="Globe Grid"

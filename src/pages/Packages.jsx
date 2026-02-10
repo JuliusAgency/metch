@@ -27,35 +27,10 @@ export default function Packages() {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const { user, updateProfile } = useUser();
-    const [isFreeJobEligible, setIsFreeJobEligible] = useState(false);
-    const [checkingEligibility, setCheckingEligibility] = useState(true);
 
-    // Check if user is eligible for free job
-    React.useEffect(() => {
-        const checkEligibility = async () => {
-            if (!user?.email) return;
-            try {
-                // If the flag is already set in profile, respect it
-                if (user.profile?.is_free_job_redeemed) {
-                    setIsFreeJobEligible(false);
-                    setCheckingEligibility(false);
-                    return;
-                }
 
-                // Otherwise check if they have any jobs created
-                const { Job } = await import('@/api/entities');
-                const userJobs = await Job.filter({ created_by: user.email });
-                const hasUsedFreeJob = userJobs && userJobs.length > 0;
+    // Check if user is eligible for free job - REMOVED (now handled via auto-credit on signup)
 
-                setIsFreeJobEligible(!hasUsedFreeJob);
-            } catch (error) {
-                console.error("Error checking free job eligibility:", error);
-            } finally {
-                setCheckingEligibility(false);
-            }
-        };
-        checkEligibility();
-    }, [user?.email, user.profile?.is_free_job_redeemed]);
 
     const getPricePerJob = (qty) => {
         if (qty === 1) return 599;
@@ -68,10 +43,6 @@ export default function Packages() {
 
     const calculateTotal = (qty) => {
         const price = getTierPrice(qty);
-        if (qty === 1) return isFreeJobEligible ? 0 : price;
-        if (isFreeJobEligible) {
-            return (qty - 1) * price;
-        }
         return qty * price;
     };
 
@@ -162,12 +133,6 @@ export default function Packages() {
             const newCredits = currentCredits + quantity;
 
             const updates = { job_credits: newCredits };
-
-            // If they are eligible for the free/introductory offer, mark it as redeemed
-            // regardless of whether they took the free job (qty=1) or a discounted bundle
-            if (isFreeJobEligible) {
-                updates.is_free_job_redeemed = true;
-            }
 
             await updateProfile(updates);
 
@@ -280,16 +245,10 @@ export default function Packages() {
                                     ) : (
                                         <>
                                             <div className="flex items-baseline gap-1 text-[#003566]">
-                                                {checkingEligibility ? (
-                                                    <Loader2 className="w-8 h-8 animate-spin" />
-                                                ) : quantity === 1 && isFreeJobEligible ? (
-                                                    <span className="text-[45px] font-normal font-['Rubik']">חינם</span>
-                                                ) : (
-                                                    <>
-                                                        <span className="text-[45px] font-normal font-['Rubik']">₪{getPricePerJob(quantity)}</span>
-                                                        <span className="text-2xl font-normal">/למשרה</span>
-                                                    </>
-                                                )}
+                                                <>
+                                                    <span className="text-[45px] font-normal font-['Rubik']">₪{getPricePerJob(quantity)}</span>
+                                                    <span className="text-2xl font-normal">/למשרה</span>
+                                                </>
                                             </div>
                                             {quantity > 1 && (
                                                 <div className="text-lg md:text-xl text-[#003566] mt-1 font-['Rubik'] font-bold">

@@ -17,24 +17,33 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
   // Check if user is eligible for free job
   useEffect(() => {
     const checkEligibility = async () => {
-      if (!user?.email) return;
       try {
-        if (user.profile?.is_free_job_redeemed) {
-          setIsFreeJobEligible(false);
-          setCheckingEligibility(false);
+        if (!user?.email) {
+          // User not loaded yet, don't finish checking, let effect re-run
           return;
         }
-        const { Job } = await import('@/api/entities');
-        const userJobs = await Job.filter({ created_by: user.email });
-        setIsFreeJobEligible(!userJobs || userJobs.length === 0);
+
+        // In onboarding flow, we assume eligibility unless explicitly redeemed
+        // This avoids issues where draft jobs or other artifacts block the free offer
+        if (user.profile?.is_free_job_redeemed) {
+          setIsFreeJobEligible(false);
+        } else {
+          // Default to true for onboarding users who haven't redeemed yet
+          setIsFreeJobEligible(true);
+        }
       } catch (error) {
         console.error("Error checking free job eligibility:", error);
+        // Fallback to true in onboarding if error occurs (better UX to give free job than block)
+        setIsFreeJobEligible(true);
       } finally {
-        setCheckingEligibility(false);
+        // Only stop loading if we actually had a user
+        if (user?.email) {
+          setCheckingEligibility(false);
+        }
       }
     };
     checkEligibility();
-  }, [user?.email, user.profile?.is_free_job_redeemed]);
+  }, [user?.email, user?.profile?.is_free_job_redeemed]);
 
   const getTierPrice = (qty) => {
     if (qty === 1) return 599;

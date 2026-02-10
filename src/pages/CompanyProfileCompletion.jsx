@@ -263,11 +263,6 @@ export default function CompanyProfileCompletion() {
         if (packageData.quantity > 0) {
           updates.job_credits = currentCredits + packageData.quantity;
 
-          // If they were eligible for the intro offer and made a purchase, mark it as redeemed
-          if (isFreeEligible) {
-            updates.is_free_job_redeemed = true;
-          }
-
           // If they chose the free job (1 job for 0 NIS), ensure they get at least 1 credit
           if (packageData.quantity === 1 && packageData.price === 0) {
             if (updates.job_credits < 1) {
@@ -276,10 +271,9 @@ export default function CompanyProfileCompletion() {
           }
         } else {
           // Fallback: If for some reason quantity is 0 but it's the first time
-          // and they are eligible, give them 1 credit.
-          if (isFreeEligible && packageData.price === 0) {
+          // and they are eligible (which they are in onboarding), give them 1 credit.
+          if (packageData.price === 0) {
             updates.job_credits = currentCredits + 1;
-            updates.is_free_job_redeemed = true;
           }
         }
 
