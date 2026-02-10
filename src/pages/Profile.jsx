@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { FileText, UploadCloud, Replace, Edit, Trash2, ChevronLeft, Loader2, Compass, ChevronRight, Eye, X, Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,6 +22,9 @@ import settingsMobileBg from "@/assets/settings_mobile_bg.jpg"; // Using the sam
 import CVPreview from '@/components/cv_generator/CVPreview';
 import InfoPopup from '@/components/ui/info-popup';
 import { triggerInsightsGeneration, invalidateInsightsCache } from '@/services/insightsService';
+
+// pdfjs-dist removed from top-level to prevent crashes
+// We will dynamically import it only when needed
 
 export default function Profile() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -107,6 +109,35 @@ export default function Profile() {
     performStatusUpdate(checked);
   };
 
+  // Helper to extract text from PDF (Lazy loaded to prevent crash on page load)
+  const extractTextFromPDF = async (file) => {
+    try {
+      // Dynamically import pdfjs-dist only when needed
+      const pdfjsLib = await import('pdfjs-dist');
+
+      // Configure worker using CDN if not already set
+      if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+      }
+
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      let fullText = '';
+
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map((item) => item.str).join(' ');
+        fullText += pageText + ' ';
+      }
+
+      return fullText.trim();
+    } catch (error) {
+      console.error("Error parsing PDF:", error);
+      return null;
+    }
+  };
+
   const processFile = async (file) => {
     if (!file) return;
 
@@ -133,16 +164,25 @@ export default function Profile() {
       const resumeUrl = publicUrl || file_url;
       console.log("[Profile] File uploaded successfully:", resumeUrl);
 
-      // 2. Update User entity
+      // 2. Extract Text (if PDF)
+      let parsedContent = null;
+      if (file.type === 'application/pdf') {
+        console.log("[Profile] Extracting text from PDF...");
+        parsedContent = await extractTextFromPDF(file);
+        console.log("[Profile] Extraction complete, length:", parsedContent?.length);
+      }
+
+      // 3. Update User entity
       await UserEntity.updateMyUserData({ resume_url: resumeUrl });
 
-      // 3. Update CV entity
+      // 4. Update CV entity
       const existingCvs = await CV.filter({ user_email: userEmail });
       const cvMetadata = {
         user_email: userEmail,
         file_name: file.name,
         file_size_kb: String(Math.round(file.size / 1024)),
         last_modified: new Date().toISOString(),
+        parsed_content: parsedContent, // Save extracted text
       };
 
       let updatedCv;
