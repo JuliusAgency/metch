@@ -46,7 +46,7 @@ const newEducationItem = () => ({
   description: ''
 });
 
-export default function Step3_Education({ data, setData, onDirtyChange }) {
+export default function Step3_Education({ data = [], setData, onDirtyChange, showDirtyWarning = false }) {
   const [currentItem, setCurrentItem] = useState(newEducationItem());
 
   const handleInputChange = (e) => {
@@ -115,6 +115,10 @@ export default function Step3_Education({ data, setData, onDirtyChange }) {
       onDirtyChange(checkDirty(currentItem));
     }
   }, [currentItem, onDirtyChange]);
+
+  const handleAddNew = () => {
+    setCurrentItem(newEducationItem());
+  };
 
   return (
     <div className="max-w-4xl mx-auto text-center" dir="rtl">
@@ -196,11 +200,27 @@ export default function Step3_Education({ data, setData, onDirtyChange }) {
           value={currentItem.description}
           onChange={handleInputChange}
           className="w-full bg-white border-gray-200 rounded-xl px-4 py-3 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400 min-h-[48px] h-12 resize-none overflow-hidden" />
-        <div className="flex justify-start mt-4">
-          <Button variant="link" className="text-blue-600 font-semibold p-0 h-auto" onClick={handleSave}>
+
+        <div className="flex justify-between items-start mt-4 w-full gap-4">
+          <Button variant="link" className="text-blue-600 font-semibold p-0 h-auto text-sm shrink-0" onClick={handleAddNew}>
             <Plus className="w-4 h-4 ml-1" />
-            {data.find((i) => i.id === currentItem.id) ? 'עדכון השכלה' : 'הוספת השכלה'}
+            הוספת השכלה חדשה
           </Button>
+
+          <div className="flex flex-col items-center gap-2 shrink-0">
+            <Button
+              onClick={handleSave}
+              className="bg-green-600 hover:bg-green-700 text-white rounded-full px-5 md:px-6 py-2 font-bold shadow-md transition-all h-9 md:h-10 min-w-[100px] md:min-w-[130px] text-sm"
+            >
+              {data.find((i) => i.id === currentItem.id) ? 'שמירה' : 'שמירה'}
+            </Button>
+
+            {checkDirty(currentItem) && showDirtyWarning && (
+              <div className="text-red-500 text-[10px] bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 font-medium animate-in fade-in slide-in-from-top-1 duration-300 max-w-[150px] md:max-w-none text-center leading-tight">
+                שים לב: ללא לחיצה על כפתור "שמירה", המידע שהזנת לא יישמר בחלק זה.
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

@@ -289,14 +289,19 @@ export default function CVGenerator() {
     loadInitialData();
   }, []); // Only run on mount. URL changes are handled by the other useEffect.
 
+  const [showDirtyWarning, setShowDirtyWarning] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
   const handleDirtyChange = useCallback((dirty) => {
     setIsDirty(dirty);
+    if (!dirty) setShowDirtyWarning(false);
   }, []);
 
   const confirmUnsavedChanges = () => {
     if (!isDirty) return true;
+    // For Step 2 (Work Experience), we use the inline warning instead of alert
+    if (step === 2) return false;
+
     return window.confirm("יש לך שינויים שלא נשמרו. אם תמשיך, השינויים יאבדו. האם להמשיך?");
   };
 
@@ -332,7 +337,15 @@ export default function CVGenerator() {
     }
 
     // Check for unsaved changes before proceeding
-    if (!confirmUnsavedChanges()) return;
+    // Check for unsaved changes before proceeding
+    if (isDirty) {
+      if (step === 2 || step === 3 || step === 4) {
+        setShowDirtyWarning(true);
+        return;
+      }
+      if (!confirmUnsavedChanges()) return;
+    }
+
     setIsDirty(false); // Reset dirty state if proceeding
 
     setSaving(true);
@@ -602,9 +615,10 @@ export default function CVGenerator() {
             : (updater) => setCvData((prev) => ({ ...prev, work_experience: updater(prev.work_experience || []) }))
           }
           onDirtyChange={handleDirtyChange}
+          showDirtyWarning={showDirtyWarning}
         />;
-      case 3: return <Step3Education data={cvData.education || []} setData={(updater) => setCvData((prev) => ({ ...prev, education: updater(prev.education || []) }))} onDirtyChange={handleDirtyChange} />;
-      case 4: return <Step4Certifications data={cvData.certifications || []} setData={(updater) => setCvData((prev) => ({ ...prev, certifications: updater(prev.certifications || []) }))} onDirtyChange={handleDirtyChange} />;
+      case 3: return <Step3Education data={cvData.education || []} setData={(updater) => setCvData((prev) => ({ ...prev, education: updater(prev.education || []) }))} onDirtyChange={handleDirtyChange} showDirtyWarning={showDirtyWarning} />;
+      case 4: return <Step4Certifications data={cvData.certifications || []} setData={(updater) => setCvData((prev) => ({ ...prev, certifications: updater(prev.certifications || []) }))} onDirtyChange={handleDirtyChange} showDirtyWarning={showDirtyWarning} />;
       case 5: return <Step5Skills data={cvData.skills || []} setData={(updater) => setCvData((prev) => ({ ...prev, skills: typeof updater === 'function' ? updater(prev.skills || []) : updater }))} />;
       case 6: return <Step6Summary data={cvData.summary || ''} setData={(d) => setCvData((prev) => ({ ...prev, summary: d }))} />;
       case 7: return <Step7Preview cvData={cvData} setData={(d) => setCvData(prev => ({ ...prev, ...d }))} onEdit={handleEdit} />;
@@ -724,7 +738,7 @@ export default function CVGenerator() {
             </Button>
           )}
           {step === -1 ? (
-            <div className="flex w-full gap-4 md:w-auto md:justify-end">
+            <div className="flex w-full max-w-[340px] md:max-w-none gap-4 md:w-auto md:justify-end">
               {/* Skip Button */}
               <Button
                 variant="outline"

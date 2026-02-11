@@ -383,38 +383,40 @@ export default function MessagesSeeker() {
             }
 
             // --- Explicitly Send Email Notification ---
-            // Send email to recipient (Employer or Support)
-            try {
-                const isSupport = recipientEmail === SUPPORT_EMAIL;
-                const subject = isSupport
-                    ? `הודעה חדשה מ-${user.full_name || 'מחפש עבודה'}`
-                    : `הודעה חדשה מ-${user.full_name || 'מחפש עבודה'} ב-Metch`;
+            // Send email to recipient (Employer or Support) - ONLY if it is Support
+            if (recipientEmail === SUPPORT_EMAIL) {
+                try {
+                    const isSupport = recipientEmail === SUPPORT_EMAIL;
+                    const subject = isSupport
+                        ? `הודעה חדשה מ-${user.full_name || 'מחפש עבודה'}`
+                        : `הודעה חדשה מ-${user.full_name || 'מחפש עבודה'} ב-Metch`;
 
-                const emailHtml = `
-                    <div dir="rtl" style="text-align: right; font-family: sans-serif;">
-                        <h2>${subject}</h2>
-                        <p>התקבלה הודעה חדשה:</p>
-                        <blockquote style="background: #f9f9f9; padding: 10px; border-right: 4px solid #007bff; margin: 10px 0;">
-                            ${newMessage.trim().replace(/\n/g, '<br/>')}
-                        </blockquote>
-                        <br/>
-                        <a href="https://metch.co.il/Messages" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                            למעבר להודעות
-                        </a>
-                        <br/><br/>
-                        <p style="color: #666; font-size: 12px;">הודעה זו נשלחה באופן אוטומטי ממערכת Metch.</p>
-                    </div>
-                `;
+                    const emailHtml = `
+                        <div dir="rtl" style="text-align: right; font-family: sans-serif;">
+                            <h2>${subject}</h2>
+                            <p>התקבלה הודעה חדשה:</p>
+                            <blockquote style="background: #f9f9f9; padding: 10px; border-right: 4px solid #007bff; margin: 10px 0;">
+                                ${newMessage.trim().replace(/\n/g, '<br/>')}
+                            </blockquote>
+                            <br/>
+                            <a href="https://metch.co.il/Messages" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                                למעבר להודעות
+                            </a>
+                            <br/><br/>
+                            <p style="color: #666; font-size: 12px;">הודעה זו נשלחה באופן אוטומטי ממערכת Metch.</p>
+                        </div>
+                    `;
 
-                await SendEmail({
-                    to: recipientEmail,
-                    subject: subject,
-                    html: emailHtml,
-                    text: `הודעה חדשה מ-${user.full_name || 'מחפש עבודה'}:\n\n${newMessage.trim()}\n\nלמעבר להודעות: https://metch.co.il/Messages`
-                });
-                console.log('[MessagesSeeker] Email sent successfully to:', recipientEmail);
-            } catch (emailErr) {
-                console.error('[MessagesSeeker] Error sending email notification:', emailErr);
+                    await SendEmail({
+                        to: recipientEmail,
+                        subject: subject,
+                        html: emailHtml,
+                        text: `הודעה חדשה מ-${user.full_name || 'מחפש עבודה'}:\n\n${newMessage.trim()}\n\nלמעבר להודעות: https://metch.co.il/Messages`
+                    });
+                    console.log('[MessagesSeeker] Email sent successfully to:', recipientEmail);
+                } catch (emailErr) {
+                    console.error('[MessagesSeeker] Error sending email notification:', emailErr);
+                }
             }
 
             if (selectedConversation.id === "support") {

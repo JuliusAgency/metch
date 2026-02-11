@@ -33,7 +33,7 @@ export const CV = {
       const { data: result, error } = await supabase
         .from('CV')
         .insert(data)
-        .select('id, user_email, file_name, file_size_kb, last_modified, parsed_content')
+        .select('id, user_email, file_name, file_size_kb, last_modified, parsed_content, skills, summary, work_experience, education, certifications')
         .single();
       
       if (error) throw error;
@@ -45,7 +45,7 @@ export const CV = {
         .from('CV')
         .update(data)
         .eq('id', id)
-        .select('id, user_email, file_name, file_size_kb, last_modified, parsed_content')
+        .select('id, user_email, file_name, file_size_kb, last_modified, parsed_content, skills, summary, work_experience, education, certifications')
         .single();
       
       if (error) throw error;

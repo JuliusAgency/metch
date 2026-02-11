@@ -452,44 +452,87 @@ export default function Messages() {
                     };
                     console.log('[Messages] Creating notification:', notificationData);
                     await Notification.create(notificationData);
+
+                    // --- WhatsApp Notification Logic (First Message Only) ---
+                    // Check if this is the FIRST message sent by the current user (Employer) in this conversation
+                    const previousMessagesFromMe = messages.filter(m => m.sender_email === user?.email);
+
+                    if (previousMessagesFromMe.length === 0) {
+                        try {
+                            console.log('[Messages] First message from employer - Attempting to send WhatsApp...');
+
+                            // Fetch recipient profile to get phone number
+                            const { data: recipientProfile, error: profileError } = await supabase
+                                .from('UserProfile')
+                                .select('phone')
+                                .eq('email', recipientEmail)
+                                .single();
+
+                            if (!profileError && recipientProfile?.phone) {
+                                const whatsappMessage = `יש לך הודעה חדשה על משרה שהגשת לה קו׳׳ח!
+זו הזדמנות טובה להתחיל שיחה ולהתקדם!
+להמשך השיחה ולצפייה בהודעה, היכנס לאזור ההודעות במאצ׳.`;
+
+                                const { data: waData, error: waError } = await supabase.functions.invoke('send-whatsapp', {
+                                    body: {
+                                        phoneNumber: recipientProfile.phone,
+                                        message: whatsappMessage
+                                    }
+                                });
+
+                                if (waError) {
+                                    console.error('[Messages] WhatsApp Edge Function Invocation Error:', waError);
+                                } else {
+                                    console.log('[Messages] WhatsApp notification sent successfully to:', recipientEmail);
+                                }
+                            } else {
+                                console.warn('[Messages] Could not find phone number for WhatsApp notification:', recipientEmail, profileError);
+                            }
+                        } catch (waError) {
+                            console.error('[Messages] Error sending WhatsApp notification:', waError);
+                        }
+                    }
+
                 } catch (e) {
-                    console.error("Error creating notification for candidate:", e);
+                    console.error("Error creating notification/WhatsApp for candidate:", e);
                 }
             }
 
             // --- Explicitly Send Email Notification ---
-            // Send email to recipient (Candidate or Support)
-            try {
-                const isSupport = recipientEmail === SUPPORT_EMAIL;
-                const subject = isSupport
-                    ? `הודעה חדשה מ-${user.company_name || user.full_name || 'מעסיק'}`
-                    : `הודעה חדשה מ-${user.company_name || user.full_name || 'מעסיק'} ב-Metch`;
+            // Send email to recipient (ONLY if Support)
+            if (recipientEmail === SUPPORT_EMAIL) {
+                try {
+                    const isSupport = recipientEmail === SUPPORT_EMAIL;
+                    const subject = isSupport
+                        ? `הודעה חדשה מ-${user.company_name || user.full_name || 'מעסיק'}`
+                        : `הודעה חדשה מ-${user.company_name || user.full_name || 'מעסיק'} ב-Metch`;
 
-                const emailHtml = `
-                    <div dir="rtl" style="text-align: right; font-family: sans-serif;">
-                        <h2>${subject}</h2>
-                        <p>התקבלה הודעה חדשה:</p>
-                        <blockquote style="background: #f9f9f9; padding: 10px; border-right: 4px solid #007bff; margin: 10px 0;">
-                            ${newMessage.trim().replace(/\n/g, '<br/>')}
-                        </blockquote>
-                        <br/>
-                        <a href="https://metch.co.il/MessagesSeeker" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                            למעבר להודעות
-                        </a>
-                        <br/><br/>
-                        <p style="color: #666; font-size: 12px;">הודעה זו נשלחה באופן אוטומטי ממערכת Metch.</p>
-                    </div>
-                `;
+                    const emailHtml = `
+                        <div dir="rtl" style="text-align: right; font-family: sans-serif;">
+                            <h2>${subject}</h2>
+                            <p>התקבלה הודעה חדשה:</p>
+                            <blockquote style="background: #f9f9f9; padding: 10px; border-right: 4px solid #007bff; margin: 10px 0;">
+                                ${newMessage.trim().replace(/\n/g, '<br/>')}
+                            </blockquote>
+                            <br/>
+                            <a href="https://metch.co.il/MessagesSeeker" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                                למעבר להודעות
+                            </a>
+                            <br/><br/>
+                            <p style="color: #666; font-size: 12px;">הודעה זו נשלחה באופן אוטומטי ממערכת Metch.</p>
+                        </div>
+                    `;
 
-                await SendEmail({
-                    to: recipientEmail,
-                    subject: subject,
-                    html: emailHtml,
-                    text: `הודעה חדשה מ-${user.company_name || user.full_name}:\n\n${newMessage.trim()}\n\nלמעבר להודעות: https://metch.co.il/MessagesSeeker`
-                });
-                console.log('[Messages] Email sent successfully to:', recipientEmail);
-            } catch (emailErr) {
-                console.error('[Messages] Error sending email notification:', emailErr);
+                    await SendEmail({
+                        to: recipientEmail,
+                        subject: subject,
+                        html: emailHtml,
+                        text: `הודעה חדשה מ-${user.company_name || user.full_name}:\n\n${newMessage.trim()}\n\nלמעבר להודעות: https://metch.co.il/MessagesSeeker`
+                    });
+                    console.log('[Messages] Email sent successfully to:', recipientEmail);
+                } catch (emailErr) {
+                    console.error('[Messages] Error sending email notification:', emailErr);
+                }
             }
 
             if (selectedConversation.id === "support") {

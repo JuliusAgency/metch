@@ -69,13 +69,12 @@ export default function Notifications() {
     try {
       setLoading(true);
 
-      const [byUserId, byEmail, byCreatedBy] = await Promise.all([
+      const [byUserId, byEmail] = await Promise.all([
         Notification.filter({ user_id: user.id }, "-created_date"),
-        Notification.filter({ email: user.email }, "-created_date"),
-        Notification.filter({ created_by: user.id }, "-created_date")
+        Notification.filter({ email: user.email }, "-created_date")
       ]);
 
-      const allNotifications = [...byUserId, ...byEmail, ...byCreatedBy]
+      const allNotifications = [...byUserId, ...byEmail]
         .reduce((acc, current) => {
           const x = acc.find(item => item.id === current.id);
           if (!x) return acc.concat([current]);

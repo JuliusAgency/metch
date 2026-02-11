@@ -32,7 +32,7 @@ const newCertificationItem = () => ({
     type: ''
 });
 
-export default function Step4_Certifications({ data, setData, onDirtyChange }) {
+export default function Step4_Certifications({ data = [], setData, onDirtyChange, showDirtyWarning = false }) {
     const [currentItem, setCurrentItem] = useState(newCertificationItem());
     const [open, setOpen] = useState(false);
 
@@ -154,6 +154,10 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
 
     const currentType = deriveType(currentItem);
 
+    const handleAddNew = () => {
+        setCurrentItem(newCertificationItem());
+    };
+
     return (
         <div className="max-w-4xl mx-auto text-center" dir="rtl">
             <h2 className="text-3xl font-bold text-gray-900 mb-3">הסמכות מקצועיות ורישיונות</h2>
@@ -210,18 +214,33 @@ export default function Step4_Certifications({ data, setData, onDirtyChange }) {
                     onChange={(e) => handleCurrentItemChange('notes', e.target.value)}
                     className="w-full bg-white border-gray-200 rounded-xl px-4 py-3 text-right shadow-sm focus:border-blue-400 focus:ring-blue-400 min-h-[48px] h-12 resize-none overflow-hidden" />
 
-                <div className="flex justify-start mt-4">
-                    <Button variant="link" className="text-blue-600 font-semibold p-0 h-auto" onClick={handleSave}>
+                <div className="flex justify-between items-start mt-4 w-full gap-4">
+                    <Button variant="link" className="text-blue-600 font-semibold p-0 h-auto text-sm shrink-0" onClick={handleAddNew}>
                         <Plus className="w-4 h-4 ml-1" />
-                        {(data || []).find(i => i.id === currentItem.id) ? 'עדכון הסמכה' : 'הוספת הסמכה'}
+                        הוספת הסמכה חדשה
                     </Button>
+
+                    <div className="flex flex-col items-center gap-2 shrink-0">
+                        <Button
+                            onClick={handleSave}
+                            className="bg-green-600 hover:bg-green-700 text-white rounded-full px-5 md:px-6 py-2 font-bold shadow-md transition-all h-9 md:h-10 min-w-[100px] md:min-w-[130px] text-sm"
+                        >
+                            {(data || []).find(i => i.id === currentItem.id) ? 'שמירה' : 'שמירה'}
+                        </Button>
+
+                        {checkDirty(currentItem) && showDirtyWarning && (
+                            <div className="text-red-500 text-[10px] bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 font-medium animate-in fade-in slide-in-from-top-1 duration-300 max-w-[150px] md:max-w-none text-center leading-tight">
+                                שים לב: ללא לחיצה על כפתור "שמירה", המידע שהזנת לא יישמר בחלק זה.
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
             {data && data.length > 0 && (
                 <div className="mt-8 p-4 bg-gray-50/70 border border-gray-200/90 rounded-2xl flex flex-wrap justify-start gap-3">
                     <AnimatePresence>
-                        {data.map(item => (
+                        {(data || []).map(item => (
                             <motion.div
                                 key={item.id}
                                 layout
