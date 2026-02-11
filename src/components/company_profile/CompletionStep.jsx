@@ -27,39 +27,39 @@ export default function CompletionStep({ hideSecondaryButton = false }) {
         </div>
 
         {/* Features unlocked */}
-        <div className="bg-blue-50 p-6 rounded-2xl border border-blue-200">
+        <div className="bg-blue-50 p-6 rounded-2xl border border-blue-200 max-w-[320px] sm:max-w-none mx-auto">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-blue-600" />
             <h3 className="font-bold text-blue-800">מה זמין לכם עכשיו</h3>
           </div>
-          <div className="space-y-2 text-blue-700">
-            <div className="flex items-center justify-center gap-2">
-              <Check className="w-4 h-4 text-green-500" />
+          <div className="space-y-2 text-blue-700 text-sm sm:text-base">
+            <div className="flex items-center justify-center gap-2 text-right">
+              <Check className="w-4 h-4 text-green-500 shrink-0" />
               <span>פרסום משרות עם פרופיל חברה מקצועי</span>
             </div>
-            <div className="flex items-center justify-center gap-2">
-              <Check className="w-4 h-4 text-green-500" />
+            <div className="flex items-center justify-center gap-2 text-right">
+              <Check className="w-4 h-4 text-green-500 shrink-0" />
               <span>חשיפה משופרת למועמדים איכותיים</span>
             </div>
-            <div className="flex items-center justify-center gap-2">
-              <Check className="w-4 h-4 text-green-500" />
+            <div className="flex items-center justify-center gap-2 text-right">
+              <Check className="w-4 h-4 text-green-500 shrink-0" />
               <span>כלי ניתוח ודוחות מתקדמים</span>
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link to={createPageUrl("CreateJob")}>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <Link to={createPageUrl("CreateJob")} className="w-full max-w-[280px] sm:w-auto sm:max-w-none">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg w-full">
               פרסם משרה ראשונה
             </Button>
           </Link>
 
           {/* Conditional Secondary Button */}
           {!hideSecondaryButton && (
-            <Link to={createPageUrl("Settings")}>
-              <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-3 rounded-full font-bold text-lg w-full sm:w-auto">
+            <Link to={createPageUrl("Settings")} className="w-full max-w-[280px] sm:w-auto sm:max-w-none">
+              <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-3 rounded-full font-bold text-lg w-full">
                 להשלמת פרטי חברה
               </Button>
             </Link>

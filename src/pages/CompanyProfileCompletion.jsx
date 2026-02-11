@@ -331,7 +331,7 @@ export default function CompanyProfileCompletion() {
 
           {/* Navigation Buttons */}
           {step !== 4 && (
-            <div className={`flex ${step === 1 || step === 3 ? 'justify-center' : 'justify-between'} items-center mt-12`}>
+            <div className={`flex ${step === 1 || step === 3 ? 'justify-center' : (step === STEPS.length ? 'justify-center gap-2 sm:justify-between sm:gap-0' : 'justify-between')} items-center mt-12`}>
               {step > 1 && step !== 3 && (
                 <Button
                   variant="outline"
@@ -360,7 +360,13 @@ export default function CompanyProfileCompletion() {
 
                 return (
                   <Button
-                    className={`bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg disabled:opacity-50 transition-transform duration-300 ${step === 1 || step === 3 ? 'px-14 py-4 text-xl transform hover:scale-105' : 'px-12 py-3 text-lg'}`}
+                    className={`bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg disabled:opacity-50 transition-transform duration-300 
+                      ${step === 1 || step === 3
+                        ? 'px-14 py-4 text-xl transform hover:scale-105'
+                        : step === STEPS.length
+                          ? 'px-6 sm:px-12 py-3 text-sm sm:text-lg'
+                          : 'px-12 py-3 text-lg'
+                      }`}
                     onClick={nextStep}
                     disabled={saving || (step === 1 && !isStep1Valid)}
                   >
