@@ -26,33 +26,44 @@ export default function Step6_Summary({ data, setData }) {
             const response = await Core.InvokeAssistant({
                 assistantId: assistantId,
                 prompt: `Improve the following professional summary for a CV. Make it professional, concise, and impressive. 
-                You must output the result in Hebrew language only, regardless of the input language.
+                You must output the result in Hebrew language only.
+                Return the result as a valid JSON object with a single key "summary".
                 
                 Input text:
-                "${data}"
-                
-                Output only the improved text in Hebrew, nothing else.`
+                "${data}"`
             });
 
             if (response.content) {
                 let cleanContent = response.content.trim();
 
-                // Remove markdown code blocks if present
-                cleanContent = cleanContent.replace(/^```json\s*/g, '').replace(/^```\s*/g, '').replace(/\s*```$/g, '');
+                // Extract JSON object if present
+                const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    cleanContent = jsonMatch[0];
+                }
 
                 try {
                     const parsed = JSON.parse(cleanContent);
-                    if (parsed.summary) {
-                        cleanContent = parsed.summary;
-                    } else if (parsed.text) {
-                        cleanContent = parsed.text;
+                    const finalSummary = parsed.summary || parsed.professional_summary || parsed.text || parsed.content;
+
+                    if (finalSummary && typeof finalSummary === 'string') {
+                        setData(finalSummary);
+                        toast.success("הטקסט שופר בהצלחה!");
+                    } else {
+                        // If JSON parsed but no known key, fallback to raw or log error
+                        console.warn("AI returned JSON but no summary key found:", parsed);
+                        // If the parsed object itself is a string? Unlikely with JSON.parse
                     }
                 } catch (e) {
-                    // Not a JSON object, use as is
+                    // Not a JSON object, use as is if it doesn't look like JSON
+                    if (!cleanContent.startsWith('{')) {
+                        setData(cleanContent);
+                        toast.success("הטקסט שופר בהצלחה!");
+                    } else {
+                        console.error("Failed to parse AI response:", cleanContent);
+                        toast.error("לא הצלחנו לפענח את תשובת ה-AI");
+                    }
                 }
-
-                setData(cleanContent);
-                toast.success("הטקסט שופר בהצלחה!");
             }
         } catch (error) {
             console.error("Error improving text:", error);

@@ -54,7 +54,9 @@ const uniqueJobs = [...new Set(jobsList)];
 export default function Step1({
     preferences,
     setPreferences,
-    onNext
+    onNext,
+    saving,
+    isOnboarding
 }) {
     const [openProfession, setOpenProfession] = React.useState(false);
     const [openLocation, setOpenLocation] = React.useState(false);
@@ -76,7 +78,7 @@ export default function Step1({
     };
 
     return (
-        <div className="flex flex-col items-center text-center space-y-3 md:space-y-10 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex flex-col items-center text-center space-y-6 md:space-y-10 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
 
             {/* Field Selection Section - NEW */}
 
@@ -177,9 +179,9 @@ export default function Step1({
             </div>
 
             {/* Job Type Section */}
-            <div className="w-full space-y-2 md:space-y-6">
+            <div className="w-full space-y-4 md:space-y-6">
                 <h3 className="text-lg md:text-xl font-bold text-gray-900">סוג המשרה</h3>
-                <div className="grid grid-cols-4 gap-1 md:flex md:flex-wrap md:justify-center md:gap-4">
+                <div className="grid grid-cols-4 gap-2 md:flex md:flex-wrap md:justify-center md:gap-4">
                     {JOB_TYPES.map(type => (
                         <PillButton
                             key={type}
@@ -192,9 +194,9 @@ export default function Step1({
             </div>
 
             {/* Availability Section */}
-            <div className="w-full space-y-2 md:space-y-6">
+            <div className="w-full space-y-4 md:space-y-6">
                 <h3 className="text-lg md:text-xl font-bold text-gray-900">זמינות</h3>
-                <div className="grid grid-cols-4 gap-1 md:flex md:flex-wrap md:justify-center md:gap-4">
+                <div className="grid grid-cols-4 gap-2 md:flex md:flex-wrap md:justify-center md:gap-4">
                     {AVAILABILITIES.map(avail => (
                         <PillButton
                             key={avail}
@@ -210,11 +212,17 @@ export default function Step1({
             <div className="pt-8 hidden md:block">
                 <Button
                     onClick={onNext}
-                    disabled={!preferences.location || !preferences.profession_search || !preferences.job_type || !preferences.availability}
+                    disabled={saving || !preferences.location || !preferences.profession_search || !preferences.job_type || !preferences.availability}
                     className="bg-[#2987cd] hover:bg-[#1f6ba8] text-white rounded-full px-12 py-6 text-lg font-bold flex items-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    הבא
-                    <ArrowLeft className="w-5 h-5" />
+                    {saving ? (
+                        <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            שומר...
+                        </>
+                    ) : (
+                        isOnboarding ? "שמור והמשך" : "הבא"
+                    )}
                 </Button>
             </div>
 

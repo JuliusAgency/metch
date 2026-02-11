@@ -458,6 +458,7 @@ export default function CVGenerator() {
             ...(address && { preferred_location: address }),
             ...(gender && { gender }),
             ...(birth_date && { date_of_birth: birth_date }),
+            ...(cvData.skills && { character_traits: cvData.skills }),
           });
         } catch (err) {
           console.error("Failed to update user profile with CV details", err);

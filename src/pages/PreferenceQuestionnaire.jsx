@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { User } from '@/api/entities';
+import { User, CV } from '@/api/entities';
 import { motion } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -91,6 +91,23 @@ export default function PreferenceQuestionnaire() {
         // Availability (Keep as English/DB value)
         const loadedAvailability = user.availability || '';
 
+        // FALLBACK: If traits are empty in UserProfile, try to load from CV
+        if (traits.length === 0) {
+          try {
+            const cvs = await CV.filter({ user_email: user.email });
+            if (cvs && cvs.length > 0) {
+              // Find the one with skills
+              const cvWithSkills = cvs.find(c => Array.isArray(c.skills) && c.skills.length > 0) || cvs[0];
+              const fullCv = await CV.get(cvWithSkills.id);
+              if (Array.isArray(fullCv.skills) && fullCv.skills.length > 0) {
+                traits = fullCv.skills;
+              }
+            }
+          } catch (cvErr) {
+            console.error("Failed to load fallback traits from CV:", cvErr);
+          }
+        }
+
         setPreferences({
           field: user.specialization || '',
           profession_search: user.profession || '',
@@ -107,8 +124,12 @@ export default function PreferenceQuestionnaire() {
   }, []);
 
   const handleNext = () => {
-    setStep(2);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (isOnboarding) {
+      handleSave();
+    } else {
+      setStep(2);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const handleBack = () => {
@@ -236,20 +257,22 @@ export default function PreferenceQuestionnaire() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2 md:hidden">ההעדפות שלך</h1>
 
           <StepIndicator
-            totalSteps={searchParams.get('choice') === 'upload' ? 5 : 2}
-            currentStep={searchParams.get('choice') === 'upload' ? (step === 1 ? 2 : 3) : step}
+            totalSteps={isOnboarding ? (searchParams.get('choice') === 'upload' ? 5 : 2) : 2}
+            currentStep={isOnboarding && searchParams.get('choice') === 'upload' ? (step === 1 ? 2 : 3) : step}
           />
 
-          <div className="w-full bg-white md:bg-transparent rounded-3xl p-4 md:p-0 shadow-[0_2px_12px_rgba(0,0,0,0.1)] md:shadow-none border border-gray-100 md:border-none mt-4 md:mt-0">
+          <div className="w-full bg-white md:bg-transparent rounded-3xl p-6 md:p-0 shadow-[0_2px_12px_rgba(0,0,0,0.1)] md:shadow-none border border-gray-100 md:border-none mt-8 md:mt-0">
             {step === 1 && (
               <Step1
                 preferences={preferences}
                 setPreferences={setPreferences}
                 onNext={handleNext}
+                saving={saving}
+                isOnboarding={isOnboarding}
               />
             )}
 
-            {step === 2 && (
+            {step === 2 && !isOnboarding && (
               <Step2
                 preferences={preferences}
                 setPreferences={setPreferences}
@@ -259,8 +282,8 @@ export default function PreferenceQuestionnaire() {
               />
             )}
 
-            {/* Terms / Info Block (Inside Card) - Hidden on Step 2 */}
-            {step !== 2 && (
+            {/* Terms / Info Block (Inside Card) */}
+            {(step === 1 || (step === 2 && !isOnboarding)) && (
               <div className="hidden lg:flex items-start gap-2 text-gray-500 text-xs text-right mt-6">
                 <Info className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" />
                 <p>ההתאמה נעשית בהתבסס על קורות החיים, גם אם שאלון ההעדפה לא מדוייק</p>
@@ -270,24 +293,24 @@ export default function PreferenceQuestionnaire() {
 
           {/* Mobile "Continue" Button for Step 1 */}
           {step === 1 && (
-            <div className="w-full mt-6 md:hidden">
+            <div className="w-full mt-10 md:hidden">
               <Button
                 onClick={handleNext}
-                disabled={!preferences.location || !preferences.profession_search || !preferences.job_type || !preferences.availability}
+                disabled={saving || !preferences.location || !preferences.profession_search || !preferences.job_type || !preferences.availability}
                 className={`w-full h-14 rounded-full text-lg font-bold shadow-sm transition-all
                   ${(preferences.location && preferences.profession_search && preferences.job_type && preferences.availability)
                     ? 'bg-[#2987cd] hover:bg-[#1f6ba8] text-white shadow-blue-200'
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
               >
-                המשך
+                {saving ? "שומר..." : (isOnboarding ? "שמור והמשך" : "הבא")}
               </Button>
             </div>
           )}
 
-          {/* Mobile "Continue" Button for Step 2 */}
-          {step === 2 && (
-            <div className="w-full mt-6 md:hidden">
+          {/* Mobile "Continue" Button for Step 2 (Non-Onboarding) */}
+          {step === 2 && !isOnboarding && (
+            <div className="w-full mt-10 md:hidden">
               <Button
                 onClick={handleSave}
                 disabled={saving || (preferences.traits || []).length !== 3}
@@ -297,7 +320,7 @@ export default function PreferenceQuestionnaire() {
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
               >
-                {saving ? "שומר..." : "המשך"}
+                {saving ? "שומר..." : "שמור והמשך"}
               </Button>
             </div>
           )}
