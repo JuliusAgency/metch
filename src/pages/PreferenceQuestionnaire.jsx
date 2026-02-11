@@ -136,12 +136,11 @@ export default function PreferenceQuestionnaire() {
         specialization: preferences.field
       };
 
-      await updateProfile(updateData);
+      const updatedProfile = await updateProfile(updateData);
 
       // Invalidate insights cache so they refresh with new preferences
-      const { data: { user } } = await User.me_auth();
-      if (user?.id) {
-        invalidateInsightsCache(user.id);
+      if (updatedProfile?.id) {
+        invalidateInsightsCache(updatedProfile.id);
       }
 
       const returnTo = searchParams.get('returnTo');

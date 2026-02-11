@@ -14,6 +14,7 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
     const [file, setFile] = useState(null);
     const [uploadStatus, setUploadStatus] = useState('idle'); // idle, uploading, success, error
     const [errorMessage, setErrorMessage] = useState('');
+    const fileInputRef = useRef(null);
     const { toast } = useToast();
 
 
@@ -148,12 +149,7 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
 
     const UploadArea = () => (
         <div className="flex flex-col items-center justify-center text-center w-full">
-            {/* Title - Outside the box */}
-            {!showSkipDisclaimer && (
-                <h3 className="text-xl md:text-2xl font-bold text-[#333333] mb-8">
-                    העלה את קובץ קורות החיים שלך
-                </h3>
-            )}
+
 
             <div className={`w-full border-2 border-dashed border-gray-200 rounded-[1rem] px-10 md:px-14 flex flex-col items-center ${showSkipDisclaimer ? 'py-6 md:py-8' : 'py-10 md:py-16'}`}>
                 {/* Green Upload Icon */}
@@ -288,6 +284,11 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
             ) : null}
 
             <div className="space-y-6">
+                {!showSkipDisclaimer && (
+                    <h3 className="text-xl md:text-2xl font-bold text-[#333333] mb-8">
+                        העלה את קובץ קורות החיים שלך
+                    </h3>
+                )}
                 {!file ? <UploadArea /> : <FilePreview />}
 
                 <AnimatePresence>
