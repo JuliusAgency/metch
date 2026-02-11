@@ -23,6 +23,7 @@ import CVPreview from '@/components/cv_generator/CVPreview';
 import InfoPopup from '@/components/ui/info-popup';
 import { triggerInsightsGeneration, invalidateInsightsCache } from '@/services/insightsService';
 import { extractTextFromPdf } from '@/utils/pdfUtils'; // Import the improved utility
+import mammoth from 'mammoth';
 
 // pdfjs-dist removed from top-level to prevent crashes
 // We will dynamically import it only when needed
@@ -111,7 +112,32 @@ export default function Profile() {
     performStatusUpdate(checked);
   };
 
-  // Local extractTextFromPDF removed in favor of improved utility in pdfUtils.js
+  // Import mammoth dynamically or at top if possible. Since we are in a component, top level is fine.
+  // Converting 'processFile' to handle DOCX.
+
+  const extractTextFromDocx = async (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const arrayBuffer = event.target.result;
+          // Dynamic import if we want to save bundle size, or just assuming top-level import (which we'll add in next step or use require if needed, but import is better).
+          // For now, assuming top level import is added.
+          // But wait, I can't add top level import in this Replace block easily without replacing the whole file header.
+          // I will add the import in a separate block or include it if I replace the header.
+          // Actually, I'll assume I can just use 'mammoth' if I add the import at the top. 
+          // Let's modify the plan to add import first? No, I'll do it all here if I can, but I can't reach top of file.
+          // I will replace the 'processFile' and 'FileManagementCard' here, and do a separate edit for imports.
+          const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+          resolve(result.value);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.onerror = (error) => reject(error);
+      reader.readAsArrayBuffer(file);
+    });
+  };
 
   const processFile = async (file) => {
     if (!file) return;
@@ -139,9 +165,9 @@ export default function Profile() {
       const resumeUrl = publicUrl || file_url;
       console.log("[Profile] File uploaded successfully:", resumeUrl);
 
-      // 2. Extract Text (if PDF)
+      // 2. Extract Text (PDF or DOCX)
       let parsedContent = null;
-      if (file.type === 'application/pdf') {
+      if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
         try {
           console.log("[Profile] Extracting text from PDF...");
           const blobUrl = URL.createObjectURL(file);
@@ -150,6 +176,14 @@ export default function Profile() {
           console.log("[Profile] Extraction complete, length:", parsedContent?.length);
         } catch (err) {
           console.error("[Profile] Failed to extract text from PDF:", err);
+        }
+      } else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
+        try {
+          console.log("[Profile] Extracting text from DOCX...");
+          parsedContent = await extractTextFromDocx(file);
+          console.log("[Profile] Extraction complete, length:", parsedContent?.length);
+        } catch (err) {
+          console.error("[Profile] Failed to extract text from DOCX:", err);
         }
       }
 
@@ -206,11 +240,7 @@ export default function Profile() {
       toast({
         variant: "warning",
         title: "שגיאה בהעלאת הקובץ",
-        description: error.message.includes("Bucket not found")
-          ? "שגיאת מערכת: באקט האחסון לא קיים. אנא לפנות לתמיכה."
-          : error.message.includes("row-level security policy")
-            ? "שגיאת הרשאה: אין לך הרשאה להעלות קבצים. אנא וודא שהוגדרה מדיניות (Policy) מתאימה ב-Supabase Storage."
-            : "אירעה שגיאה בעת העלאת הקובץ. אנא נסה שנית.",
+        description: "אירעה שגיאה בעת העלאת הקובץ. אנא נסה שנית.",
       });
     } finally {
       setLoading(false);
@@ -332,6 +362,8 @@ export default function Profile() {
       }
     };
 
+    const isWord = cvData.file_name && (cvData.file_name.endsWith('.doc') || cvData.file_name.endsWith('.docx'));
+
     return (
       <>
         {/* DESKTOP VIEW */}
@@ -339,7 +371,13 @@ export default function Profile() {
           <div className="bg-[#f8fafd] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 mb-4 flex justify-between items-end">
             <div className="flex items-center gap-6">
               <div className="flex-shrink-0">
-                <img src="/pdf_icon.png" alt="PDF" className="w-12 h-auto" />
+                {isWord ? (
+                  <div className="w-12 h-12 flex items-center justify-center bg-blue-100 rounded-lg">
+                    <FileText className="w-8 h-8 text-blue-600" />
+                  </div>
+                ) : (
+                  <img src="/pdf_icon.png" alt="PDF" className="w-12 h-auto" />
+                )}
               </div>
               <div className="text-right">
                 <p className="font-semibold text-gray-900 text-lg" title={cvData.file_name}>
@@ -410,7 +448,13 @@ export default function Profile() {
             <div className="bg-[#f8fafd] rounded-xl p-4 mb-5">
               <div className="flex items-center justify-between">
                 <div className="flex-shrink-0 ml-4">
-                  <img src="/pdf_icon.png" alt="PDF" className="w-10 h-auto" />
+                  {isWord ? (
+                    <div className="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-lg">
+                      <FileText className="w-6 h-6 text-blue-600" />
+                    </div>
+                  ) : (
+                    <img src="/pdf_icon.png" alt="PDF" className="w-10 h-auto" />
+                  )}
                 </div>
                 <div className="text-right w-full">
                   <p className="font-bold text-gray-900 text-base mb-1 truncate" title={cvData.file_name}>

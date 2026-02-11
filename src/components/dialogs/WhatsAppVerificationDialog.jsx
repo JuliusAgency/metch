@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Phone, Lock, CheckCircle2 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 
+import { SendWhatsAppMessage } from "@/api/integrations";
+
 export const WhatsAppVerificationDialog = ({ isOpen, onClose, onVerified, initialPhone = '' }) => {
     const [step, setStep] = useState('phone'); // phone, code, success
     const [phoneNumber, setPhoneNumber] = useState(initialPhone);
@@ -32,58 +34,52 @@ export const WhatsAppVerificationDialog = ({ isOpen, onClose, onVerified, initia
 
         setLoading(true);
 
-        // Simulate network delay for "Sending..." effect
-        setTimeout(async () => {
-            try {
-                // Generate 4 digit code
-                const newCode = Math.floor(1000 + Math.random() * 9000).toString();
-                console.log("Generated Code (Safe to ignore in prod):", newCode); // For debugging
-                setGeneratedCode(newCode);
+        try {
+            // Generate 4 digit code
+            const newCode = Math.floor(1000 + Math.random() * 9000).toString();
+            console.log("Generated Code:", newCode); // Keep for dev debugging/safety
+            setGeneratedCode(newCode);
 
-                // Attempt to send via API (from other dev), but fallback if fails or mocked
-                try {
-                    if (typeof SendWhatsAppMessage !== 'undefined') {
-                        await SendWhatsAppMessage({
-                            phoneNumber: phoneNumber,
-                            message: `קוד האימות שלך ל-Metch הוא: ${newCode}`
-                        });
-                    } else {
-                        console.warn("SendWhatsAppMessage is not defined (mocking success)");
-                    }
-                } catch (apiError) {
-                    console.warn("WhatsApp API call failed (mocking success):", apiError);
-                }
+            const response = await SendWhatsAppMessage({
+                phoneNumber: phoneNumber,
+                message: `קוד האימות שלך ל-Metch הוא: ${newCode}`
+            });
 
-                toast({
-                    title: "הקוד נשלח בהצלחה",
-                    description: "בדוק את הווצאפ שלך (כל קוד 4 ספרות יעבוד כרגע)",
-                });
-                setStep('code');
-            } catch (error) {
-                console.error("Error setting up code:", error);
-                toast({
-                    title: "שגיאה",
-                    description: "אירעה שגיאה",
-                    variant: "destructive"
-                });
-            } finally {
-                setLoading(false);
+            console.log("WhatsApp API Response:", response);
+
+            if (!response || (!response.idMessage && !response.chatId)) {
+                console.error("Invalid WhatsApp API response:", response);
+                throw new Error("השליחה נכשלה בצד השרת. אנא וודא שהמפתחות (Instance ID, Token) תקינים.");
             }
-        }, 1500);
+
+            toast({
+                title: "הקוד נשלח בהצלחה",
+                description: "בדוק את הווצאפ שלך",
+            });
+            setStep('code');
+        } catch (error) {
+            console.error("Error sending WhatsApp message:", error);
+            toast({
+                title: "שגיאה בשליחת הקוד",
+                description: error.message || "אירעה שגיאה, אנא נסה שנית",
+                variant: "destructive"
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleVerifyCode = () => {
-        // FREE PASS: Allow any 4 digit code
-        if (code.length === 4) {
+        if (code === generatedCode) {
             setStep('success');
             setTimeout(() => {
                 onVerified(phoneNumber);
-                onClose(); // Close dialog after success
+                onClose();
             }, 1500);
         } else {
             toast({
                 title: "קוד שגוי",
-                description: "נא להזין 4 ספרות",
+                description: "הקוד שהזנת אינו תואם לקוד שנשלח via WhatsApp",
                 variant: "destructive"
             });
         }

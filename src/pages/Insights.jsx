@@ -137,26 +137,44 @@ export default function Insights() {
           if (cvDataRaw.parsed_content) {
             cvText = cvDataRaw.parsed_content;
           } else {
+            // Helper to parse JSON fields safely
+            const safeJsonParse = (value) => {
+              if (!value) return [];
+              if (Array.isArray(value)) return value;
+              if (typeof value === 'string') {
+                try {
+                  const parsed = JSON.parse(value);
+                  return Array.isArray(parsed) ? parsed : [];
+                } catch (e) {
+                  return [];
+                }
+              }
+              return [];
+            };
+
             // Build text from structured fields
             const parts = [];
             if (cvDataRaw.summary) parts.push(`Summary: ${cvDataRaw.summary}`);
 
-            if (cvDataRaw.work_experience && Array.isArray(cvDataRaw.work_experience)) {
+            const workExp = safeJsonParse(cvDataRaw.work_experience);
+            if (workExp.length > 0) {
               parts.push("Work Experience:");
-              cvDataRaw.work_experience.forEach(exp => {
+              workExp.forEach(exp => {
                 parts.push(`- ${exp.title} at ${exp.company} (${exp.start_date} - ${exp.is_current ? 'Present' : exp.end_date}): ${exp.description || ''}`);
               });
             }
 
-            if (cvDataRaw.education && Array.isArray(cvDataRaw.education)) {
+            const education = safeJsonParse(cvDataRaw.education);
+            if (education.length > 0) {
               parts.push("Education:");
-              cvDataRaw.education.forEach(edu => {
+              education.forEach(edu => {
                 parts.push(`- ${edu.degree} in ${edu.field_of_study} at ${edu.institution}`);
               });
             }
 
-            if (cvDataRaw.skills && Array.isArray(cvDataRaw.skills)) {
-              parts.push(`Skills: ${cvDataRaw.skills.join(', ')}`);
+            const skills = safeJsonParse(cvDataRaw.skills);
+            if (skills.length > 0) {
+              parts.push(`Skills: ${skills.join(', ')}`);
             }
 
             cvText = parts.join("\n\n");

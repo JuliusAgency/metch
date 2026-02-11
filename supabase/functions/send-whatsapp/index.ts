@@ -30,7 +30,7 @@ serve(async (req) => {
             ? cleanPhone
             : `972${cleanPhone.startsWith('0') ? cleanPhone.substring(1) : cleanPhone}`
 
-        const url = `https://api.green-api.com/waInstance${instanceId}/sendMessage/${apiToken}`
+        const url = `https://7105.api.greenapi.com/waInstance${instanceId}/sendMessage/${apiToken}`
 
         const response = await fetch(url, {
             method: 'POST',

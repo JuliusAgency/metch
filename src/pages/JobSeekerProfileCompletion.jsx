@@ -286,24 +286,32 @@ export default function JobSeekerProfileCompletion() {
                         </div>
 
 
-                        {/* CV Preview Card - Match Width to Social Input (max-w-md) & Compact */}
-                        {cvData && (
-                            <div className="mb-4 max-w-md mx-auto w-full rounded-xl p-3 flex items-center justify-between bg-white shadow-sm border border-gray-100">
-                                <div className="flex items-center gap-3 overflow-hidden">
-                                    <div className="bg-red-500 p-1.5 rounded-lg">
-                                        <span className="text-white font-bold text-[10px]">PDF</span>
+                        {cvData && (() => {
+                            const isWord = cvData.file_name && (cvData.file_name.endsWith('.doc') || cvData.file_name.endsWith('.docx'));
+                            return (
+                                <div className="mb-4 max-w-md mx-auto w-full rounded-xl p-3 flex items-center justify-between bg-white shadow-sm border border-gray-100">
+                                    <div className="flex items-center gap-3 overflow-hidden">
+                                        {isWord ? (
+                                            <div className="bg-blue-100 p-1.5 rounded-lg">
+                                                <FileText className="w-5 h-5 text-blue-600" />
+                                            </div>
+                                        ) : (
+                                            <div className="bg-red-500 p-1.5 rounded-lg">
+                                                <span className="text-white font-bold text-[10px]">PDF</span>
+                                            </div>
+                                        )}
+                                        <div className="text-right truncate flex-1 min-w-0">
+                                            <p className="font-semibold text-gray-800 truncate text-sm leading-tight" title={cvData.file_name}>{cvData.file_name}</p>
+                                            <p className="text-gray-400 text-[10px] leading-tight">{new Date(cvData.last_modified || Date.now()).toLocaleDateString()} • {cvData.file_size_kb || 0} Kb</p>
+                                        </div>
                                     </div>
-                                    <div className="text-right truncate flex-1 min-w-0">
-                                        <p className="font-semibold text-gray-800 truncate text-sm leading-tight" title={cvData.file_name}>{cvData.file_name}</p>
-                                        <p className="text-gray-400 text-[10px] leading-tight">{new Date(cvData.last_modified || Date.now()).toLocaleDateString()} • {cvData.file_size_kb || 0} Kb</p>
-                                    </div>
+                                    <Button variant="ghost" className="text-blue-500 hover:text-blue-700 flex items-center gap-1 text-xs h-8 px-2" onClick={handleReplaceCV}>
+                                        <RefreshCw className="w-3 h-3" />
+                                        החלפת קובץ
+                                    </Button>
                                 </div>
-                                <Button variant="ghost" className="text-blue-500 hover:text-blue-700 flex items-center gap-1 text-xs h-8 px-2" onClick={handleReplaceCV}>
-                                    <RefreshCw className="w-3 h-3" />
-                                    החלפת קובץ
-                                </Button>
-                            </div>
-                        )}
+                            );
+                        })()}
                         {!cvData && !cvLoading && (
                             <div className="mb-8 max-w-md mx-auto w-full">
                                 <Button variant="outline" onClick={handleReplaceCV} className="w-full text-sm h-10">

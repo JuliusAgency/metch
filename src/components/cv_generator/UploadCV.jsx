@@ -1,14 +1,15 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { UploadFile } from '@/api/integrations';
 import { User } from '@/api/entities';
 import { CV } from '@/api/entities';
 import { Button } from '@/components/ui/button';
-import { UploadCloud, FileText, Loader2, CheckCircle, AlertCircle, Eye, Trash2, Upload, Info, RefreshCw } from 'lucide-react';
+import { UploadCloud, FileText, Loader2, CheckCircle, AlertCircle, Eye, Trash2, Upload, Info, RefreshCw, FileType2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import skipInfoIcon from '@/assets/skip_info_icon.png';
 import { triggerInsightsGeneration, invalidateInsightsCache } from '@/services/insightsService';
 import { extractTextFromPdf } from '@/utils/pdfUtils';
 import { useToast } from "@/components/ui/use-toast";
+import mammoth from 'mammoth';
 
 export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDelete, onSkip, showSkipDisclaimer }) {
     const [file, setFile] = useState(null);
@@ -16,7 +17,6 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
     const [errorMessage, setErrorMessage] = useState('');
     const fileInputRef = useRef(null);
     const { toast } = useToast();
-
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -27,6 +27,23 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
         }
     };
 
+    const extractTextFromDocx = async (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const arrayBuffer = event.target.result;
+                    const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+                    resolve(result.value);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            reader.onerror = (error) => reject(error);
+            reader.readAsArrayBuffer(file);
+        });
+    };
+
     const handleUpload = async (fileToUpload) => {
         const fileProcess = fileToUpload || file;
         if (!fileProcess || !user) return;
@@ -35,14 +52,11 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
         setErrorMessage('');
 
         try {
-            // Ensure we have user email
             const userEmail = user?.email;
             if (!userEmail) {
                 throw new Error("User email is not available. Please refresh the page.");
             }
 
-            // 1. Upload the file
-            // Sanitize filename to avoid "Invalid key" errors with special characters
             const cleanFileName = fileProcess.name.replace(/[^a-zA-Z0-9.-]/g, '_');
             const { publicUrl, file_url } = await UploadFile({
                 file: fileProcess,
@@ -57,11 +71,9 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
             }
 
             const fileUrl = resumeUrl;
-
-            // 2. Update the User entity with the new resume URL
             await User.updateMyUserData({ resume_url: fileUrl });
 
-            // 3. Extract text found in PDF (Frontend parsing)
+            // 3. Extract text (Frontend parsing)
             let extractedText = null;
             if (fileProcess.type === 'application/pdf') {
                 try {
@@ -73,13 +85,19 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
                 } catch (err) {
                     console.error("[UploadCV] Failed to extract text from PDF:", err);
                 }
+            } else if (fileProcess.name.endsWith('.docx') || fileProcess.name.endsWith('.doc')) {
+                try {
+                    console.log("[UploadCV] Extracting text from DOCX...");
+                    extractedText = await extractTextFromDocx(fileProcess);
+                    console.log("[UploadCV] Text extracted successfully, length:", extractedText?.length);
+                } catch (err) {
+                    console.error("[UploadCV] Failed to extract text from DOCX:", err);
+                }
             } else {
-                console.log("[UploadCV] File is not PDF, skipping frontend extraction");
+                console.log("[UploadCV] File type not supported for frontend extraction");
             }
 
-            // 4. Find existing CV records and delete them to ensure only ONE record exists
             const existingCvs = await CV.filter({ user_email: userEmail });
-            console.log(`[UploadCV] Found ${existingCvs.length} existing CV records. Deleting all before creating new...`);
             for (const oldCv of existingCvs) {
                 try {
                     await CV.delete(oldCv.id);
@@ -88,7 +106,6 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
                 }
             }
 
-            // Create fresh CV metadata record
             const cvMetadata = {
                 user_email: userEmail,
                 file_name: fileProcess.name,
@@ -97,17 +114,11 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
                 parsed_content: extractedText
             };
 
-            console.log("[UploadCV] Creating new CV record with parsed content length:", extractedText?.length || 0);
             await CV.create(cvMetadata);
-
             setUploadStatus('success');
 
-            // Trigger AI insights generation in background
             if (user?.id && userEmail) {
-                console.log("[UploadCV] Triggering AI insights generation after CV upload");
-                invalidateInsightsCache(user.id); // Clear old cache
-
-                // Allow a tiny delay for DB consistency if needed, though await should handle it
+                invalidateInsightsCache(user.id);
                 setTimeout(() => {
                     triggerInsightsGeneration(user.id, userEmail)
                         .then(success => {
@@ -119,7 +130,6 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
                 }, 500);
             }
 
-            // Notify parent about success but DO NOT navigate automatically
             if (onUploadSuccess) {
                 onUploadSuccess();
             }
@@ -222,10 +232,20 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
         }
     };
 
+    const getFileIcon = (fileName) => {
+        if (fileName.endsWith('.pdf')) {
+            return <FileText className="w-8 h-8 text-red-500 flex-shrink-0" />;
+        } else if (fileName.endsWith('.doc') || fileName.endsWith('.docx')) {
+            return <FileText className="w-8 h-8 text-blue-500 flex-shrink-0" />;
+        } else {
+            return <FileText className="w-8 h-8 text-gray-400 flex-shrink-0" />;
+        }
+    };
+
     const FilePreview = () => (
         <div className="border border-gray-200 bg-gray-50 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3 text-right w-full">
-                <FileText className="w-8 h-8 text-blue-500 flex-shrink-0" />
+                {getFileIcon(file.name)}
                 <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-800 truncate" title={file.name}>{file.name}</p>
                     <p className="text-sm text-gray-500">{Math.round(file.size / 1024)} KB</p>
