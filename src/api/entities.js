@@ -33,7 +33,7 @@ export const CV = {
       const { data: result, error } = await supabase
         .from('CV')
         .insert(data)
-        .select('id, user_email, file_name, file_size_kb, last_modified, parsed_content, skills, summary, work_experience, education, certifications')
+        .select('id, user_email, file_name, file_size_kb, last_modified, created_date, parsed_content, skills, summary, work_experience, education, certifications, personal_details')
         .single();
       
       if (error) throw error;
@@ -45,7 +45,7 @@ export const CV = {
         .from('CV')
         .update(data)
         .eq('id', id)
-        .select('id, user_email, file_name, file_size_kb, last_modified, parsed_content, skills, summary, work_experience, education, certifications')
+        .select('id, user_email, file_name, file_size_kb, last_modified, created_date, parsed_content, skills, summary, work_experience, education, certifications, personal_details')
         .single();
       
       if (error) throw error;
@@ -53,7 +53,7 @@ export const CV = {
   },
   // Override filter to ensure parsed_content is included
   async filter(filters = {}, orderBy = null, limit = null) {
-      let query = supabase.from('CV').select('id, user_email, file_name, file_size_kb, last_modified, parsed_content');
+      let query = supabase.from('CV').select('id, user_email, file_name, file_size_kb, last_modified, created_date, parsed_content, personal_details, work_experience, education, certifications, skills, summary');
       
       if (filters && Object.keys(filters).length > 0) {
         Object.entries(filters).forEach(([key, value]) => {

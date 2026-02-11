@@ -155,11 +155,10 @@ export const triggerInsightsGeneration = async (userId, userEmail) => {
     }
 
     if (!questionnaire) {
-      console.log("[InsightsService] Questionnaire response not found, skipping insights generation");
-      return false;
+      console.log("[InsightsService] Questionnaire response not found, continuing with limited data");
     }
 
-    console.log("[InsightsService] All required data found, proceeding with generation");
+    console.log("[InsightsService] Required core data found, proceeding with generation");
 
     // Construct CV text
     let cvText = "";
@@ -213,15 +212,15 @@ export const triggerInsightsGeneration = async (userId, userEmail) => {
     const insights = await generateAIInsights(stats, profile, cvText, cv);
 
     if (insights) {
-      console.log("[InsightsService] Insights generated successfully");
+      console.log("[InsightsService] Insights generated successfully for user:", userId);
       return true;
     } else {
-      console.log("[InsightsService] Insights generation failed");
+      console.warn("[InsightsService] Insights generation failed (AI returned null) for user:", userId);
       return false;
     }
 
   } catch (error) {
-    console.error("[InsightsService] Error in triggerInsightsGeneration:", error);
+    console.error("[InsightsService] Error in triggerInsightsGeneration for user:", userId, error);
     return false;
   }
 };

@@ -13,6 +13,7 @@ import Step5Skills from '@/components/cv_generator/Step5_Skills';
 import Step6Summary from '@/components/cv_generator/Step6_Summary';
 import Step7Preview from '@/components/cv_generator/Step7_Preview';
 import UploadCV from '@/components/cv_generator/UploadCV';
+import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft, ArrowRight, Loader2, Menu, ChevronRight } from 'lucide-react';
@@ -123,7 +124,7 @@ export default function CVGenerator() {
   useRequireUserType(); // Ensure user has selected a user type
   const [step, setStep] = useState(0); // Start at step 0 for choice
   const [cvData, setCvData] = useState(() => normalizeCvRecord({}));
-  const [user, setUser] = useState(null);
+  const { user, updateProfile } = useUser();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [cvId, setCvId] = useState(null);
@@ -143,8 +144,9 @@ export default function CVGenerator() {
 
   // Save draft to localStorage whenever cvData or step changes
   useEffect(() => {
-    if (!user?.email || step < 1) return;
+    if (loading || !user?.email || step < 1) return;
 
+    console.log("[CVGenerator] Step-Saving draft for user:", user.email, "at step:", step);
     const draftKey = `cv_draft_${user.email}`;
     const draftData = {
       cvData,
@@ -153,7 +155,7 @@ export default function CVGenerator() {
       timestamp: Date.now()
     };
     localStorage.setItem(draftKey, JSON.stringify(draftData));
-  }, [cvData, step, user]);
+  }, [cvData, step, user, loading]);
 
   const validatePersonalDetails = (details) => {
     if (!details) return false;
@@ -204,7 +206,6 @@ export default function CVGenerator() {
       setLoading(true);
       try {
         const userData = await User.me();
-        setUser(userData);
 
         // Check for local draft first
         const draftKey = `cv_draft_${userData.email}`;
@@ -255,9 +256,12 @@ export default function CVGenerator() {
         }
 
         // Fallback to DB if no draft
-        const existingCvs = await CV.filter({ user_email: userData.email });
         if (existingCvs.length > 0) {
-          console.log("[CVGenerator] Loading existing CV from DB");
+          console.log("[CVGenerator] Loading existing CV from DB", {
+            id: existingCvs[0].id,
+            hasWorkExp: existingCvs[0].work_experience?.length > 0,
+            hasSkills: existingCvs[0].skills?.length > 0
+          });
           const mergedData = mergeProfileToCv(existingCvs[0], userData);
           setCvData(mergedData);
           setCvId(existingCvs[0].id);
@@ -276,6 +280,7 @@ export default function CVGenerator() {
             }
           }
         } else {
+          console.log("[CVGenerator] No existing CV found, starting fresh");
           setCvData(mergeProfileToCv({}, userData));
         }
       } catch (error) {
@@ -364,7 +369,10 @@ export default function CVGenerator() {
         return;
       }
 
-      let payload = { ...cvData };
+      let payload = {
+        ...cvData,
+        last_modified: new Date().toISOString()
+      };
 
       // Normalize availability if it's in Hebrew
       if (payload.preferences && payload.preferences.availability) {
@@ -404,6 +412,11 @@ export default function CVGenerator() {
       } else {
         savedCv = await CV.create({ ...payload, user_email: userEmail });
         setCvId(savedCv.id);
+
+        // Invalidate insights cache on CV creation
+        if (user?.id) {
+          invalidateInsightsCache(user.id);
+        }
       }
 
       // Trigger AI insights generation in background after CV save
@@ -419,7 +432,36 @@ export default function CVGenerator() {
       }
 
 
-      // If this is the last step, navigate to Profile
+      // Sync character traits & personal details whenever we save
+      if (user?.id) {
+        try {
+          const updates = {};
+
+          // Sync traits specifically (requested by user)
+          if (Array.isArray(cvData.skills) && cvData.skills.length > 0) {
+            updates.character_traits = cvData.skills;
+          }
+
+          // Sync personal details if available
+          if (cvData.personal_details) {
+            const { full_name, phone, address, gender, birth_date } = cvData.personal_details;
+            if (full_name) updates.full_name = full_name;
+            if (phone) updates.phone = phone;
+            if (address) updates.preferred_location = address;
+            if (gender) updates.gender = gender;
+            if (birth_date) updates.date_of_birth = birth_date;
+          }
+
+          if (Object.keys(updates).length > 0) {
+            console.log("[CVGenerator] Syncing to UserProfile:", updates);
+            await updateProfile(updates);
+          }
+        } catch (err) {
+          console.error("Failed to sync CV details to UserProfile", err);
+        }
+      }
+
+      // If this is the last step, navigate to Profile or Questionnaire
       if (step === STEPS.length) {
         toast({
           title: "קורות החיים נשמרו בהצלחה",
@@ -448,23 +490,6 @@ export default function CVGenerator() {
         return;
       }
 
-      // Sync personal details to UserProfile whenever we save
-      if (cvData.personal_details) {
-        try {
-          const { full_name, phone, address, gender, birth_date } = cvData.personal_details;
-          await User.updateMyUserData({
-            ...(full_name && { full_name }),
-            ...(phone && { phone }),
-            ...(address && { preferred_location: address }),
-            ...(gender && { gender }),
-            ...(birth_date && { date_of_birth: birth_date }),
-            ...(cvData.skills && { character_traits: cvData.skills }),
-          });
-        } catch (err) {
-          console.error("Failed to update user profile with CV details", err);
-        }
-      }
-
       // If not last step, just save and move fast
       if (step < STEPS.length) {
         // FORK: If choice is 'upload' and we just finished Step 1 (Personal Details),
@@ -480,7 +505,6 @@ export default function CVGenerator() {
         const isOnboarding = searchParams.get('onboarding') === 'true';
         navigate(`/CVGenerator?choice=${choice}&step=${step + 1}${isOnboarding ? '&onboarding=true' : ''}`);
       }
-
     } catch (error) {
       console.error("Error saving CV:", error);
       toast({

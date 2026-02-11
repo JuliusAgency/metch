@@ -282,6 +282,11 @@ export default function Profile() {
       await CV.delete(cvData.id);
       await UserEntity.updateMyUserData({ resume_url: null });
 
+      // Invalidate insights cache when CV is deleted
+      if (user?.id) {
+        invalidateInsightsCache(user.id);
+      }
+
       // Clear the local storage draft so next generation starts fresh
       if (user?.email) {
         localStorage.removeItem(`cv_draft_${user.email}`);
@@ -384,9 +389,13 @@ export default function Profile() {
                   {cvData.file_name}
                 </p>
                 <p className="text-sm text-gray-400 mt-1">
-                  {format(new Date(cvData.last_modified), 'dd.MM.yyyy HH:mm')}
+                  {cvData.last_modified
+                    ? format(new Date(cvData.last_modified), 'dd.MM.yyyy HH:mm')
+                    : cvData.created_date
+                      ? format(new Date(cvData.created_date), 'dd.MM.yyyy HH:mm')
+                      : 'תאריך לא ידוע'}
                   <span className="mx-2">|</span>
-                  {cvData.file_size_kb} KB
+                  {cvData.file_size_kb || '0'} KB
                 </p>
               </div>
             </div>
@@ -461,9 +470,13 @@ export default function Profile() {
                     {cvData.file_name}
                   </p>
                   <p className="text-xs text-gray-400">
-                    {format(new Date(cvData.last_modified), 'dd.MM.yyyy HH:mm')}
+                    {cvData.last_modified
+                      ? format(new Date(cvData.last_modified), 'dd.MM.yyyy HH:mm')
+                      : cvData.created_date
+                        ? format(new Date(cvData.created_date), 'dd.MM.yyyy HH:mm')
+                        : 'תאריך לא ידוע'}
                     <span className="mx-2">|</span>
-                    {cvData.file_size_kb} KB
+                    {cvData.file_size_kb || '0'} KB
                   </p>
                 </div>
                 <button
