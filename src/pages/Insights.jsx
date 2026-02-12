@@ -184,7 +184,7 @@ export default function Insights() {
         console.log("Constructed CV Text for AI:", cvText.length > 0 ? "Yes (" + cvText.length + " chars)" : "No");
 
         setAnalyzing(true);
-        const aiRecommendations = await generateAIInsights(statsForAI, profile, cvText, cvDataRaw);
+        const aiRecommendations = await generateAIInsights(statsForAI, user.email, profile, cvText, cvDataRaw);
         setAnalyzing(false);
 
         setInsightsData({
@@ -267,6 +267,11 @@ export default function Insights() {
                   </>
                 }
               />
+              {insightsData.aiRecommendations?._limitInfo?.limitReached && (
+                <p className="text-xs text-orange-600 font-medium mt-1">
+                  תובנות חדשות יטענו בעוד {Math.ceil((new Date(insightsData.aiRecommendations._limitInfo.nextGenerationDate) - new Date()) / (1000 * 60 * 60 * 24))} ימים
+                </p>
+              )}
             </div>
             {loading ? (
               <div className="text-center py-8">

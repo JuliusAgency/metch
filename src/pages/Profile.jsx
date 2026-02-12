@@ -465,11 +465,11 @@ export default function Profile() {
                     <img src="/pdf_icon.png" alt="PDF" className="w-10 h-auto" />
                   )}
                 </div>
-                <div className="text-right w-full">
-                  <p className="font-bold text-gray-900 text-base mb-1 truncate" title={cvData.file_name}>
+                <div className="text-right flex-1 min-w-0">
+                  <p className="font-bold text-gray-900 text-sm mb-1 truncate" title={cvData.file_name}>
                     {cvData.file_name}
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-[10px] text-gray-400">
                     {cvData.last_modified
                       ? format(new Date(cvData.last_modified), 'dd.MM.yyyy HH:mm')
                       : cvData.created_date
@@ -481,7 +481,7 @@ export default function Profile() {
                 </div>
                 <button
                   onClick={handleViewCV}
-                  className="bg-[#4D8EFF] text-white text-xs font-bold px-3 py-1.5 rounded-md hover:bg-blue-600 transition-colors flex items-center gap-1 mr-2"
+                  className="bg-[#4D8EFF] text-white text-xs font-bold px-3 py-1.5 rounded-md hover:bg-blue-600 transition-colors flex items-center gap-1 mr-2 flex-shrink-0"
                 >
                   <span>לצפיה</span>
                 </button>

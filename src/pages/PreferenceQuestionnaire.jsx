@@ -124,12 +124,15 @@ export default function PreferenceQuestionnaire() {
   }, []);
 
   const handleNext = () => {
-    if (isOnboarding) {
-      handleSave();
-    } else {
+    // If we are on step 1, always go to step 2 first (even in onboarding)
+    if (step === 1) {
       setStep(2);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
     }
+
+    // If we are on step 2 (or generally ready to save)
+    handleSave();
   };
 
   const handleBack = () => {
@@ -170,8 +173,8 @@ export default function PreferenceQuestionnaire() {
 
       if (returnTo) {
         navigate(returnTo, { replace: true });
-      } else if (isOnboarding && choice === 'upload' && step === 2) {
-        // Special flow for "I have CV" onboarding: go back to CVGenerator for upload step
+      } else if (isOnboarding && choice === 'upload') {
+        // Special flow for "I have CV" onboarding: always go back to CVGenerator for upload step
         navigate(createPageUrl('CVGenerator?choice=upload&step=-1&onboarding=true'), { replace: true });
       } else if (isOnboarding) {
         // Final onboarding step
@@ -272,7 +275,7 @@ export default function PreferenceQuestionnaire() {
               />
             )}
 
-            {step === 2 && !isOnboarding && (
+            {step === 2 && (
               <Step2
                 preferences={preferences}
                 setPreferences={setPreferences}
@@ -283,7 +286,7 @@ export default function PreferenceQuestionnaire() {
             )}
 
             {/* Terms / Info Block (Inside Card) */}
-            {(step === 1 || (step === 2 && !isOnboarding)) && (
+            {(step === 1 || step === 2) && (
               <div className="hidden lg:flex items-start gap-2 text-gray-500 text-xs text-right mt-6">
                 <Info className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" />
                 <p>ההתאמה נעשית בהתבסס על קורות החיים, גם אם שאלון ההעדפה לא מדוייק</p>
@@ -303,13 +306,13 @@ export default function PreferenceQuestionnaire() {
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
               >
-                {saving ? "שומר..." : (isOnboarding ? "שמור והמשך" : "הבא")}
+                {saving ? "שומר..." : "הבא"}
               </Button>
             </div>
           )}
 
-          {/* Mobile "Continue" Button for Step 2 (Non-Onboarding) */}
-          {step === 2 && !isOnboarding && (
+          {/* Mobile "Continue" Button for Step 2 */}
+          {step === 2 && (
             <div className="w-full mt-10 md:hidden">
               <Button
                 onClick={handleSave}

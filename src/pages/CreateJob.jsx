@@ -32,7 +32,7 @@ const STEPS = ["פרטי המשרה", "פרטי החברה", "שאלון סינ�
 
 const initialJobData = {
   title: "",
-  company: "Your Company",
+  company: "",
   description: "",
   location: "",
   category: "",
@@ -58,8 +58,23 @@ export default function CreateJob() {
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const [lastCreatedJob, setLastCreatedJob] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+
+  // New state to track if we've initialized from user data
+  const [isInitialized, setIsInitialized] = useState(false);
+
   const [loadingJob, setLoadingJob] = useState(true);
   const { user, updateProfile } = useUser();
+  // Pre-fill company name from user profile
+  useEffect(() => {
+    if (user && !isEditing && !isInitialized && !jobData.company) {
+      setJobData(prev => ({
+        ...prev,
+        company: user.company_name || ""
+      }));
+      setIsInitialized(true);
+    }
+  }, [user, isEditing, isInitialized, jobData.company]);
+
   const { toast } = useToast();
   const [isScreeningSaved, setIsScreeningSaved] = useState(false);
 

@@ -381,16 +381,27 @@ const JobSeekerDashboard = ({ user }) => {
             const employerProfiles = await Promise.all(
               creatorEmails.map(email => UserProfile.filter({ email: email.toLowerCase() }))
             );
-            const logoMap = employerProfiles.flat().reduce((acc, profile) => {
-              if (profile?.email && profile?.profile_picture) {
-                acc[profile.email.toLowerCase()] = profile.profile_picture;
+
+            const profileMap = employerProfiles.flat().reduce((acc, profile) => {
+              if (profile?.email) {
+                acc[profile.email.toLowerCase()] = {
+                  logo: profile.profile_picture,
+                  companyName: profile.company_name
+                };
               }
               return acc;
             }, {});
 
             limitedJobs.forEach(j => {
-              if (!j.company_logo_url && j.created_by) {
-                j.company_logo_url = logoMap[j.created_by.toLowerCase()];
+              const profile = profileMap[j.created_by?.toLowerCase()];
+              if (profile) {
+                if (!j.company_logo_url) {
+                  j.company_logo_url = profile.logo;
+                }
+                // Override "Your Company" if actual name exists
+                if (j.company === "Your Company" && profile.companyName) {
+                  j.company = profile.companyName;
+                }
               }
             });
           } catch (e) {

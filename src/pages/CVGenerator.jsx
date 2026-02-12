@@ -96,7 +96,15 @@ const mergeProfileToCv = (cvData, userData) => {
       phone: userData.phone || normalized.personal_details.phone || '',
       gender: userData.gender || normalized.personal_details.gender || '',
       birth_date: birthDate
-    }
+    },
+    // Sync character traits from profile if skills are empty
+    skills: (normalized.skills && normalized.skills.length > 0)
+      ? normalized.skills
+      : (Array.isArray(userData.character_traits)
+        ? userData.character_traits
+        : (typeof userData.character_traits === 'string'
+          ? ensureArray(userData.character_traits)
+          : []))
   };
 };
 

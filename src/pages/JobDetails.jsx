@@ -393,7 +393,7 @@ export default function JobDetails() {
                               </div>
 
                               {/* Left: Button */}
-                              <Link to={createPageUrl(`CandidateProfile?id=${profile?.id || ''}`)}>
+                              <Link to={createPageUrl(`CandidateProfile?id=${profile?.id || ''}&jobId=${job?.id || ''}`)}>
                                 <Button variant="ghost" size="sm" className="bg-[#8be29d] text-[#1c5f2b] hover:bg-[#7ad68d] rounded-full h-8 px-5 text-sm font-bold shadow-sm">
                                   לצפייה
                                 </Button>

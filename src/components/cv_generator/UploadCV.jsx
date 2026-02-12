@@ -174,8 +174,12 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
                     ref={fileInputRef}
                     type="file"
                     className="hidden"
-                    accept=".pdf,.doc,.docx"
-                    onChange={handleFileChange}
+                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    onChange={(e) => {
+                        handleFileChange(e);
+                        // Reset value to allow selecting the same file again if needed
+                        e.target.value = '';
+                    }}
                 />
 
                 {/* Green Button */}
@@ -271,10 +275,6 @@ export default function UploadCV({ user, onUploadComplete, onUploadSuccess, onDe
                 >
                     <Trash2 className="w-5 h-5" />
                 </Button>
-                <div className="text-green-500 font-medium flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5" />
-                    הועלה בהצלחה
-                </div>
             </div>
 
         </div>

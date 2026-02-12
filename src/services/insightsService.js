@@ -1,5 +1,9 @@
-import { JobApplication, CandidateView, CV, QuestionnaireResponse, UserProfile } from "@/api/entities";
+import { JobApplication, CandidateView, CV, QuestionnaireResponse, UserProfile, UserAction } from "@/api/entities";
 import { Core } from "@/api/integrations";
+
+// --- Rate Limiting Constants ---
+const GENERATION_LIMIT_COUNT = 3;
+const GENERATION_LIMIT_DAYS = 30;
 
 /**
  * Generate AI-powered career insights for a job seeker
@@ -9,18 +13,120 @@ import { Core } from "@/api/integrations";
  * @param {Object} cvDataRaw - Raw CV data object
  * @returns {Promise<Object|null>} AI insights or null if generation fails
  */
-export const generateAIInsights = async (stats, userProfile, cvText, cvDataRaw) => {
-  // Check cache first
-  const cacheKey = `metch_insights_v2_${userProfile?.id}`;
+export const generateAIInsights = async (stats, userEmail, userProfile, cvText, cvDataRaw) => {
+  const userId = userProfile?.id;
+  const cacheKey = `metch_insights_v2_${userId}`;
+
+  // 1. Check Rate Limit in Database (UserAction)
+  let limitReached = false;
+  let oldInsights = null;
+  let nextGenerationDate = null;
+
+  if (userId && userEmail) {
+    try {
+      // Fetch all generation actions for this user (could be optimized with date filter if API supported it)
+      const actions = await UserAction.filter({ 
+        user_id: userId, 
+        action_type: 'generate_insights' 
+      });
+
+      // Filter locally for last 30 days
+      const now = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(now.getDate() - GENERATION_LIMIT_DAYS);
+
+      const recentActions = actions.filter(action => {
+        const actionDate = new Date(action.created_date || action.created_at); // Handle potential date field names
+        return actionDate >= thirtyDaysAgo;
+      });
+
+      console.log(`[InsightsService] User has generated insights ${recentActions.length} times in the last ${GENERATION_LIMIT_DAYS} days.`);
+
+      if (recentActions.length >= GENERATION_LIMIT_COUNT) {
+        limitReached = true;
+        
+        // Find the oldest action in the recent window to calculate when it expires
+        // Sort ascending to find the one that will expire first (moving the window)
+        const sortedActions = recentActions.sort((a, b) => 
+          new Date(a.created_date || a.created_at) - new Date(b.created_date || b.created_at)
+        );
+
+        // The date we can generate again is: (Limit-th oldest date) + 30 days
+        // e.g. Count=3, Limit=3. We need 1 slot to free up.
+        // The slot frees up 30 days after the 1st action in the window.
+        // Index to check is: (Count - Limit) = 0 (first element).
+        const oldestRelevantAction = sortedActions[0];
+        const oldestDate = new Date(oldestRelevantAction.created_date || oldestRelevantAction.created_at);
+        
+        const nextDate = new Date(oldestDate);
+        nextDate.setDate(nextDate.getDate() + GENERATION_LIMIT_DAYS);
+        nextGenerationDate = nextDate.toISOString();
+
+        // Retrieve latest insights to fallback
+        // Sort descending to get latest
+        const latestActions = actions.sort((a, b) => 
+          new Date(b.created_date || b.created_at) - new Date(a.created_date || a.created_at)
+        );
+        
+        if (latestActions.length > 0 && latestActions[0].additional_data?.insights) {
+          oldInsights = latestActions[0].additional_data.insights;
+          console.log("[InsightsService] Limit reached. Using stored insights from UserAction.");
+        }
+      }
+    } catch (err) {
+      console.error("[InsightsService] Error checking generation limit:", err);
+      // In case of error (e.g. network), we might proceed carefully or fail. 
+      // Let's assume we proceed if we can't check, unless we want strict enforcement.
+      // But for now, let's proceed to cache check.
+    }
+  }
+
+  // 2. If limit reached, return old insights + disclaimer
+  if (limitReached && oldInsights) {
+    return {
+      ...oldInsights,
+      _limitInfo: {
+        limitReached: true,
+        nextGenerationDate: nextGenerationDate
+      }
+    };
+  }
+
+  // 3. Data Loading (Skip cache if we are generating fresh data - user likely triggered it)
+  // Actually, we should check cache for *current session* or *un-invalidated* state.
+  // The cache key is removed by 'invalidateInsightsCache' when CV changes.
+  // So if cache exists, it means CV hasn't changed (or we just generated it).
+  // If cache exists, we use it (unless we specifically want to force regenerate?)
   const cachedData = localStorage.getItem(cacheKey);
   if (cachedData) {
     try {
       const parsedCache = JSON.parse(cachedData);
+      
+      // If cached data has limit info, we should re-verify the limit?
+      // No, just use cache. The limit info will update when we eventually hit DB.
+      // Actually, if cached data has obsolete limit info (e.g. date passed), 
+      // we might want to refresh?
+      // Let's keep it simple: Cache is king until invalidated.
+
       console.log("[InsightsService] Using cached insights");
       return parsedCache;
     } catch (e) {
       localStorage.removeItem(cacheKey);
     }
+  }
+
+  // 4. If limit reached but NO old insights found (edge case), return null or error?
+  if (limitReached && !oldInsights) {
+     console.warn("[InsightsService] Limit reached but no old insights found.");
+     // Fallback to error or maybe allow 1 grace generation?
+     // Let's block it to be safe, return special object.
+     return {
+       error: "limit_reached_no_data",
+       _limitInfo: {
+         limitReached: true,
+         nextGenerationDate: nextGenerationDate
+       }
+     };
   }
 
   try {
@@ -41,7 +147,7 @@ export const generateAIInsights = async (stats, userProfile, cvText, cvDataRaw) 
       Analyze the following job seeker profile and data to provide a comprehensive career insight report.
       
       User Profile:
-      - Age: ${age}
+      - Age: ${age} (approx)
       - Specialization: ${specialization}
       - Preferences: ${JSON.stringify(preferences)}
       
@@ -101,8 +207,23 @@ export const generateAIInsights = async (stats, userProfile, cvText, cvDataRaw) 
       }
       parsed = JSON.parse(cleanContent);
 
-      // Cache the result
-      if (parsed && userProfile?.id) {
+      if (parsed) {
+        // 5. Store Success Action in DB
+        if (userId && userEmail) {
+          try {
+             await UserAction.create({
+               user_id: userId,
+               user_email: userEmail,
+               action_type: 'generate_insights',
+               additional_data: { insights: parsed }
+             });
+             console.log("[InsightsService] Action logged to DB");
+          } catch (dbErr) {
+            console.error("[InsightsService] Failed to log action:", dbErr);
+          }
+        }
+
+        // Cache the result
         localStorage.setItem(cacheKey, JSON.stringify(parsed));
         console.log("[InsightsService] Insights cached successfully");
       }
@@ -209,7 +330,7 @@ export const triggerInsightsGeneration = async (userId, userEmail) => {
     console.log("[InsightsService] Generating insights with CV text length:", cvText.length);
 
     // Generate insights
-    const insights = await generateAIInsights(stats, profile, cvText, cv);
+    const insights = await generateAIInsights(stats, userEmail, profile, cvText, cv);
 
     if (insights) {
       console.log("[InsightsService] Insights generated successfully for user:", userId);

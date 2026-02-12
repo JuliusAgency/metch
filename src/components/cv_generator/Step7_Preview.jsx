@@ -60,21 +60,20 @@ export default function Step7_Preview({ cvData, setData, onEdit }) {
                         />
                     </div>
 
-                    <div className="flex flex-row md:flex-row-reverse justify-between md:justify-center items-start md:items-center gap-2 md:gap-8 px-2 md:px-0">
-                        {/* Preview (Right on Mobile, Left on Desktop) */}
+                    <div className="flex flex-row justify-between md:justify-center items-start gap-2 md:gap-8 px-2 md:px-0">
+                        {/* Preview (Right on Mobile, Center on Desktop) */}
                         <div className="w-[240px] h-[338px] md:w-[450px] md:h-[636px] bg-transparent md:bg-white shadow-none md:shadow-xl rounded-lg md:rounded-2xl overflow-hidden border-none md:border md:border-gray-100 flex-shrink-0">
-                            {/* Static image for mobile, live preview for desktop */}
-                            <div className="md:hidden print:hidden w-full h-full">
-                                <img src={cvPreviewTemplate} alt="CV Preview" className="w-full h-full object-contain" />
-                            </div>
-                            <div className="hidden md:block print:block w-full h-full">
-                                <CVPreview cvData={cvData} />
+                            <div className="w-full h-full overflow-hidden bg-white relative">
+                                {/* Scale down the preview on mobile to fit A4 specific dimensions into the container */}
+                                <div className="md:w-full md:h-full md:block print:block origin-top-right transform scale-[0.31] w-[794px] min-h-[1123px] bg-white md:transform-none md:min-h-0 md:bg-transparent print:transform-none print:w-full print:h-full print:min-h-0">
+                                    <CVPreview cvData={cvData} />
+                                </div>
                             </div>
                         </div>
 
-                        {/* Buttons (Left on Mobile, Right on Desktop) */}
+                        {/* Buttons (Left on Mobile, Left on Desktop) */}
                         <div className="flex flex-col gap-4">
-                            {/* Edit Button: Custom for Mobile, Standard for Desktop */}
+                            {/* Edit Button: Custom for Mobile */}
                             <button onClick={onEdit} className="md:hidden transition-transform hover:scale-105 active:scale-95 focus:outline-none">
                                 <img
                                     src={editCustomIcon}
@@ -82,17 +81,19 @@ export default function Step7_Preview({ cvData, setData, onEdit }) {
                                     className="w-12 h-12 object-contain"
                                 />
                             </button>
+                            {/* Edit Button: Standard for Desktop */}
                             <Button
                                 onClick={onEdit}
                                 variant="outline"
                                 size="icon"
-                                className="hidden md:flex w-12 h-12 rounded-full border-blue-200 text-blue-500 shadow-sm bg-white"
+                                className="hidden md:flex w-12 h-12 rounded-full border-blue-200 text-blue-500 shadow-sm bg-white hover:bg-blue-50"
+                                title="עריכה"
                             >
                                 <Edit className="w-6 h-6" />
                             </Button>
 
-                            <Button onClick={handleDownload} variant="outline" size="icon" className="w-12 h-12 rounded-full border-[#3f93d3] md:border-[#3f93d3]/30 text-[#3f93d3] shadow-none md:shadow-sm bg-white"><Download className="w-6 h-6" /></Button>
-                            <Button onClick={() => setIsPreviewOpen(true)} variant="outline" size="icon" className="w-12 h-12 rounded-full border-[#3f93d3] md:border-[#3f93d3]/30 text-[#3f93d3] shadow-none md:shadow-sm bg-white"><Eye className="w-6 h-6" /></Button>
+                            <Button onClick={handleDownload} variant="outline" size="icon" className="w-12 h-12 rounded-full border-[#3f93d3] md:border-[#3f93d3]/30 text-[#3f93d3] shadow-none md:shadow-sm bg-white hover:bg-blue-50" title="הורדה"><Download className="w-6 h-6" /></Button>
+                            <Button onClick={() => setIsPreviewOpen(true)} variant="outline" size="icon" className="w-12 h-12 rounded-full border-[#3f93d3] md:border-[#3f93d3]/30 text-[#3f93d3] shadow-none md:shadow-sm bg-white hover:bg-blue-50" title="צפייה"><Eye className="w-6 h-6" /></Button>
                         </div>
                     </div>
                 </div>

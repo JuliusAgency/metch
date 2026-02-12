@@ -13,8 +13,10 @@ import { createPageUrl } from "@/utils";
 import VectorLogo from "@/assets/Vector.svg";
 import uploadPlaceholder from "@/assets/upload_profile_placeholder.png";
 import { ProfileUpdatedDialog } from "@/components/dialogs/ProfileUpdatedDialog";
+import { WarningDialog } from "@/components/dialogs/WarningDialog";
 import StepIndicator from "@/components/ui/StepIndicator";
 import profileSuccessMobile from "@/assets/popup-completed-success-v3.png";
+import skipInfoIcon from '@/assets/skip_info_icon.png';
 
 const XIcon = ({ size = 24, ...props }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -37,6 +39,7 @@ export default function JobSeekerProfileCompletion() {
     const [loading, setLoading] = useState(false);
     const [cvLoading, setCvLoading] = useState(true);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [showWarning, setShowWarning] = useState(false);
     const navigate = useNavigate();
     const { toast } = useToast();
     const [searchParams] = useSearchParams();
@@ -134,6 +137,20 @@ export default function JobSeekerProfileCompletion() {
     };
 
     const handleFinishClick = async () => {
+        // Check if there are any social links
+        const hasSocialLinks = Object.values(socialLinks).some(link => link && link.trim().length > 0);
+        const hasActiveInput = socialLinks[activeSocial] && socialLinks[activeSocial].trim().length > 0;
+
+        if (!hasSocialLinks && !hasActiveInput) {
+            setShowWarning(true);
+            return;
+        }
+
+        await processFinish();
+    };
+
+    const processFinish = async () => {
+        setShowWarning(false);
         setLoading(true);
         try {
             await saveSocials();
@@ -248,6 +265,17 @@ export default function JobSeekerProfileCompletion() {
                             פרופיל מלא מעלה את סיכוי ההשמה
                         </p>
 
+                        {!cvData && !loading && !cvLoading && (
+                            <div className="flex flex-col items-center justify-center mb-8">
+                                <img src={skipInfoIcon} alt="Warning" className="w-12 h-12 object-contain mb-2" />
+                                <h3 className="text-[#FF4D4D] text-lg font-bold text-center leading-tight">
+                                    הצעות עבודה לא יתקבלו
+                                    <br />
+                                    ללא קובץ קורות החיים שלך
+                                </h3>
+                            </div>
+                        )}
+
 
                         {/* Social Icons - Compact */}
                         <div className="flex justify-center gap-3 mb-6">
@@ -347,6 +375,20 @@ export default function JobSeekerProfileCompletion() {
                     </div>
                 </>
             )}
+
+            <WarningDialog
+                open={showWarning}
+                onOpenChange={setShowWarning}
+                title="שים לב!"
+                description={
+                    <>
+                        פרופיל מלא מעלה את סיכויי ההשמה שלך.
+                        <br />
+                        האם אתה בטוח שברצונך לסיים ללא הוספת קישורים?
+                    </>
+                }
+                onConfirm={processFinish}
+            />
 
         </div>
     );

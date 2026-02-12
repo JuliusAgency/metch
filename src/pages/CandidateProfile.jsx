@@ -414,7 +414,6 @@ export default function CandidateProfile() {
 
                 if (apps.length > 0) {
                   await JobApplication.update(apps[0].id, {
-                    ...apps[0],
                     ai_insights: insights
                   });
                   console.log("Saved insights to DB");
