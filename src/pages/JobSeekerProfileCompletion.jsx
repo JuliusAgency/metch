@@ -379,7 +379,7 @@ export default function JobSeekerProfileCompletion() {
             <WarningDialog
                 open={showWarning}
                 onOpenChange={setShowWarning}
-                title="שים לב!"
+                title="!שים לב"
                 description={
                     <>
                         פרופיל מלא מעלה את סיכויי ההשמה שלך.

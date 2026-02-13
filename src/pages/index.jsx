@@ -1,5 +1,7 @@
 import Layout from "./Layout.jsx";
 import AuthGuard from "@/components/AuthGuard";
+import { Toaster } from "@/components/ui/sonner";
+import AccessibilityButton from "@/components/layout/AccessibilityButton";
 
 import Dashboard from "./Dashboard";
 
@@ -207,10 +209,10 @@ function PagesContent() {
                 <Route path="/Payments" element={<AuthGuard><Payments /></AuthGuard>} />
                 <Route path="/Packages" element={<AuthGuard><Packages /></AuthGuard>} />
                 <Route path="/JobSeekerProfileCompletion" element={<AuthGuard><JobSeekerProfileCompletion /></AuthGuard>} />
-
-                {/* Catch-all route */}
                 <Route path="*" element={<NotFound />} />
             </Routes>
+            <Toaster />
+            <AccessibilityButton />
         </Layout>
     );
 }

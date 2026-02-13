@@ -47,12 +47,14 @@ export default function JobDetailsSeeker() {
       const userData = await User.me();
       setUser(userData);
 
+      let fetchedProfiles = [];
       if (userData?.id) {
         // Fetch Profile and CV for AI context
         const [profiles, cvs] = await Promise.all([
           UserProfile.filter({ id: userData.id }),
           CV.filter({ user_email: userData.email })
         ]);
+        fetchedProfiles = profiles;
         setProfile(profiles[0] || null);
         setCvData(cvs[0] || null);
       }
@@ -107,7 +109,19 @@ export default function JobDetailsSeeker() {
           // Calculate match score client-side for accuracy
           if (userData) {
             try {
-              const score = await calculate_match_score(userData, fetchedJob);
+              // Construct complete candidate profile merging Auth, UserProfile (Prefs) and CV data
+              const candidateProfile = {
+                ...userData,
+                ...(fetchedProfiles[0] || {}),
+                ...(cvData || {}),
+                // Explicitly map nested CV fields to top-level fields expected by matchScore.js
+                experience: cvData?.work_experience || [],
+                education: cvData?.education || [],
+                skills: cvData?.skills || [],
+                certifications: cvData?.certifications || []
+              };
+
+              const score = await calculate_match_score(candidateProfile, fetchedJob);
               if (score !== null) {
                 fetchedJob.match_score = Math.round(score * 100);
               }
@@ -216,8 +230,8 @@ export default function JobDetailsSeeker() {
     const generateAnalysis = async () => {
       if (!job || !user || !profile || !cvData || aiAnalysis || isAiLoading) return;
 
-      // Unique cache key for this user + job combo
-      const cacheKey = `metch_job_insight_v1_${user.id}_${job.id}`;
+      // Unique cache key for this user + job combo - Updated to v2 for CV integration
+      const cacheKey = `metch_job_insight_v2_${user.id}_${job.id}`;
 
       // 1. Try to load from cache
       const cached = localStorage.getItem(cacheKey);
@@ -261,8 +275,12 @@ export default function JobDetailsSeeker() {
         const prompt = `
           Analyze the match between the candidate and the job.
           
-          Candidate CV Data:
-          ${cvData.raw_text || cvData.summary || "No CV text available"}
+          Candidate CV Data (Parsed/Analyzed):
+          ${cvData.parsed_content || cvData.summary || cvData.raw_text || "No CV content available. Please analyze based on other provided fields."}
+          
+          Skills: ${Array.isArray(cvData.skills) ? cvData.skills.join(', ') : ''}
+          Experience Summary: ${Array.isArray(cvData.work_experience) ? cvData.work_experience.map(e => e.title || e.role).join(', ') : ''}
+          Education: ${Array.isArray(cvData.education) ? cvData.education.map(e => e.field || e.degree).join(', ') : ''}
           
           Candidate Preferences:
           Role: ${profile.job_titles ? profile.job_titles.join(', ') : 'Not specified'}

@@ -29,6 +29,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
 import settingsMobileBg from "@/assets/settings_mobile_bg.jpg";
 import { useUser } from "@/contexts/UserContext";
+import { InvokeAssistant } from "@/api/integrations";
 
 const ITEMS_PER_PAGE = 5;
 const SUPPORT_EMAIL = "business@metch.co.il";
@@ -454,10 +455,10 @@ export default function Messages() {
                     await Notification.create(notificationData);
 
                     // --- WhatsApp Notification Logic (First Message Only) ---
-                    // Check if this is the FIRST message sent by the current user (Employer) in this conversation
-                    const previousMessagesFromMe = messages.filter(m => m.sender_email === user?.email);
+                    // Check if this is the FIRST message from the employer in this conversation
+                    const previousEmployerMessages = messages.filter(m => m.sender_id === user?.id);
 
-                    if (previousMessagesFromMe.length === 0) {
+                    if (previousEmployerMessages.length === 0) {
                         try {
                             console.log('[Messages] First message from employer - Attempting to send WhatsApp...');
 
@@ -473,28 +474,20 @@ export default function Messages() {
 זו הזדמנות טובה להתחיל שיחה ולהתקדם!
 להמשך השיחה ולצפייה בהודעה, היכנס לאזור ההודעות במאצ׳.`;
 
-                                const { data: waData, error: waError } = await supabase.functions.invoke('send-whatsapp', {
+                                console.log('[Messages] Triggering WhatsApp function for:', recipientProfile.phone);
+                                await supabase.functions.invoke('send-whatsapp', {
                                     body: {
                                         phoneNumber: recipientProfile.phone,
                                         message: whatsappMessage
                                     }
                                 });
-
-                                if (waError) {
-                                    console.error('[Messages] WhatsApp Edge Function Invocation Error:', waError);
-                                } else {
-                                    console.log('[Messages] WhatsApp notification sent successfully to:', recipientEmail);
-                                }
-                            } else {
-                                console.warn('[Messages] Could not find phone number for WhatsApp notification:', recipientEmail, profileError);
                             }
-                        } catch (waError) {
-                            console.error('[Messages] Error sending WhatsApp notification:', waError);
+                        } catch (waErr) {
+                            console.error('[Messages] WhatsApp notification error:', waErr);
                         }
                     }
-
-                } catch (e) {
-                    console.error("Error creating notification/WhatsApp for candidate:", e);
+                } catch (err) {
+                    console.error("[Messages] Error creating notification/WhatsApp for candidate:", err);
                 }
             }
 
@@ -555,12 +548,79 @@ export default function Messages() {
             setMessages(prev => [...prev, messageWithDate]);
             setNewMessage("");
 
-            // Update conversation in list
-            setConversations(prev => prev.map(conv =>
-                conv.id === conversationId
-                    ? { ...conv, last_message: newMessage.trim(), last_message_time: currentDate }
-                    : conv
-            ));
+            // --- AI Support Response Integration ---
+            if (recipientEmail === SUPPORT_EMAIL) {
+                try {
+                    const SUPPORT_ASSISTANT_ID = 'asst_DJE6rwjdMF5YfSeZ0wB0CKde';
+
+                    // Build conversation history context
+                    const historyCount = 5;
+                    const recentMessages = messages.slice(-historyCount);
+                    const historyContext = recentMessages.map(m =>
+                        `${m.sender_email === user?.email ? 'User' : 'Support'}: ${m.content}`
+                    ).join('\n');
+
+                    const fullPrompt = historyContext
+                        ? `Last messages:\n${historyContext}\n\nNew message from User: ${newMessage.trim()}\n\nPlease respond in Hebrew as technical support.`
+                        : newMessage.trim();
+
+                    console.log('[Messages] Invoking Support AI with history context...');
+                    const aiResponse = await InvokeAssistant({
+                        assistantId: SUPPORT_ASSISTANT_ID,
+                        prompt: fullPrompt
+                    });
+
+                    if (aiResponse && aiResponse.content) {
+                        let responseContent = aiResponse.content;
+
+                        // Clean up JSON formatting if LLM returns it as a string
+                        try {
+                            const parsed = JSON.parse(responseContent);
+                            if (parsed.messages && Array.isArray(parsed.messages)) {
+                                // Find the last assistant message in the array
+                                const assistantMsg = [...parsed.messages].reverse().find(m => m.role === 'assistant');
+                                if (assistantMsg && assistantMsg.content) responseContent = assistantMsg.content;
+                            } else if (parsed.response) responseContent = parsed.response;
+                            else if (parsed.message) responseContent = parsed.message;
+                            else if (parsed.content) responseContent = parsed.content;
+                        } catch (e) {
+                            // Not JSON or unknown format, use as is
+                        }
+
+                        const responseTime = new Date().toISOString();
+
+                        // Save AI response to DB
+                        const aiMessage = await Message.create({
+                            conversation_id: conversationId,
+                            sender_email: SUPPORT_EMAIL,
+                            sender_id: null,
+                            recipient_email: user?.email,
+                            recipient_id: user?.id,
+                            content: responseContent,
+                            is_read: true,
+                            created_date: responseTime
+                        });
+
+                        // Update conversation last message
+                        await Conversation.update(conversationId, {
+                            last_message: responseContent,
+                            last_message_time: responseTime
+                        });
+
+                        // Add AI response to local UI
+                        setMessages(prev => [...prev, aiMessage]);
+
+                        // Update conversation in list locally
+                        setConversations(prev => prev.map(conv =>
+                            conv.id === conversationId
+                                ? { ...conv, last_message: responseContent, last_message_time: responseTime }
+                                : conv
+                        ));
+                    }
+                } catch (aiErr) {
+                    console.error('[Messages] Error getting AI support response:', aiErr);
+                }
+            }
         } catch (error) {
             console.error("Error sending message:", error);
         } finally {
@@ -571,15 +631,15 @@ export default function Messages() {
 
     if (selectedConversation) {
         return (
-            <div className="h-[98vh] relative flex flex-col w-full mx-auto pt-[4px] pb-[26px]" dir="rtl">
+            <div className="h-[98vh] relative flex flex-col w-full mx-auto pt-[4px] pb-[26px] max-md:h-screen max-md:fixed max-md:inset-0 max-md:pb-[10px] max-md:overflow-hidden max-md:bg-gray-50" dir="rtl">
                 {/* Fixed Background for Mobile */}
                 <div
                     className="md:hidden fixed top-0 left-0 right-0 z-0 pointer-events-none"
                     style={{
                         width: '100%',
-                        height: '230px',
+                        height: '300px',
                         backgroundImage: `url(${settingsMobileBg})`,
-                        backgroundSize: 'cover',
+                        backgroundSize: '100% 100%',
                         backgroundPosition: 'center',
                         backgroundRepeat: 'no-repeat'
                     }}
@@ -607,7 +667,7 @@ export default function Messages() {
                 </button>
 
                 {/* Title Above Card / Chat Header */}
-                <div className="relative z-10 text-center mt-[60px] mb-0">
+                <div className="relative z-10 text-center mt-[60px] mb-0 max-md:mt-[85px]">
                     <ChatHeader
                         setSelectedConversation={setSelectedConversation}
                         selectedConversation={selectedConversation}
@@ -616,9 +676,9 @@ export default function Messages() {
                 </div>
 
                 {/* Chat Container - Now split for the "cut" effect */}
-                <div className="relative h-[85vh] md:h-[65vh] flex flex-col w-full md:w-[63%] mx-auto mt-[5px] mb-4 z-20">
+                <div className="relative h-[85vh] md:h-[65vh] flex flex-col w-full md:w-[63%] mx-auto mt-[5px] mb-4 z-20 max-md:flex-1 max-md:mt-4 max-md:mb-0 max-md:overflow-hidden">
                     {/* Message List Area - Sharpened corners (3px) and no border */}
-                    <div className="flex-1 overflow-hidden bg-white shadow-[0_4px_16px_rgba(0,0,0,0.12)] rounded-t-[3px] md:rounded-t-[3px] flex flex-col">
+                    <div className="flex-1 overflow-hidden bg-white shadow-[0_4px_16px_rgba(0,0,0,0.12)] rounded-t-[3px] md:rounded-t-[3px] max-md:[border-top-left-radius:50%_40px] max-md:[border-top-right-radius:50%_40px] flex flex-col">
                         <div className="flex-1 p-8 overflow-y-auto space-y-6 bg-gray-50/30">
                             {loadingMessages && (
                                 <div className="flex justify-center items-center py-8">

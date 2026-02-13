@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { User } from "@/api/entities";
-import { UploadFile } from "@/api/integrations";
+import { UploadFile, SendEmail } from "@/api/integrations";
 import { supabase } from "@/api/supabaseClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -141,8 +141,7 @@ export default function Settings() {
         linkedin_url: userData.linkedin_url || "",
         facebook_url: userData.facebook_url || "",
         instagram_url: userData.instagram_url || "",
-        twitter_url: userData.twitter_url || "",
-        tiktok_url: userData.tiktok_url || ""
+        twitter_url: userData.twitter_url || ""
       };
 
       setFormData(loadedData);
@@ -162,7 +161,7 @@ export default function Settings() {
     const userType = user?.user_type;
 
     // Skip validation for optional fields
-    const optionalFields = ['password', 'linkedin_url', 'facebook_url', 'instagram_url', 'twitter_url', 'website', 'bio', 'tiktok_url'];
+    const optionalFields = ['password', 'linkedin_url', 'facebook_url', 'instagram_url', 'twitter_url', 'website', 'bio'];
     if (optionalFields.includes(field)) return true;
 
     // Employer specific validation
@@ -205,7 +204,7 @@ export default function Settings() {
 
       if (userType === 'employer') {
         // Employer validation
-        const optionalFields = ['password', 'linkedin_url', 'facebook_url', 'instagram_url', 'twitter_url', 'website', 'bio', 'cv_reception_email', 'main_address', 'field_of_activity', 'tiktok_url'];
+        const optionalFields = ['password', 'linkedin_url', 'facebook_url', 'instagram_url', 'twitter_url', 'website', 'bio', 'cv_reception_email', 'main_address', 'field_of_activity'];
         // Actually, let's enforce core fields
         const requiredFields = ['company_name', 'company_type', 'full_name', 'phone'];
 
@@ -274,7 +273,6 @@ export default function Settings() {
           linkedin_url: formData.linkedin_url,
           facebook_url: formData.facebook_url,
           instagram_url: formData.instagram_url,
-          tiktok_url: formData.tiktok_url,
         };
       } else {
         // Job Seeker Payload
@@ -399,6 +397,27 @@ export default function Settings() {
       if (!user) return;
       const userId = user.id;
       const userEmail = user.email;
+
+      // 0. Send Account Deletion Confirmation Email
+      try {
+        await SendEmail({
+          to: userEmail,
+          subject: "אישור מחיקת חשבון ב-Metch",
+          html: `
+            <div dir="rtl" style="font-family: sans-serif; line-height: 1.6; color: #333;">
+              <p>שלום,</p>
+              <p>בקשתך למחיקת חשבון Metch התקבלה ובוצעה בהצלחה.</p>
+              <p>בתוך 7 ימים חשבונך והנתונים המשוייכים אליו ימחקו לצמיתות ולא תוכל לגשת אליו שוב.</p>
+              <p>אם הבקשה לא בוצעה על ידך או אם ברצונך לבטל את המחיקה, אנא פנה לתמיכה בהקדם.</p>
+              <p>בברכה,<br>צוות Metch</p>
+            </div>
+          `,
+          text: `שלום,\n\nבקשתך למחיקת חשבון Metch התקבלה ובוצעה בהצלחה.\nבתוך 7 ימים חשבונך והנתונים המשוייכים אליו ימחקו לצמיתות ולא תוכל לגשת אליו שוב.\n\nאם הבקשה לא בוצעה על ידך או אם ברצונך לבטל את המחיקה, אנא פנה לתמיכה בהקדם.\n\nבברכה,\nצוות Metch`
+        });
+        console.log("Deletion confirmation email sent to:", userEmail);
+      } catch (emailError) {
+        console.error("Failed to send deletion confirmation email:", emailError);
+      }
 
       // 1. Delete from related tables (Batch deletion using Supabase direct query)
       // We delete by BOTH id and email where applicable to be safe against legacy data
@@ -844,21 +863,6 @@ export default function Settings() {
                         />
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-gray-700">TikTok</label>
-                      <div className="relative">
-                        <svg viewBox="0 0 24 24" fill="currentColor" className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400">
-                          <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
-                        </svg>
-                        <Input
-                          placeholder="TikTok URL"
-                          value={formData.tiktok_url}
-                          onChange={(e) => handleInputChange('tiktok_url', e.target.value)}
-                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
-                          dir="ltr"
-                        />
-                      </div>
-                    </div>
                   </div>
                 </div>
               </>
@@ -1196,7 +1200,7 @@ export default function Settings() {
           title={successDialogContent.title}
           description={successDialogContent.description}
         />
-      </div>
+      </div >
     </div >
   );
 }

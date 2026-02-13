@@ -37,8 +37,8 @@ export async function calculate_match_score(candidate_profile, job_posting, user
   const topPartScore = calculateTopPartScore(candidate_profile, job_posting);
   const bottomPartScore = calculateBottomPartScore(candidate_profile, job_posting);
 
-  // Final Score Formula: Final_Match_Score = (0.60 * Score_Top_Part) + (0.40 * Score_Bottom_Part)
-  let finalScore = (0.60 * topPartScore) + (0.40 * bottomPartScore);
+  // Final Score Formula: Final_Match_Score = (0.80 * Score_Top_Part) + (0.20 * Score_Bottom_Part)
+  let finalScore = (0.80 * topPartScore) + (0.20 * bottomPartScore);
 
   // Phase 1 Adjustments: Apply Soft Penalties from "Hard Filters"
   if (disqualificationResult.penalty > 0) {

@@ -236,9 +236,11 @@ export default function CreateJob() {
         }
       }
 
-      // Track publish only if active
+      // --- High Match WhatsApp Notifications ---
       if (targetStatus === 'active') {
-        await EmployerAnalytics.trackJobPublish(userData.email, createdOrUpdatedJob);
+        console.log('[CreateJob] Job is active - Checking for high-match seekers...');
+        // Trigger matching and notification in the background
+        notifyHighMatchSeekers(createdOrUpdatedJob);
       }
 
       setLastCreatedJob(createdOrUpdatedJob);
@@ -257,6 +259,69 @@ export default function CreateJob() {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  /**
+   * Identifies seekers with 90%+ match and sends them a WhatsApp notification.
+   */
+  const notifyHighMatchSeekers = async (job) => {
+    try {
+      const { supabase } = await import('@/api/supabaseClient');
+      const { calculate_match_score } = await import('@/utils/matchScore');
+
+      // 1. Fetch all job seekers with their CVs
+      // We fetch seekers who have completed onboarding and are searchable
+      const { data: seekers, error: fetchError } = await supabase
+        .from('UserProfile')
+        .select('*, CV(*)')
+        .eq('user_type', 'job_seeker')
+        .eq('is_onboarding_completed', true);
+
+      if (fetchError || !seekers) {
+        console.error('[CreateJob] Error fetching seekers for high-match check:', fetchError);
+        return;
+      }
+
+      console.log(`[CreateJob] Checking match scores for ${seekers.length} seekers...`);
+
+      for (const seeker of seekers) {
+        try {
+          const cv = seeker.CV?.[0] || {};
+
+          // Construct full profile for matchScore utility
+          const fullProfile = {
+            ...seeker,
+            ...cv,
+            experience: cv.work_experience || [],
+            education: cv.education || [],
+            skills: cv.skills || [],
+            certifications: cv.certifications || [],
+            character_traits: seeker.character_traits || cv.skills || []
+          };
+
+          const score = await calculate_match_score(fullProfile, job, seeker);
+          const matchPercentage = Math.round(score * 100);
+
+          if (matchPercentage >= 90) {
+            console.log(`[CreateJob] High match detected for ${seeker.email} (${matchPercentage}%) - Sending WhatsApp...`);
+
+            const waMessage = `יכול להיות כאן מאצ׳ מושלם!
+יש לנו משרה עם ${matchPercentage}% התאמה במיוחד עבורך, לצפייה במשרה והגשת מועמדות, היכנס לדשבורד.`;
+
+            await supabase.functions.invoke('send-whatsapp', {
+              body: {
+                phoneNumber: seeker.phone,
+                message: waMessage
+              }
+            });
+          }
+        } catch (err) {
+          console.error(`[CreateJob] Error processing match for seeker ${seeker.email}:`, err);
+        }
+      }
+    } catch (err) {
+      console.error('[CreateJob] notifyHighMatchSeekers error:', err);
     }
   };
 

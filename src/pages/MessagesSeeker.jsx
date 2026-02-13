@@ -23,6 +23,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
 import settingsMobileBg from "@/assets/settings_mobile_bg.jpg";
 import { useUser } from "@/contexts/UserContext";
+import { InvokeAssistant } from "@/api/integrations";
 
 const ITEMS_PER_PAGE = 5;
 const SUPPORT_EMAIL = "support@metch.co.il";
@@ -431,6 +432,73 @@ export default function MessagesSeeker() {
 
             setMessages(prev => [...prev, createdMessage]);
             setNewMessage("");
+
+            // --- AI Support Response Integration ---
+            if (recipientEmail === SUPPORT_EMAIL) {
+                try {
+                    const SUPPORT_ASSISTANT_ID = 'asst_DJE6rwjdMF5YfSeZ0wB0CKde';
+
+                    // Build conversation history context
+                    const historyCount = 5;
+                    const recentMessages = messages.slice(-historyCount);
+                    const historyContext = recentMessages.map(m =>
+                        `${m.sender_email === user?.email ? 'User' : 'Support'}: ${m.content}`
+                    ).join('\n');
+
+                    const fullPrompt = historyContext
+                        ? `Last messages:\n${historyContext}\n\nNew message from User: ${newMessage.trim()}\n\nPlease respond in Hebrew as technical support.`
+                        : newMessage.trim();
+
+                    console.log('[MessagesSeeker] Invoking Support AI with history context...');
+                    const aiResponse = await InvokeAssistant({
+                        assistantId: SUPPORT_ASSISTANT_ID,
+                        prompt: fullPrompt
+                    });
+
+                    if (aiResponse && aiResponse.content) {
+                        let responseContent = aiResponse.content;
+
+                        // Clean up JSON formatting if LLM returns it as a string
+                        try {
+                            const parsed = JSON.parse(responseContent);
+                            if (parsed.messages && Array.isArray(parsed.messages)) {
+                                // Find the last assistant message in the array
+                                const assistantMsg = [...parsed.messages].reverse().find(m => m.role === 'assistant');
+                                if (assistantMsg && assistantMsg.content) responseContent = assistantMsg.content;
+                            } else if (parsed.response) responseContent = parsed.response;
+                            else if (parsed.message) responseContent = parsed.message;
+                            else if (parsed.content) responseContent = parsed.content;
+                        } catch (e) {
+                            // Not JSON or unknown format, use as is
+                        }
+
+                        const responseTime = new Date().toISOString();
+
+                        // Save AI response to DB
+                        const aiMessage = await Message.create({
+                            conversation_id: conversationId,
+                            sender_email: SUPPORT_EMAIL,
+                            sender_id: null,
+                            recipient_email: user?.email,
+                            recipient_id: user?.id,
+                            content: responseContent,
+                            is_read: 'true',
+                            created_date: responseTime
+                        });
+
+                        // Update conversation last message
+                        await Conversation.update(conversationId, {
+                            last_message: responseContent,
+                            last_message_time: responseTime
+                        });
+
+                        // Add AI response to local UI
+                        setMessages(prev => [...prev, aiMessage]);
+                    }
+                } catch (aiErr) {
+                    console.error('[MessagesSeeker] Error getting AI support response:', aiErr);
+                }
+            }
         } catch (error) {
             console.error("Error sending message:", error);
         } finally {
@@ -497,15 +565,15 @@ export default function MessagesSeeker() {
 
     if (selectedConversation) {
         return (
-            <div className="h-[98vh] relative flex flex-col w-full mx-auto pt-[4px] pb-[26px]" dir="rtl">
+            <div className="h-[98vh] relative flex flex-col w-full mx-auto pt-[4px] pb-[26px] max-md:h-screen max-md:fixed max-md:inset-0 max-md:pb-[10px] max-md:overflow-hidden max-md:bg-gray-50" dir="rtl">
                 {/* Fixed Background for Mobile */}
                 <div
                     className="md:hidden fixed top-0 left-0 right-0 z-0 pointer-events-none"
                     style={{
                         width: '100%',
-                        height: '230px',
+                        height: '300px',
                         backgroundImage: `url(${settingsMobileBg})`,
-                        backgroundSize: 'cover',
+                        backgroundSize: '100% 100%',
                         backgroundPosition: 'center',
                         backgroundRepeat: 'no-repeat'
                     }}
@@ -533,14 +601,14 @@ export default function MessagesSeeker() {
                 </button>
 
                 {/* Title Above Card - Brought closer to the card and lifted */}
-                <div className="relative z-10 text-center mt-[60px] mb-0">
+                <div className="relative z-10 text-center mt-[60px] mb-0 max-md:mt-[85px]">
                     <h1 className="text-xl md:text-2xl font-bold text-[#001a6e] drop-shadow-sm">הודעות</h1>
                 </div>
 
                 {/* Chat Container - Now split for the "cut" effect */}
-                <div className="relative h-[85vh] md:h-[65vh] flex flex-col w-full md:w-[63%] mx-auto mt-[15px] mb-4 z-20">
+                <div className="relative h-[85vh] md:h-[65vh] flex flex-col w-full md:w-[63%] mx-auto mt-[15px] mb-4 z-20 max-md:flex-1 max-md:mt-4 max-md:mb-0 max-md:overflow-hidden">
                     {/* Message List Area - Sharpened corners (3px) and no border */}
-                    <div className="flex-1 overflow-hidden bg-white shadow-[0_4px_16px_rgba(0,0,0,0.12)] rounded-t-[3px] md:rounded-t-[3px] flex flex-col">
+                    <div className="flex-1 overflow-hidden bg-white shadow-[0_4px_16px_rgba(0,0,0,0.12)] rounded-t-[3px] md:rounded-t-[3px] max-md:[border-top-left-radius:50%_40px] max-md:[border-top-right-radius:50%_40px] flex flex-col">
                         <div className="flex-1 p-8 overflow-y-auto space-y-6 bg-gray-50/30">
                             {loadingMessages && (
                                 <div className="flex justify-center items-center py-8">
@@ -594,18 +662,7 @@ export default function MessagesSeeker() {
                                 })}
                             </AnimatePresence>
 
-                            {selectedConversation.is_support && (
-                                <div className="flex justify-start">
-                                    <div className="bg-gray-100 px-4 py-3 rounded-2xl">
-                                        <div className="flex gap-1">
-                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                        </div>
-                                        <div className="text-xs text-gray-500 mt-1 text-right">הקלד/ת...</div>
-                                    </div>
-                                </div>
-                            )}
+
                         </div>
                     </div>
 

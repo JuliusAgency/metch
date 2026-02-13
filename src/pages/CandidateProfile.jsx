@@ -101,6 +101,9 @@ export default function CandidateProfile() {
           const responses = await QuestionnaireResponse.filter({ candidate_email: candidate.email });
           if (responses && responses.length > 0) {
             setQuestionnaireResponse(responses[0]);
+          } else {
+            console.log("No questionnaire response found for candidate");
+            setQuestionnaireResponse({}); // Initialize with empty object to allow AI trigger
           }
         } catch (error) {
           console.error("Error fetching questionnaire response:", error);
@@ -176,11 +179,14 @@ export default function CandidateProfile() {
   }, [user, candidate, jobId]);
 
   useEffect(() => {
-    // Only trigger if we have a candidate, the questionnaire is loaded, insights are empty, and we aren't already generating
-    if (candidate && !aiInsights.summary && !generatingInsights && questionnaireResponse !== null) {
-      generateEmployerInsights(candidate);
+    // Trigger generation if candidate and questionnaire (even empty) are loaded
+    // Bypassing aiInsights.summary check to allow generation logic internally to handle cache/v-bumping
+    if (candidate && !generatingInsights && questionnaireResponse !== null) {
+      if (!aiInsights.summary || aiInsights.version !== 'v7') {
+        generateEmployerInsights(candidate);
+      }
     }
-  }, [candidate, questionnaireResponse, generatingInsights]); // Removed aiInsights.summary to prevent loop if it stays empty
+  }, [candidate, questionnaireResponse, generatingInsights, aiInsights.summary, aiInsights.version]);
 
   const loadUser = async () => {
     try {
@@ -193,7 +199,7 @@ export default function CandidateProfile() {
 
   const generateEmployerInsights = async (candidateData) => {
     const INSIGHTS_ASSISTANT_ID = 'asst_y0XNCLBkyuYcbzxjYUdmHbxr';
-    const cacheKey = `employer_insights_v3_${candidateData.id}_${jobId || 'general'}`;
+    const cacheKey = `employer_insights_v7_${candidateData.id}_${jobId || 'general'}`;
 
     // 1. Try to fetch from Database first if we have a jobId context
     if (jobId) {
@@ -204,9 +210,12 @@ export default function CandidateProfile() {
         });
 
         if (apps.length > 0 && apps[0].ai_insights) {
-          console.log("Loaded insights from DB");
-          setAiInsights(apps[0].ai_insights);
-          return;
+          const dbInsights = apps[0].ai_insights;
+          if (dbInsights.version === 'v7') {
+            console.log("Loaded current version insights from DB");
+            setAiInsights(dbInsights);
+            return;
+          }
         }
       } catch (dbErr) {
         console.warn("Details fetching insights from DB:", dbErr);
@@ -231,14 +240,16 @@ export default function CandidateProfile() {
     setGeneratingInsights(true);
     try {
       const matchScore = matchScoreParam;
+      let cvRecordRef = null; // To store for later prompt use
 
       // 1. Fetch CV Content
       let cvText = "";
       if (candidateData.email) {
         try {
-          const cvs = await CV.filter({ user_email: candidateData.email }, "-created_date", 1);
-          if (cvs && cvs.length > 0) {
-            const record = cvs[0];
+          const cvResults = await CV.filter({ user_email: candidateData.email }, "-created_date", 1);
+          if (cvResults && cvResults.length > 0) {
+            const record = cvResults[0];
+            cvRecordRef = record; // Store in higher scope
             if (record.parsed_content) {
               cvText = record.parsed_content;
             } else {
@@ -338,35 +349,44 @@ export default function CandidateProfile() {
       const prompt = `
       Analyze this candidate for the following job based on their CV, preferences, and job requirements.
       
-      Job Context:
+      ### Candidate Profile Data:
+      Name: ${candidateData.full_name || 'Candidate'}
+      Desired Job Title: ${candidateData.profession || candidateData.specialization || (Array.isArray(candidateData.job_titles) ? candidateData.job_titles.join(', ') : '') || questionnaireResponse?.desired_position || 'Not specified'}
+      Preferred Location: ${candidateData.preferred_location || candidateData.location || (Array.isArray(candidateData.preferred_locations) ? candidateData.preferred_locations.join(', ') : '') || questionnaireResponse?.preferred_location || 'Not specified'}
+      Availability: ${candidateData.availability || questionnaireResponse?.availability || 'Immediate'}
+      Work Type: ${Array.isArray(candidateData.preferred_job_types) ? candidateData.preferred_job_types.join(', ') : (Array.isArray(candidateData.job_types) ? candidateData.job_types.join(', ') : (questionnaireResponse?.job_type || 'Full time'))}
+      
+      ### CV Analysis Results:
+      Skills: ${Array.isArray(cvRecordRef?.skills) ? cvRecordRef.skills.join(', ') : 'Check full text below'}
+      Key Experience: ${Array.isArray(cvRecordRef?.work_experience) ? cvRecordRef.work_experience.map(e => `${e.title} at ${e.company}`).join(' | ') : 'Check full text below'}
+      Full CV Text Content: "${cvText.substring(0, 4000)}"
+      
+      ### Job Requirements to Match:
       ${jobDescription}
       
-      Candidate Data:
-      Name: ${candidateData.full_name}
-      ${questionnaireText}
+      ---
+      TASK:
+      Analyze the candidate's fit for the job using BOTH the Profile Data (Preferences) and CV Content.
+      You must respond in Hebrew.
       
-      CV Content:
-      "${cvText.substring(0, 5000)}"
-      
-      Task:
-      Generate a valid JSON object in Hebrew with the following keys:
-      1. "match_score": A number (0-100) representing the match percentage.
-      2. "candidate_summary": A professional paragraph (Hebrew) summarizing the candidate's background and suitability for this specific job.
-      3. "match_thoughts": A list of 5-7 bullet points (Hebrew) explaining "What Metch Thinks".
-      4. "match_analysis": An object mapping criteria to status and feedback. Criteria should be: "professional_experience", "location", "availability", "job_type", "career_fit".
-         Status must be one of: "match", "gap", "mismatch".
-      
-      Return ONLY valid JSON:
+      Return ONLY a valid JSON object with these exact keys:
       {
-        "match_score": 90,
-        "candidate_summary": "...",
-        "match_thoughts": ["...", "..."],
+        "version": "v7",
+        "match_score": 85,
+        "candidate_summary": "פירוט מקצועי בעברית על המועמד...",
+        "match_thoughts": [
+          "נקודה 1 בעברית על התאמה מקצועית",
+          "נקודה 2 בעברית על המיקום (חשוב: התייחס למיקום שהמועמד ציין)",
+          "נקודה 3 בעברית על זמינות",
+          "נקודה 4 בעברית על סוג משרה",
+          "נקודה 5 בעברית על פוטנציאל"
+        ],
         "match_analysis": {
-          "professional_experience": { "status": "match", "feedback": "ניסיון רלוונטי מאוד ב..." },
-          "location": { "status": "match", "feedback": "גר בנתניה, מתאים לתל אביב" },
-          "availability": { "status": "gap", "feedback": "זמין תוך חודש, המשרה דורשת מיידית" },
-          "job_type": { "status": "match", "feedback": "מחפש משרה מלאה כפי שמוצע" },
-          "career_fit": { "status": "match", "feedback": "התפקיד מהווה התקדמות טבעית בקריירה" }
+          "professional_experience": { "status": "match", "feedback": "ניסיון מעולה ב..." },
+          "location": { "status": "match", "feedback": "מתגורר ב... וזה מתאים ל..." },
+          "availability": { "status": "match", "feedback": "זמין באופן..." },
+          "job_type": { "status": "match", "feedback": "מעוניין ב..." },
+          "career_fit": { "status": "match", "feedback": "התאמה טובה ל..." }
         }
       }
       `;

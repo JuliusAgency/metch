@@ -64,23 +64,19 @@ export default function Step2({ preferences, setPreferences, onSave, onBack, sav
             </div>
 
             <div className="flex flex-wrap justify-center gap-2 md:gap-x-4 md:gap-y-6 w-full max-w-2xl mx-auto px-1 md:px-4">
-                {[...TRAITS, ...TRAITS].map((trait, index) => {
-                    const isDuplicate = index >= TRAITS.length;
-                    // Use a unique value for state to ensure independent selection
-                    const uniqueValue = isDuplicate ? `${trait} #2` : trait;
-
-                    const isSelected = selectedTraits.includes(uniqueValue);
+                {TRAITS.map((trait, index) => {
+                    const isSelected = selectedTraits.includes(trait);
                     const isMaxSelected = selectedTraits.length >= 3;
                     const uniqueKey = `${trait}-${index}`;
 
                     return (
                         <PillButton
                             key={uniqueKey}
-                            label={trait} // Display the original name
+                            label={trait}
                             isSelected={isSelected}
-                            onClick={() => handleTraitToggle(uniqueValue)}
-                            disabled={!isSelected && isMaxSelected} // Disable if not selected and max reached
-                            className={`h-auto ${isDuplicate ? 'md:hidden' : ''}`}
+                            onClick={() => handleTraitToggle(trait)}
+                            disabled={!isSelected && isMaxSelected}
+                            className="h-auto"
                         />
                     );
                 })}

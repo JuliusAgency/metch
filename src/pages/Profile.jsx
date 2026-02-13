@@ -224,15 +224,8 @@ export default function Profile() {
 
       // Trigger AI insights generation in background
       if (currentUser?.id && userEmail) {
-        console.log("[Profile] Triggering AI insights generation after CV upload");
+        console.log("[Profile] Invalidating insights cache after CV upload");
         invalidateInsightsCache(currentUser.id); // Clear old cache
-        triggerInsightsGeneration(currentUser.id, userEmail)
-          .then(success => {
-            if (success) {
-              console.log("[Profile] AI insights generated successfully");
-            }
-          })
-          .catch(err => console.error("[Profile] Error generating insights:", err));
       }
 
     } catch (error) {

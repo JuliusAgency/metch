@@ -5,6 +5,9 @@ import { Core } from "@/api/integrations";
 const GENERATION_LIMIT_COUNT = 3;
 const GENERATION_LIMIT_DAYS = 30;
 
+// --- Concurrency Lock ---
+const generatingUsers = new Set();
+
 /**
  * Generate AI-powered career insights for a job seeker
  * @param {Object} stats - Application statistics
@@ -17,18 +20,43 @@ export const generateAIInsights = async (stats, userEmail, userProfile, cvText, 
   const userId = userProfile?.id;
   const cacheKey = `metch_insights_v2_${userId}`;
 
-  // 1. Check Rate Limit in Database (UserAction)
-  let limitReached = false;
-  let oldInsights = null;
-  let nextGenerationDate = null;
+  // Prevent concurrent generation for the same user
+  if (generatingUsers.has(userId)) {
+    console.warn(`[InsightsService] Generation already in progress for user ${userId}. Skipping.`);
+    return null; 
+  }
 
-  if (userId && userEmail) {
+  generatingUsers.add(userId);
+
+  try {
+    // 1. Check Rate Limit in Database (UserAction)
+    let limitReached = false;
+    let oldInsights = null;
+    let nextGenerationDate = null;
+
+    if (userId && userEmail) {
     try {
-      // Fetch all generation actions for this user (could be optimized with date filter if API supported it)
+      // Log the filter params
+      console.log(`[InsightsService] Checking DB for limits. UserId: ${userId}, Type: generate_insights`);
+      
       const actions = await UserAction.filter({ 
         user_id: userId, 
         action_type: 'generate_insights' 
       });
+
+      // Prevent Double-Logging: Check if an action was created in the last 15 seconds
+      const veryRecentAction = actions.find(a => {
+        const d = new Date(a.created_date || a.created_at || a.inserted_at);
+        return (new Date() - d) < 15000; // 15 seconds
+      });
+
+      if (veryRecentAction) {
+        console.warn("[InsightsService] Duplicate generation detected (executed < 15s ago). Returning cached/recent data.");
+        // If we have recent data, return it or just the additional_data
+        if (veryRecentAction.additional_data?.insights) {
+             return veryRecentAction.additional_data.insights;
+        }
+      }
 
       // Filter locally for last 30 days
       const now = new Date();
@@ -36,7 +64,11 @@ export const generateAIInsights = async (stats, userEmail, userProfile, cvText, 
       thirtyDaysAgo.setDate(now.getDate() - GENERATION_LIMIT_DAYS);
 
       const recentActions = actions.filter(action => {
-        const actionDate = new Date(action.created_date || action.created_at); // Handle potential date field names
+        // Support multiple potential date field names from DB
+        const dateStr = action.created_date || action.created_at || action.inserted_at;
+        if (!dateStr) return false; 
+        
+        const actionDate = new Date(dateStr);
         return actionDate >= thirtyDaysAgo;
       });
 
@@ -46,27 +78,26 @@ export const generateAIInsights = async (stats, userEmail, userProfile, cvText, 
         limitReached = true;
         
         // Find the oldest action in the recent window to calculate when it expires
-        // Sort ascending to find the one that will expire first (moving the window)
-        const sortedActions = recentActions.sort((a, b) => 
-          new Date(a.created_date || a.created_at) - new Date(b.created_date || b.created_at)
-        );
+        const sortedActions = recentActions.sort((a, b) => {
+           const dateA = new Date(a.created_at || a.created_date || a.inserted_at);
+           const dateB = new Date(b.created_at || b.created_date || b.inserted_at);
+           return dateA - dateB;
+        });
 
         // The date we can generate again is: (Limit-th oldest date) + 30 days
-        // e.g. Count=3, Limit=3. We need 1 slot to free up.
-        // The slot frees up 30 days after the 1st action in the window.
-        // Index to check is: (Count - Limit) = 0 (first element).
         const oldestRelevantAction = sortedActions[0];
-        const oldestDate = new Date(oldestRelevantAction.created_date || oldestRelevantAction.created_at);
+        const oldestDate = new Date(oldestRelevantAction.created_at || oldestRelevantAction.created_date || oldestRelevantAction.inserted_at);
         
         const nextDate = new Date(oldestDate);
         nextDate.setDate(nextDate.getDate() + GENERATION_LIMIT_DAYS);
         nextGenerationDate = nextDate.toISOString();
 
         // Retrieve latest insights to fallback
-        // Sort descending to get latest
-        const latestActions = actions.sort((a, b) => 
-          new Date(b.created_date || b.created_at) - new Date(a.created_date || a.created_at)
-        );
+        const latestActions = actions.sort((a, b) => {
+           const dateA = new Date(a.created_at || a.created_date || a.inserted_at);
+           const dateB = new Date(b.created_at || b.created_date || b.inserted_at);
+           return dateB - dateA;
+        });
         
         if (latestActions.length > 0 && latestActions[0].additional_data?.insights) {
           oldInsights = latestActions[0].additional_data.insights;
@@ -75,9 +106,6 @@ export const generateAIInsights = async (stats, userEmail, userProfile, cvText, 
       }
     } catch (err) {
       console.error("[InsightsService] Error checking generation limit:", err);
-      // In case of error (e.g. network), we might proceed carefully or fail. 
-      // Let's assume we proceed if we can't check, unless we want strict enforcement.
-      // But for now, let's proceed to cache check.
     }
   }
 
@@ -92,22 +120,11 @@ export const generateAIInsights = async (stats, userEmail, userProfile, cvText, 
     };
   }
 
-  // 3. Data Loading (Skip cache if we are generating fresh data - user likely triggered it)
-  // Actually, we should check cache for *current session* or *un-invalidated* state.
-  // The cache key is removed by 'invalidateInsightsCache' when CV changes.
-  // So if cache exists, it means CV hasn't changed (or we just generated it).
-  // If cache exists, we use it (unless we specifically want to force regenerate?)
+  // 3. Data Loading (Skip cache if we are generating fresh data)
   const cachedData = localStorage.getItem(cacheKey);
   if (cachedData) {
     try {
       const parsedCache = JSON.parse(cachedData);
-      
-      // If cached data has limit info, we should re-verify the limit?
-      // No, just use cache. The limit info will update when we eventually hit DB.
-      // Actually, if cached data has obsolete limit info (e.g. date passed), 
-      // we might want to refresh?
-      // Let's keep it simple: Cache is king until invalidated.
-
       console.log("[InsightsService] Using cached insights");
       return parsedCache;
     } catch (e) {
@@ -115,11 +132,9 @@ export const generateAIInsights = async (stats, userEmail, userProfile, cvText, 
     }
   }
 
-  // 4. If limit reached but NO old insights found (edge case), return null or error?
+  // 4. If limit reached but NO old insights found
   if (limitReached && !oldInsights) {
      console.warn("[InsightsService] Limit reached but no old insights found.");
-     // Fallback to error or maybe allow 1 grace generation?
-     // Let's block it to be safe, return special object.
      return {
        error: "limit_reached_no_data",
        _limitInfo: {
@@ -211,13 +226,14 @@ export const generateAIInsights = async (stats, userEmail, userProfile, cvText, 
         // 5. Store Success Action in DB
         if (userId && userEmail) {
           try {
-             await UserAction.create({
+             const newAction = await UserAction.create({
                user_id: userId,
                user_email: userEmail,
                action_type: 'generate_insights',
-               additional_data: { insights: parsed }
+               additional_data: { insights: parsed },
+               created_date: new Date().toISOString() // Explicitly set created_date
              });
-             console.log("[InsightsService] Action logged to DB");
+             console.log("[InsightsService] Action logged to DB. Record keys:", Object.keys(newAction || {}));
           } catch (dbErr) {
             console.error("[InsightsService] Failed to log action:", dbErr);
           }
@@ -238,7 +254,15 @@ export const generateAIInsights = async (stats, userEmail, userProfile, cvText, 
     console.error("[InsightsService] Error generating AI insights:", error);
     return null;
   }
+  } finally {
+    if (userId) {
+      generatingUsers.delete(userId);
+    }
+  }
 };
+
+
+
 
 /**
  * Trigger automatic insights generation for a user

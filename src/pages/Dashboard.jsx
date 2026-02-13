@@ -38,6 +38,7 @@ import EmployerActivityFeed from "@/components/employer/EmployerActivityFeed";
 import JobSeekerGuide from "@/components/guides/JobSeekerGuide";
 import EmployerGuide from "@/components/guides/EmployerGuide";
 import CareerStageModal from "@/components/dashboard/CareerStageModal";
+import { checkAndNotifyIncompleteProfile } from "@/services/notificationService";
 const EMPLOYER_ALLOWED_NOTIFICATION_TYPES = ['application_submitted', 'new_message'];
 
 const AVAILABILITY_TRANSLATIONS = {
@@ -281,7 +282,8 @@ const JobSeekerDashboard = ({ user }) => {
           }),
           UserProfile.filter({ id: user.id }).then(profiles => profiles[0] || null),
           JobApplication.filter({ applicant_id: user.id }), // Change to applicant_id
-          CV.filter({ user_email: user.email }).then(cvs => cvs[0] || null) // Fetch user CV
+          CV.filter({ user_email: user.email }).then(cvs => cvs[0] || null), // Fetch user CV
+          UserProfile.filter({ id: user.id }).then(profiles => profiles[0] || null) // Fetch profile explicitly
         ]);
 
         const jobsData = results[0].status === 'fulfilled' ? results[0].value : [];
@@ -297,10 +299,18 @@ const JobSeekerDashboard = ({ user }) => {
         const applicationsData = results[6].status === 'fulfilled' ? results[6].value : [];
         const userCv = results[7].status === 'fulfilled' ? results[7].value : null;
 
-        // Merge CV data into profile for matching
+        // Merge Auth User, Profile Data, and CV data into a complete candidate profile
         const enhancedProfile = {
+          ...user,
           ...userProfile,
-          ...(userCv || {})
+          ...(userCv || {}),
+          // Explicitly map nested CV fields to top-level fields expected by matchScore.js
+          experience: userCv?.work_experience || [],
+          education: userCv?.education || [],
+          skills: userCv?.skills || [],
+          certifications: userCv?.certifications || [],
+          // Keep character_traits for backward compatibility/preference logic
+          character_traits: userProfile?.character_traits || userCv?.skills || user?.character_traits || []
         };
 
         // Calculate match scores for each job in chunks to prevent network/AI stalls
@@ -431,6 +441,11 @@ const JobSeekerDashboard = ({ user }) => {
         setAppliedJobIds(new Set(applicationsData.map(app => String(app.job_id))));
         setNotifications(notificationsData);
 
+
+        // TRIGGER: Check for incomplete profile and notify via WhatsApp
+        if (userProfile && !loading) {
+          checkAndNotifyIncompleteProfile(user, userProfile, !!userCv);
+        }
 
       } catch (error) {
         console.error("Error loading jobs for seeker:", error);
@@ -870,12 +885,13 @@ const EmployerDashboard = ({ user }) => {
         console.log('[Dashboard] activeJobs:', activeJobs.length);
 
         // 5. Get other dashboard data (Activity, etc.)
-        const [recentActions, dashboardData] = await Promise.all([
+        const [recentActions, dashboardData, profileData] = await Promise.all([
           EmployerAction.filter({
             employer_email: userData.email,
             action_type: 'candidate_view'
           }, "-created_date", 1000),
-          EmployerAnalytics.getDashboardData(userData.email)
+          EmployerAnalytics.getDashboardData(userData.email),
+          UserProfile.filter({ id: user.id }).then(p => p[0] || null)
         ]);
 
         const myJobIds = allUserJobs.map(j => j.id);
@@ -897,6 +913,11 @@ const EmployerDashboard = ({ user }) => {
         const realTotalApps = allAppsFlat.length;
         const realTotalViews = allViewsFlat.length;
         console.log(`📊 Dashboard: Final Sync - Apps: ${realTotalApps}, Views: ${realTotalViews}`);
+
+        // TRIGGER: Check for incomplete profile and notify via WhatsApp
+        if (profileData && !loading) {
+          checkAndNotifyIncompleteProfile(user, profileData, true); // true for hasCV since employer doesn't need CV
+        }
 
         // Map EmployerAction to a format compatible with viewedCandidates state
         const viewedCandidatesData = recentActions.map(action => ({

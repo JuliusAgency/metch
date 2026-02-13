@@ -68,14 +68,14 @@ const JobSeekerDashboard = ({ user }) => {
         const viewedJobIdsSet = new Set(jobViewsData.map(v => v.job_id));
         const viewedJobIdsArray = Array.from(viewedJobIdsSet);
 
-        // 2. Fetch Recent Jobs (limit 100) AND Viewed Jobs
-        // Since we can't easily do "OR" with the simple entity helper, we'll do parallel fetches
-        const [recentJobs, viewedJobsRaw, cvList] = await Promise.all([
+        // 2. Fetch Recent Jobs, Viewed Jobs, CV AND Full Profile
+        const [recentJobs, viewedJobsRaw, cvList, userProfileData] = await Promise.all([
           Job.filter({ status: 'active' }, "-created_date", 100),
           viewedJobIdsArray.length > 0
             ? supabase.from('Job').select('*').in('id', viewedJobIdsArray)
             : { data: [] },
-          CV.filter({ user_email: user.email })
+          CV.filter({ user_email: user.email }),
+          import('@/api/entities').then(m => m.UserProfile.filter({ id: user.id }))
         ]);
 
         const viewedJobsData = viewedJobsRaw.data || [];
@@ -84,7 +84,6 @@ const JobSeekerDashboard = ({ user }) => {
         const jobMap = new Map();
         recentJobs.forEach(j => jobMap.set(j.id, j));
         viewedJobsData.forEach(j => {
-          // Only add if active (viewed jobs might have ended)
           if (j.status === 'active') {
             jobMap.set(j.id, j);
           }
@@ -93,11 +92,25 @@ const JobSeekerDashboard = ({ user }) => {
         const jobsData = Array.from(jobMap.values());
 
         const userCv = cvList.length > 0 ? cvList[0] : {};
-        const candidateProfile = userCv.id ? userCv : user;
+        const profileData = userProfileData.length > 0 ? userProfileData[0] : {};
+
+        // Construct full candidate profile by merging Auth User, CV data, and Profile Document
+        const fullCandidateProfile = {
+          ...user,
+          ...profileData,
+          ...userCv,
+          // Explicitly map nested CV fields to top-level fields expected by matchScore.js
+          experience: userCv?.work_experience || [],
+          education: userCv?.education || [],
+          skills: userCv?.skills || [],
+          certifications: userCv?.certifications || [],
+          // Keep character_traits for backward compatibility/preference logic
+          character_traits: profileData.character_traits || userCv.skills || user.character_traits || []
+        };
 
         // Calculate matches and filter
         const scoredJobs = await Promise.all(jobsData.map(async (job) => {
-          const score = await import('@/utils/matchScore').then(m => m.calculate_match_score(candidateProfile, job, user));
+          const score = await import('@/utils/matchScore').then(m => m.calculate_match_score(fullCandidateProfile, job, user));
           return { ...job, match_score: Math.round(score * 100) };
         }));
 

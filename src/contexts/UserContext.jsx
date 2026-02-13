@@ -299,27 +299,23 @@ export const UserProvider = ({ children }) => {
 
     try {
       // Count unread notifications (INCLUDING message notifications now)
-      const [byUserId, byEmail, byCreatedBy] = await Promise.all([
+      const [byUserId, byEmail] = await Promise.all([
         supabase.from('Notification').select('*', { count: 'exact', head: false }).eq('user_id', userId).eq('is_read', false),
-        supabase.from('Notification').select('*', { count: 'exact', head: false }).eq('email', userEmail).eq('is_read', false),
-        supabase.from('Notification').select('*', { count: 'exact', head: false }).eq('created_by', userId).eq('is_read', false)
+        supabase.from('Notification').select('*', { count: 'exact', head: false }).eq('email', userEmail).eq('is_read', false)
       ]);
 
       console.log('[refreshUnreadCount] Query results:', {
         byUserId: byUserId.data?.length,
-        byEmail: byEmail.data?.length,
-        byCreatedBy: byCreatedBy.data?.length
+        byEmail: byEmail.data?.length
       });
 
       console.log('[refreshUnreadCount] Notifications by userId:', byUserId.data?.length);
       console.log('[refreshUnreadCount] Notifications by email:', byEmail.data?.length);
-      console.log('[refreshUnreadCount] Notifications by createdBy:', byCreatedBy.data?.length);
 
       // Merge and deduplicate notifications
       const allNotifications = [
         ...(byUserId.data || []),
-        ...(byEmail.data || []),
-        ...(byCreatedBy.data || [])
+        ...(byEmail.data || [])
       ];
       const uniqueNotifications = Array.from(
         new Map(allNotifications.map(item => [item.id, item])).values()
@@ -419,10 +415,10 @@ export const UserProvider = ({ children }) => {
           const newNotif = payload.new;
           const oldNotif = payload.old;
 
-          // Check if it's relevant to this user
+          // Check if it's relevant to this user (Must be the recipient)
           const isRelevant =
-            (newNotif?.user_id === user.id || newNotif?.email === user.email || newNotif?.created_by === user.id) ||
-            (oldNotif?.user_id === user.id || oldNotif?.email === user.email || oldNotif?.created_by === user.id);
+            (newNotif?.user_id === user.id || newNotif?.email === user.email) ||
+            (oldNotif?.user_id === user.id || oldNotif?.email === user.email);
 
           console.log('[UserContext] Notification is relevant:', isRelevant, 'user.id:', user.id, 'user.email:', user.email);
           if (isRelevant) {

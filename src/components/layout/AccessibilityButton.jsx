@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
     Accessibility,
     Type,
@@ -228,6 +229,26 @@ export default function AccessibilityButton() {
             onClick: () => setStopAnimations(!stopAnimations)
         },
     ];
+
+    const location = useLocation();
+    const isMessagesSeeker = location.pathname.toLowerCase() === "/messagesseeker";
+    const isMessagesEmployer = location.pathname.toLowerCase() === "/messages";
+
+    // Hide on mobile for Messages pages
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    if (isMobile && (isMessagesSeeker || isMessagesEmployer)) {
+        return null;
+    }
 
     return (
         <div className="fixed bottom-5 left-5 z-[100]">
