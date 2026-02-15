@@ -46,6 +46,7 @@ export default function PackageSelectionStep({ packageData = {}, setPackageData,
   }, [user?.email, user?.profile?.is_free_job_redeemed]);
 
   const getTierPrice = (qty) => {
+    // return 1; // TEST PRICE
     if (qty === 1) return 599;
     if (qty >= 2 && qty <= 3) return 550;
     if (qty >= 4 && qty <= 5) return 500;

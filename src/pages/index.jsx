@@ -70,6 +70,7 @@ import Statistics from "./Statistics";
 import CareerStageSelection from "./CareerStageSelection";
 import Packages from "./Packages";
 import JobSeekerProfileCompletion from "./JobSeekerProfileCompletion";
+import PaymentSuccess from "./PaymentSuccess";
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
@@ -209,6 +210,7 @@ function PagesContent() {
                 <Route path="/Payments" element={<AuthGuard><Payments /></AuthGuard>} />
                 <Route path="/Packages" element={<AuthGuard><Packages /></AuthGuard>} />
                 <Route path="/JobSeekerProfileCompletion" element={<AuthGuard><JobSeekerProfileCompletion /></AuthGuard>} />
+                <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />

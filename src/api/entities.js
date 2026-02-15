@@ -23,6 +23,8 @@ export const UserStats = createEntityMethods('UserStats');
 
 export const EmployerAction = createEntityMethods('EmployerAction');
 
+export const Transaction = createEntityMethods('Transaction');
+
 export const EmployerStats = createEntityMethods('EmployerStats');
 
 const defaultCvMethods = createEntityMethods('CV');

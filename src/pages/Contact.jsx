@@ -79,6 +79,7 @@ export default function Contact() {
         <b>פרטי שולח:</b><br/>
         שם: ${user?.full_name || user?.company_name || 'לא צוין'}<br/>
         מייל: ${user?.email || 'לא צוין'}<br/>
+        טלפון: ${user?.phone || 'לא צוין'}<br/>
         סוג משתמש: ${user?.user_type === 'employer' ? 'מעסיק' : 'מחפש עבודה'}<br/>
       `;
 
@@ -86,7 +87,7 @@ export default function Contact() {
         to: supportEmail,
         subject: `פנייה חדשה מהאתר: ${formData.subject}`,
         html: `<div dir="rtl" style="text-align: right;">${formData.message.replace(/\n/g, '<br/>')}${userDetails}</div>`,
-        text: `${formData.message}\n\nפרטי שולח:\nשם: ${user?.full_name || user?.company_name}\nמייל: ${user?.email}`,
+        text: `${formData.message}\n\nפרטי שולח:\nשם: ${user?.full_name || user?.company_name}\nמייל: ${user?.email}\nטלפון: ${user?.phone || 'לא צוין'}`,
       });
       emailSuccess = true;
     } catch (error) {

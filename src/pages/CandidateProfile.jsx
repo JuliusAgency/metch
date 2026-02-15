@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { User } from "@/api/entities";
-import { UserProfile } from "@/api/entities";
+import { UserProfile, EmployerAction } from "@/api/entities";
 import { QuestionnaireResponse, Job, JobApplication, CV, Conversation, Notification } from "@/api/entities";
 import { Core } from "@/api/integrations";
-import { calculate_match_score } from "@/utils/matchScore";
+import { calculate_match_score, calculate_match_breakdown } from "@/utils/matchScore";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { User as UserIcon, Loader2, X } from "lucide-react";
@@ -199,26 +199,61 @@ export default function CandidateProfile() {
 
   const generateEmployerInsights = async (candidateData) => {
     const INSIGHTS_ASSISTANT_ID = 'asst_y0XNCLBkyuYcbzxjYUdmHbxr';
-    const cacheKey = `employer_insights_v7_${candidateData.id}_${jobId || 'general'}`;
 
-    // 1. Try to fetch from Database first if we have a jobId context
-    if (jobId) {
+    // 1. Resolve Job ID (from URL or from context)
+    // We already try to find a job in fetchAppliedJobAndCalculateMatch, but we need it here for the cache key and DB lookup
+    let resolvedJobId = jobId;
+    if (!resolvedJobId && appliedJob && fullJobData) {
+      resolvedJobId = fullJobData.id;
+    }
+
+    const cacheKey = `employer_insights_v7_${candidateData.id}_${resolvedJobId || 'general'}`;
+
+    // 2. Try to fetch from Database first
+    if (resolvedJobId && user?.id) {
+      // 2a. Check EmployerAction (Generic Persistence)
+      try {
+        const actions = await EmployerAction.filter({
+          employer_id: user.id,
+          action_type: 'employer_candidate_analysis'
+        });
+
+        // Find action matching this candidate and job
+        const existingAction = actions.find(a =>
+          a.additional_data?.candidate_id === candidateData.id &&
+          a.additional_data?.job_id === resolvedJobId
+        );
+
+        if (existingAction?.additional_data?.analysis) {
+          const dbInsights = existingAction.additional_data.analysis;
+          if (dbInsights.version === 'v7') {
+            console.log("[CandidateProfile] Loaded insights from EmployerAction DB");
+            setAiInsights(dbInsights);
+            localStorage.setItem(cacheKey, JSON.stringify(dbInsights)); // Sync local cache
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to load insights from EmployerAction", e);
+      }
+
+      // 2b. Check JobApplication (Legacy/Contextual Persistence)
       try {
         const apps = await JobApplication.filter({
-          job_id: jobId,
+          job_id: resolvedJobId,
           applicant_email: candidateData.email
         });
 
         if (apps.length > 0 && apps[0].ai_insights) {
           const dbInsights = apps[0].ai_insights;
           if (dbInsights.version === 'v7') {
-            console.log("Loaded current version insights from DB");
+            console.log("Loaded current version insights from JobApplication DB");
             setAiInsights(dbInsights);
             return;
           }
         }
       } catch (dbErr) {
-        console.warn("Details fetching insights from DB:", dbErr);
+        console.warn("Details fetching insights from JobApplication DB:", dbErr);
       }
     }
 
@@ -345,9 +380,33 @@ export default function CandidateProfile() {
         `;
       }
 
+      // 3.5 Calculate Match Breakdown (Algorithm Data)
+      let matchBreakdownText = "No algorithm match data available.";
+      if (resolvedJobId) {
+        try {
+          // Optimized: if we already have fullJobData and it matches resolvedJobId, use it
+          let job = fullJobData;
+          if (!job || String(job.id) !== String(resolvedJobId)) {
+            job = await Job.get(resolvedJobId);
+          }
+
+          // Need to parse job fields as in fetchAppliedJobAndCalculateMatch
+          const parsedJob = { ...job };
+          parsedJob.structured_requirements = safeParseJSON(job.structured_requirements, []);
+          parsedJob.structured_certifications = safeParseJSON(job.structured_certifications, []);
+          parsedJob.structured_education = safeParseJSON(job.structured_education, []);
+          parsedJob.requirements = safeParseJSON(job.requirements, []);
+
+          const breakdown = await calculate_match_breakdown(candidateData, parsedJob);
+          matchBreakdownText = JSON.stringify(breakdown.breakdown, null, 2);
+        } catch (e) {
+          console.warn("Failed to calculate match breakdown for AI", e);
+        }
+      }
+
       // 4. Construct Prompt
       const prompt = `
-      Analyze this candidate for the following job based on their CV, preferences, and job requirements.
+      Analyze this candidate for the following job based on their CV, preferences, job requirements, AND the algorithm's match data.
       
       ### Candidate Profile Data:
       Name: ${candidateData.full_name || 'Candidate'}
@@ -355,6 +414,11 @@ export default function CandidateProfile() {
       Preferred Location: ${candidateData.preferred_location || candidateData.location || (Array.isArray(candidateData.preferred_locations) ? candidateData.preferred_locations.join(', ') : '') || questionnaireResponse?.preferred_location || 'Not specified'}
       Availability: ${candidateData.availability || questionnaireResponse?.availability || 'Immediate'}
       Work Type: ${Array.isArray(candidateData.preferred_job_types) ? candidateData.preferred_job_types.join(', ') : (Array.isArray(candidateData.job_types) ? candidateData.job_types.join(', ') : (questionnaireResponse?.job_type || 'Full time'))}
+      Career Status (User Answer): ${questionnaireResponse?.career_status || 'Not specified'}
+      
+      ### Algorithm Match Breakdown (Internal Data):
+      This data shows how the candidate scored on specific parameters (0-100 scale). Use this to support your analysis.
+      ${matchBreakdownText}
       
       ### CV Analysis Results:
       Skills: ${Array.isArray(cvRecordRef?.skills) ? cvRecordRef.skills.join(', ') : 'Check full text below'}
@@ -423,12 +487,34 @@ export default function CandidateProfile() {
             setAiInsights(insights);
             localStorage.setItem(cacheKey, JSON.stringify(insights));
 
-            // Save to DB
-            if (jobId) {
+            // Save to DB (EmployerAction & JobApplication)
+            if (resolvedJobId) {
+
+              // A. Save to EmployerAction (Primary Persistence)
+              if (user?.id) {
+                try {
+                  await EmployerAction.create({
+                    employer_id: user.id,
+                    action_type: 'employer_candidate_analysis',
+                    additional_data: {
+                      candidate_id: candidateData.id,
+                      job_id: resolvedJobId,
+                      analysis: insights,
+                      created_at: new Date().toISOString()
+                    },
+                    created_date: new Date().toISOString()
+                  });
+                  console.log("[CandidateProfile] Saved insights to EmployerAction");
+                } catch (saveErr) {
+                  console.error("Error saving insights to EmployerAction:", saveErr);
+                }
+              }
+
+              // B. Save to JobApplication (Legacy/Contextual)
               try {
                 // Find application again to get ID, or use filter
                 const apps = await JobApplication.filter({
-                  job_id: jobId,
+                  job_id: resolvedJobId,
                   applicant_email: candidateData.email
                 });
 
@@ -436,7 +522,7 @@ export default function CandidateProfile() {
                   await JobApplication.update(apps[0].id, {
                     ai_insights: insights
                   });
-                  console.log("Saved insights to DB");
+                  console.log("Saved insights to JobApplication DB");
                 }
               } catch (saveErr) {
                 console.error("Error saving insights to DB:", saveErr);
@@ -994,10 +1080,11 @@ export default function CandidateProfile() {
 
             {/* Socials */}
             <ProfileSocials
-              facebook_url={candidate.facebook_url}
-              instagram_url={candidate.instagram_url}
-              linkedin_url={candidate.linkedin_url}
-              twitter_url={candidate.twitter_url}
+              website_url={candidate.portfolio_url || candidate.social_links?.website}
+              facebook_url={candidate.facebook_url || candidate.social_links?.facebook}
+              instagram_url={candidate.instagram_url || candidate.social_links?.instagram}
+              linkedin_url={candidate.linkedin_url || candidate.social_links?.linkedin}
+              twitter_url={candidate.twitter_url || candidate.social_links?.twitter}
             />
           </motion.div>
         </CardContent>

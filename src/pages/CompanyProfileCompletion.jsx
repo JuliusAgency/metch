@@ -305,7 +305,7 @@ export default function CompanyProfileCompletion() {
       case 2:
         return <PackageSelectionStep packageData={packageData} setPackageData={setPackageData} onBack={prevStep} />;
       case 3:
-        return <PaymentStep paymentData={paymentData} setPaymentData={setPaymentData} />;
+        return <PaymentStep paymentData={paymentData} setPaymentData={setPaymentData} amount={packageData.price} />;
       case 4:
         return <CompanyProfileFinalStep companyData={companyData} setCompanyData={setCompanyData} onFinish={nextStep} />;
       case 5:

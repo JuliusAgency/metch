@@ -2,8 +2,12 @@ import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera } from "lucide-react";
+import { Camera, Loader2, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
+import { generateLowProfileUrl } from "@/services/cardcomService";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/api/supabaseClient";
+import { useToast } from "@/components/ui/use-toast";
 
 export const validationUtils = {
   validateCardNumber: (number) => {
@@ -59,216 +63,112 @@ export const validationUtils = {
   }
 };
 
-export default function PaymentStep({ paymentData, setPaymentData, errors: propErrors, setErrors: propSetErrors }) {
-  const [internalErrors, setInternalErrors] = useState({});
 
-  const errors = propErrors || internalErrors;
-  const setErrors = propSetErrors || setInternalErrors;
+export default function PaymentStep({ paymentData, setPaymentData, errors: propErrors, setErrors: propSetErrors, userProfile, amount = 349 }) {
+  const [iframeUrl, setIframeUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [requestId, setRequestId] = useState(null);
+  const [verifying, setVerifying] = useState(false);
+  const { toast } = useToast();
 
-  const formatCardNumber = (value) => {
-    const v = value.replace(/\D/g, '').substring(0, 16);
-    const parts = [];
-    for (let i = 0; i < v.length; i += 4) {
-      parts.push(v.substring(i, i + 4));
-    }
-    return parts.join('-');
-  };
-
-  const formatExpiryDate = (value) => {
-    const v = value.replace(/\D/g, '').substring(0, 4);
-    if (v.length >= 2) {
-      return `${v.substring(0, 2)}/${v.substring(2)}`;
-    }
-    return v;
-  };
-
-  const handleInputChange = (field, value) => {
-    let formattedValue = value;
-    let error = "";
-
-    switch (field) {
-      case 'cardNumber':
-        formattedValue = formatCardNumber(value);
-        // Always validate on change to show red status if incomplete
-        error = validationUtils.validateCardNumber(formattedValue);
-        break;
-      case 'expiryDate':
-        formattedValue = formatExpiryDate(value);
-        if (formattedValue.length === 5) {
-          error = validationUtils.validateExpiry(formattedValue);
+  React.useEffect(() => {
+    const fetchUrl = async () => {
+      setLoading(true);
+      try {
+        const result = await generateLowProfileUrl(
+          {
+            amount: amount,
+            productName: 'מנוי חודשי Metch'
+          },
+          {
+            name: userProfile?.full_name || 'Customer',
+            email: userProfile?.email || 'customer@example.com'
+          }
+        );
+        // Supports both object return (new) and string return (old/fallback)
+        if (typeof result === 'object' && result.url) {
+          setIframeUrl(result.url);
+          setRequestId(result.requestId);
+        } else {
+          setIframeUrl(result);
         }
-        break;
-      case 'cvv':
-        formattedValue = value.replace(/\D/g, '').substring(0, 3);
-        error = validationUtils.validateCvv(formattedValue);
-        break;
-      case 'idNumber':
-        // Allow only digits
-        formattedValue = value.replace(/\D/g, '');
-        error = validationUtils.validateId(formattedValue);
-        break;
-      case 'vatNumber':
-        // Allow only digits
-        formattedValue = value.replace(/\D/g, '');
-        break;
-      case 'holderName':
-        error = validationUtils.validateHolderName(value);
-        break;
-      default:
-        break;
-    }
-
-    setPaymentData(prev => ({ ...prev, [field]: formattedValue }));
-
-    // Manage errors
-    if (error) {
-      setErrors(prev => ({ ...prev, [field]: error }));
-    } else {
-      // If no error, clear it from the state
-      if (errors[field]) {
-        const newErrors = { ...errors };
-        delete newErrors[field];
-        setErrors(newErrors);
+      } catch (error) {
+        console.error("Failed to load payment page", error);
+      } finally {
+        setLoading(false);
       }
+    };
+
+    fetchUrl();
+  }, [userProfile, amount]);
+
+  const handleManualVerification = async () => {
+    if (!requestId) return;
+    setVerifying(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-payment', {
+        body: { requestId }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "התשלום אומת בהצלחה",
+        description: "היתרה עודכנה בחשבונך",
+      });
+
+      // Reload page or trigger balance refresh? 
+      // Best to just let user close modal and see it.
+      window.location.reload();
+
+    } catch (error) {
+      console.error("Verification error:", error);
+      toast({
+        title: "שגיאה באימות",
+        description: "לא הצלחנו לאמת את התשלום כרגע.",
+        variant: "destructive"
+      });
+    } finally {
+      setVerifying(false);
     }
   };
+
+
+
 
   return (
-    <div className="max-w-4xl mx-auto text-center" dir="rtl">
+    <div className="max-w-4xl mx-auto text-center h-full" dir="rtl">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="space-y-6 md:space-y-12"
+        className="w-full h-full min-h-[500px] flex flex-col"
       >
-        {/* Credit Card Visual */}
-        <div className="flex flex-col items-center mb-6 md:mb-16">
-          <div className="relative transform scale-90 md:scale-100 origin-top">
-            <div className="w-[360px] h-[220px] bg-[#0a0f18] rounded-[18px] shadow-2xl text-white p-10 flex flex-col justify-between relative overflow-hidden">
-              {/* Background Arc Effect - Two-tone split */}
-              <div className="absolute top-[-50%] right-[-25%] w-[150%] h-[200%] bg-[#1c2533] rounded-[45%] rotate-[-15deg]"></div>
-
-              {/* Mastercard-style logo top LEFT */}
-              <div className="flex justify-start pl-2 relative z-10">
-                <div className="flex">
-                  <div className="w-11 h-11 bg-white/[0.5] rounded-full"></div>
-                  <div className="w-11 h-11 bg-white/[0.9] rounded-full -ml-5 backdrop-blur-[1px]"></div>
-                </div>
-              </div>
-
-              {/* Card number - Centered vertically */}
-              <div className="text-[25px] tracking-[0.14em] text-center w-full font-sans -mt-2 relative z-10 leading-none">
-                {paymentData.cardNumber || "0000 0000 0000 0000"}
-              </div>
-
-              {/* Expiry and Cardholder info - Bottom row SWAPPED */}
-              <div className="flex justify-between items-end w-full pb-2 relative z-10">
-                <div className="text-[17px] tracking-widest font-sans opacity-90">
-                  {paymentData.expiryDate || "MM/YY"}
-                </div>
-                <div className="text-[17px] tracking-wide uppercase truncate max-w-[220px] font-sans opacity-90">
-                  {paymentData.holderName ? paymentData.holderName : "ISRAEL ISRAELI"}
-                </div>
-              </div>
-            </div>
-
-            {/* Camera icon - Centered BETWEEN the card and inputs */}
-            <div className="absolute -bottom-14 left-1/2 -translate-x-1/2 cursor-pointer hover:opacity-80 transition-opacity">
-              <div className="relative p-1">
-                {/* Viewfinder brackets style icon */}
-                <div className="absolute top-0 left-0 border-t-[2px] border-l-[2px] border-slate-400 w-2.5 h-2.5 rounded-tl-[3px]"></div>
-                <div className="absolute top-0 right-0 border-t-[2px] border-r-[2px] border-slate-400 w-2.5 h-2.5 rounded-tr-[3px]"></div>
-                <div className="absolute bottom-0 left-0 border-b-[2px] border-l-[2px] border-slate-400 w-2.5 h-2.5 rounded-bl-[3px]"></div>
-                <div className="absolute bottom-0 right-0 border-b-[2px] border-r-[2px] border-slate-400 w-2.5 h-2.5 rounded-br-[3px]"></div>
-                <Camera className="w-7 h-7 text-slate-400" />
-              </div>
-            </div>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center h-[400px]">
+            <Loader2 className="w-12 h-12 text-[#2987cd] animate-spin mb-4" />
+            <p className="text-gray-500">טוען דף תשלום מאובטח...</p>
           </div>
-        </div>
-
-        {/* Payment Form - Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 md:gap-x-6 gap-y-3 md:gap-y-5 max-w-[980px] mx-auto pt-2 md:pt-6">
-
-          {/* Row 1: Holder Name */}
-          <div className="col-span-2 md:col-span-1 space-y-1">
-            <Input
-              placeholder="שם בעל הכרטיס"
-              value={paymentData.holderName || ''}
-              onChange={(e) => handleInputChange('holderName', e.target.value)}
-              className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.holderName ? 'border-red-500' : ''}`}
-              dir="rtl"
+        ) : iframeUrl ? (
+          <div className="w-full h-full flex-1 md:h-[600px] h-[500px] bg-white rounded-xl overflow-hidden border border-gray-200 shadow-inner">
+            <iframe
+              src={iframeUrl}
+              title="Cardcom Payment"
+              className="w-full h-full border-none"
+              allow="payment"
             />
           </div>
-
-          <div className="col-span-2 md:col-span-1 space-y-1">
-            <Input
-              placeholder="תעודת זהות"
-              value={paymentData.idNumber || ''}
-              onChange={(e) => handleInputChange('idNumber', e.target.value)}
-              className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.idNumber ? 'border-red-500' : ''}`}
-              dir="rtl"
-              maxLength={9}
-            />
+        ) : (
+          <div className="flex items-center justify-center h-[400px]">
+            <p className="text-red-500">שגיאה בטעינת מערכת הסליקה. אנא נסה שוב.</p>
           </div>
-
-          <div className="col-span-2 md:col-span-1 space-y-1 hidden md:block">
-            {/* Hidden VAT on mobile to save space if not critical, or keep? User image didn't show it. keeping it but maybe hidden if user insists on space? I will keep it but as full width if visible */}
-            <Input
-              placeholder="ח.פ. עבור חשבונית"
-              value={paymentData.vatNumber || ''}
-              onChange={(e) => handleInputChange('vatNumber', e.target.value)}
-              className="h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm"
-              dir="rtl"
-            />
-          </div>
-
-          {/* Row 2: Card Number */}
-          <div className="col-span-2 md:col-span-1 space-y-1">
-            <Input
-              placeholder="מספר כרטיס"
-              value={paymentData.cardNumber || ''}
-              onChange={(e) => handleInputChange('cardNumber', e.target.value)}
-              className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.cardNumber ? 'border-red-500' : ''}`}
-              maxLength={19}
-              dir="rtl"
-            />
-          </div>
-
-          <div className="col-span-1 space-y-1 box-border">
-            <Input
-              placeholder="תוקף"
-              value={paymentData.expiryDate || ''}
-              onChange={(e) => handleInputChange('expiryDate', e.target.value)}
-              className={`h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm ${errors.expiryDate ? 'border-red-500' : ''}`}
-              dir="rtl"
-              maxLength={5}
-            />
-          </div>
-
-          <div className="col-span-1 space-y-1 relative box-border">
-            <Input
-              placeholder="CVV"
-              value={paymentData.cvv || ''}
-              onChange={(e) => handleInputChange('cvv', e.target.value)}
-              className="h-[44px] rounded-full text-center bg-white border-gray-200 placeholder:text-gray-400 text-sm"
-              maxLength={3}
-              dir="rtl"
-            />
-            {/* Icon hidden on small mobile if tight? */}
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 hidden sm:block">
-              <svg width="20" height="14" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="0.5" y="0.5" width="23" height="15" rx="1.5" stroke="currentColor" />
-                <rect x="4" y="8" width="8" height="2" fill="currentColor" />
-              </svg>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Security Notice */}
-        <div className="mt-8 flex justify-center">
+        <div className="mt-4 flex justify-center">
           <div className="text-xs text-gray-500 bg-gray-50/50 px-6 py-2 rounded-full flex items-center gap-2 border border-gray-100">
             <span>🔒</span>
-            <span>התשלום מאובטח ומוצפן. אנחנו לא שומרים פרטי אשראי</span>
+            <span>התשלום מאובטח ומוצפן ע"י קארדקום (PCI-DSS)</span>
           </div>
         </div>
       </motion.div>

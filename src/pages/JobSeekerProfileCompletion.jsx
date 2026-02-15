@@ -34,7 +34,13 @@ export default function JobSeekerProfileCompletion() {
     const { updateProfile, user } = useUser();
     const [logoPreview, setLogoPreview] = useState(user?.profile_picture || null);
     const [activeSocial, setActiveSocial] = useState('website');
-    const [socialLinks, setSocialLinks] = useState(user?.social_links || {});
+    const [socialLinks, setSocialLinks] = useState({
+        website: user?.portfolio_url || user?.social_links?.website || '',
+        facebook: user?.facebook_url || user?.social_links?.facebook || '',
+        instagram: user?.instagram_url || user?.social_links?.instagram || '',
+        linkedin: user?.linkedin_url || user?.social_links?.linkedin || '',
+        twitter: user?.twitter_url || user?.social_links?.twitter || '',
+    });
     const [cvData, setCvData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [cvLoading, setCvLoading] = useState(true);
@@ -126,9 +132,18 @@ export default function JobSeekerProfileCompletion() {
     // Save social links when user leaves the input or clicks finish
     const saveSocials = async () => {
         try {
-            await updateProfile({ social_links: socialLinks });
+            // Map to individual columns
+            const currentLinks = socialLinks;
+            const updates = {
+                portfolio_url: currentLinks.website || null,
+                facebook_url: currentLinks.facebook || null,
+                instagram_url: currentLinks.instagram || null,
+                linkedin_url: currentLinks.linkedin || null,
+                twitter_url: currentLinks.twitter || null,
+            };
+            await updateProfile(updates);
         } catch (e) {
-            console.error(e);
+            console.error("Error saving social links:", e);
         }
     }
 

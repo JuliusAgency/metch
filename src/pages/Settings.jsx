@@ -195,6 +195,10 @@ export default function Settings() {
     validateField(field, value);
   };
 
+  const handleSocialLinkChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const validateForm = () => {
     const newErrors = {};
     const userType = user?.user_type;
@@ -285,6 +289,12 @@ export default function Settings() {
           gender: formData.gender || null,
           date_of_birth: formData.date_of_birth || null,
           preferred_location: formData.place_of_residence,
+          // Map social links to individual columns
+          portfolio_url: formData.website,
+          linkedin_url: formData.linkedin_url,
+          facebook_url: formData.facebook_url,
+          instagram_url: formData.instagram_url,
+          twitter_url: formData.twitter_url
         };
       }
 
@@ -1048,6 +1058,89 @@ export default function Settings() {
                     </div>
                   </div>
                 </Card>
+
+                {/* Social Links Section for Job Seekers */}
+                <div className="space-y-4 pt-4 md:pt-6 mb-4 md:mb-0">
+                  <h3 className="text-sm md:text-lg font-bold text-gray-900 border-b md:border-b pb-2 hidden md:block">ניהול לינקים</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div className="space-y-1">
+                      <label className="text-[10px] md:text-sm font-medium text-gray-600 md:text-gray-700 hidden md:block pr-4 md:pr-0">אתר אינטרנט</label>
+                      <div className="relative">
+                        <Globe className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Edit2 className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Input
+                          placeholder="אתר אינטרנט" // Placeholder for mobile if label hidden
+                          value={formData.website || ''}
+                          onChange={(e) => handleSocialLinkChange('website', e.target.value)}
+                          className="w-full h-11 md:h-12 bg-white border-gray-100 md:border-gray-200 rounded-full md:rounded-[50px] pr-4 md:pr-12 pl-10 md:pl-4 text-right shadow-sm focus:border-blue-400 text-sm md:text-base"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] md:text-sm font-medium text-gray-600 md:text-gray-700 hidden md:block pr-4 md:pr-0">LinkedIn</label>
+                      <div className="relative">
+                        <Linkedin className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Edit2 className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Input
+                          placeholder="LinkedIn URL"
+                          value={formData.linkedin_url || ''}
+                          onChange={(e) => handleSocialLinkChange('linkedin_url', e.target.value)}
+                          className="w-full h-11 md:h-12 bg-white border-gray-100 md:border-gray-200 rounded-full md:rounded-[50px] pr-4 md:pr-12 pl-10 md:pl-4 text-right shadow-sm focus:border-blue-400 text-sm md:text-base"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] md:text-sm font-medium text-gray-600 md:text-gray-700 hidden md:block pr-4 md:pr-0">Facebook</label>
+                      <div className="relative">
+                        <Facebook className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Edit2 className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Input
+                          placeholder="Facebook URL"
+                          value={formData.facebook_url || ''}
+                          onChange={(e) => handleSocialLinkChange('facebook_url', e.target.value)}
+                          className="w-full h-11 md:h-12 bg-white border-gray-100 md:border-gray-200 rounded-full md:rounded-[50px] pr-4 md:pr-12 pl-10 md:pl-4 text-right shadow-sm focus:border-blue-400 text-sm md:text-base"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] md:text-sm font-medium text-gray-600 md:text-gray-700 hidden md:block pr-4 md:pr-0">Instagram</label>
+                      <div className="relative">
+                        <Instagram className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Edit2 className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Input
+                          placeholder="Instagram URL"
+                          value={formData.instagram_url || ''}
+                          onChange={(e) => handleSocialLinkChange('instagram_url', e.target.value)}
+                          className="w-full h-11 md:h-12 bg-white border-gray-100 md:border-gray-200 rounded-full md:rounded-[50px] pr-4 md:pr-12 pl-10 md:pl-4 text-right shadow-sm focus:border-blue-400 text-sm md:text-base"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] md:text-sm font-medium text-gray-600 md:text-gray-700 hidden md:block pr-4 md:pr-0">X (Twitter)</label>
+                      <div className="relative">
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400">
+                          <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+                        </svg>
+                        <Edit2 className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Input
+                          placeholder="X URL"
+                          value={formData.twitter_url || ''}
+                          onChange={(e) => handleSocialLinkChange('twitter_url', e.target.value)}
+                          className="w-full h-11 md:h-12 bg-white border-gray-100 md:border-gray-200 rounded-full md:rounded-[50px] pr-4 md:pr-12 pl-10 md:pl-4 text-right shadow-sm focus:border-blue-400 text-sm md:text-base"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 

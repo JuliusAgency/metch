@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Job, UserProfile, CV, Notification } from "@/api/entities";
 import { JobApplication } from "@/api/entities";
-import { User } from "@/api/entities";
+import { User, UserAction } from "@/api/entities";
 import { BrainCircuit, Sparkles, CheckCircle2 } from "lucide-react";
 import { Core } from "@/api/integrations";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,7 +19,7 @@ import SeekerJobActions from "@/components/seeker/SeekerJobActions";
 import ApplicationSuccessModal from "@/components/jobs/ApplicationSuccessModal";
 import { useRequireUserType } from "@/hooks/use-require-user-type";
 import settingsMobileBg from "@/assets/settings_mobile_bg.jpg";
-import { calculate_match_score } from "@/utils/matchScore";
+import { calculate_match_score, calculate_match_breakdown } from "@/utils/matchScore";
 
 export default function JobDetailsSeeker() {
   useRequireUserType(); // Ensure user has selected a user type
@@ -30,6 +30,7 @@ export default function JobDetailsSeeker() {
   const [profile, setProfile] = useState(null);
   const [cvData, setCvData] = useState(null);
   const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [matchBreakdown, setMatchBreakdown] = useState(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [hasExistingApplication, setHasExistingApplication] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -114,16 +115,14 @@ export default function JobDetailsSeeker() {
                 ...userData,
                 ...(fetchedProfiles[0] || {}),
                 ...(cvData || {}),
-                // Explicitly map nested CV fields to top-level fields expected by matchScore.js
-                experience: cvData?.work_experience || [],
-                education: cvData?.education || [],
-                skills: cvData?.skills || [],
                 certifications: cvData?.certifications || []
               };
 
-              const score = await calculate_match_score(candidateProfile, fetchedJob);
-              if (score !== null) {
-                fetchedJob.match_score = Math.round(score * 100);
+              // Use breakdown to get both score and detailed stats for AI
+              const breakdown = await calculate_match_breakdown(candidateProfile, fetchedJob);
+              if (breakdown) {
+                fetchedJob.match_score = breakdown.total_score; // breakdown returns 0-100
+                setMatchBreakdown(breakdown);
               }
             } catch (e) {
               console.error("Error calculating match score:", e);
@@ -233,7 +232,30 @@ export default function JobDetailsSeeker() {
       // Unique cache key for this user + job combo - Updated to v2 for CV integration
       const cacheKey = `metch_job_insight_v2_${user.id}_${job.id}`;
 
-      // 1. Try to load from cache
+      // 1. Try to load from DB (UserAction) first - Cross-device persistence
+      try {
+        const actions = await UserAction.filter({
+          user_id: user.id,
+          action_type: 'job_match_analysis'
+        });
+
+        const existingAction = actions.find(a => a.additional_data?.job_id === job.id);
+
+        if (existingAction?.additional_data?.analysis) {
+          const dbAnalysis = existingAction.additional_data.analysis;
+          if (dbAnalysis.why_suitable && dbAnalysis.match_analysis) {
+            console.log("[JobDetails] Loaded AI analysis from DB");
+            setAiAnalysis(dbAnalysis);
+            // Update local cache too for faster subsequent loads on this device
+            localStorage.setItem(cacheKey, JSON.stringify(dbAnalysis));
+            return;
+          }
+        }
+      } catch (dbError) {
+        console.warn("Failed to load analysis from DB", dbError);
+      }
+
+      // 2. Try to load from local cache (fallback)
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
         try {
@@ -296,9 +318,24 @@ export default function JobDetailsSeeker() {
           Requirements: ${Array.isArray(job.requirements) ? job.requirements.join(', ') : job.requirements}
           Location: ${job.location}
           
-          Please output a valid JSON object with exactly two keys:
-          1. "why_suitable": A string (paragraph) in Hebrew explaining why this job is a good fit for the candidate.
-          2. "match_analysis": An array of strings (bullet points) in Hebrew describing Metch's thoughts on the match highlights.
+          Match Algorithm Breakdown:
+          ${matchBreakdown ? JSON.stringify(matchBreakdown, null, 2) : 'Not available'}
+
+          Please output a valid JSON object with detailed Hebrew content:
+          {
+            "why_suitable": "פסקה מפורטת (3-4 משפטים) שמסבירה למועמד למה המשרה מתאימה לו, בהתבסס על ניתוח ההתאמה ונתוני קורות החיים.",
+            "match_analysis": [
+              "נקודה ראשונה: התייחסות להשכלה/ניסיון (למשל: 'השכלה רלוונטית בהנדסת תוכנה...')",
+              "נקודה שניה: התייחסות לכישורים/טכנולוגיות (למשל: 'שליטה ב-React ו-Node.js...')",
+              "נקודה שלישית: התייחסות למיקום/סוג משרה (למשל: 'מיקום המשרה בתל אביב תואם את העדפותיך...')",
+              "נקודה רביעית: התייחסות לחוזקה נוספת או התאמה אישיותית"
+            ]
+          }
+          
+          Guidelines:
+          - "why_suitable": Should be encouraging and professional. Explain the "Why".
+          - "match_analysis": Should be a list of 4-5 bullet points strings. Each point should highlight a specific match area (Education, Experience, Skills, Location/Type).
+          - Use the "Match Algorithm Breakdown" data to support your points (e.g. if 'location' score is high, mention it).
           
           Ensure the response is strictly valid JSON without Markdown formatting.
         `;
@@ -317,7 +354,25 @@ export default function JobDetailsSeeker() {
             const parsed = JSON.parse(clean);
             if (parsed.why_suitable && parsed.match_analysis) {
               setAiAnalysis(parsed);
-              // 2. Save to cache
+
+              // 3. Save to DB (UserAction)
+              try {
+                await UserAction.create({
+                  user_id: user.id,
+                  action_type: 'job_match_analysis',
+                  additional_data: {
+                    job_id: job.id,
+                    analysis: parsed,
+                    created_at: new Date().toISOString()
+                  },
+                  created_date: new Date().toISOString()
+                });
+                console.log("[JobDetails] Saved AI analysis to DB");
+              } catch (saveError) {
+                console.error("Failed to save analysis to DB:", saveError);
+              }
+
+              // 4. Save to local cache
               localStorage.setItem(cacheKey, JSON.stringify(parsed));
               console.log("[JobDetails] Generated and cached AI analysis");
             }

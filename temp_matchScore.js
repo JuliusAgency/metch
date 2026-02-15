@@ -1,4 +1,6 @@
-import { is_career_change } from './careerChangeDetection';
+
+// MOCKED IMPORT because real file imports from ./careerChangeDetection without .js extension
+const is_career_change = async () => false;
 
 /**
  * Helper function to parse JSON string fields from database
@@ -322,12 +324,8 @@ function scoreEducation(candidate_profile, job_posting) {
   const candidateEducation = candidate_profile.education || [];
   const jobEducation = parseJsonField(job_posting.structured_education);
 
-  if (jobEducation.length === 0) {
-    return 100; // No specific education required -> Full match
-  }
-
   if (candidateEducation.length === 0) {
-    return 0; // Education required but candidate has none
+    return 0;
   }
 
   // Check if candidate has any relevant education
@@ -393,10 +391,6 @@ function scoreCharacterTraits(candidate_profile, job_posting) {
 
   // Extract trait-related keywords from job
   const traitKeywords = extractTraitKeywords(jobDescription, jobRequirements);
-
-  if (traitKeywords.length === 0) {
-     return 100; // No specific traits required -> Full match
-  }
 
   // Count matches
   let matches = 0;
@@ -756,11 +750,7 @@ function getNearbyAreas(location) {
 function isDateWithinMonth(dateString) {
   if (!dateString) return true;
 
-  if (dateString === 'flexible') return true;
-
   const date = new Date(dateString);
-  if (isNaN(date.getTime())) return true; // Invalid date (like 'flexible') -> Treat as within month
-
   const now = new Date();
   const oneMonthFromNow = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
 
@@ -811,13 +801,7 @@ function getBestTitleMatch(candidate_profile, targets) {
         maxScore = 100; // Max possible for strict match
         break; 
       }
-      
-      // Fuzzy Check
-      const score = calculateFuzzyMatch(val, t);
-      if (score > maxScore) maxScore = score;
     }
-    if (maxScore === 100) break;
   }
-  return maxScore;
+ return maxScore;
 }
-

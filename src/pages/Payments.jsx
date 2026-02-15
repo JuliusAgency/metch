@@ -12,7 +12,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import PaymentStep, { validationUtils } from "@/components/company_profile/PaymentStep";
+import PaymentStep from "@/components/company_profile/PaymentStep";
 import { useToast } from "@/components/ui/use-toast";
 import settingsHeaderBg from "@/assets/settings_header_bg.png";
 import paymentsMobileBg from "@/assets/payment_mobile_header.png";
@@ -61,13 +61,49 @@ export default function Payments() {
     }, [user]);
 
     // Mock data initial state
-    const [transactions, setTransactions] = useState([
-        { id: 1, amount: 349, date: '01/01/2025', details: 'מנוי חודשי - חבילת פרימיום' },
-        { id: 2, amount: 349, date: '01/01/2025', details: 'מנוי חודשי - חבילת פרימיום' },
-        { id: 3, amount: 349, date: '01/01/2025', details: 'מנוי חודשי - חבילת פרימיום' },
-        { id: 4, amount: 349, date: '01/01/2025', details: 'מנוי חודשי - חבילת פרימיום' },
-        { id: 5, amount: 349, date: '01/01/2025', details: 'מנוי חודשי - חבילת פרימיום' },
-    ]);
+    const [transactions, setTransactions] = useState([]);
+    const [loadingTransactions, setLoadingTransactions] = useState(true);
+
+    // Fetch Transactions
+    useEffect(() => {
+        const fetchTransactions = async () => {
+            if (user?.id) {
+                try {
+                    console.log("Fetching transactions for user:", user.id);
+                    setLoadingTransactions(true);
+
+                    const { Transaction } = await import("@/api/entities");
+
+                    // Fetch transactions for user, newest first
+                    // Try/Catch specifically for the filter call
+                    try {
+                        const userTransactions = await Transaction.filter({ user_id: user.id }, '-created_at');
+                        console.log("Transactions fetched:", userTransactions);
+
+                        const formatted = userTransactions.map(t => ({
+                            id: t.id, // UUID
+                            displayId: t.id.slice(0, 8), // Short ID for display
+                            amount: t.amount,
+                            date: new Date(t.created_at).toLocaleDateString('he-IL'),
+                            details: t.description || 'מנוי חודשי',
+                            status: t.status
+                        }));
+
+                        setTransactions(formatted);
+                    } catch (dbError) {
+                        console.error("Database error fetching transactions:", dbError);
+                        // If table not found, it might throw
+                    }
+                } catch (error) {
+                    console.error("Failed to load entities or fetch transactions:", error);
+                } finally {
+                    setLoadingTransactions(false);
+                }
+            }
+        };
+
+        fetchTransactions();
+    }, [user]);
 
     const handleExport = (id) => {
         // Find the transaction
@@ -77,7 +113,7 @@ export default function Payments() {
         // Mock CSV download with BOM for Hebrew support
         // Columns: Invoice Number, Date, Amount, Description, Status
         const headers = "מספר חשבונית,תאריך,סכום,תיאור,סטטוס";
-        const row = `INV-2025-00${tx.id},${tx.date},₪${tx.amount},${tx.details},שולם`;
+        const row = `INV-${tx.displayId || tx.id},${tx.date},₪${tx.amount},${tx.details},שולם`;
 
         const csvContent = "\uFEFF" + headers + "\n" + row;
         const encodedUri = encodeURI(`data:text/csv;charset=utf-8,${csvContent}`);
@@ -110,7 +146,7 @@ BT
 (INVOICE) Tj
 /F1 12 Tf
 0 -50 Td
-(Invoice Number: INV-2025-00${tx.id}) Tj
+(Invoice Number: INV-${tx.displayId || tx.id}) Tj
 0 -25 Td
 (Date: ${tx.date}) Tj
 0 -25 Td
@@ -488,22 +524,17 @@ ET`;
                         {/* White Card Container */}
                         <div className="bg-white rounded-[24px] shadow-[0_4px_30px_rgba(0,0,0,0.06)] p-6 mb-8 relative border border-white">
                             <PaymentStep
-                                paymentData={paymentData}
                                 setPaymentData={setPaymentData}
                                 errors={errors}
                                 setErrors={setErrors}
+                                userProfile={userProfile}
                             />
                         </div>
 
-                        {/* Action Button */}
-                        <div className="mt-4 px-2">
-                            <Button
-                                onClick={handleSavePaymentMethod}
-                                className="w-full bg-[#2987cd] hover:bg-[#2070ab] text-white rounded-full h-14 text-lg font-bold shadow-xl shadow-blue-200/50"
-                            >
-                                עדכון
-                            </Button>
-                        </div>
+                        {/* Action Button - Hidden for Iframe flow (iframe has its own button) */}
+                        {/* <div className="mt-4 px-2">
+                             <Button onClick={handleSavePaymentMethod} ... >עדכון</Button>
+                        </div> */}
                     </div>
                 </div>
             )}
@@ -511,25 +542,22 @@ ET`;
             {/* Desktop Modal */}
             {!isMobile && (
                 <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-                    <DialogContent className="sm:max-w-[600px] h-[80vh] overflow-y-auto" dir="rtl">
+                    <DialogContent className="sm:max-w-[700px] h-[80vh] overflow-y-auto" dir="rtl">
                         <DialogHeader>
                             <DialogTitle className="text-center text-xl font-bold text-[#1E3A8A]">עדכון אמצעי תשלום</DialogTitle>
                         </DialogHeader>
-                        <div className="py-4">
+                        <div className="py-4 h-full">
                             <PaymentStep
                                 paymentData={paymentData}
                                 setPaymentData={setPaymentData}
                                 errors={errors}
                                 setErrors={setErrors}
+                                userProfile={userProfile}
                             />
-                            <div className="mt-8 flex justify-center">
-                                <Button
-                                    onClick={handleSavePaymentMethod}
-                                    className="bg-[#1E3A8A] text-white rounded-full px-8 w-full md:w-1/2"
-                                >
-                                    שמירת אמצעי תשלום
-                                </Button>
-                            </div>
+                            {/* Action Button - Hidden for Iframe flow */}
+                            {/* <div className="mt-8 flex justify-center">
+                                <Button onClick={handleSavePaymentMethod} ... >שמירת אמצעי תשלום</Button>
+                            </div> */}
                         </div>
                     </DialogContent>
                 </Dialog>
@@ -550,7 +578,7 @@ ET`;
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-gray-500">מספר חשבונית:</span>
-                                    <span className="font-medium">INV-2025-00{selectedInvoice.id}</span>
+                                    <span className="font-medium">INV-{selectedInvoice.displayId || selectedInvoice.id}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-gray-500">תיאור:</span>
