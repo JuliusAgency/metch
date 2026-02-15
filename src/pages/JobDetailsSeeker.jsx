@@ -233,22 +233,28 @@ export default function JobDetailsSeeker() {
       const cacheKey = `metch_job_insight_v2_${user.id}_${job.id}`;
 
       // 1. Try to load from DB (UserAction) first - Cross-device persistence
+      // 1. Try to load from DB (UserAction) first - Cross-device persistence
       try {
+        // Optimized query: Search for specific job_id within the JSON column
         const actions = await UserAction.filter({
           user_id: user.id,
-          action_type: 'job_match_analysis'
+          action_type: 'job_match_analysis',
+          'additional_data->>job_id': job.id // Direct DB filtering
         });
 
-        const existingAction = actions.find(a => a.additional_data?.job_id === job.id);
+        if (actions.length > 0) {
+          // Sort by creation date descending to get the latest if duplicates exist
+          const latestAction = actions.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
 
-        if (existingAction?.additional_data?.analysis) {
-          const dbAnalysis = existingAction.additional_data.analysis;
-          if (dbAnalysis.why_suitable && dbAnalysis.match_analysis) {
-            console.log("[JobDetails] Loaded AI analysis from DB");
-            setAiAnalysis(dbAnalysis);
-            // Update local cache too for faster subsequent loads on this device
-            localStorage.setItem(cacheKey, JSON.stringify(dbAnalysis));
-            return;
+          if (latestAction?.additional_data?.analysis) {
+            const dbAnalysis = latestAction.additional_data.analysis;
+            if (dbAnalysis.why_suitable && dbAnalysis.match_analysis) {
+              console.log("[JobDetails] Loaded AI analysis from DB (Persisted)");
+              setAiAnalysis(dbAnalysis);
+              // Update local cache too for faster subsequent loads on this device
+              localStorage.setItem(cacheKey, JSON.stringify(dbAnalysis));
+              return;
+            }
           }
         }
       } catch (dbError) {
