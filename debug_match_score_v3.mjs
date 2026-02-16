@@ -1,4 +1,10 @@
-import { is_career_change } from './careerChangeDetection';
+
+// Mocks
+async function is_career_change(candidate_profile, job_posting) {
+  return false;
+}
+
+// ==================== COPIED FROM matchScore.js ====================
 
 /**
  * Helper function to parse JSON string fields from database
@@ -12,7 +18,7 @@ function parseJsonField(field) {
       const parsed = JSON.parse(field);
       return Array.isArray(parsed) ? parsed : [];
     } catch (e) {
-      console.warn('Failed to parse JSON field:', e);
+      // console.warn('Failed to parse JSON field:', e);
       return [];
     }
   }
@@ -26,7 +32,7 @@ function parseJsonField(field) {
  * @param {Object} user_settings - User settings/preferences
  * @returns {Promise<number|null>} Match score between 0.0 and 1.0, or null if disqualified
  */
-export async function calculate_match_score(candidate_profile, job_posting, user_settings = {}) {
+async function calculate_match_score(candidate_profile, job_posting, user_settings = {}) {
   // Phase 1: Disqualification Checks
   const disqualificationResult = await checkDisqualification(candidate_profile, job_posting, user_settings);
   if (disqualificationResult.disqualified) {
@@ -46,20 +52,6 @@ export async function calculate_match_score(candidate_profile, job_posting, user
     finalScore -= disqualificationResult.penalty;
   }
 
-  // Phase 3: "Dealbreaker" Penalties (Location & Job Type)
-  // Even if weighted score is high, a complete mismatch here should reduce the score significantly.
-  const locScore = scoreLocation(candidate_profile, job_posting);
-  if (locScore === 0) {
-      console.log('Applying Location Dealbreaker Penalty: -0.15');
-      finalScore -= 0.15;
-  }
-
-  const typeScore = scoreJobType(candidate_profile, job_posting);
-  if (typeScore === 0) {
-      console.log('Applying Job Type Dealbreaker Penalty: -0.10');
-      finalScore -= 0.10;
-  }
-
   // Ensure score is between 0.0 and 1.0
   return Math.max(0.0, Math.min(1.0, finalScore));
 }
@@ -68,13 +60,17 @@ export async function calculate_match_score(candidate_profile, job_posting, user
  * Calculate match score breakdown for AI analysis
  * Returns detailed scores for each component
  */
-export async function calculate_match_breakdown(candidate_profile, job_posting, user_settings = {}) {
+async function calculate_match_breakdown(candidate_profile, job_posting, user_settings = {}) {
   // Phase 1: Disqualification Checks
+  
+  // NOTE: Pass user_settings correctly
   const disqualificationResult = await checkDisqualification(candidate_profile, job_posting, user_settings);
   
   // Phase 2: Weighted Scoring
   const topPartScore = calculateTopPartScore(candidate_profile, job_posting);
   const bottomPartScore = calculateBottomPartScore(candidate_profile, job_posting);
+  console.log('Top Part:', topPartScore);
+  console.log('Bottom Part:', bottomPartScore);
 
   // Individual Component Scores (Unweighted raw scores 0-100 or similar)
   // We re-calculate them here to return the raw values for the AI
@@ -100,9 +96,11 @@ export async function calculate_match_breakdown(candidate_profile, job_posting, 
 
   // Phase 3: "Dealbreaker" Penalties (Location & Job Type)
   if (rawScores.location === 0) {
+      console.log('Applying Location Dealbreaker Penalty: -0.15');
       finalScore -= 0.15;
   }
   if (rawScores.jobType === 0) {
+      console.log('Applying Job Type Dealbreaker Penalty: -0.10');
       finalScore -= 0.10;
   }
   
@@ -238,22 +236,22 @@ function scoreSpecialization(candidate_profile, job_posting) {
   const jobTitle = job_posting.title?.toLowerCase() || '';
   const jobDescription = (job_posting.description || '').toLowerCase();
 
-  console.log('--- scoreSpecialization Debug ---');
-  console.log('Full Candidate Profile Fields:', {
-    specialization: candidate_profile.specialization,
-    profession: candidate_profile.profession,
-    job_title: candidate_profile.job_title,
-    title: candidate_profile.title,
-    bio: candidate_profile.bio
-  });
-  console.log('Job Target:', { title: jobTitle, category: jobCategory });
+//   console.log('--- scoreSpecialization Debug ---');
+//   console.log('Full Candidate Profile Fields:', {
+//     specialization: candidate_profile.specialization,
+//     profession: candidate_profile.profession,
+//     job_title: candidate_profile.job_title,
+//     title: candidate_profile.title,
+//     bio: candidate_profile.bio
+//   });
+//   console.log('Job Target:', { title: jobTitle, category: jobCategory });
 
   // Use Best Match strategy to check all candidate title fields against job title/category
   const bestTitleMatch = getBestTitleMatch(candidate_profile, [jobCategory, jobTitle]);
-  console.log('Best Title Match Score:', bestTitleMatch);
+//   console.log('Best Title Match Score:', bestTitleMatch);
   
   if (bestTitleMatch >= 80) {
-    console.log('Returning 100 (Best Match)');
+    // console.log('Returning 100 (Best Match)');
     return 100;
   }
   
@@ -261,7 +259,7 @@ function scoreSpecialization(candidate_profile, job_posting) {
   // If we want to check description too:
   const descriptionMatch = getBestTitleMatch(candidate_profile, [jobDescription]);
   if (descriptionMatch >= 80) {
-     console.log('Returning 100 (Description Match)');
+    //  console.log('Returning 100 (Description Match)');
      return 100;
   }
 
@@ -476,48 +474,28 @@ function scoreJobDescription(candidate_profile, job_posting) {
 
 // ==================== BOTTOM PART SCORING FUNCTIONS ====================
 
-// ==================== BOTTOM PART SCORING FUNCTIONS ====================
-
 /**
  * Score Profession (מקצוע)
  * 100: Identical profession, 70: Similar profession, 0: Different field
  */
 function scoreProfession(candidate_profile, job_posting) {
-  // Normalize candidate profession/title from various possible fields
-  const candidateTitles = [];
-  if (candidate_profile.profession) candidateTitles.push(candidate_profile.profession);
-  if (candidate_profile.specialization) candidateTitles.push(candidate_profile.specialization);
-  if (candidate_profile.job_title) candidateTitles.push(candidate_profile.job_title);
-  if (candidate_profile.title) candidateTitles.push(candidate_profile.title);
-  if (Array.isArray(candidate_profile.job_titles)) candidateTitles.push(...candidate_profile.job_titles);
-  
+  const candidateProfession = (candidate_profile.profession || candidate_profile.specialization || candidate_profile.job_title || '').toLowerCase();
   const jobTitle = (job_posting.title || '').toLowerCase();
   const jobCategory = (job_posting.category || '').toLowerCase();
 
-  // Check best match across all candidate titles
-  let bestScore = 0;
+  // Use Best Match strategy
+  const bestMatch = getBestTitleMatch(candidate_profile, [jobTitle, jobCategory]);
   
-  for (const title of candidateTitles) {
-      if (!title) continue;
-      const candidateVal = title.toLowerCase();
-      
-      // Use helper to check this specific title against job
-      // We mock a profile with just this title to reuse getBestTitleMatch
-      const mockProfile = { ...candidate_profile,  specialization: candidateVal };
-      const score = getBestTitleMatch(mockProfile, [jobTitle, jobCategory]);
-      if (score > bestScore) bestScore = score;
-      
-      // Check similar professions manually if getBestTitleMatch didn't max out
-      if (score < 100) {
-          const similarProfessions = getSimilarProfessions(candidateVal);
-          const isSimilar = similarProfessions.some(similar =>
-            jobTitle.includes(similar) || jobCategory.includes(similar)
-          );
-          if (isSimilar && 70 > bestScore) bestScore = 70;
-      }
-  }
+  if (bestMatch >= 80) return 100;
+  if (bestMatch >= 50) return 70;
 
-  return bestScore;
+  // Check for similar professions
+  const similarProfessions = getSimilarProfessions(candidateProfession);
+  const isSimilar = similarProfessions.some(similar =>
+    jobTitle.includes(similar) || jobCategory.includes(similar)
+  );
+
+  return isSimilar ? 70 : 0;
 }
 
 /**
@@ -525,44 +503,27 @@ function scoreProfession(candidate_profile, job_posting) {
  * 100: Full match, 75: Nearby area, 0: Significant distance
  */
 function scoreLocation(candidate_profile, job_posting) {
-  // Handle both singular (string) and plural (array) location fields
-  let candidateLocations = [];
-  if (Array.isArray(candidate_profile.preferred_locations)) {
-      candidateLocations = candidate_profile.preferred_locations;
-  } else if (candidate_profile.preferred_location) {
-      candidateLocations = [candidate_profile.preferred_location];
-  } else if (typeof candidate_profile.preferred_locations === 'string') {
-      // Handle stringified array or comma-separated string
-      candidateLocations = [candidate_profile.preferred_locations]; 
-  }
-
+  const candidateLocation = (candidate_profile.preferred_location || '').toLowerCase();
   const jobLocation = (job_posting.location || '').toLowerCase();
 
-  if (candidateLocations.length === 0 || !jobLocation) {
+  if (!candidateLocation || !jobLocation) {
     return 0;
   }
 
-  // Check each candidate location preference
-  for (const loc of candidateLocations) {
-      const candidateLocation = (loc || '').toLowerCase();
-      
-      // Full match
-      if (candidateLocation === jobLocation ||
-        candidateLocation.includes(jobLocation) ||
-        jobLocation.includes(candidateLocation)) {
-        return 100;
-      }
-
-      // Check for nearby areas
-      const nearbyAreas = getNearbyAreas(candidateLocation);
-      const isNearby = nearbyAreas.some(area =>
-        jobLocation.includes(area) || area.includes(jobLocation)
-      );
-      
-      if (isNearby) return 100;
+  // Full match
+  if (candidateLocation === jobLocation ||
+    candidateLocation.includes(jobLocation) ||
+    jobLocation.includes(candidateLocation)) {
+    return 100;
   }
 
-  return 0;
+  // Check for nearby areas (e.g., Tel Aviv -> Ramat Gan)
+  const nearbyAreas = getNearbyAreas(candidateLocation);
+  const isNearby = nearbyAreas.some(area =>
+    jobLocation.includes(area) || area.includes(jobLocation)
+  );
+
+  return isNearby ? 100 : 0;
 }
 
 /**
@@ -600,6 +561,8 @@ function scoreAvailability(candidate_profile, job_posting) {
     if (!jobStartDate || isDateWithinMonth(jobStartDate)) {
       return 70; // Available within 1 month
     }
+    // If jobStartDate is beyond a month, but candidate is available within a month, it's still a partial match
+    // This logic might need refinement based on exact business rules. For now, if jobStartDate is too far, it's 0.
   }
 
   return 0;
@@ -610,15 +573,7 @@ function scoreAvailability(candidate_profile, job_posting) {
  * 100: Full match, 60: Partial match, 0: Irrelevant
  */
 function scoreJobType(candidate_profile, job_posting) {
-  // Handle both fields: preferred_job_types and job_types
-  let candidateJobTypes = [];
-  if (Array.isArray(candidate_profile.preferred_job_types)) {
-      candidateJobTypes = candidate_profile.preferred_job_types;
-  } else if (Array.isArray(candidate_profile.job_types)) {
-      candidateJobTypes = candidate_profile.job_types;
-  }
-
-  candidateJobTypes = candidateJobTypes.map(t => t.toLowerCase());
+  const candidateJobTypes = (candidate_profile.preferred_job_types || []).map(t => t.toLowerCase());
   const jobType = (job_posting.employment_type || '').toLowerCase();
 
   if (candidateJobTypes.length === 0) {
@@ -822,15 +777,9 @@ function isDateWithinMonth(dateString) {
   if (!dateString) return true;
 
   if (dateString === 'flexible') return true;
-  if (dateString === 'immediate') return true;
-  if (dateString === '1_2_weeks') return true;
-  if (dateString === '1_2_months') return false; // Starts in > 1 month
 
   const date = new Date(dateString);
-  // If not a valid date, we default to TRUE to be safe (unless it's a known long-term enum),
-  // but for "month_to_two_months" type strings we should be careful.
-  // Given the known enums, we covered the long-term one.
-  if (isNaN(date.getTime())) return true; 
+  if (isNaN(date.getTime())) return true; // Invalid date (like 'flexible') -> Treat as within month
 
   const now = new Date();
   const oneMonthFromNow = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
@@ -892,3 +841,47 @@ function getBestTitleMatch(candidate_profile, targets) {
   return maxScore;
 }
 
+// ==================== TEST EXECUTION ====================
+
+// Mock Data based on the screenshots/context
+const mockCandidate = {
+  id: 'user-123',
+  preferred_location: 'Center', // Corresponds to candidate_profile.preferred_location (singular string in DB)
+  preferred_job_types: ['full_time'],
+  availability: 'immediate',
+  specialization: 'Information Security',
+  profession: 'Information Security Specialist',
+  job_title: 'Information Security Specialist',
+  
+  // CV fields
+  experience: [
+    { title: 'Information Security Specialist', description: 'CISSP certified, 5 years exp', type: 'full_time', years: 5 }
+  ],
+  skills: ['Cyber Security', 'Network Security', 'CISSP'],
+  education: [{ degree: 'B.Sc Computer Science' }],
+  certifications: [{ name: 'CISSP' }],
+  character_traits: ['leadership', 'teamwork', 'creativity']
+};
+
+const mockJob = {
+  id: 'job-123',
+  title: 'מומחה/ית אבטחת מידע', // Information Security Specialist
+  category: 'Information Security',
+  description: 'דרוש מומחה אבטחת מידע עם ניסיון. ידע ב-CISSP, leadership, teamwork.', // Keywords present
+  location: 'אבנת', // Not in Center map
+  employment_type: 'full_time',
+  start_date: 'immediate',
+  structured_requirements: JSON.stringify([{ value: 'CISSP' }, { value: 'Cyber Security' }]),
+  structured_education: JSON.stringify([]),
+  structured_certifications: JSON.stringify([])
+};
+
+console.log('--- Starting Match Score Debug (V3) ---');
+  
+calculate_match_breakdown(mockCandidate, mockJob).then(result => {
+  console.log('Total Score:', result.total_score);
+  console.log('Breakdown:', JSON.stringify(result.breakdown, null, 2));
+  console.log('Top Part:', result.top_part_score);
+  console.log('Bottom Part:', result.bottom_part_score);
+  
+}).catch(err => console.error(err));

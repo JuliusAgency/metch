@@ -25,6 +25,14 @@ const ProfileInfo = ({ looking_for_summary, bio, aiThoughts, aiSummary, aiAnalys
         </div>
     );
 
+    // DEBUG: Log received props in ProfileInfo
+    console.log("--------------------------------------------------");
+    console.log("🧩 PROFILE INFO RECEIVED PROPS:");
+    console.log("aiThoughts:", aiThoughts);
+    console.log("aiSummary:", aiSummary);
+    console.log("aiAnalysis:", aiAnalysis);
+    console.log("--------------------------------------------------");
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full text-right" dir="rtl">
             {/* Right Card: What Metch Thinks (Checklist) */}

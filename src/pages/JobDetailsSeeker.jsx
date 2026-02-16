@@ -170,15 +170,26 @@ export default function JobDetailsSeeker() {
 
           setJob(fetchedJob);
 
-          // Fetch company logo from employer profile
+          // Fetch company logo and social links from employer profile
           if (fetchedJob.created_by) {
             try {
               const employerProfiles = await UserProfile.filter({ email: fetchedJob.created_by.toLowerCase() });
-              if (employerProfiles.length > 0 && employerProfiles[0].profile_picture) {
-                setJob(prev => ({ ...prev, company_logo_url: employerProfiles[0].profile_picture }));
+              if (employerProfiles.length > 0) {
+                const employer = employerProfiles[0];
+                setJob(prev => ({
+                  ...prev,
+                  company_logo_url: employer.profile_picture,
+                  company_socials: {
+                    website: employer.portfolio_url,
+                    linkedin: employer.linkedin_url,
+                    facebook: employer.facebook_url,
+                    instagram: employer.instagram_url,
+                    twitter: employer.twitter_url
+                  }
+                }));
               }
             } catch (e) {
-              console.error("Error fetching employer logo:", e);
+              console.error("Error fetching employer details:", e);
             }
           }
 
@@ -224,15 +235,27 @@ export default function JobDetailsSeeker() {
     loadData();
   }, [loadData]);
 
+  // Ref to prevent double-firing of AI analysis in StrictMode or rapid re-renders
+  const analysisLockRef = React.useRef(null);
+
   // AI Analysis Effect
   useEffect(() => {
     const generateAnalysis = async () => {
-      if (!job || !user || !profile || !cvData || aiAnalysis || isAiLoading) return;
+      // Basic checks
+      if (!job || !user || !profile || !cvData) return;
 
-      // Unique cache key for this user + job combo - Updated to v2 for CV integration
-      const cacheKey = `metch_job_insight_v2_${user.id}_${job.id}`;
+      // If we already have analysis in state, stop.
+      if (aiAnalysis) return;
 
-      // 1. Try to load from DB (UserAction) first - Cross-device persistence
+      // Unique cache key for this user + job combo - Updated to v3 for Preference fix
+      const cacheKey = `metch_job_insight_v3_${user.id}_${job.id}`;
+
+      // Check lock - if we are already processing this specific key, stop.
+      if (analysisLockRef.current === cacheKey) return;
+
+      // Set lock
+      analysisLockRef.current = cacheKey;
+
       // 1. Try to load from DB (UserAction) first - Cross-device persistence
       try {
         // Optimized query: Search for specific job_id within the JSON column
@@ -253,6 +276,9 @@ export default function JobDetailsSeeker() {
               setAiAnalysis(dbAnalysis);
               // Update local cache too for faster subsequent loads on this device
               localStorage.setItem(cacheKey, JSON.stringify(dbAnalysis));
+
+              // Clear lock so future interactions (if analysis is cleared) can retry
+              analysisLockRef.current = null;
               return;
             }
           }
@@ -269,6 +295,7 @@ export default function JobDetailsSeeker() {
           if (parsedCache.why_suitable && parsedCache.match_analysis) {
             console.log("[JobDetails] Loaded AI analysis from cache");
             setAiAnalysis(parsedCache);
+            analysisLockRef.current = null; // Clear lock
             return;
           }
         } catch (e) {
@@ -288,6 +315,7 @@ export default function JobDetailsSeeker() {
             "חפיפה בסוג המשרה (מלאה, מיידית)"
           ]
         });
+        analysisLockRef.current = null;
         return;
       }
 
@@ -297,35 +325,53 @@ export default function JobDetailsSeeker() {
         if (!assistantId) {
           console.warn("VITE_JOB_SUMMARY env var is missing");
           setIsAiLoading(false);
+          analysisLockRef.current = null;
           return;
         }
+
+        // Helper to get array string from profile safely
+        const getProfileArray = (arr) => Array.isArray(arr) ? arr.join(', ') : (arr || '');
+
+        // Prepare preference values checking all possible field names
+        const prefRole = profile.profession || profile.specialization || getProfileArray(profile.job_titles) || 'Not specified';
+        const prefLocation = profile.preferred_location || getProfileArray(profile.preferred_locations) || 'Not specified';
+        const prefJobType = getProfileArray(profile.preferred_job_types) || getProfileArray(profile.job_types) || 'Not specified';
+        const prefAvailability = profile.availability || 'Not specified';
+
+        // Helper to truncate text to avoid payload limits
+        const truncate = (str, maxLength = 2000) => {
+          if (!str) return '';
+          if (str.length <= maxLength) return str;
+          return str.substring(0, maxLength) + '... (truncated)';
+        };
 
         const prompt = `
           Analyze the match between the candidate and the job.
           
           Candidate CV Data (Parsed/Analyzed):
-          ${cvData.parsed_content || cvData.summary || cvData.raw_text || "No CV content available. Please analyze based on other provided fields."}
+          ${truncate(cvData.parsed_content || cvData.summary || cvData.raw_text || "No CV content available. Please analyze based on other provided fields.", 4000)}
           
-          Skills: ${Array.isArray(cvData.skills) ? cvData.skills.join(', ') : ''}
-          Experience Summary: ${Array.isArray(cvData.work_experience) ? cvData.work_experience.map(e => e.title || e.role).join(', ') : ''}
-          Education: ${Array.isArray(cvData.education) ? cvData.education.map(e => e.field || e.degree).join(', ') : ''}
+          Skills: ${Array.isArray(cvData.skills) ? truncate(cvData.skills.join(', '), 1000) : ''}
+          Experience Summary: ${Array.isArray(cvData.work_experience) ? truncate(cvData.work_experience.map(e => e.title || e.role).join(', '), 1500) : ''}
+          Education: ${Array.isArray(cvData.education) ? truncate(cvData.education.map(e => e.field || e.degree).join(', '), 1000) : ''}
           
           Candidate Preferences:
-          Role: ${profile.job_titles ? profile.job_titles.join(', ') : 'Not specified'}
-          Location: ${profile.preferred_locations ? profile.preferred_locations.join(', ') : 'Not specified'}
-          Job Type: ${profile.job_types ? profile.job_types.join(', ') : 'Not specified'}
+          Role: ${prefRole}
+          Location: ${prefLocation}
+          Job Type: ${prefJobType}
           Career Stage: ${profile.career_stage || 'Not specified'}
-          Availability: ${profile.availability || 'Not specified'}
+          Availability: ${prefAvailability}
           
           Job Details:
           Title: ${job.title}
           Company: ${job.company}
-          Description: ${job.description}
-          Requirements: ${Array.isArray(job.requirements) ? job.requirements.join(', ') : job.requirements}
+          Description: ${truncate(job.description, 3000)}
+          Requirements: ${Array.isArray(job.requirements) ? truncate(job.requirements.join(', '), 1500) : truncate(job.requirements, 1500)}
           Location: ${job.location}
+          Start Date: ${job.start_date || 'Not specified'}
           
           Match Algorithm Breakdown:
-          ${matchBreakdown ? JSON.stringify(matchBreakdown, null, 2) : 'Not available'}
+          ${matchBreakdown ? truncate(JSON.stringify(matchBreakdown, null, 2), 2000) : 'Not available'}
 
           Please output a valid JSON object with detailed Hebrew content:
           {
@@ -340,8 +386,9 @@ export default function JobDetailsSeeker() {
           
           Guidelines:
           - "why_suitable": Should be encouraging and professional. Explain the "Why".
-          - "match_analysis": Should be a list of 4-5 bullet points strings. Each point should highlight a specific match area (Education, Experience, Skills, Location/Type).
-          - Use the "Match Algorithm Breakdown" data to support your points (e.g. if 'location' score is high, mention it).
+          - "match_analysis": Should be a list of 4-5 bullet points strings. Each point should highlight a specific match area.
+          - CRITICAL: Review 'Match Algorithm Breakdown'. If 'location', 'jobType', or 'availability' scores are 0, you MUST mention this mismatch explicitly (e.g. "Location mismatch: Job is in Haifa while you prefer Tel Aviv").
+          - Use the "Match Algorithm Breakdown" data to support your points.
           
           Ensure the response is strictly valid JSON without Markdown formatting.
         `;
@@ -390,6 +437,7 @@ export default function JobDetailsSeeker() {
         console.error("Error generating AI analysis:", error);
       } finally {
         setIsAiLoading(false);
+        analysisLockRef.current = null; // Release lock when done (success or fail)
       }
     };
 
@@ -585,6 +633,7 @@ export default function JobDetailsSeeker() {
                 hasExistingApplication={hasExistingApplication}
                 handleReject={handleReject}
                 hasScreeningQuestions={Array.isArray(job.screening_questions) && job.screening_questions.length > 0}
+                socialLinks={job.company_socials}
               />
             </div>
           </div>

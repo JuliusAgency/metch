@@ -33,7 +33,7 @@ export default function Packages() {
 
 
     const getPricePerJob = (qty) => {
-        // return 1; // TEST PRICE
+        return 1; // TEST PRICE
         if (qty === 1) return 599;
         if (qty >= 2 && qty <= 3) return 550;
         if (qty >= 4 && qty <= 5) return 500;

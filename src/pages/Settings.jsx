@@ -277,6 +277,7 @@ export default function Settings() {
           linkedin_url: formData.linkedin_url,
           facebook_url: formData.facebook_url,
           instagram_url: formData.instagram_url,
+          twitter_url: formData.twitter_url,
         };
       } else {
         // Job Seeker Payload

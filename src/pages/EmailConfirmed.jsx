@@ -27,27 +27,41 @@ const EmailConfirmed = () => {
           return;
         }
 
-        // Check if there is an access token hash but user is not loaded yet
+        // Check if there is an access token in the URL hash (Supabase Auth)
         if (!user && (window.location.hash.includes('access_token') || window.location.hash.includes('type=recovery') || window.location.hash.includes('error='))) {
-          // Let Supabase process the hash
+          console.log("[EmailConfirmed] Hash detected, waiting for Supabase to process...");
           return;
         }
 
-        // Check if user exists from UserContext (which uses Supabase session)
+        // Check if user exists from UserContext
         if (!user) {
-          // Double check if we truly don't have a session with getUser() which is more reliable
-          const { data: { user: authUser }, error: authError } = await import('@/api/supabaseClient').then(m => m.supabase.auth.getUser());
+          console.log("[EmailConfirmed] No user in context. Checking directly via getUser()...");
+
+          // Retry logic: Attempt to fetch user a few times before giving up
+          // This handles race conditions where hash is stripped but session is initializing
+          let authUser = null;
+          for (let i = 0; i < 3; i++) {
+            const { data } = await import('@/api/supabaseClient').then(m => m.supabase.auth.getUser());
+            if (data?.user) {
+              authUser = data.user;
+              console.log("[EmailConfirmed] Found user via direct check on attempt", i + 1);
+              break;
+            }
+            console.log(`[EmailConfirmed] Attempt ${i + 1}: No user found. Waiting...`);
+            await new Promise(r => setTimeout(r, 1000));
+          }
 
           if (authUser) {
-            // We have a user, wait for context to update or proceed with this user
-            // Context update should trigger re-run
+            // We found a user! Wait for context to update (re-render will handle it)
+            console.log("[EmailConfirmed] User found! Waiting for context update...");
             return;
           }
 
+          console.warn("[EmailConfirmed] User not found after retries. Redirecting to Login.");
           redirectInitiatedRef.current = true;
           toast({
             title: "משתמש לא נמצא",
-            description: "אנא התחברו מחדש",
+            description: "האימות נכשל או שהמשתמש לא מחובר. אנא התחברו מחדש.",
             variant: "destructive",
           });
           navigate('/Login');

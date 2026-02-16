@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
@@ -18,18 +18,29 @@ const Login = () => {
   const { signIn, signInWithGoogle, user, loading: authLoading } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Redirect if URL contains Supabase Auth hash (access_token, etc.)
+  useEffect(() => {
+    if (location.hash && (
+      location.hash.includes('access_token') ||
+      location.hash.includes('type=signup') ||
+      location.hash.includes('type=recovery') ||
+      location.hash.includes('type=magiclink')
+    )) {
+      console.log("[Login] Auth hash detected. Redirecting to EmailConfirmed for processing...");
+      navigate({ pathname: '/EmailConfirmed', hash: location.hash });
+    }
+  }, [location, navigate]);
 
   // Redirect if user is already authenticated
   useEffect(() => {
-
     if (!authLoading && user) {
       // Check if user has a complete profile
       const userProfile = user.profile || user.user_metadata;
 
-
       // If profile is null or doesn't have user_type, redirect to EmailConfirmed
       if (!userProfile || !userProfile.user_type) {
-
         navigate('/EmailConfirmed');
       } else if (!userProfile.is_onboarding_completed) {
         // Check user type for redirection
@@ -41,7 +52,6 @@ const Login = () => {
           navigate('/Dashboard');
         }
       } else {
-
         navigate('/Dashboard');
       }
     }
