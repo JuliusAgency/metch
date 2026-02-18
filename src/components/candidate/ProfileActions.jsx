@@ -16,7 +16,7 @@ const ProfileActions = ({
         {/* Actions in RTL: First child is Right, Last child is Left */}
 
         {/* Right Button: Questionnaire (if exists) or Export (if Questionnaire doesn't exist) */}
-        {questionnaireResponse && (
+        {questionnaireResponse && questionnaireResponse.id && (
             <Link to={createPageUrl(`ViewQuestionnaire?id=${questionnaireResponse.id}`)} className="w-auto">
                 <Button
                     size="lg"

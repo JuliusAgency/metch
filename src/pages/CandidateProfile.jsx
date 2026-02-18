@@ -1114,7 +1114,11 @@ export default function CandidateProfile() {
                 full_name={candidate.full_name}
                 cvData={cvData}
                 onViewCv={() => {
-                  setIsCvPreviewOpen(true);
+                  // Only open digital CV preview if there's no PDF (PDF opens in new tab via ProfileResume)
+                  if (!candidate.resume_url) {
+                    setIsCvPreviewOpen(true);
+                  }
+
                   if (user?.user_type === 'employer' && user?.email) {
                     const params = new URLSearchParams(location.search);
                     const jobId = params.get("jobId");

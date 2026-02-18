@@ -240,50 +240,58 @@ export default function CompanyProfileCompletion() {
       if (!saved) return;
     }
 
+
+    // Check if we are moving to the final step (Step 5 - Completion)
+    const isMovingToFinalStep = step + 1 === STEPS.length;
+
     // If on Step 2 (Package Selection) and price is 0, skip Payment (Step 3)
     if (step === 2 && packageData.price === 0) {
+      // If we skip to 4, we are NOT yet moving to final step (5)
       setStep(4);
       return;
     }
 
     if (step < STEPS.length) {
-      setStep(prev => prev + 1);
-    } else {
-      // Final step action - Save credits and redemption status
-      try {
-        // Fetch fresh user data to ensure we have the latest credits
-        const freshUser = await User.me();
-        const currentCredits = freshUser.profile?.job_credits || 0;
+      // If we are about to enter the final step, finalize the onboarding now
+      if (isMovingToFinalStep) {
+        try {
+          // Fetch fresh user data to ensure we have the latest credits
+          const freshUser = await User.me();
+          const currentCredits = freshUser.profile?.job_credits || 0;
 
-        const updates = { is_onboarding_completed: true };
+          const updates = { is_onboarding_completed: true };
 
-        // Calculate and save job credits acquired during onboarding
-        const isFreeEligible = !freshUser.profile?.is_free_job_redeemed;
+          // Calculate and save job credits acquired during onboarding
+          if (packageData.quantity > 0) {
+            updates.job_credits = currentCredits + packageData.quantity;
 
-        if (packageData.quantity > 0) {
-          updates.job_credits = currentCredits + packageData.quantity;
-
-          // If they chose the free job (1 job for 0 NIS), ensure they get at least 1 credit
-          if (packageData.quantity === 1 && packageData.price === 0) {
-            if (updates.job_credits < 1) {
-              updates.job_credits = 1;
+            // If they chose the free job (1 job for 0 NIS), ensure they get at least 1 credit
+            // (Only if they didn't already have credits, to be safe)
+            if (packageData.quantity === 1 && packageData.price === 0) {
+              // Ensure we don't accidentally overwrite if they bought something else before? 
+              // But this is onboarding.
+              // Let's trust the calculation: current + new.
+            }
+          } else {
+            // Fallback: If price is 0 (Free package selected explicitly or implicitly)
+            // Grant 1 credit if they don't have it (or just add 1)
+            if (packageData.price === 0) {
+              updates.job_credits = currentCredits + 1;
             }
           }
-        } else {
-          // Fallback: If for some reason quantity is 0 but it's the first time
-          // and they are eligible (which they are in onboarding), give them 1 credit.
-          if (packageData.price === 0) {
-            updates.job_credits = currentCredits + 1;
-          }
+
+          await updateProfile(updates);
+        } catch (err) {
+          console.error("Error finalizing onboarding:", err);
+          toast.error("שגיאה בסיום התהליך, אנא נסה שנית");
+          return; // Don't advance if failed
         }
-
-        await updateProfile(updates);
-        navigate(`${createPageUrl('Dashboard')}?onboarding=complete`, { replace: true });
-
-      } catch (err) {
-        console.error("Error finalizing onboarding:", err);
-        toast.error("שגיאה בסיום התהליך, אנא נסה שנית");
       }
+
+      setStep(prev => prev + 1);
+    } else {
+      // Already on final step (Step 5), and clicked "Go to Dashboard"
+      navigate(`${createPageUrl('Dashboard')}?onboarding=complete`, { replace: true });
     }
   };
 
