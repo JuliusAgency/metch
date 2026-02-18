@@ -44,7 +44,7 @@ import { useUser } from '@/contexts/UserContext';
 
 export default function PreferenceQuestionnaire() {
   useRequireUserType();
-  const { updateProfile } = useUser();
+  const { user, updateProfile } = useUser();
 
   const [searchParams] = useSearchParams();
   const initialStep = parseInt(searchParams.get('step') || '1', 10);
