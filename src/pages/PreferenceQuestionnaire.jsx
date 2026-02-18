@@ -14,7 +14,8 @@ import StepIndicator from '@/components/ui/StepIndicator';
 import { Info, ChevronRight, Menu } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import VectorLogo from '@/assets/Vector.svg';
-import { invalidateInsightsCache } from '@/services/insightsService';
+import { invalidateInsightsCache, triggerInsightsGeneration } from '@/services/insightsService';
+
 
 const AVAILABILITY_MAPPING = {
   'immediate': 'מיידית',
@@ -165,6 +166,14 @@ export default function PreferenceQuestionnaire() {
       // Invalidate insights cache so they refresh with new preferences
       if (updatedProfile?.id) {
         invalidateInsightsCache(updatedProfile.id);
+
+        // Trigger insights generation in background
+        triggerInsightsGeneration(updatedProfile.id, user.email).catch(err => console.error(err));
+
+        // Trigger insights generation in background (fire and forget)
+        triggerInsightsGeneration(updatedProfile.id, user.email).catch(err =>
+          console.error("Failed to trigger insights from questionnaire:", err)
+        );
       }
 
       const returnTo = searchParams.get('returnTo');

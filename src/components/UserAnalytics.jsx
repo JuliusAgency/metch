@@ -119,6 +119,17 @@ export class UserAnalytics {
         await UserStats.create(stats);
       }
 
+      // Check for Insights Trigger (Every 50 matches/views)
+      // "Re-activation ... over 50 matches performed"
+      if (stats.total_job_views > 0 && stats.total_job_views % 50 === 0) {
+        console.log(`[UserAnalytics] User reached ${stats.total_job_views} job views. Triggering insights generation.`);
+        // Dynamic import to avoid circular dependency
+        import('@/services/insightsService').then(({ triggerInsightsGeneration }) => {
+          triggerInsightsGeneration(user.id || stats.user_id, user.email || stats.user_email)
+            .catch(err => console.error("[UserAnalytics] Failed to trigger insights:", err));
+        });
+      }
+
     } catch (error) {
       console.error('Error updating user stats:', error);
     }
