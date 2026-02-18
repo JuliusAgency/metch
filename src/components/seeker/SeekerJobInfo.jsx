@@ -177,7 +177,7 @@ const SeekerJobInfo = ({ job, aiAnalysis, isAiLoading, layout = 'stack', perks, 
                                             ))}
                                         </ul>
                                     ) : (
-                                        <p>{aiAnalysis?.why_suitable || "נתונים אינם זמינים כעת"}</p>
+                                        <p className="whitespace-pre-wrap">{aiAnalysis?.match_analysis || aiAnalysis?.why_suitable || "נתונים אינם זמינים כעת"}</p>
                                     )
                                 )}
                             </div>

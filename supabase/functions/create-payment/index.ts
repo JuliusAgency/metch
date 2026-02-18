@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -12,6 +13,24 @@ serve(async (req) => {
     }
 
     try {
+        // Initialize Supabase Client
+        const supabaseClient = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+            { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+        )
+
+        // Get User - Renamed to authUser to avoid scope issues
+        const {
+            data: { user: authUser },
+        } = await supabaseClient.auth.getUser()
+
+        console.log("Authenticated User ID:", authUser?.id);
+
+        if (!authUser) {
+            console.warn("User not authenticated in create-payment, creating as Guest or attempting fallback");
+        }
+
         const {
             amount,
             productName,
@@ -88,7 +107,19 @@ serve(async (req) => {
             ],
             SuccessRedirectUrl: successUrl,
             FailedRedirectUrl: errorUrl, // Changed from ErrorRedirectUrl based on docs
-            WebHookUrl: indicatorUrl // Changed from IndicatorUrl based on docs
+            WebHookUrl: `${Deno.env.get('SUPABASE_URL')}/functions/v1/payment-webhook`,
+            IndicatorUrl: `${Deno.env.get('SUPABASE_URL')}/functions/v1/payment-webhook`, // Add IndicatorUrl as well
+
+            // Add InvoiceHead to trigger invoice generation
+            InvoiceHead: {
+                CustName: customerName || 'Guest',
+                Email: customerEmail,
+                SendByEmail: true,
+                Language: 'he'
+            },
+
+            // Pass User ID for robust tracking in Webhook
+            Custom1: authUser?.id || 'guest'
         };
 
         console.log(`Creating Low Profile transaction for ${amount} ILS. Terminal: ${TERMINAL_NUMBER}`);

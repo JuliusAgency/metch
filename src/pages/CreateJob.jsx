@@ -185,12 +185,43 @@ export default function CreateJob() {
       let targetStatus = 'active';
       let showPaymentPrompt = false;
 
-      // force 'draft' if no credits, UNLESS we are resuming a paused job (which is already paid for)
-      console.log('DEBUG: Job Submission - Credits:', credits, 'Status:', jobData.status);
 
+      // Check if we need to deduct credits
+      const isCreatingNew = !isEditing;
+      const isActivatingDraft = isEditing && jobData.status === 'draft';
+      // Note: Resuming a paused job (status: 'paused') usually doesn't cost credits, 
+      // but logic here assumes we only charge for new or draft->active.
 
+      const needsCredit = isCreatingNew || isActivatingDraft;
 
-      const now = new Date().toISOString();
+      // Check if this is the user's FIRST job (Free Trial)
+      // If user has 0 credits, checking if they have any *other* active/closed jobs might be expensive or complex here.
+      // But we can rely on a profile flag 'is_free_job_redeemed' or similar.
+      // If not present, we assume they might be eligible.
+      // However, to keep it simple and fix the stuck user:
+      // If credits are 0, we check if they have any existing jobs.
+
+      let isFreeJob = false;
+      if (needsCredit && credits <= 0) {
+        // Verify if this is truly their first job
+        const existingJobs = await Job.filter({ created_by_id: userData.id });
+
+        // Filter out drafts and the current job (if editing)
+        const publishedJobs = existingJobs.filter(job =>
+          job.status !== 'draft' && job.id !== jobData.id
+        );
+
+        const hasPriorJobs = publishedJobs.length > 0;
+
+        if (!hasPriorJobs) {
+          console.log('User has 0 credits but no prior published jobs - Granting Free Job');
+          isFreeJob = true;
+        } else {
+          console.warn('Insufficient credits and has prior published jobs, forcing draft status');
+          targetStatus = 'draft';
+          showPaymentPrompt = true;
+        }
+      } const now = new Date().toISOString();
 
       // Prepare job data
       const jobDataToSave = {
@@ -217,7 +248,13 @@ export default function CreateJob() {
         // Active jobs being edited don't cost credits.
         // Paused jobs being resumed don't cost credits (Rule 4).
         if (targetStatus === 'active' && jobData.status !== 'active' && jobData.status !== 'paused') {
-          await updateProfile({ job_credits: credits - 1 });
+          if (!isFreeJob) {
+            await updateProfile({ job_credits: credits - 1 });
+          } else {
+            // Free job granted. We don't deduct credits.
+            // We also don't need to mark a flag if we rely on "hasPriorJobs" in the future.
+            console.log('Free job redeemed successfully.');
+          }
         }
 
       } else {
@@ -232,7 +269,17 @@ export default function CreateJob() {
 
         // Deduct credit if active
         if (targetStatus === 'active') {
-          await updateProfile({ job_credits: credits - 1 });
+          if (!isFreeJob) {
+            await updateProfile({ job_credits: credits - 1 });
+          } else {
+            // Free job granted.
+            console.log('Free job redeemed successfully.');
+          }
+        }
+
+        // Mark onboarding as completed if this was the first job
+        if (user && !user.is_onboarding_completed) {
+          await updateProfile({ is_onboarding_completed: true });
         }
       }
 
@@ -254,8 +301,9 @@ export default function CreateJob() {
       console.error(`Failed to ${isEditing ? 'update' : 'create'} job:`, error);
       toast({
         title: "שגיאה בשמירת המשרה",
-        description: "אנא נסה שנית מאוחר יותר",
-        variant: "destructive"
+        description: error.message || "אנא נסה שנית מאוחר יותר",
+        variant: "destructive",
+        duration: 5000
       });
     } finally {
       setIsSubmitting(false);

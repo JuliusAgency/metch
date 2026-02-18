@@ -186,7 +186,7 @@ export default function CandidateProfile() {
 
     if (candidate && !generatingInsights && questionnaireResponse !== null && isScoreReady) {
       // Check version 'v10' to match the new prompt logic
-      if (!aiInsights.summary || aiInsights.version !== 'v10') {
+      if (!aiInsights.summary || aiInsights.version !== 'v12') {
         generateEmployerInsights(candidate);
       }
     }
@@ -202,7 +202,8 @@ export default function CandidateProfile() {
   };
 
   const generateEmployerInsights = async (candidateData) => {
-    const INSIGHTS_ASSISTANT_ID = 'asst_y0XNCLBkyuYcbzxjYUdmHbxr';
+    // Hardcoded for immediate fix - .env variables often require server restart
+    const INSIGHTS_ASSISTANT_ID = 'asst_vd3bndkr4gZPmpBioPSWrPlY';
 
     // 1. Resolve Job ID (from URL or from context)
     // We already try to find a job in fetchAppliedJobAndCalculateMatch, but we need it here for the cache key and DB lookup
@@ -211,7 +212,7 @@ export default function CandidateProfile() {
       resolvedJobId = fullJobData.id;
     }
 
-    const cacheKey = `employer_insights_v10_${candidateData.id}_${resolvedJobId || 'general'}`;
+    const cacheKey = `employer_insights_v12_${candidateData.id}_${resolvedJobId || 'general'}`;
 
     // 2. Try to fetch from Database first
     // Allow DB fetch even if resolvedJobId is undefined (will use 'general' or similar logic if we adjust it)
@@ -238,7 +239,7 @@ export default function CandidateProfile() {
 
         if (existingAction?.additional_data?.analysis) {
           const dbInsights = existingAction.additional_data.analysis;
-          if (dbInsights.version === 'v10') {
+          if (dbInsights.version === 'v12') {
             console.log("[CandidateProfile] Loaded insights from EmployerAction DB");
             setAiInsights(dbInsights);
             localStorage.setItem(cacheKey, JSON.stringify(dbInsights)); // Sync local cache
@@ -260,7 +261,7 @@ export default function CandidateProfile() {
 
           if (apps.length > 0 && apps[0].ai_insights) {
             const dbInsights = apps[0].ai_insights;
-            if (dbInsights.version === 'v10') {
+            if (dbInsights.version === 'v12') {
               console.log("Loaded current version insights from JobApplication DB");
               setAiInsights(dbInsights);
               return;
@@ -447,6 +448,7 @@ export default function CandidateProfile() {
       Location/Address: ${candidateLocation}
       Desired Job Title: ${candidateData.profession || candidateData.specialization || (Array.isArray(candidateData.job_titles) ? candidateData.job_titles.join(', ') : '') || 'Not specified'}
       ${questionnaireText}
+      **Career Question Answer (Status/Path):** ${candidateData.career_path_status || candidateData.looking_for || (questionnaireResponse?.career_status || 'Not specified')}
       
       ### Official Match Data:
       **SYSTEM CALCULATED MATCH SCORE**: ${finalMatchScore}%
@@ -479,14 +481,13 @@ export default function CandidateProfile() {
       
       Return ONLY a valid JSON object with these exact keys:
       {
-        "version": "v10",
+        "version": "v12",
         "match_score": ${typeof finalMatchScore === 'number' ? finalMatchScore : 70},
-        "candidate_summary": "פירוט מקצועי בעברית על המועמד... (Include the location here)",
+        "candidate_summary": "פירוט מקצועי בעברית על המועמד...",
         "match_thoughts": [
-          "Thought 1",
-          "Thought 2",
-          "Thought 3",
-          "Thought 4"
+          "פסקה 1: ניתוח ההתאמה המקצועית (ניסיון וכישורים) מול דרישות המשרה.",
+          "פסקה 2: התייחסות למיקום, זמינות, וסוג המשרה.",
+          "פסקה 3: התייחסות לשלב בקריירה (האם המועמד ממשיך בקריירה/פתוח לכיוונים) והתאמה כללית לארגון."
         ],
         "match_analysis": null
       }
@@ -520,7 +521,7 @@ export default function CandidateProfile() {
               thoughts: parsed.match_thoughts || parsed.thoughts,
               score: parsed.match_score || parsed.score || 90,
               analysis: parsed.match_analysis || null,
-              version: 'v10' // Ensure we store the version
+              version: 'v12' // Ensure we store the version
             };
             setAiInsights(insights);
 

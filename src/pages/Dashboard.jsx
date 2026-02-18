@@ -29,7 +29,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { calculate_match_score } from "@/utils/matchScore";
+import { calculate_match_score, calculate_match_breakdown } from "@/utils/matchScore";
 import { createPageUrl, safeParseJSON } from "@/utils";
 import { UserAnalytics } from "@/components/UserAnalytics";
 import { EmployerAnalytics } from "@/components/EmployerAnalytics";
@@ -327,8 +327,9 @@ const JobSeekerDashboard = ({ user }) => {
                   const userSettings = {
                     prefers_no_career_change: enhancedProfile.prefers_no_career_change || false
                   };
-                  const score = await calculate_match_score(enhancedProfile, job, userSettings);
-                  matchScore = score !== null ? Math.round(score * 100) : null;
+                  // Use calculate_match_breakdown to ensure result is identical to Job Details
+                  const breakdown = await calculate_match_breakdown(enhancedProfile, job, userSettings);
+                  matchScore = breakdown ? breakdown.total_score : null; // Already 0-100 rounded
                 } catch (error) {
                   console.error(`Error calculating match score for job ${job.id}:`, error);
                 }
@@ -421,18 +422,7 @@ const JobSeekerDashboard = ({ user }) => {
 
         setUserStats(enhancedStats);
 
-        // DEBUG: Log all jobs and their match scores
-        console.log('=== DEBUG: All Jobs with Scores ===');
-        console.log('Total jobs fetched:', jobsWithScores.length);
-        jobsWithScores.forEach(job => {
-          console.log(`Job: ${job.title} (${job.company}) - Match Score: ${job.match_score}, Status: ${job.status}, Created: ${job.created_date}`);
-        });
-
-        console.log('=== DEBUG: Qualified Jobs (after filter) ===');
-        console.log('Qualified jobs count:', qualifiedJobs.length);
-        qualifiedJobs.forEach(job => {
-          console.log(`Job: ${job.title} - Match Score: ${job.match_score}`);
-        });
+        setUserStats(enhancedStats);
 
         // Prepend mock job to the list
         setAllJobs([mockJob, ...limitedJobs]);

@@ -27,9 +27,31 @@ function parseJsonField(field) {
  * @returns {Promise<number|null>} Match score between 0.0 and 1.0, or null if disqualified
  */
 export async function calculate_match_score(candidate_profile, job_posting, user_settings = {}) {
+  const logGroupId = `Match Calculation: ${candidate_profile.full_name || 'Candidate'} <-> ${job_posting.title} (${job_posting.id})`;
+  console.groupCollapsed(logGroupId);
+  console.log("=== 1. Inputs ===");
+  console.log("Candidate Profile:", {
+      name: candidate_profile.full_name,
+      title: candidate_profile.title || candidate_profile.job_title,
+      specialization: candidate_profile.specialization,
+      experience: candidate_profile.experience?.length || 0,
+      skills: candidate_profile.skills,
+      location: candidate_profile.preferred_location || candidate_profile.preferred_locations
+  });
+  console.log("Job Posting:", {
+      id: job_posting.id,
+      title: job_posting.title,
+      category: job_posting.category,
+      location: job_posting.location,
+      requirements: parseJsonField(job_posting.structured_requirements),
+      education: parseJsonField(job_posting.structured_education)
+  });
+
   // Phase 1: Disqualification Checks
   const disqualificationResult = await checkDisqualification(candidate_profile, job_posting, user_settings);
   if (disqualificationResult.disqualified) {
+    console.log(`❌ Disqualified: ${disqualificationResult.reason}`);
+    console.groupEnd();
     return null; // or 0.0, depending on requirements
   }
 
@@ -37,31 +59,117 @@ export async function calculate_match_score(candidate_profile, job_posting, user
   const topPartScore = calculateTopPartScore(candidate_profile, job_posting);
   const bottomPartScore = calculateBottomPartScore(candidate_profile, job_posting);
 
-  // Final Score Formula: Final_Match_Score = (0.80 * Score_Top_Part) + (0.20 * Score_Bottom_Part)
-  let finalScore = (0.80 * topPartScore) + (0.20 * bottomPartScore);
+  // Final Score Formula: Final_Match_Score = (0.75 * Score_Top_Part) + (0.25 * Score_Bottom_Part)
+  let finalScore = (0.75 * topPartScore) + (0.25 * bottomPartScore);
 
   // Phase 1 Adjustments: Apply Soft Penalties from "Hard Filters"
   if (disqualificationResult.penalty > 0) {
-    console.log(`Applying filter penalty: -${disqualificationResult.penalty}`);
+    console.log(`🔻 Applying Soft Pattern Penalty: -${disqualificationResult.penalty.toFixed(2)}`);
     finalScore -= disqualificationResult.penalty;
   }
 
   // Phase 3: "Dealbreaker" Penalties (Location & Job Type)
   // Even if weighted score is high, a complete mismatch here should reduce the score significantly.
-  const locScore = scoreLocation(candidate_profile, job_posting);
-  if (locScore === 0) {
-      console.log('Applying Location Dealbreaker Penalty: -0.15');
-      finalScore -= 0.15;
+  const locPenalty = scoreLocation(candidate_profile, job_posting) === 0 ? 0.15 : 0;
+  if (locPenalty > 0) {
+      console.log('🔻 Applying Location Dealbreaker Penalty: -0.15 (No location match)');
+      finalScore -= locPenalty;
   }
 
-  const typeScore = scoreJobType(candidate_profile, job_posting);
-  if (typeScore === 0) {
-      console.log('Applying Job Type Dealbreaker Penalty: -0.10');
-      finalScore -= 0.10;
+  const typePenalty = scoreJobType(candidate_profile, job_posting) === 0 ? 0.10 : 0;
+  if (typePenalty > 0) {
+      console.log('🔻 Applying Job Type Dealbreaker Penalty: -0.10 (No job type match)');
+      finalScore -= typePenalty;
   }
 
-  // Ensure score is between 0.0 and 1.0
-  return Math.max(0.0, Math.min(1.0, finalScore));
+  const finalResult = Math.max(0.0, Math.min(1.0, finalScore));
+
+  // --- Construct Detailed AI JSON Log ---
+  const getMatchLevel = (score) => {
+    if (score >= 90) return "FULL";
+    if (score >= 70) return "HIGH";
+    if (score >= 40) return "MEDIUM";
+    return "NONE";
+  };
+
+  // Recalculate component raw scores (0-100) for logging
+  // Note: calculateTopPartScore / calculateBottomPartScore return weighted sums. We need raw.
+  const raw = {
+    specialization: scoreSpecialization(candidate_profile, job_posting),
+    experience: scoreExperience(candidate_profile, job_posting),
+    education: scoreEducation(candidate_profile, job_posting),
+    skills: scoreSkills(candidate_profile, job_posting),
+    traits: scoreCharacterTraits(candidate_profile, job_posting),
+    jobDesc: scoreJobDescription(candidate_profile, job_posting),
+    profession: scoreProfession(candidate_profile, job_posting),
+    location: scoreLocation(candidate_profile, job_posting),
+    availability: scoreAvailability(candidate_profile, job_posting),
+    jobType: scoreJobType(candidate_profile, job_posting)
+  };
+
+  const weights = {
+    prof: { spec: 300, exp: 200, edu: 100, skills: 80, traits: 50, jobDesc: 150 }, // Sum 880
+    pref: { prof: 160, loc: 440, avail: 100, type: 100 } // Sum 800
+  };
+
+  const profActual = 
+    (raw.specialization / 100 * weights.prof.spec) +
+    (raw.experience / 100 * weights.prof.exp) +
+    (raw.education / 100 * weights.prof.edu) +
+    (raw.skills / 100 * weights.prof.skills) +
+    (raw.traits / 100 * weights.prof.traits) +
+    (raw.jobDesc / 100 * weights.prof.jobDesc);
+
+  const prefActual = 
+    (raw.profession / 100 * weights.pref.prof) +
+    (raw.location / 100 * weights.pref.loc) +
+    (raw.availability / 100 * weights.pref.avail) +
+    (raw.jobType / 100 * weights.pref.type);
+
+  const logObject = {
+      "schema_name": "match_analysis_result",
+      "parameters": {
+        "Professional": {
+          "Area of Expertise": { "match_level": getMatchLevel(raw.specialization), "weight": weights.prof.spec, "score": raw.specialization / 100 * weights.prof.spec },
+          "Experience": { "match_level": getMatchLevel(raw.experience), "weight": weights.prof.exp, "score": raw.experience / 100 * weights.prof.exp },
+          "Education": { "match_level": getMatchLevel(raw.education), "weight": weights.prof.edu, "score": raw.education / 100 * weights.prof.edu },
+          "Skills": { "match_level": getMatchLevel(raw.skills), "weight": weights.prof.skills, "score": raw.skills / 100 * weights.prof.skills },
+          "Character Traits": { "match_level": getMatchLevel(raw.traits), "weight": weights.prof.traits, "score": raw.traits / 100 * weights.prof.traits },
+          "Job Description": { "match_level": getMatchLevel(raw.jobDesc), "weight": weights.prof.jobDesc, "score": raw.jobDesc / 100 * weights.prof.jobDesc }
+        },
+        "Preference": {
+          "Profession": { "match_level": getMatchLevel(raw.profession), "weight": weights.pref.prof, "score": raw.profession / 100 * weights.pref.prof },
+          "Location": { "match_level": getMatchLevel(raw.location), "weight": weights.pref.loc, "score": raw.location / 100 * weights.pref.loc },
+          "Availability": { "match_level": getMatchLevel(raw.availability), "weight": weights.pref.avail, "score": raw.availability / 100 * weights.pref.avail },
+          "Job Type": { "match_level": getMatchLevel(raw.jobType), "weight": weights.pref.type, "score": raw.jobType / 100 * weights.pref.type }
+        }
+      },
+      "calculation": {
+        "Professional": {
+          "actual_score": Math.round(profActual),
+          "max_score": 880,
+          "percent": (profActual / 880 * 100).toFixed(2),
+          "formula": "(actual_score / max_score) × 100"
+        },
+        "Preference": {
+          "actual_score": Math.round(prefActual),
+          "max_score": 800,
+          "percent": (prefActual / 800 * 100).toFixed(2),
+          "formula": "(actual_score / max_score) × 100"
+        }
+      },
+      "weighting": {
+        "Professional_weight": 0.75,
+        "Preference_weight": 0.25,
+        "final_score_percent": (finalResult * 100).toFixed(2),
+        "formula": "(Professional_percent × 0.75) + (Preference_percent × 0.25)"
+      }
+  };
+
+  console.log(JSON.stringify(logObject, null, 2));
+  console.groupEnd();
+  
+  return finalResult;
 }
 
 /**
@@ -91,14 +199,16 @@ export async function calculate_match_breakdown(candidate_profile, job_posting, 
       jobType: scoreJobType(candidate_profile, job_posting)
   };
 
-  // Final Score Formula
-  let finalScore = (0.80 * topPartScore) + (0.20 * bottomPartScore);
+  // Final Score Formula (Aligned with 75/25 Split)
+  let finalScore = (0.75 * topPartScore) + (0.25 * bottomPartScore);
 
+  // Phase 1 Adjustments: Apply Soft Penalties from "Hard Filters"
   if (disqualificationResult.penalty > 0) {
     finalScore -= disqualificationResult.penalty;
   }
 
   // Phase 3: "Dealbreaker" Penalties (Location & Job Type)
+  // Use raw scores check (0 means no match)
   if (rawScores.location === 0) {
       finalScore -= 0.15;
   }
@@ -139,17 +249,8 @@ async function checkDisqualification(candidate_profile, job_posting, user_settin
 
   // Required Certification/License Check
   // NOT handled in Phase 2, so we add a specific penalty.
-  const requiredCertifications = structuredCertifications.filter(
-    cert => cert.type === 'required' && cert.value
-  );
-  if (requiredCertifications.length > 0) {
-    const candidateCertifications = candidate_profile.certifications || [];
-    const hasRequiredCert = checkCertificationsMatch(candidateCertifications, requiredCertifications);
-    if (!hasRequiredCert) {
-      console.log('Soft Penalty: Missing Required Certification (-10%)');
-      penalty += 0.10;
-    }
-  }
+  // Penalty removed by user request
+  // if (requiredCertifications.length > 0) { ... }
 
   // Required Language Check
   // NOT handled in Phase 2, so we add a specific penalty.
@@ -180,27 +281,28 @@ async function checkDisqualification(candidate_profile, job_posting, user_settin
 function calculateTopPartScore(candidate_profile, job_posting) {
   const scores = {};
 
-  // Specialization (תחום ההתמחות) - Weight: 0.340909, Max: 90
-  scores.specialization = scoreSpecialization(candidate_profile, job_posting) / 90 * 0.340909;
+  // Specialization (תחום ההתמחות) - Weight: 0.340909 (300/880)
+  scores.specialization = scoreSpecialization(candidate_profile, job_posting) / 100 * 0.340909;
 
-  // Experience (ניסיון) - Weight: 0.227273, Max: 100
+  // Experience (ניסיון) - Weight: 0.227273 (200/880)
   scores.experience = scoreExperience(candidate_profile, job_posting) / 100 * 0.227273;
 
-  // Education (השכלה) - Weight: 0.113636, Max: 70
-  scores.education = scoreEducation(candidate_profile, job_posting) / 70 * 0.113636;
+  // Education (השכלה) - Weight: 0.113636 (100/880)
+  scores.education = scoreEducation(candidate_profile, job_posting) / 100 * 0.113636;
 
-  // Skills (מיומנויות) - Weight: 0.090909, Max: 100
+  // Skills (מיומנויות) - Weight: 0.090909 (80/880)
   scores.skills = scoreSkills(candidate_profile, job_posting) / 100 * 0.090909;
 
-  // Character Traits (תכונות אופי) - Weight: 0.056818, Max: 100
+  // Character Traits (תכונות אופי) - Weight: 0.056818 (50/880)
   scores.characterTraits = scoreCharacterTraits(candidate_profile, job_posting) / 100 * 0.056818;
 
-  // Job Description (תיאור תפקיד) - Weight: 0.170455, Max: 90
-  scores.jobDescription = scoreJobDescription(candidate_profile, job_posting) / 90 * 0.170455;
+  // Job Description (תיאור תפקיד) - Weight: 0.170455 (150/880)
+  scores.jobDescription = scoreJobDescription(candidate_profile, job_posting) / 100 * 0.170455;
 
   // Sum all weighted scores
   const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
-  return Math.min(1.0, totalScore / 0.95);
+
+  return Math.min(1.0, totalScore);
 }
 
 /**
@@ -209,11 +311,11 @@ function calculateTopPartScore(candidate_profile, job_posting) {
 function calculateBottomPartScore(candidate_profile, job_posting) {
   const scores = {};
 
-  // Profession (מקצוע) - Weight: 50.0%, Max: 100
-  scores.profession = scoreProfession(candidate_profile, job_posting) / 100 * (50.0 / 100);
+  // Profession (מקצוע) - Weight: 20.0%, Max: 100
+  scores.profession = scoreProfession(candidate_profile, job_posting) / 100 * (20.0 / 100);
 
-  // Location (מיקום) - Weight: 25.0%, Max: 100
-  scores.location = scoreLocation(candidate_profile, job_posting) / 100 * (25.0 / 100);
+  // Location (מיקום) - Weight: 55.0%, Max: 100
+  scores.location = scoreLocation(candidate_profile, job_posting) / 100 * (55.0 / 100);
 
   // Availability (זמינות) - Weight: 12.5%, Max: 100
   scores.availability = scoreAvailability(candidate_profile, job_posting) / 100 * (12.5 / 100);
@@ -223,6 +325,7 @@ function calculateBottomPartScore(candidate_profile, job_posting) {
 
   // Sum all weighted scores
   const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
+
   return totalScore;
 }
 
@@ -238,22 +341,13 @@ function scoreSpecialization(candidate_profile, job_posting) {
   const jobTitle = job_posting.title?.toLowerCase() || '';
   const jobDescription = (job_posting.description || '').toLowerCase();
 
-  console.log('--- scoreSpecialization Debug ---');
-  console.log('Full Candidate Profile Fields:', {
-    specialization: candidate_profile.specialization,
-    profession: candidate_profile.profession,
-    job_title: candidate_profile.job_title,
-    title: candidate_profile.title,
-    bio: candidate_profile.bio
-  });
-  console.log('Job Target:', { title: jobTitle, category: jobCategory });
+
 
   // Use Best Match strategy to check all candidate title fields against job title/category
   const bestTitleMatch = getBestTitleMatch(candidate_profile, [jobCategory, jobTitle]);
-  console.log('Best Title Match Score:', bestTitleMatch);
+
   
   if (bestTitleMatch >= 80) {
-    console.log('Returning 100 (Best Match)');
     return 100;
   }
   
@@ -261,7 +355,6 @@ function scoreSpecialization(candidate_profile, job_posting) {
   // If we want to check description too:
   const descriptionMatch = getBestTitleMatch(candidate_profile, [jobDescription]);
   if (descriptionMatch >= 80) {
-     console.log('Returning 100 (Description Match)');
      return 100;
   }
 
@@ -329,7 +422,9 @@ function scoreExperience(candidate_profile, job_posting) {
   if (candidateTitle) {
       const titleMatch = jobExperienceTerms.some(t => candidateTitle.includes(t.term) || t.term.includes(candidateTitle));
       if (titleMatch) {
-          return 65; // Assign partial score based on Title match implication
+      if (titleMatch) {
+          return 100; // Updated to 100 to match AI "FULL" score
+      }
       }
   }
 
@@ -344,24 +439,36 @@ function scoreEducation(candidate_profile, job_posting) {
   const candidateEducation = candidate_profile.education || [];
   const jobEducation = parseJsonField(job_posting.structured_education);
 
-  if (jobEducation.length === 0) {
-    return 100; // No specific education required -> Full match
-  }
+  // 1. If Job has specific requirements
+  if (jobEducation.length > 0) {
+    if (candidateEducation.length === 0) return 0;
 
-  if (candidateEducation.length === 0) {
-    return 0; // Education required but candidate has none
-  }
-
-  // Check if candidate has any relevant education
-  const hasRelevantEducation = candidateEducation.some(candidateEdu => {
-    const candidateField = (candidateEdu.field || candidateEdu.degree || '').toLowerCase();
-    return jobEducation.some(jobEdu => {
-      const jobField = (jobEdu.value || '').toLowerCase();
-      return candidateField.includes(jobField) || jobField.includes(candidateField);
+    // Check if matches requirements
+    const hasRelevantEducation = candidateEducation.some(candidateEdu => {
+      const candidateField = (candidateEdu.field || candidateEdu.degree || '').toLowerCase();
+      return jobEducation.some(jobEdu => {
+        const jobField = (jobEdu.value || '').toLowerCase();
+        return candidateField.includes(jobField) || jobField.includes(candidateField);
+      });
     });
+
+    return hasRelevantEducation ? 100 : 0;
+  }
+
+  // 2. If Job has NO specific requirements (Implied "General" or "High School" usually)
+  // AI Logic: "No academic requirement... but no additional degree -> HIGH (70)"
+  // Heuristic: If Candidate has Academic Degree -> 100. If only High School/Cert -> 70.
+  if (candidateEducation.length === 0) return 50; // Neutral/Medium if unknown
+
+  const hasDegree = candidateEducation.some(e => {
+      const text = (e.degree || e.field || e.institution || '').toLowerCase();
+      return text.includes('תואר') || text.includes('degree') ||
+             text.includes('bachelor') || text.includes('master') ||
+             text.includes('phd') || text.includes('engineer') || 
+             text.includes('הנדסאי') || text.includes('מהנדס') || text.includes('university') || text.includes('אוניברסיטה') || text.includes('מכללה');
   });
 
-  return hasRelevantEducation ? 70 : 0;
+  return hasDegree ? 100 : 70; 
 }
 
 /**
@@ -463,12 +570,18 @@ function scoreJobDescription(candidate_profile, job_posting) {
   const commonWords = jobWords.filter(word => candidateWords.includes(word));
   const overlapRatio = jobWords.length > 0 ? commonWords.length / jobWords.length : 0;
 
-  if (overlapRatio >= 0.3) {
-    return 90; // High overlap
-  } else if (overlapRatio >= 0.15) {
+  // If specializaton/title is a full match, the description is likely relevant even if keywords differ slightly.
+  const specializationScore = scoreSpecialization(candidate_profile, job_posting);
+  if (specializationScore >= 90) {
+      return 100; // Force high score if title matches
+  }
+
+  if (overlapRatio >= 0.20) { 
+    return 100; // Updated to 100 for High Overlap to match AI "FULL"
+  } else if (overlapRatio >= 0.10) {
     return 60; // Medium overlap
   } else if (overlapRatio > 0) {
-    return 40; // Increased from 20 for softer matching
+    return 40; // Soft matching
   }
 
   return 0;
@@ -509,11 +622,16 @@ function scoreProfession(candidate_profile, job_posting) {
       
       // Check similar professions manually if getBestTitleMatch didn't max out
       if (score < 100) {
-          const similarProfessions = getSimilarProfessions(candidateVal);
-          const isSimilar = similarProfessions.some(similar =>
-            jobTitle.includes(similar) || jobCategory.includes(similar)
-          );
-          if (isSimilar && 70 > bestScore) bestScore = 70;
+          // If the candidate's title is contained in the job title or vice versa, treat as full match for this specific field
+          if (jobTitle.includes(candidateVal) || candidateVal.includes(jobTitle)) {
+             bestScore = 100;
+          } else {
+             const similarProfessions = getSimilarProfessions(candidateVal);
+             const isSimilar = similarProfessions.some(similar =>
+               jobTitle.includes(similar) || jobCategory.includes(similar)
+             );
+             if (isSimilar && 70 > bestScore) bestScore = 70;
+          }
       }
   }
 
@@ -584,8 +702,16 @@ function scoreAvailability(candidate_profile, job_posting) {
     candidateAvailability.includes('negotiable') ||
     candidateAvailability.includes('flexible');
 
+  // Check if job specifices start date text that implies delay
+  const jobStartText = (job_posting.start_date || '').toLowerCase();
+  const jobRequiresWait = jobStartText.includes('month') || jobStartText.includes('חודש');
+
   if (isImmediate) {
-    if (!jobStartDate || isDateWithinMonth(jobStartDate)) {
+    if (jobRequiresWait) {
+        // Candidate is immediate, Job says "Month+" -> High Match (70), not Full
+        return 70;
+    }
+    if (!job_posting.start_date || isDateWithinMonth(job_posting.start_date)) {
       return 100; // Immediate and full match
     } else {
       return 70; // Available within 1 month
@@ -625,9 +751,19 @@ function scoreJobType(candidate_profile, job_posting) {
     return 100; // No preference, consider it a match
   }
 
-  // Full match
-  if (candidateJobTypes.includes(jobType)) {
-    return 100;
+  // Exact match
+  if (candidateJobTypes.some(t => jobType.includes(t) || t.includes(jobType))) {
+      return 100;
+  }
+
+  // Partial match: "Shifts" vs "Full Time"
+  const isJobShifts = jobType.includes('shifts') || jobType.includes('משמרות');
+  // Check if candidate explicitly DOES NOT have shifts but has Full Time
+  if (isJobShifts) {
+      if (candidateJobTypes.includes('full_time') || candidateJobTypes.includes('משרה מלאה')) {
+          // If they didn't match 'shifts' above (in exact match), but have full_time, return 40
+          return 40; 
+      }
   }
 
   // Partial match - check if candidate is open to both full-time and part-time
@@ -678,14 +814,32 @@ function calculateCandidateExperience(experience) {
   return Math.floor(totalYears);
 }
 
-function checkCertificationsMatch(candidateCertifications, requiredCertifications) {
+function checkCertificationsMatch(candidateCertifications, requiredCertifications, candidateProfile = {}) {
   const candidateCerts = (candidateCertifications || []).map(c => (c.name || c || '').toLowerCase());
+  
+  // Also check bio and experience description for certification keywords
+  const bio = (candidateProfile.bio || '').toLowerCase();
+  const experienceText = (candidateProfile.experience || []).map(e => (e.description || '').toLowerCase()).join(' ');
+  const fullTextContext = `${bio} ${experienceText}`;
 
   return requiredCertifications.every(requiredCert => {
     const requiredValue = (requiredCert.value || '').toLowerCase();
-    return candidateCerts.some(candidateCert =>
+    
+    // Check in explicit certifications list
+    const foundInList = candidateCerts.some(candidateCert =>
       candidateCert.includes(requiredValue) || requiredValue.includes(candidateCert)
     );
+    if (foundInList) return true;
+
+    // Check in text context
+    const foundInText = fullTextContext.includes(requiredValue);
+
+    console.log(`Checking Cert: "${requiredValue}"`);
+    console.log(`- Found in List: ${foundInList}`);
+    console.log(`- Found in Text: ${foundInText}`);
+    console.log(`- Text Context (first 100 chars): ${fullTextContext.substring(0, 100)}...`);
+
+    return foundInText;
   });
 }
 

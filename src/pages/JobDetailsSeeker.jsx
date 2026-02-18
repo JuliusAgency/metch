@@ -256,6 +256,12 @@ export default function JobDetailsSeeker() {
       // Set lock
       analysisLockRef.current = cacheKey;
 
+      console.log("--------------------------------------------------");
+      console.log("[JobDetails AI] 🚀 Starting AI Analysis Process 🚀");
+      console.log("[JobDetails AI] 👤 User:", user.email);
+      console.log("[JobDetails AI] 💼 Job:", job.title, "| Company:", job.company);
+      console.log("[JobDetails AI] 🔑 Cache Key:", cacheKey);
+
       // 1. Try to load from DB (UserAction) first - Cross-device persistence
       try {
         // Optimized query: Search for specific job_id within the JSON column
@@ -272,7 +278,8 @@ export default function JobDetailsSeeker() {
           if (latestAction?.additional_data?.analysis) {
             const dbAnalysis = latestAction.additional_data.analysis;
             if (dbAnalysis.why_suitable && dbAnalysis.match_analysis) {
-              console.log("[JobDetails] Loaded AI analysis from DB (Persisted)");
+              console.log("[JobDetails AI] ✅ Loaded AI analysis from DB (Persisted)");
+              console.log("[JobDetails AI] 📄 Data:", dbAnalysis);
               setAiAnalysis(dbAnalysis);
               // Update local cache too for faster subsequent loads on this device
               localStorage.setItem(cacheKey, JSON.stringify(dbAnalysis));
@@ -284,7 +291,7 @@ export default function JobDetailsSeeker() {
           }
         }
       } catch (dbError) {
-        console.warn("Failed to load analysis from DB", dbError);
+        console.warn("[JobDetails AI] ⚠️ Failed to load analysis from DB", dbError);
       }
 
       // 2. Try to load from local cache (fallback)
@@ -293,7 +300,8 @@ export default function JobDetailsSeeker() {
         try {
           const parsedCache = JSON.parse(cached);
           if (parsedCache.why_suitable && parsedCache.match_analysis) {
-            console.log("[JobDetails] Loaded AI analysis from cache");
+            console.log("[JobDetails AI] ✅ Loaded AI analysis from Local Cache");
+            console.log("[JobDetails AI] 📄 Data:", parsedCache);
             setAiAnalysis(parsedCache);
             analysisLockRef.current = null; // Clear lock
             return;
@@ -320,10 +328,12 @@ export default function JobDetailsSeeker() {
       }
 
       setIsAiLoading(true);
+      console.log("[JobDetails AI] ⏳ Generating NEW Analysis via Assistant...");
+
       try {
         const assistantId = import.meta.env.VITE_JOB_SUMMARY;
         if (!assistantId) {
-          console.warn("VITE_JOB_SUMMARY env var is missing");
+          console.warn("[JobDetails AI] ❌ VITE_JOB_SUMMARY env var is missing");
           setIsAiLoading(false);
           analysisLockRef.current = null;
           return;
@@ -360,6 +370,7 @@ export default function JobDetailsSeeker() {
           Location: ${prefLocation}
           Job Type: ${prefJobType}
           Career Stage: ${profile.career_stage || 'Not specified'}
+          Career Path/Goals: ${profile.career_path_status || profile.looking_for || 'Not specified'}
           Availability: ${prefAvailability}
           
           Job Details:
@@ -376,35 +387,57 @@ export default function JobDetailsSeeker() {
           Please output a valid JSON object with detailed Hebrew content:
           {
             "why_suitable": "פסקה מפורטת (3-4 משפטים) שמסבירה למועמד למה המשרה מתאימה לו, בהתבסס על ניתוח ההתאמה ונתוני קורות החיים.",
-            "match_analysis": [
-              "נקודה ראשונה: התייחסות להשכלה/ניסיון (למשל: 'השכלה רלוונטית בהנדסת תוכנה...')",
-              "נקודה שניה: התייחסות לכישורים/טכנולוגיות (למשל: 'שליטה ב-React ו-Node.js...')",
-              "נקודה שלישית: התייחסות למיקום/סוג משרה (למשל: 'מיקום המשרה בתל אביב תואם את העדפותיך...')",
-              "נקודה רביעית: התייחסות לחוזקה נוספת או התאמה אישיותית"
-            ]
+            "match_analysis": "פסקה רציפה ומפורטת (ולא רשימת נקודות) שמסבירה את ההתאמה. יש להתייחס להשכלה, ניסיון, כישורים, ומיקום בצורה סיפורית וזורמת."
           }
           
           Guidelines:
           - "why_suitable": Should be encouraging and professional. Explain the "Why".
-          - "match_analysis": Should be a list of 4-5 bullet points strings. Each point should highlight a specific match area.
-          - CRITICAL: Review 'Match Algorithm Breakdown'. If 'location', 'jobType', or 'availability' scores are 0, you MUST mention this mismatch explicitly (e.g. "Location mismatch: Job is in Haifa while you prefer Tel Aviv").
-          - Use the "Match Algorithm Breakdown" data to support your points.
+          - "match_analysis": Write a DETAILED and COMPREHENSIVE paragraph (no bullet points). Aim for approx 6-8 lines (around 60-80 words).
+          - Content to Include:
+            *   Analyze the fit based on the CV, Skills, and Experience.
+            *   Discuss the fit with the candidate's Career Stage and Goals (e.g. if they are looking for growth vs stability).
+            *   Weave in the location and job type fit.
+          - CRITICAL: Review 'Match Algorithm Breakdown' for mismatch reasons (location, jobType, etc.). Mention these mismatches naturally (e.g. "The job is in Haifa while you prefer Tel Aviv"), but NEVER mention the "algorithm", "score", or "breakdown" explicitly.
+          - The tone should be helpful, advisory, and professional.
           
           Ensure the response is strictly valid JSON without Markdown formatting.
         `;
+
+        console.log("[JobDetails AI] 📝 Generated Prompt:", prompt);
+        console.log("[JobDetails AI] 📤 Invoking Assistant...");
 
         const response = await Core.InvokeAssistant({
           assistantId,
           prompt
         });
 
+        console.log("[JobDetails AI] 📥 Received Response Object:", response);
+
         if (response.content) {
+          console.log("[JobDetails AI] 💬 Raw Content (Exact String):");
+          console.log(response.content);
+
           let clean = response.content.trim();
-          // Cleanup markdown code blocks if present
-          clean = clean.replace(/^```json\s*/g, '').replace(/^```\s*/g, '').replace(/\s*```$/g, '');
+
+          // Robust extraction: Find the first '{' and last '}'
+          const firstOpen = clean.indexOf('{');
+          const lastClose = clean.lastIndexOf('}');
+
+          if (firstOpen !== -1 && lastClose !== -1 && lastClose > firstOpen) {
+            clean = clean.substring(firstOpen, lastClose + 1);
+          }
+
+          // Replace ALL excessive control characters (newlines, tabs, etc.) with a single space.
+          // This flattens the JSON to a single line, which is valid and robust against control char errors.
+          // Note: Literal "\n" (two chars) from the LLM is preserved as valid JSON escape sequence.
+          clean = clean.replace(/[\u0000-\u001F]+/g, ' ');
+
+          console.log("[JobDetails AI] 🧹 Cleaned JSON string:", clean);
 
           try {
             const parsed = JSON.parse(clean);
+            console.log("[JobDetails AI] ✅ Parsed JSON:", parsed);
+
             if (parsed.why_suitable && parsed.match_analysis) {
               setAiAnalysis(parsed);
 
@@ -420,24 +453,27 @@ export default function JobDetailsSeeker() {
                   },
                   created_date: new Date().toISOString()
                 });
-                console.log("[JobDetails] Saved AI analysis to DB");
+                console.log("[JobDetails AI] 💾 Saved AI analysis to DB");
               } catch (saveError) {
-                console.error("Failed to save analysis to DB:", saveError);
+                console.error("[JobDetails AI] ❌ Failed to save analysis to DB:", saveError);
               }
 
               // 4. Save to local cache
               localStorage.setItem(cacheKey, JSON.stringify(parsed));
-              console.log("[JobDetails] Generated and cached AI analysis");
+              console.log("[JobDetails AI] 💾 Cached AI analysis locally");
             }
           } catch (e) {
-            console.error("Failed to parse AI response", e);
+            console.error("[JobDetails AI] ❌ Failed to parse AI response JSON", e);
+            console.log("[JobDetails AI] 📄 Raw Content was:", clean);
           }
         }
       } catch (error) {
-        console.error("Error generating AI analysis:", error);
+        console.error("[JobDetails AI] 💥 Error generating AI analysis:", error);
       } finally {
         setIsAiLoading(false);
         analysisLockRef.current = null; // Release lock when done (success or fail)
+        console.log("[JobDetails AI] 🏁 Analysis Process Finished");
+        console.log("--------------------------------------------------");
       }
     };
 

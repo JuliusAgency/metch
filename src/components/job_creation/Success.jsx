@@ -38,11 +38,11 @@ export default function Success({ onReset, onDuplicate, hasCredits = true }) {
         המשרה זמינה עבורך בעמוד ׳ניהול משרות׳
       </p>
 
-      <div className="flex justify-center gap-4 mb-8">
+      <div className="flex flex-col md:flex-row justify-center gap-4 mb-8 w-full px-4 md:px-0">
         <Button
           onClick={onReset}
           disabled={!hasCredits}
-          className={`px-8 py-3 h-auto text-lg rounded-full text-white ${hasCredits ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
+          className={`w-full md:w-auto px-8 py-3 h-auto text-lg rounded-full text-white ${hasCredits ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
           title={!hasCredits ? "אין יתרת משרות" : "יצירת משרה חדשה"}
         >
           יצירת משרה חדשה
@@ -51,7 +51,7 @@ export default function Success({ onReset, onDuplicate, hasCredits = true }) {
           onClick={onDuplicate}
           disabled={!hasCredits}
           variant="outline"
-          className="px-8 py-3 h-auto text-lg rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          className="w-full md:w-auto px-8 py-3 h-auto text-lg rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           title={!hasCredits ? "אין יתרת משרות" : "שכפול משרה"}
         >
           שכפול משרה
@@ -59,7 +59,7 @@ export default function Success({ onReset, onDuplicate, hasCredits = true }) {
         <Button
           onClick={() => navigate('/Dashboard')}
           variant="outline"
-          className="px-8 py-3 h-auto text-lg rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+          className="w-full md:w-auto px-8 py-3 h-auto text-lg rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 flex justify-center items-center gap-2"
         >
           <Home className="w-5 h-5" />
           לדף הבית
