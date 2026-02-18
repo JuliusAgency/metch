@@ -503,7 +503,15 @@ export default function Messages() {
                     const emailHtml = `
                         <div dir="rtl" style="text-align: right; font-family: sans-serif;">
                             <h2>${subject}</h2>
-                            <p>התקבלה הודעה חדשה:</p>
+                            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+                                <h3 style="margin-top: 0; font-size: 16px;">פרטי השולח:</h3>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <li style="margin-bottom: 5px;"><strong>שם:</strong> ${user.company_name || user.full_name || 'לא צוין'}</li>
+                                    <li style="margin-bottom: 5px;"><strong>מייל:</strong> ${user.email}</li>
+                                    <li style="margin-bottom: 5px;"><strong>טלפון:</strong> ${user.phone || 'לא צוין'}</li>
+                                </ul>
+                            </div>
+                            <p><strong>תוכן ההודעה:</strong></p>
                             <blockquote style="background: #f9f9f9; padding: 10px; border-right: 4px solid #007bff; margin: 10px 0;">
                                 ${newMessage.trim().replace(/\n/g, '<br/>')}
                             </blockquote>
@@ -583,6 +591,15 @@ export default function Messages() {
                             } else if (parsed.response) responseContent = parsed.response;
                             else if (parsed.message) responseContent = parsed.message;
                             else if (parsed.content) responseContent = parsed.content;
+                            else if (parsed.reply) responseContent = parsed.reply;
+                            else {
+                                // Handle cases like { "message_1": "...", "message_2": "..." }
+                                // or just generic values. Join all string values.
+                                const values = Object.values(parsed).filter(v => typeof v === 'string');
+                                if (values.length > 0) {
+                                    responseContent = values.join('\n\n');
+                                }
+                            }
                         } catch (e) {
                             // Not JSON or unknown format, use as is
                         }
@@ -1001,7 +1018,7 @@ export default function Messages() {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };

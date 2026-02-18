@@ -28,6 +28,8 @@ import { InvokeAssistant } from "@/api/integrations";
 const ITEMS_PER_PAGE = 5;
 const SUPPORT_EMAIL = "support@metch.co.il";
 
+
+
 // Helper function to safely format dates
 const safeFormatDate = (dateValue, formatString, fallback = "") => {
     if (!dateValue) return fallback;
@@ -395,7 +397,15 @@ export default function MessagesSeeker() {
                     const emailHtml = `
                         <div dir="rtl" style="text-align: right; font-family: sans-serif;">
                             <h2>${subject}</h2>
-                            <p>התקבלה הודעה חדשה:</p>
+                            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+                                <h3 style="margin-top: 0; font-size: 16px;">פרטי השולח:</h3>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <li style="margin-bottom: 5px;"><strong>שם:</strong> ${user.full_name || 'לא צוין'}</li>
+                                    <li style="margin-bottom: 5px;"><strong>מייל:</strong> ${user.email}</li>
+                                    <li style="margin-bottom: 5px;"><strong>טלפון:</strong> ${user.phone || 'לא צוין'}</li>
+                                </ul>
+                            </div>
+                            <p><strong>תוכן ההודעה:</strong></p>
                             <blockquote style="background: #f9f9f9; padding: 10px; border-right: 4px solid #007bff; margin: 10px 0;">
                                 ${newMessage.trim().replace(/\n/g, '<br/>')}
                             </blockquote>
@@ -468,8 +478,73 @@ export default function MessagesSeeker() {
                             } else if (parsed.response) responseContent = parsed.response;
                             else if (parsed.message) responseContent = parsed.message;
                             else if (parsed.content) responseContent = parsed.content;
+                            else if (parsed.reply) responseContent = parsed.reply;
+                            else {
+                                // Handle cases like { "message_1": "...", "message_2": "..." }
+                                // or just generic values. Join all string values.
+                                const values = Object.values(parsed).filter(v => typeof v === 'string');
+                                if (values.length > 0) {
+                                    responseContent = values.join('\n\n');
+                                }
+                            }
                         } catch (e) {
                             // Not JSON or unknown format, use as is
+                        }
+
+                        // --- ESCALATION CHECK ---
+                        const escalationKeywords = [
+                            "העברתי את הפנייה",
+                            "מעביר את הפנייה",
+                            "נציג יחזור",
+                            "צוות התמיכה",
+                            "טיפול אישי",
+                            "יחזור אליך בהקדם",
+                            "רשמתי את הפנייה",
+                            "העברתי אותה לצוות",
+                            "העברתי אותה"
+                        ];
+
+                        const isEscalated = escalationKeywords.some(keyword =>
+                            responseContent.includes(keyword)
+                        );
+
+                        if (isEscalated) {
+                            console.log('[MessagesSeeker] UI detected escalation! Sending email to support...');
+                            try {
+                                const escalationSubject = `פנייה הועברה לטיפול נציג (AI Escalation): ${user.full_name || 'משתמש'}`;
+                                const escalationHtml = `
+                                    <div dir="rtl" style="text-align: right; font-family: sans-serif;">
+                                        <h2>התראת אסקלציה מבוט ה-AI</h2>
+                                        <p>הבוט זיהה צורך בהתערבות נציג אנושי עבור המשתמש הבא:</p>
+                                        <ul style="background: #f0f0f0; padding: 15px; border-radius: 8px;">
+                                            <li><strong>שם:</strong> ${user.full_name || 'לא צוין'}</li>
+                                            <li><strong>מייל:</strong> ${user.email}</li>
+                                            <li><strong>טלפון:</strong> ${user.phone || 'לא צוין'}</li>
+                                            <li><strong>סוג משתמש:</strong> מחפש עבודה</li>
+                                        </ul>
+                                        <h3>תוכן הפנייה האחרונה של המשתמש:</h3>
+                                        <blockquote style="border-right: 4px solid #007bff; padding-right: 10px; margin: 10px 0;">
+                                            "${newMessage.trim()}"
+                                        </blockquote>
+                                        <h3>תשובת הבוט (אישור העברה):</h3>
+                                        <blockquote style="border-right: 4px solid #28a745; padding-right: 10px; margin: 10px 0;">
+                                            "${responseContent}"
+                                        </blockquote>
+                                        <br/>
+                                        <p>נא ליצור קשר עם המשתמש בהקדם.</p>
+                                    </div>
+                                `;
+
+                                await SendEmail({
+                                    to: SUPPORT_EMAIL, // netanelnagosa11@gmail.com
+                                    subject: escalationSubject,
+                                    html: escalationHtml,
+                                    text: `התראת אסקלציה מבוט ה-AI.\nמשתמש: ${user.full_name} (${user.email})\nפנייה: ${newMessage.trim()}\n\nנא ליצור קשר.`
+                                });
+                                console.log('[MessagesSeeker] Escalation email sent successfully.');
+                            } catch (escErr) {
+                                console.error('[MessagesSeeker] Failed to send escalation email:', escErr);
+                            }
                         }
 
                         const responseTime = new Date().toISOString();

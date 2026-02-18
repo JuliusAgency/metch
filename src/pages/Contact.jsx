@@ -37,7 +37,6 @@ export default function Contact() {
   const [isSending, setIsSending] = useState(false);
   const [formData, setFormData] = useState({
     subject: "",
-    subject: "",
     message: "",
     phone: user?.phone || ""
   });
