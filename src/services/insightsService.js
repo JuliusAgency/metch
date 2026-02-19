@@ -1,4 +1,5 @@
 import { JobApplication, CandidateView, CV, QuestionnaireResponse, UserProfile, UserAction } from "@/api/entities";
+import { supabase } from "@/api/supabaseClient";
 import { Core } from "@/api/integrations";
 
 // --- Rate Limiting Constants ---
@@ -145,71 +146,49 @@ export const generateAIInsights = async (stats, userEmail, userProfile, cvText, 
   }
 
   try {
-    // Calculate derived data
-    const age = userProfile?.birth_date
-      ? Math.floor((new Date() - new Date(userProfile.birth_date)) / 31557600000)
-      : "N/A";
-
-    const specialization = userProfile?.specialization || "Not specified";
-    const preferences = {
+    // Prepare variables for the new prompt format (v7)
+    const preferencesJson = JSON.stringify({
       locations: userProfile?.preferred_locations || [],
       availability: userProfile?.availability || [],
       job_types: userProfile?.job_types || [],
-      flexibility: userProfile?.is_flexible || false
-    };
+      flexibility: userProfile?.is_flexible || false,
+      specialization: specialization,
+      age: age
+    });
 
-    const prompt = `
-      Analyze the following job seeker profile and data to provide a comprehensive career insight report.
-      
-      User Profile:
-      - Age: ${age} (approx)
-      - Specialization: ${specialization}
-      - Preferences: ${JSON.stringify(preferences)}
-      
-      CV Content & Experience:
-      "${cvText ? cvText.substring(0, 4000).replace(/"/g, "'") : 'No CV content available'}"
-      
-      Match History Stats:
-      - Total Applications: ${stats.totalApplications}
-      - Responses: ${stats.responses}
-      - Profile Views: ${stats.profileViews}
-      
-      Act as an expert career coach. Analyze the profile deeply.
-      Return a STRICT VALID JSON object in Hebrew with the following keys:
-      {
-        "general_summary": "Paragraph summarizing the candidate's profile, tone: professional & empowering.",
-        "key_strengths": ["Strength 1 (bullet)", "Strength 2 (bullet)", "Strength 3 (bullet)"],
-        "interview_strength": "A specific strength to highlight in interviews.",
-        "improvements": ["Point for improvement 1", "Point for improvement 2 (e.g. detailed projects, skills)"],
-        "practical_recommendation": "One actionable recommendation.",
-        "resume_tips": ["Tip 1 for CV", "Tip 2 for CV"],
-        "career_path_status": "A concluding encouraging sentence about their process state (e.g., 'You are on the right path...')."
+    const matchesSummary = `
+      Total Applications: ${stats.totalApplications}
+      Responses: ${stats.responses}
+      Profile Views: ${stats.profileViews}
+      Conversion Rate: ${stats.conversionRate}%
+    `.trim();
+
+    console.log("[InsightsService] Generating AI insights via Edge Function 'generate-insights'...");
+    console.log("[InsightsService] Inputs:", { cvLen: cvText?.length, prefsLen: preferencesJson.length });
+
+    // Call the Edge Function
+    const { data: funcData, error: funcError } = await supabase.functions.invoke('generate-insights', {
+      body: { 
+        cv_text: cvText || "",
+        preferences_json: preferencesJson,
+        matches_summary: matchesSummary
       }
-      
-      Guidelines:
-      - general_summary: ~2 sentences. Professional.
-      - key_strengths: 3 bullets. Focus on concrete skills/traits.
-      - interview_strength: 1 sentence explaining what to sell in interviews.
-      - improvements: 2-3 bullets. Constructive.
-      - practical_recommendation: 1 sentence.
-      - resume_tips: 1-2 bullets.
-      - career_path_status: 1 inspiring sentence.
-      
-      Do not format as markdown. Do not include newlines in strings. Return ONLY the JSON.
-    `;
+    });
 
-    const INSIGHTS_ASSISTANT_ID = import.meta.env.VITE_MY_INSIGHTS_EMPLOYEE_KEY;
-
-    if (!INSIGHTS_ASSISTANT_ID) {
-      console.warn("[InsightsService] VITE_MY_INSIGHTS_EMPLOYEE_KEY is missing from env");
-      return null;
+    if (funcError) {
+      console.error("[InsightsService] Edge Function Invocation Error:", funcError);
+      throw new Error(`Edge Function failed: ${funcError.message}`);
     }
 
-    console.log("[InsightsService] Generating AI insights...");
-    const response = await Core.InvokeAssistant({
-      prompt,
-      assistantId: INSIGHTS_ASSISTANT_ID
-    });
+    if (!funcData || funcData.error) {
+       console.error("[InsightsService] Edge Function returned error:", funcData?.error);
+       throw new Error(`Edge Function logic error: ${funcData?.error}`);
+    }
+
+    // Mock response object to match existing parsing logic below
+    const response = {
+      content: funcData.content
+    };
 
     console.log("[InsightsService] AI Response received");
 
