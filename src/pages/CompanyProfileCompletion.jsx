@@ -16,6 +16,7 @@ import { useUser } from "@/contexts/UserContext";
 import { MetchApi } from "@/api/metchApi";
 import { toast } from "sonner";
 import { UploadFile } from "@/api/integrations";
+import { trackCompleteRegistration, trackStartTrial } from "@/services/fbPixelService";
 
 const STEPS = ["פרטי חברה", "בחירת חבילה", "תשלום", "השלמת פרופיל", "סיום"];
 
@@ -281,6 +282,14 @@ export default function CompanyProfileCompletion() {
           }
 
           await updateProfile(updates);
+
+          // Track Facebook CAPI Events
+          trackCompleteRegistration(user, 'employer');
+
+          // Check for StartTrial (Free Job Package)
+          if (packageData.price === 0) {
+            trackStartTrial(user);
+          }
         } catch (err) {
           console.error("Error finalizing onboarding:", err);
           toast.error("שגיאה בסיום התהליך, אנא נסה שנית");

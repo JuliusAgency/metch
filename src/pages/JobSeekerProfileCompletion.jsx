@@ -17,6 +17,7 @@ import { WarningDialog } from "@/components/dialogs/WarningDialog";
 import StepIndicator from "@/components/ui/StepIndicator";
 import profileSuccessMobile from "@/assets/popup-completed-success-v3.png";
 import skipInfoIcon from '@/assets/skip_info_icon.png';
+import { trackCompleteRegistration } from "@/services/fbPixelService";
 
 const XIcon = ({ size = 24, ...props }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -171,6 +172,10 @@ export default function JobSeekerProfileCompletion() {
             await saveSocials();
             // Mark onboarding as completed
             await updateProfile({ is_onboarding_completed: true });
+
+            // Track Facebook CAPI Event
+            trackCompleteRegistration(user, 'jobseeker');
+
             setShowSuccess(true);
         } catch (error) {
             console.error("Error saving profile:", error);

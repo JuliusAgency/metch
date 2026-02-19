@@ -73,6 +73,7 @@ export const generateAIInsights = async (stats, userEmail, userProfile, cvText, 
       });
 
       console.log(`[InsightsService] User has generated insights ${recentActions.length} times in the last ${GENERATION_LIMIT_DAYS} days.`);
+      recentActions.forEach((a, i) => console.log(`[InsightsService] Action ${i+1} Date:`, a.created_date || a.created_at || a.inserted_at));
 
       if (recentActions.length >= GENERATION_LIMIT_COUNT) {
         limitReached = true;
@@ -338,7 +339,15 @@ export const triggerInsightsGeneration = async (userId, userEmail) => {
       }
 
       cvText = parts.join("\n\n");
-      console.log("[InsightsService] Fallback CV text length:", cvText.length);
+      console.log("[InsightsService] Fallback to structured CV text, length:", cvText.length);
+    }
+    
+    // Detailed logging AFTER constructing cvText
+    console.log("[InsightsService] FINAL CV TEXT for AI (First 100 chars):", cvText.substring(0, 100));
+    console.log("[InsightsService] CV Source:", cv.parsed_content && cv.parsed_content.length > 50 ? "Parsed PDF" : "Structured Data");
+
+    if (!cvText || cvText.length < 10) {
+        console.warn("[InsightsService] CV text is empty or too short! detailed CV might be missing.");
     }
 
     // Calculate stats

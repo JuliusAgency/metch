@@ -16,6 +16,7 @@ import { MetchApi } from "@/api/metchApi";
 import { Loader2 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import InfoPopup from "@/components/ui/info-popup";
+import { trackPurchase } from "@/services/fbPixelService";
 
 export default function Packages() {
     const { toast } = useToast();
@@ -117,8 +118,9 @@ export default function Packages() {
 
         setLoading(true);
         try {
+            let transactionResult = null;
             if (totalAmount > 0) {
-                await MetchApi.createTransaction({
+                transactionResult = await MetchApi.createTransaction({
                     Amount: totalAmount,
                     CardNumber: paymentData.cardNumber,
                     CardExpirationMMYY: paymentData.expiryDate.replace('/', ''), // Format adjustment
@@ -136,6 +138,17 @@ export default function Packages() {
             const updates = { job_credits: newCredits };
 
             await updateProfile(updates);
+
+            // Track Facebook CAPI Purchase Event
+            if (totalAmount > 0) {
+                trackPurchase(
+                    user,
+                    totalAmount,
+                    'ILS',
+                    transactionResult?.requestId || transactionResult?.lowProfileCode || `purch_${Date.now()}`,
+                    quantity
+                );
+            }
 
             // 2. Add Transaction to List (handled by backend or Payments page re-fetch usually)
             // For now just success indication
