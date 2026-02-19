@@ -35,7 +35,11 @@ export default function CompanyProfileCompletion() {
     phone: "",
     is_phone_verified: false,
     bio: "",
-    social_links: {}
+    social_links: {},
+    // Invoice Details
+    invoice_company_name: "",
+    invoice_vat_id: "",
+    invoice_phone: ""
   });
 
   const [packageData, setPackageData] = useState({
@@ -77,6 +81,9 @@ export default function CompanyProfileCompletion() {
           phone: user.phone || "",
           is_phone_verified: user.is_phone_verified || false,
           bio: user.bio || "",
+          invoice_company_name: user.invoice_company_name || user.company_name || "",
+          invoice_vat_id: user.invoice_vat_id || "",
+          invoice_phone: user.invoice_phone || user.phone || "",
           social_links: {
             website: user.portfolio_url || "",
             facebook: user.facebook_url || "",

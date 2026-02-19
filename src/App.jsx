@@ -3,8 +3,13 @@ import Pages from "@/pages/index.jsx"
 import { UserProvider } from "@/contexts/UserContext"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
+import { initFacebookPixel } from "@/services/fbPixelService"
+
 function App() {
   useEffect(() => {
+    // Initialize Facebook Pixel
+    initFacebookPixel();
+
     const hostname = window.location.hostname;
     const desiredDomain = 'app.metch.co.il';
 

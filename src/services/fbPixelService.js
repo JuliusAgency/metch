@@ -5,23 +5,48 @@ import { supabase } from '../api/supabaseClient';
  * Handles sending events to the server-side Edge Function 'fb-conversion-api'
  */
 
-const EDGE_FUNCTION_NAME = 'fb-conversion-api';
+const PIXEL_ID = "4084317741711176";
 
 /**
- * Generic function to send an event to Facebook CAPI
+ * Initialize Facebook Pixel
+ */
+export const initFacebookPixel = () => {
+  if (window.fbq) return;
+
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+
+  window.fbq('init', PIXEL_ID);
+  window.fbq('track', 'PageView');
+};
+
+/**
+ * Generic function to send an event to Facebook CAPI and Browser Pixel
  * @param {string} eventName - Standard FB event name (e.g. 'CompleteRegistration', 'Purchase')
- * @param {Object} userData - User PII (email, phone, firstName) to be hashed on server
+ * @param {Object} userData - User PII (email, phone, firstName) to be hashed on server (and used for browser matching)
  * @param {Object} customData - Event specific data (value, currency, etc.)
  * @param {string} eventId - Unique ID for deduplication (optional, will be generated if missing)
  */
 export const trackFbEvent = async (eventName, userData, customData = {}, eventId = null) => {
   try {
+    const uniqueId = eventId || `${eventName}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // 1. Browser Pixel Tracking (if initialized)
+    if (window.fbq) {
+      window.fbq('track', eventName, customData, { eventID: uniqueId });
+    }
+
+    // 2. CAPI Tracking (Server-Side)
     if (!userData || (!userData.email && !userData.phone)) {
         console.warn("[FbPixelService] Missing user data for CAPI, event might not match well.");
     }
 
-    // Generate a unique event ID if one isn't provided (timestamp + random)
-    const uniqueId = eventId || `${eventName}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const currentUrl = window.location.href;
     const userAgent = navigator.userAgent;
 
@@ -39,16 +64,16 @@ export const trackFbEvent = async (eventName, userData, customData = {}, eventId
       custom_data: customData
     };
 
-    console.log(`[FbPixelService] Sending ${eventName} to Edge Function...`, payload);
+    console.log(`[FbPixelService] Sending ${eventName} to Edge Function (CAPI)...`, payload);
 
     const { data, error } = await supabase.functions.invoke(EDGE_FUNCTION_NAME, {
       body: payload
     });
 
     if (error) {
-      console.error(`[FbPixelService] Failed to send ${eventName}:`, error);
+      console.error(`[FbPixelService] Failed to send ${eventName} to CAPI:`, error);
     } else {
-      console.log(`[FbPixelService] ${eventName} sent successfully:`, data);
+      console.log(`[FbPixelService] ${eventName} sent successfully to CAPI:`, data);
     }
 
   } catch (err) {

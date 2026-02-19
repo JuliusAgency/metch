@@ -110,6 +110,16 @@ export default function Step2Screening({ jobData, setJobData, onSave, onNext }) 
 
   const questions = Array.isArray(jobData.screening_questions) ? jobData.screening_questions : [];
 
+  const handleNext = () => {
+    if (textInput.trim()) {
+      handleAddQuestion(textInput, 'text');
+    }
+    if (yesNoInput.trim()) {
+      handleAddQuestion(yesNoInput, 'yes_no');
+    }
+    onNext();
+  };
+
   return (
     <div className="max-w-4xl mx-auto pb-20" dir="rtl">
       {/* Header with Help Trigger */}
@@ -191,7 +201,7 @@ export default function Step2Screening({ jobData, setJobData, onSave, onNext }) 
       {/* Main Action Button - The only one at the bottom as per user request */}
       <div className="flex justify-center mt-12">
         <Button
-          onClick={onNext}
+          onClick={handleNext}
           className="bg-[#22c55e] hover:bg-[#16a34a] text-white px-8 md:px-16 py-7 rounded-full text-xl font-bold shadow-lg transition-all active:scale-95 w-full md:w-auto"
         >
           שמירה וסיום

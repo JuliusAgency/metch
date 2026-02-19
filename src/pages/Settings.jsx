@@ -83,7 +83,11 @@ export default function Settings() {
     linkedin_url: "",
     facebook_url: "",
     instagram_url: "",
-    twitter_url: ""
+    twitter_url: "",
+    // Invoice fields
+    invoice_company_name: "",
+    invoice_vat_id: "",
+    invoice_phone: ""
   });
   const [initialFormData, setInitialFormData] = useState(null);
   const [errors, setErrors] = useState({});
@@ -141,7 +145,11 @@ export default function Settings() {
         linkedin_url: userData.linkedin_url || "",
         facebook_url: userData.facebook_url || "",
         instagram_url: userData.instagram_url || "",
-        twitter_url: userData.twitter_url || ""
+        twitter_url: userData.twitter_url || "",
+        // Invoice fields
+        invoice_company_name: userData.invoice_company_name || "",
+        invoice_vat_id: userData.invoice_vat_id || "",
+        invoice_phone: userData.invoice_phone || ""
       };
 
       setFormData(loadedData);
@@ -278,6 +286,10 @@ export default function Settings() {
           facebook_url: formData.facebook_url,
           instagram_url: formData.instagram_url,
           twitter_url: formData.twitter_url,
+          // Invoice fields
+          invoice_company_name: formData.invoice_company_name,
+          invoice_vat_id: formData.invoice_vat_id,
+          invoice_phone: formData.invoice_phone,
         };
       } else {
         // Job Seeker Payload
@@ -734,6 +746,52 @@ export default function Settings() {
                           placeholder="מייל חברה"
                           value={formData.cv_reception_email}
                           onChange={(e) => handleInputChange('cv_reception_email', e.target.value)}
+                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section: Invoice Details */}
+                <div className="space-y-4 pt-4">
+                  <h3 className="text-lg font-bold text-gray-900 border-b pb-2">פרטים לחשבונית</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">שם חברה</label>
+                      <div className="relative">
+                        <Building2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="שם חברה"
+                          value={formData.invoice_company_name}
+                          onChange={(e) => handleInputChange('invoice_company_name', e.target.value)}
+                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">ח.פ / ת״ז</label>
+                      <div className="relative">
+                        <FileText className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="ח.פ / ת״ז"
+                          value={formData.invoice_vat_id}
+                          onChange={(e) => handleInputChange('invoice_vat_id', e.target.value)}
+                          className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">מספר פלאפון</label>
+                      <div className="relative">
+                        <Phone className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          placeholder="מספר פלאפון"
+                          value={formData.invoice_phone}
+                          onChange={(e) => handleInputChange('invoice_phone', e.target.value)}
                           className="w-full h-12 bg-white border-gray-200 rounded-[50px] pr-12 pl-4 text-right shadow-sm focus:border-blue-400"
                           dir="ltr"
                         />

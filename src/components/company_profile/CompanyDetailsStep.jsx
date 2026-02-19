@@ -170,13 +170,33 @@ export default function CompanyDetailsStep({ companyData, setCompanyData }) {
                                 />
                                 <p className="text-[10px] text-gray-500 text-right mt-1 w-full mr-1">* מיקום החברה יכול להיות שונה ממיקום המשרה</p>
                             </div>
-                            <InfoInput
-                                placeholder="טלפון"
-                                name="phone"
-                                value={companyData.phone || ""}
-                                onChange={handleInputChange}
-                            />
                         </div>
+                    </div>
+                </div>
+
+                {/* Invoice Details Section */}
+                <div className="space-y-6 pt-8 border-t border-gray-100 pb-10">
+                    <h2 className="text-lg font-bold text-black">פרטים לחשבונית</h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-[110rem] mx-auto px-4">
+                        <InfoInput
+                            placeholder="טלפון"
+                            name="invoice_phone"
+                            value={companyData.invoice_phone || ""}
+                            onChange={handleInputChange}
+                        />
+                        <InfoInput
+                            placeholder="שם חברה"
+                            name="invoice_company_name"
+                            value={companyData.invoice_company_name || ""}
+                            onChange={handleInputChange}
+                        />
+                        <InfoInput
+                            placeholder="ח.פ./ת.ז"
+                            name="invoice_vat_id"
+                            value={companyData.invoice_vat_id || ""}
+                            onChange={handleInputChange}
+                        />
                     </div>
                 </div>
             </motion.div>
