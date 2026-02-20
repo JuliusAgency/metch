@@ -8,8 +8,15 @@ import { supabase } from '@/api/supabaseClient';
 
 const PaymentSuccess = () => {
     console.log('--- PaymentSuccess COMPONENT LOADING ---');
-    // Basic alert to confirm we even reached this page (debug only)
-    // window.alert('Payment Page Reached'); 
+
+    // Iframe Breakout: If we are inside an iframe (Cardcom), 
+    // force the parent window to this URL.
+    useEffect(() => {
+        if (window.top !== window.self) {
+            console.log('Detected iframe! Breaking out to top window...');
+            window.top.location.href = window.location.origin + window.location.pathname + window.location.search;
+        }
+    }, []);
 
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();

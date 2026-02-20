@@ -81,9 +81,15 @@ serve(async (req) => {
         }
 
         const transactionId = txn.id;
-        const baseUrl = passedOrigin || req.headers.get('origin') || 'https://app.metch.co.il';
-        const successUrl = `${baseUrl}/payment-success?ref=${requestId}`;
-        const errorUrl = `${baseUrl}/payment-error?ref=${requestId}`;
+        let baseUrl = passedOrigin || req.headers.get('origin') || 'https://app.metch.co.il';
+        // Force HTTPS for production redirects to avoid connection issues in iframes
+        if (baseUrl.includes('app.metch.co.il') && !baseUrl.startsWith('https://')) {
+            baseUrl = baseUrl.replace('http://', 'https://');
+            if (!baseUrl.startsWith('https://')) baseUrl = 'https://' + baseUrl;
+        }
+
+        const successUrl = `${baseUrl.replace(/\/$/, '')}/payment-success?ref=${requestId}`;
+        const errorUrl = `${baseUrl.replace(/\/$/, '')}/payment-error?ref=${requestId}`;
 
         // 2. Fetch Invoice Details
         let invoiceDetails = { company_name: customerName || 'Guest', vat_id: '', phone: '' };
