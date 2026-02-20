@@ -379,6 +379,8 @@ export default function Packages() {
                                 errors={errors}
                                 setErrors={setErrors}
                                 amount={calculateTotal(quantity)}
+                                quantity={quantity}
+                                userProfile={user?.profile}
                             />
                             <div className="mt-8 flex justify-center">
                                 <Button

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Eye, Download, FileOutput, ChevronRight } from 'lucide-react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { useUser } from "@/contexts/UserContext";
@@ -23,6 +23,7 @@ export default function Payments() {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [paymentData, setPaymentData] = useState({}); // Mock state for PaymentStep
+    const [searchParams] = useSearchParams();
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
     const [errors, setErrors] = useState({});
 
@@ -86,7 +87,9 @@ export default function Payments() {
                             amount: t.amount,
                             date: new Date(t.created_at).toLocaleDateString('he-IL'),
                             details: t.description || 'מנוי חודשי',
-                            status: t.status
+                            status: t.status,
+                            invoiceNumber: t.metadata?.invoice_number,
+                            invoiceUrl: t.metadata?.invoice_url
                         }));
 
                         setTransactions(formatted);
@@ -101,9 +104,56 @@ export default function Payments() {
                 }
             }
         };
-
         fetchTransactions();
     }, [user]);
+
+    useEffect(() => {
+        if (searchParams.get('success') === 'true') {
+            toast({
+                title: "התשלום עבר בהצלחה",
+                description: "יתרת המשרות שלך עודכנה!",
+            });
+            // Force refresh data
+            const fetchData = async () => {
+                if (user?.id) {
+                    console.log('Force refreshing data for success state. User ID:', user.id);
+                    const { UserProfile, Job, Transaction } = await import("@/api/entities");
+
+                    const profileData = await UserProfile.filter({ id: user.id });
+                    console.log('--- REFRESH: Profile Data ---', profileData);
+                    if (profileData && profileData.length > 0) {
+                        console.log('Updating userProfile state with credits:', profileData[0].job_credits);
+                        setUserProfile(profileData[0]);
+                    }
+
+                    console.log('Fetching transactions for refresh...');
+                    const userTransactions = await Transaction.filter({ user_id: user.id }, '-created_at');
+                    console.log('--- REFRESH: Transactions Raw ---', userTransactions);
+
+                    console.log('Fetching jobs for stats refresh...');
+                    const jobsData = await Job.filter({ created_by: user.email });
+                    console.log('--- REFRESH: Jobs Data ---', jobsData);
+                    if (jobsData) setUserJobs(jobsData);
+
+                    const formatted = userTransactions.map(t => ({
+                        id: t.id,
+                        displayId: t.id.slice(0, 8),
+                        amount: t.amount,
+                        date: new Date(t.created_at).toLocaleDateString('he-IL'),
+                        details: t.description || 'מנוי חודשי',
+                        status: t.status,
+                        invoiceNumber: t.metadata?.invoice_number,
+                        invoiceUrl: t.metadata?.invoice_url
+                    }));
+                    console.log('Formatted transactions:', formatted);
+                    setTransactions(formatted);
+                } else {
+                    console.warn('Cannot refresh data: No user ID found');
+                }
+            };
+            fetchData();
+        }
+    }, [searchParams, user, toast]);
 
     const handleExport = (id) => {
         // Find the transaction
@@ -113,7 +163,8 @@ export default function Payments() {
         // Mock CSV download with BOM for Hebrew support
         // Columns: Invoice Number, Date, Amount, Description, Status
         const headers = "מספר חשבונית,תאריך,סכום,תיאור,סטטוס";
-        const row = `INV-${tx.displayId || tx.id},${tx.date},₪${tx.amount},${tx.details},שולם`;
+        const displayInv = tx.invoiceNumber || `INV-${tx.displayId || tx.id}`;
+        const row = `${displayInv},${tx.date},₪${tx.amount},${tx.details},שולם`;
 
         const csvContent = "\uFEFF" + headers + "\n" + row;
         const encodedUri = encodeURI(`data:text/csv;charset=utf-8,${csvContent}`);
@@ -135,7 +186,13 @@ export default function Payments() {
         const tx = transactions.find(t => t.id === id);
         if (!tx) return;
 
-        // Helper to formatting PDF text
+        // If we have a real invoice URL from Cardcom, open it
+        if (tx.invoiceUrl) {
+            window.open(tx.invoiceUrl, '_blank');
+            return;
+        }
+
+        // Helper to formatting PDF text (Fallback mock)
         const createPDF = () => {
             // We must use English for raw PDF mock as Hebrew requires font embedding (complex).
             // We will map the data to English labels.
@@ -146,7 +203,7 @@ BT
 (INVOICE) Tj
 /F1 12 Tf
 0 -50 Td
-(Invoice Number: INV-${tx.displayId || tx.id}) Tj
+(Invoice Number: ${tx.invoiceNumber || `INV-${tx.displayId || tx.id}`}) Tj
 0 -25 Td
 (Date: ${tx.date}) Tj
 0 -25 Td
@@ -374,7 +431,12 @@ ET`;
                                                 <div className="flex flex-col gap-4">
                                                     {/* Top Row: Date & Amount */}
                                                     <div className="flex justify-between items-center w-full">
-                                                        <span className="text-[18px] text-gray-900 font-bold">₪{tx.amount}</span>
+                                                        <div className="flex flex-col items-start">
+                                                            <span className="text-[18px] text-gray-900 font-bold">₪{tx.amount}</span>
+                                                            <span className={`text-[12px] font-medium ${tx.status === 'pending' ? 'text-amber-500' : 'text-green-600'}`}>
+                                                                {tx.status === 'pending' ? 'בטיפול' : 'שולם'}
+                                                            </span>
+                                                        </div>
                                                         <span className="text-[16px] text-gray-900 font-normal tracking-wide">{tx.date}</span>
                                                     </div>
 
@@ -475,7 +537,12 @@ ET`;
                                             <div key={tx.id} className="bg-[#F8FAFC] hover:bg-gray-50 transition-colors rounded-xl p-6">
                                                 <div className="flex flex-col gap-4">
                                                     <div className="flex justify-between items-center w-full">
-                                                        <span className="font-normal text-gray-900">{tx.date}</span>
+                                                        <div className="flex items-center gap-4">
+                                                            <span className="font-normal text-gray-900">{tx.date}</span>
+                                                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${tx.status === 'pending' ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-green-600'}`}>
+                                                                {tx.status === 'pending' ? 'בטיפול' : 'שולם'}
+                                                            </span>
+                                                        </div>
                                                         <span className="font-normal text-gray-900 text-lg">₪{tx.amount}</span>
                                                     </div>
                                                     <div className="flex justify-end gap-3">
@@ -578,7 +645,7 @@ ET`;
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-gray-500">מספר חשבונית:</span>
-                                    <span className="font-medium">INV-{selectedInvoice.displayId || selectedInvoice.id}</span>
+                                    <span className="font-medium text-left" dir="ltr">{selectedInvoice.invoiceNumber || `INV-${selectedInvoice.displayId || selectedInvoice.id}`}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-gray-500">תיאור:</span>

@@ -7,6 +7,10 @@ import { createPageUrl } from "@/utils";
 import { supabase } from '@/api/supabaseClient';
 
 const PaymentSuccess = () => {
+    console.log('--- PaymentSuccess COMPONENT LOADING ---');
+    // Basic alert to confirm we even reached this page (debug only)
+    // window.alert('Payment Page Reached'); 
+
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [verifying, setVerifying] = useState(true);
@@ -15,6 +19,9 @@ const PaymentSuccess = () => {
     useEffect(() => {
         const verifyAndRedirect = async () => {
             const requestId = searchParams.get('ref');
+            const lowProfileCode = searchParams.get('lowprofilecode') || searchParams.get('LowProfileCode');
+            console.log('PaymentSuccess mounted. Search Params:', Object.fromEntries(searchParams.entries()));
+            console.log('Window top state:', window.self === window.top ? 'Main window' : 'Inside iframe');
 
             if (requestId) {
                 try {
@@ -22,18 +29,34 @@ const PaymentSuccess = () => {
                     setMessage('מעדכן יתרת משרות...');
 
                     const { data, error } = await supabase.functions.invoke('verify-payment', {
-                        body: { requestId }
+                        body: { requestId, lowProfileCode }
                     });
 
                     if (error) {
-                        console.error('Verify payment error:', error);
-                        // Even if error, we might want to let them proceed, but credits won't update
+                        console.error('Verify payment error (invoke):', error);
+                        const errMsg = `שגיאת אימות: ${error.message || JSON.stringify(error)}`;
+                        setMessage(errMsg);
+                        window.alert(errMsg); // Debug alert
+                        setVerifying(false); // Stop loading
+                        return; // DON'T redirect on error
                     } else {
-                        console.log('Verification success:', data);
+                        console.log('Verification response data:', data);
+                        if (data && data.success) {
+                            setMessage('התשלום אומת והמשרות עודכנו!');
+                        } else {
+                            console.warn('Verification returned success=false:', data?.message);
+                            const warnMsg = `התראה: ${data?.message || 'אימות חלקי'}`;
+                            setMessage(warnMsg);
+                            window.alert(warnMsg); // Debug alert
+                            setVerifying(false);
+                            return; // DON'T redirect on warning
+                        }
                     }
-                    setMessage('התשלום עבר בהצלחה!');
                 } catch (err) {
                     console.error('Verification failed:', err);
+                    window.alert(`שגיאת קוד: ${err.message}`);
+                    setVerifying(false);
+                    return;
                 }
             } else {
                 setMessage('התשלום עבר בהצלחה!');
@@ -42,13 +65,18 @@ const PaymentSuccess = () => {
             setVerifying(false);
 
             // Redirect after delay
+            const targetUrl = createPageUrl("Payments?success=true");
+            console.log('Redirecting to:', targetUrl);
+
             setTimeout(() => {
                 if (window.self !== window.top) {
-                    window.top.location.href = window.location.origin + createPageUrl("JobManagement");
+                    console.log('Executing top-level redirect...');
+                    window.top.location.href = window.location.origin + targetUrl;
                 } else {
-                    navigate(createPageUrl("JobManagement"));
+                    console.log('Executing navigation...');
+                    navigate(targetUrl);
                 }
-            }, 2000);
+            }, 3000);
         };
 
         verifyAndRedirect();

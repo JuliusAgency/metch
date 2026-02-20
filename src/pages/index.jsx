@@ -146,7 +146,7 @@ const PAGES = {
     Packages: Packages,
 
     JobSeekerProfileCompletion: JobSeekerProfileCompletion,
-
+    PaymentSuccess: PaymentSuccess,
 
 }
 

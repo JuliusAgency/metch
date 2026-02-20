@@ -1,6 +1,6 @@
 import { supabase } from '@/api/supabaseClient';
 
-export const generateLowProfileUrl = async (paymentDetails, customerDetails) => {
+export const generateLowProfileUrl = async (paymentDetails, customerDetails, metadata = {}) => {
   try {
     console.log('Invoking create-payment Edge Function...');
     
@@ -9,7 +9,9 @@ export const generateLowProfileUrl = async (paymentDetails, customerDetails) => 
         amount: paymentDetails.amount,
         productName: paymentDetails.productName,
         customerName: customerDetails.name,
-        customerEmail: customerDetails.email
+        customerEmail: customerDetails.email,
+        origin: window.location.origin,
+        metadata
       }
     });
 

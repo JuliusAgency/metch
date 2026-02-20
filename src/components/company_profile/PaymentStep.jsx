@@ -64,7 +64,7 @@ export const validationUtils = {
 };
 
 
-export default function PaymentStep({ paymentData, setPaymentData, errors: propErrors, setErrors: propSetErrors, userProfile, amount = 349 }) {
+export default function PaymentStep({ paymentData, setPaymentData, errors: propErrors, setErrors: propSetErrors, userProfile, amount = 349, quantity = 1 }) {
   const [iframeUrl, setIframeUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [requestId, setRequestId] = useState(null);
@@ -78,12 +78,13 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
         const result = await generateLowProfileUrl(
           {
             amount: amount,
-            productName: 'מנוי חודשי Metch'
+            productName: quantity > 1 ? `רכישת ${quantity} משרות` : 'מנוי חודשי Metch'
           },
           {
             name: userProfile?.full_name || 'Customer',
             email: userProfile?.email || 'customer@example.com'
-          }
+          },
+          { quantity }
         );
         // Supports both object return (new) and string return (old/fallback)
         if (typeof result === 'object' && result.url) {
