@@ -19,6 +19,7 @@ serve(async (req) => {
             { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
         )
 
+        // Get user from auth session (if available)
         const { data: { user: authUser } } = await supabaseClient.auth.getUser()
 
         const {
@@ -27,8 +28,16 @@ serve(async (req) => {
             customerName,
             customerEmail,
             origin: passedOrigin,
+            userId: passedUserId,
             metadata: passedMetadata
         } = await req.json()
+
+        // Use passed userId as fallback (crucial for iframe safety)
+        const activeUserId = authUser?.id || passedUserId;
+
+        if (!activeUserId) {
+            throw new Error('No user identified for this payment');
+        }
 
         const quantity = parseInt(passedMetadata?.quantity || "1");
         const totalAmount = parseFloat(amount);
@@ -47,48 +56,42 @@ serve(async (req) => {
         )
 
         // 1. Create Pending Transaction
-        let transactionId = null;
-        if (authUser?.id) {
-            const { data: txn, error: insertError } = await supabaseAdmin
-                .from('Transaction')
-                .insert({
-                    user_id: authUser.id,
-                    amount: totalAmount,
-                    currency: 'ILS',
-                    description: productName,
-                    product_name: productName,
-                    status: 'pending',
-                    metadata: {
-                        requestId: requestId,
-                        productName: productName,
-                        quantity: quantity,
-                        is_pending: true
-                    }
-                })
-                .select()
-                .single();
+        const { data: txn, error: insertError } = await supabaseAdmin
+            .from('Transaction')
+            .insert({
+                user_id: activeUserId,
+                amount: totalAmount,
+                currency: 'ILS',
+                description: productName,
+                product_name: productName,
+                status: 'pending',
+                metadata: {
+                    requestId: requestId,
+                    productName: productName,
+                    quantity: quantity,
+                    is_pending: true
+                }
+            })
+            .select()
+            .single();
 
-            if (insertError) {
-                console.error('Insert Error:', insertError);
-            } else {
-                transactionId = txn?.id;
-                console.log('Created Transaction ID:', transactionId);
-            }
+        if (insertError) {
+            console.error('Insert Error:', insertError);
+            throw new Error(`Failed to create transaction record: ${insertError.message}`);
         }
 
+        const transactionId = txn.id;
         const baseUrl = passedOrigin || req.headers.get('origin') || 'https://app.metch.co.il';
         const successUrl = `${baseUrl}/payment-success?ref=${requestId}`;
         const errorUrl = `${baseUrl}/payment-error?ref=${requestId}`;
 
         // 2. Fetch Invoice Details
         let invoiceDetails = { company_name: customerName || 'Guest', vat_id: '', phone: '' };
-        if (authUser?.id) {
-            const { data: profile } = await supabaseAdmin.from('UserProfile').select('invoice_company_name, invoice_vat_id, invoice_phone').eq('id', authUser.id).single();
-            if (profile) {
-                invoiceDetails.company_name = profile.invoice_company_name || invoiceDetails.company_name;
-                invoiceDetails.vat_id = profile.invoice_vat_id || '';
-                invoiceDetails.phone = profile.invoice_phone || '';
-            }
+        const { data: profile } = await supabaseAdmin.from('UserProfile').select('invoice_company_name, invoice_vat_id, invoice_phone').eq('id', activeUserId).single();
+        if (profile) {
+            invoiceDetails.company_name = profile.invoice_company_name || invoiceDetails.company_name;
+            invoiceDetails.vat_id = profile.invoice_vat_id || '';
+            invoiceDetails.phone = profile.invoice_phone || '';
         }
 
         const requestBody = {
@@ -118,9 +121,11 @@ serve(async (req) => {
                 SendByEmail: true,
                 Language: 'he',
                 IsVatFree: false,
-                Operation: 1 // 1 = Invoice/Receipt
+                Operation: 3, // 3 = Invoice/Receipt (חשבונית מס קבלה)
+                ExtDocumentId: requestId,
+                ExtInvoiceId: requestId
             },
-            Custom1: authUser?.id || 'guest'
+            Custom1: activeUserId
         };
 
         const response = await fetch(CARDCOM_API_URL, {
@@ -133,30 +138,20 @@ serve(async (req) => {
         if (data.ResponseCode !== 0) throw new Error(data.Description);
 
         const lowProfileCode = data.LowProfileCode || data.lowProfileCode || data.LowProfileId;
-        console.log('Received lowProfileCode from Cardcom:', lowProfileCode);
 
-        // 3. Update Transaction with lowProfileCode IMMEDIATELY and AWAIT it
-        if (transactionId && lowProfileCode) {
-            console.log(`Updating Transaction ${transactionId} with LP Code ${lowProfileCode}`);
-            const { error: updateError } = await supabaseAdmin
-                .from('Transaction')
-                .update({
-                    metadata: {
-                        requestId,
-                        productName,
-                        quantity,
-                        is_pending: true,
-                        lowProfileCode // Ensure this is saved
-                    }
-                })
-                .eq('id', transactionId);
+        // 3. Update Transaction with lowProfileCode in provider_transaction_id column
+        const { error: updateError } = await supabaseAdmin
+            .from('Transaction')
+            .update({
+                provider_transaction_id: lowProfileCode, // For O(1) matching
+                metadata: {
+                    ...txn.metadata,
+                    lowProfileCode
+                }
+            })
+            .eq('id', transactionId);
 
-            if (updateError) {
-                console.error('Metadata Update Error:', updateError);
-            } else {
-                console.log('Successfully updated metadata with lowProfileCode');
-            }
-        }
+        if (updateError) console.error('Provider ID Update Error:', updateError);
 
         const iframeUrl = `https://secure.cardcom.solutions/External/lowProfileClearing/${TERMINAL_NUMBER}.aspx?lowprofilecode=${lowProfileCode}&Lang=he`;
 
@@ -165,7 +160,7 @@ serve(async (req) => {
             status: 200,
         })
     } catch (error) {
-        console.error('Create Payment Error:', error.message);
+        console.error('Create Payment Fatal Error:', error.message);
         return new Response(JSON.stringify({ success: false, message: error.message }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200,

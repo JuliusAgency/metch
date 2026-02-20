@@ -159,6 +159,17 @@ function _getCurrentPage(url) {
         urlLastPart = urlLastPart.split('?')[0];
     }
 
+    // Special handling for hyphenated routes or routes that don't match exactly by capitalization
+    const routeMapping = {
+        'payment-success': 'PaymentSuccess',
+        'forgot-password': 'ForgotPassword',
+        'careerstageselection': 'CareerStageSelection'
+    };
+
+    if (routeMapping[urlLastPart.toLowerCase()]) {
+        return routeMapping[urlLastPart.toLowerCase()];
+    }
+
     const pageName = Object.keys(PAGES).find(page => page.toLowerCase() === urlLastPart.toLowerCase());
     return pageName || 'Login';
 }

@@ -12,32 +12,34 @@ serve(async (req) => {
         return new Response('ok', { headers: corsHeaders })
     }
 
-    console.log('--- VERIFY PAYMENT (ROBUST MATCHING) ---');
+    console.log('--- VERIFY PAYMENT (O1 MATCHING) ---');
 
     try {
         const { requestId, lowProfileCode } = await req.json()
-        console.log(`Input: requestId=${requestId}, lowProfileCode=${lowProfileCode}`);
+        console.log(`Input Received: requestId=${requestId}, lowProfileCode=${lowProfileCode}`);
 
         const supabaseAdmin = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
-        // 1. Find Transaction (Try lowProfileCode first, then requestId)
+        // 1. Transaction Lookup (Robust & Efficient)
         let existingTxn = null;
 
+        // A. Match by indexed provider_transaction_id (FASTEST)
         if (lowProfileCode) {
-            console.log(`Searching by lowProfileCode: ${lowProfileCode}`);
+            console.log(`Matching by provider_transaction_id: ${lowProfileCode}`);
             const { data } = await supabaseAdmin
                 .from('Transaction')
                 .select('*')
-                .eq('metadata->>lowProfileCode', lowProfileCode)
+                .eq('provider_transaction_id', lowProfileCode)
                 .maybeSingle();
             existingTxn = data;
         }
 
+        // B. Fallback to metadata requestId
         if (!existingTxn && requestId) {
-            console.log(`Searching by requestId: ${requestId}`);
+            console.log(`Falling back to metadata requestId: ${requestId}`);
             const { data } = await supabaseAdmin
                 .from('Transaction')
                 .select('*')
@@ -47,13 +49,13 @@ serve(async (req) => {
         }
 
         if (!existingTxn) {
-            console.error('Transaction not found in DB');
-            throw new Error('Transaction record not found.');
+            console.error('Transaction record not found in system.');
+            throw new Error('Transaction record not found. Verification impossible.');
         }
 
         if (existingTxn.status === 'completed') {
-            console.log('Transaction already completed.');
-            return new Response(JSON.stringify({ success: true, already: true }), {
+            console.log('Transaction already processed.');
+            return new Response(JSON.stringify({ success: true, message: 'Already completed' }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             });
         }
@@ -66,7 +68,7 @@ serve(async (req) => {
         let invoiceNumber = null;
         let invoiceUrl = null;
 
-        // 2. Fetch Real Invoice from Cardcom
+        // 2. Fetch Detailed Invoice from Cardcom
         if (lowProfileCode) {
             try {
                 const response = await fetch(`https://secure.cardcom.solutions/api/v11/LowProfile/GetIndicator`, {
@@ -79,50 +81,75 @@ serve(async (req) => {
                         LowProfileCode: lowProfileCode
                     })
                 });
+
                 if (response.ok) {
                     const cd = await response.json();
                     if (cd.ResponseCode === 0) {
                         invoiceNumber = cd.InvoiceNumber || cd.DocNumber || cd.DocNumberToDisplay;
                         invoiceUrl = cd.DocumentURL || cd.DocUrl || cd.DocumentUrl;
+                        console.log(`Cardcom Confirmation: Invoice #${invoiceNumber}`);
                     }
                 }
-            } catch (e) { console.error('Indicator fetch error:', e); }
+            } catch (indicatorErr) {
+                console.error('Indicator fetch warning:', indicatorErr.message);
+            }
         }
 
-        // 3. Grant Credits
+        // 3. Grant Purchased Credits
         const quantity = parseInt(existingTxn.metadata?.quantity || "1");
-        const { data: profile } = await supabaseAdmin.from('UserProfile').select('job_credits').eq('id', userId).single();
-        const newCredits = (profile?.job_credits || 0) + quantity;
+        console.log(`Granting ${quantity} credits to user ${userId}`);
 
-        await supabaseAdmin.from('UserProfile').update({ job_credits: newCredits }).eq('id', userId);
-        console.log(`Granted ${quantity} jobs to user ${userId}. New balance: ${newCredits}`);
+        const { data: profile, error: profileErr } = await supabaseAdmin
+            .from('UserProfile')
+            .select('job_credits')
+            .eq('id', userId)
+            .single();
 
-        // 4. Finalize Transaction
-        await supabaseAdmin.from('Transaction').update({
-            status: 'completed',
-            metadata: {
-                ...(existingTxn.metadata || {}),
-                lowProfileCode,
-                invoice_number: invoiceNumber,
-                invoice_url: invoiceUrl,
-                credits_added: quantity,
-                verified_at: new Date().toISOString(),
-                is_pending: false
-            }
-        }).eq('id', existingTxn.id);
+        if (profileErr) throw profileErr;
+
+        const newCredits = (profile.job_credits || 0) + quantity;
+
+        const { error: updateErr } = await supabaseAdmin
+            .from('UserProfile')
+            .update({ job_credits: newCredits })
+            .eq('id', userId);
+
+        if (updateErr) throw updateErr;
+
+        // 4. Finalize Transaction State
+        await supabaseAdmin
+            .from('Transaction')
+            .update({
+                status: 'completed',
+                provider_transaction_id: lowProfileCode || existingTxn.provider_transaction_id,
+                metadata: {
+                    ...(existingTxn.metadata || {}),
+                    invoice_number: invoiceNumber,
+                    invoice_url: invoiceUrl,
+                    credits_added: quantity,
+                    verified_at: new Date().toISOString(),
+                    is_pending: false
+                }
+            })
+            .eq('id', existingTxn.id);
 
         return new Response(JSON.stringify({
             success: true,
             added: quantity,
             invoiceNumber,
             invoiceUrl
-        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
 
     } catch (error) {
-        console.error('Verify failure:', error.message);
-        return new Response(JSON.stringify({ success: false, message: error.message }), {
+        console.error('Verify Payment Fatal Error:', error.message);
+        return new Response(JSON.stringify({
+            success: false,
+            message: error.message,
+        }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 400
-        });
+            status: 400,
+        })
     }
 })

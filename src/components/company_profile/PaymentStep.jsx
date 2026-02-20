@@ -84,7 +84,8 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
             name: userProfile?.full_name || 'Customer',
             email: userProfile?.email || 'customer@example.com'
           },
-          { quantity }
+          { quantity },
+          userProfile.id // Pass explicitly for iframe safety
         );
         // Supports both object return (new) and string return (old/fallback)
         if (typeof result === 'object' && result.url) {

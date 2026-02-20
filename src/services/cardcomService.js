@@ -1,8 +1,8 @@
 import { supabase } from '@/api/supabaseClient';
 
-export const generateLowProfileUrl = async (paymentDetails, customerDetails, metadata = {}) => {
+export const generateLowProfileUrl = async (paymentDetails, customerDetails, metadata = {}, userId = null) => {
   try {
-    console.log('Invoking create-payment Edge Function...');
+    console.log('Invoking create-payment Edge Function for user:', userId);
     
     const { data, error } = await supabase.functions.invoke('create-payment', {
       body: {
@@ -11,6 +11,7 @@ export const generateLowProfileUrl = async (paymentDetails, customerDetails, met
         customerName: customerDetails.name,
         customerEmail: customerDetails.email,
         origin: window.location.origin,
+        userId, // Pass explicitly for iframe safety
         metadata
       }
     });
