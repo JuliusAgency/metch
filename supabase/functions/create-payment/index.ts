@@ -46,12 +46,13 @@ serve(async (req) => {
         const TERMINAL_NUMBER = Deno.env.get('CARDCOM_TERMINAL_NUMBER');
         const API_NAME = Deno.env.get('CARDCOM_API_NAME');
         const API_PASSWORD = Deno.env.get('CARDCOM_API_PASSWORD');
+        const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || '';
 
         const CARDCOM_API_URL = `https://secure.cardcom.solutions/api/v11/LowProfile/Create`;
         const requestId = crypto.randomUUID();
 
         const supabaseAdmin = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
+            SUPABASE_URL,
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
@@ -81,15 +82,13 @@ serve(async (req) => {
         }
 
         const transactionId = txn.id;
-        let baseUrl = passedOrigin || req.headers.get('origin') || 'https://app.metch.co.il';
-        // Force HTTPS for production redirects to avoid connection issues in iframes
-        if (baseUrl.includes('app.metch.co.il') && !baseUrl.startsWith('https://')) {
-            baseUrl = baseUrl.replace('http://', 'https://');
-            if (!baseUrl.startsWith('https://')) baseUrl = 'https://' + baseUrl;
-        }
 
-        const successUrl = `${baseUrl.replace(/\/$/, '')}/payment-success?ref=${requestId}`;
-        const errorUrl = `${baseUrl.replace(/\/$/, '')}/payment-error?ref=${requestId}`;
+        // Use separate redirector Edge Function to break out of Cardcom iframe
+        const projectRef = SUPABASE_URL.split('.')[0].split('//')[1];
+        const redirectorUrl = `https://${projectRef}.supabase.co/functions/v1/payment-redirector`;
+
+        const successUrl = `${redirectorUrl}?ref=${requestId}&status=success`;
+        const errorUrl = `${redirectorUrl}?ref=${requestId}&status=error`;
 
         // 2. Fetch Invoice Details
         let invoiceDetails = { company_name: customerName || 'Guest', vat_id: '', phone: '' };
@@ -149,7 +148,7 @@ serve(async (req) => {
         const { error: updateError } = await supabaseAdmin
             .from('Transaction')
             .update({
-                provider_transaction_id: lowProfileCode, // For O(1) matching
+                provider_transaction_id: lowProfileCode,
                 metadata: {
                     ...txn.metadata,
                     lowProfileCode
