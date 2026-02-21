@@ -81,16 +81,24 @@ export default function Payments() {
                         const userTransactions = await Transaction.filter({ user_id: user.id }, '-created_at');
                         console.log("Transactions fetched:", userTransactions);
 
-                        const formatted = userTransactions.map(t => ({
-                            id: t.id, // UUID
-                            displayId: t.id.slice(0, 8), // Short ID for display
-                            amount: t.amount,
-                            date: new Date(t.created_at).toLocaleDateString('he-IL'),
-                            details: t.description || 'מנוי חודשי',
-                            status: t.status,
-                            invoiceNumber: t.metadata?.invoice_number,
-                            invoiceUrl: t.metadata?.invoice_url
-                        }));
+                        const formatted = userTransactions
+                            .filter(t => {
+                                if (t.status === 'pending') {
+                                    const ageMinutes = (new Date().getTime() - new Date(t.created_at).getTime()) / (1000 * 60);
+                                    return ageMinutes < 30; // Show pending only if fresh
+                                }
+                                return true;
+                            })
+                            .map(t => ({
+                                id: t.id,
+                                displayId: t.id.slice(0, 8),
+                                amount: t.amount,
+                                date: new Date(t.created_at).toLocaleDateString('he-IL'),
+                                details: t.description || 'מנוי חודשי',
+                                status: t.status,
+                                invoiceNumber: t.metadata?.invoice_number,
+                                invoiceUrl: t.metadata?.invoice_url
+                            }));
 
                         setTransactions(formatted);
                     } catch (dbError) {
@@ -140,16 +148,24 @@ export default function Payments() {
                     console.log('--- REFRESH: Jobs Data ---', jobsData);
                     if (jobsData) setUserJobs(jobsData);
 
-                    const formatted = userTransactions.map(t => ({
-                        id: t.id,
-                        displayId: t.id.slice(0, 8),
-                        amount: t.amount,
-                        date: new Date(t.created_at).toLocaleDateString('he-IL'),
-                        details: t.description || 'מנוי חודשי',
-                        status: t.status,
-                        invoiceNumber: t.metadata?.invoice_number,
-                        invoiceUrl: t.metadata?.invoice_url
-                    }));
+                    const formatted = userTransactions
+                        .filter(t => {
+                            if (t.status === 'pending') {
+                                const ageMinutes = (new Date().getTime() - new Date(t.created_at).getTime()) / (1000 * 60);
+                                return ageMinutes < 30; // Show pending only if fresh
+                            }
+                            return true;
+                        })
+                        .map(t => ({
+                            id: t.id,
+                            displayId: t.id.slice(0, 8),
+                            amount: t.amount,
+                            date: new Date(t.created_at).toLocaleDateString('he-IL'),
+                            details: t.description || 'מנוי חודשי',
+                            status: t.status,
+                            invoiceNumber: t.metadata?.invoice_number,
+                            invoiceUrl: t.metadata?.invoice_url
+                        }));
                     console.log('Formatted transactions:', formatted);
                     setTransactions(formatted);
                 } else {
@@ -168,15 +184,17 @@ export default function Payments() {
         // Mock CSV download with BOM for Hebrew support
         // Columns: Invoice Number, Date, Amount, Description, Status
         const headers = "מספר חשבונית,תאריך,סכום,תיאור,סטטוס";
-        const displayInv = tx.invoiceNumber || `INV-${tx.displayId || tx.id}`;
+        const displayInv = tx.invoiceNumber || "בטיפול";
         const row = `${displayInv},${tx.date},₪${tx.amount},${tx.details},שולם`;
 
         const csvContent = "\uFEFF" + headers + "\n" + row;
         const encodedUri = encodeURI(`data:text/csv;charset=utf-8,${csvContent}`);
 
+        const fileName = tx.invoiceNumber ? `invoice_${tx.invoiceNumber}.csv` : `transaction_${tx.displayId || id}.csv`;
+
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `invoice_INV-2025-00${id}.csv`);
+        link.setAttribute("download", fileName);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -208,15 +226,15 @@ BT
 (INVOICE) Tj
 /F1 12 Tf
 0 -50 Td
-(Invoice Number: ${tx.invoiceNumber || `INV-${tx.displayId || tx.id}`}) Tj
+(Invoice Number: ${tx.invoiceNumber || 'Processing...'}) Tj
 0 -25 Td
 (Date: ${tx.date}) Tj
 0 -25 Td
-(Amount: 349.00 NIS) Tj
+(Amount: ${tx.amount} NIS) Tj
 0 -25 Td
 (Status: Paid) Tj
 0 -25 Td
-(Description: Monthly Subscription - Premium) Tj
+(Description: ${tx.details || 'Job Purchase'}) Tj
 0 -50 Td
 (Thank you for your business!) Tj
 ET`;
@@ -279,9 +297,10 @@ ET`;
         const pdfContent = createPDF();
         const blob = new Blob([pdfContent], { type: 'application/pdf' });
         const url = window.URL.createObjectURL(blob);
+        const fileName = tx.invoiceNumber ? `invoice_${tx.invoiceNumber}.pdf` : `transaction_${tx.displayId || id}.pdf`;
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', `invoice_INV-2025-00${id}.pdf`);
+        link.setAttribute('download', fileName);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -432,7 +451,7 @@ ET`;
                                     <h2 className="text-[16px] font-bold text-gray-800 text-right mb-4 pr-1">עסקאות אחרונות</h2>
                                     <div className="space-y-4">
                                         {transactions.map((tx, index) => (
-                                            <div key={tx.id} className="bg-white p-5 rounded-[20px] shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-50/50">
+                                            <div key={tx.id} className="bg-white p-5 rounded-[20px] shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-50/50">
                                                 <div className="flex flex-col gap-4">
                                                     {/* Top Row: Date & Amount */}
                                                     <div className="flex justify-between items-center w-full">
@@ -442,17 +461,20 @@ ET`;
                                                                 <span className={`text-[12px] font-medium ${tx.status === 'pending' ? 'text-amber-500' : 'text-green-600'}`}>
                                                                     {tx.status === 'pending' ? 'בטיפול' : 'שולם'}
                                                                 </span>
+                                                                {tx.invoiceNumber && (
+                                                                    <span className="text-[11px] text-gray-400">#{tx.invoiceNumber}</span>
+                                                                )}
                                                             </div>
                                                         </div>
                                                         <span className="text-[16px] text-gray-900 font-normal tracking-wide">{tx.date}</span>
                                                     </div>
 
-                                                    {/* Buttons Row - Full width buttons outlined */}
+                                                    {/* Buttons Row */}
                                                     <div className="flex justify-between gap-3 mt-1">
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
-                                                            onClick={() => setSelectedInvoice(tx)}
+                                                            onClick={() => tx.invoiceUrl ? window.open(tx.invoiceUrl, '_blank') : setSelectedInvoice(tx)}
                                                             className="flex-1 bg-white hover:bg-gray-50 text-[#54627d] border-[#54627d]/30 rounded-full h-9 text-[13px] font-medium flex items-center justify-center gap-2"
                                                         >
                                                             <Eye className="w-4 h-4 text-[#54627d]" />
@@ -550,6 +572,9 @@ ET`;
                                                                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${tx.status === 'pending' ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-green-600'}`}>
                                                                     {tx.status === 'pending' ? 'בטיפול' : 'שולם'}
                                                                 </span>
+                                                                {tx.invoiceNumber && (
+                                                                    <span className="text-[11px] text-gray-400">#{tx.invoiceNumber}</span>
+                                                                )}
                                                             </div>
                                                         </div>
                                                         <span className="font-normal text-gray-900 text-lg">₪{tx.amount}</span>
@@ -563,7 +588,7 @@ ET`;
                                                             <Download className="w-3.5 h-3.5" />
                                                             הורדה
                                                         </Button>
-                                                        <Button variant="outline" size="sm" onClick={() => setSelectedInvoice(tx)} className="bg-white hover:bg-blue-50 text-[#1E3A8A] border-blue-200 rounded-full px-4 py-1 h-9 flex items-center gap-2 text-xs font-medium whitespace-nowrap order-3">
+                                                        <Button variant="outline" size="sm" onClick={() => tx.invoiceUrl ? window.open(tx.invoiceUrl, '_blank') : setSelectedInvoice(tx)} className="bg-white hover:bg-blue-50 text-[#1E3A8A] border-blue-200 rounded-full px-4 py-1 h-9 flex items-center gap-2 text-xs font-medium whitespace-nowrap order-3">
                                                             <Eye className="w-3.5 h-3.5" />
                                                             צפייה
                                                         </Button>
@@ -595,12 +620,14 @@ ET`;
 
                                     {/* White Card Container */}
                                     <div className="bg-white rounded-[24px] shadow-[0_4px_30px_rgba(0,0,0,0.06)] p-6 mb-8 relative border border-white">
-                                        <PaymentStep
-                                            setPaymentData={setPaymentData}
-                                            errors={errors}
-                                            setErrors={setErrors}
-                                            userProfile={userProfile}
-                                        />
+                                        {showPaymentModal && (
+                                            <PaymentStep
+                                                setPaymentData={setPaymentData}
+                                                errors={errors}
+                                                setErrors={setErrors}
+                                                userProfile={userProfile}
+                                            />
+                                        )}
                                     </div>
 
                                     {/* Action Button - Hidden for Iframe flow (iframe has its own button) */}
@@ -620,13 +647,15 @@ ET`;
                                         <DialogTitle className="text-center text-xl font-bold text-[#1E3A8A]">עדכון אמצעי תשלום</DialogTitle>
                                     </DialogHeader>
                                     <div className="py-4 h-full">
-                                        <PaymentStep
-                                            paymentData={paymentData}
-                                            setPaymentData={setPaymentData}
-                                            errors={errors}
-                                            setErrors={setErrors}
-                                            userProfile={userProfile}
-                                        />
+                                        {showPaymentModal && (
+                                            <PaymentStep
+                                                paymentData={paymentData}
+                                                setPaymentData={setPaymentData}
+                                                errors={errors}
+                                                setErrors={setErrors}
+                                                userProfile={userProfile}
+                                            />
+                                        )}
                                         {/* Action Button - Hidden for Iframe flow */}
                                         {/* <div className="mt-8 flex justify-center">
                                 <Button onClick={handleSavePaymentMethod} ... >שמירת אמצעי תשלום</Button>
@@ -652,7 +681,7 @@ ET`;
                                         <div className="space-y-4">
                                             <div className="flex justify-between items-center text-sm">
                                                 <span className="text-gray-500">מספר חשבונית:</span>
-                                                <span className="font-medium text-left" dir="ltr">{selectedInvoice.invoiceNumber || `INV-${selectedInvoice.displayId || selectedInvoice.id}`}</span>
+                                                <span className="font-medium text-left" dir="ltr">{selectedInvoice.invoiceNumber || "בביצוע (קיימת במייל)"}</span>
                                             </div>
                                             <div className="flex justify-between items-center text-sm">
                                                 <span className="text-gray-500">תיאור:</span>

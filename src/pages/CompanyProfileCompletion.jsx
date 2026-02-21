@@ -63,6 +63,18 @@ export default function CompanyProfileCompletion() {
   useEffect(() => {
     const loadUser = async () => {
       try {
+        // --- PAYMENT BACK-NAVIGATION FIX ---
+        // If the user just returned from Cardcom (detected via sessionStorage flag),
+        // redirect them back to the page they came from (/Payments or /Packages)
+        const returnPath = sessionStorage.getItem('payment_return_path');
+        if (returnPath) {
+          console.log("[CompanyProfileCompletion] Detected return from payment, redirecting to:", returnPath);
+          sessionStorage.removeItem('payment_return_path');
+          navigate(returnPath, { replace: true });
+          return;
+        }
+        // --- END FIX ---
+
         const user = await User.me();
         if (user.is_onboarding_completed) {
           navigate(createPageUrl('Dashboard'), { replace: true });

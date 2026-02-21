@@ -185,9 +185,9 @@ const JobSeekerDashboard = ({ user }) => {
     }
   }, [user, loading, hasCV, hasCompletedOnboardingFlow]);
 
-  // Prevent back-navigation to onboarding from Dashboard
+  // Prevent back-navigation to onboarding from Dashboard (Job Seekers only)
   useEffect(() => {
-    if (hasCompletedOnboardingFlow) {
+    if (hasCompletedOnboardingFlow && user && user.user_type === 'job_seeker') {
       // Create a buffer in history
       window.history.pushState(null, "", window.location.pathname);
 
@@ -203,7 +203,7 @@ const JobSeekerDashboard = ({ user }) => {
       window.addEventListener("popstate", handlePopState);
       return () => window.removeEventListener("popstate", handlePopState);
     }
-  }, [hasCompletedOnboardingFlow, location.pathname, toast]);
+  }, [hasCompletedOnboardingFlow, user, location.pathname, toast]);
 
   const handleGuideComplete = () => {
     setShowGuide(false);
@@ -830,14 +830,20 @@ const EmployerDashboard = ({ user }) => {
   };
 
   // Redirect to onboarding if company profile is incomplete
-  // Redirect to onboarding if company profile is incomplete
   useEffect(() => {
     // Skip check if verified completion just happened
     const params = new URLSearchParams(location.search);
     if (params.get('onboarding') === 'complete') return;
 
-    if (!loading && user && user.user_type === 'employer' && (!user.company_name || !user.company_name.trim())) {
-      navigate('/CompanyProfileCompletion');
+    // Only redirect if critically missing info (company name)
+    // Avoid aggressive hijacking if we are just loading or returning from payment
+    if (!loading && user && user.user_type === 'employer') {
+      const needsOnboarding = !user.is_onboarding_completed && (!user.company_name || !user.company_name.trim());
+
+      if (needsOnboarding) {
+        console.log("[Dashboard Guard] Redirecting to onboarding - missing company info");
+        navigate('/CompanyProfileCompletion');
+      }
     }
   }, [user, loading, navigate, location.search]);
 

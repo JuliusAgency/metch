@@ -90,8 +90,11 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
         // Supports both object return (new) and string return (old/fallback)
         if (typeof result === 'object' && result.url) {
           console.log("Redirecting to full page payment:", result.url);
+          // Save return path so we can redirect back after Cardcom navigation
+          sessionStorage.setItem('payment_return_path', window.location.pathname);
           window.location.href = result.url;
         } else if (typeof result === 'string') {
+          sessionStorage.setItem('payment_return_path', window.location.pathname);
           window.location.href = result;
         }
       } catch (error) {

@@ -49,10 +49,18 @@ const UserTypeSelection = () => {
       if (user.is_onboarding_completed) {
         navigate('/Dashboard');
       } else {
-        // Enforce onboarding flow
+        // Enforce onboarding flow OR allow dashboard if they have basic info
         if (user.user_type === 'employer') {
-          navigate('/CompanyProfileCompletion');
-        } else if (user.user_type === 'job_seeker') {
+          // Only force onboarding if company name is missing
+          if (!user.company_name || !user.company_name.trim()) {
+            console.log("[UserTypeSelection Guard] Redirecting employer to onboarding - missing company info");
+            navigate('/CompanyProfileCompletion');
+          } else {
+            console.log("[UserTypeSelection Guard] Onboarding incomplete but company info exists, allowing Dashboard");
+            navigate('/Dashboard');
+          }
+        }
+        else if (user.user_type === 'job_seeker') {
           // If user is job seeker but incomplete, force them to choose CV method again
           setShowCVChoiceModal(true);
         }

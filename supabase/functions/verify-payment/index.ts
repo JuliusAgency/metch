@@ -12,198 +12,186 @@ serve(async (req) => {
         return new Response('ok', { headers: corsHeaders })
     }
 
-    console.log('--- VERIFY PAYMENT (O1 MATCHING) ---');
+    console.log('--- VERIFY PAYMENT (EXACT DOCS MATCH) ---');
 
     try {
         const body = await req.json();
-        console.log('Verify Payment Raw Body:', JSON.stringify(body, null, 2));
-        const { requestId, lowProfileCode } = body;
-        console.log(`Input Parsed: requestId=${requestId}, lowProfileCode=${lowProfileCode}`);
+        const { requestId, lowProfileCode, cardcomParams: rawParams } = body;
+
+        const params: any = {};
+        if (rawParams) {
+            for (const key in rawParams) {
+                params[key.toLowerCase()] = rawParams[key];
+            }
+        }
 
         const supabaseAdmin = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
-        // 1. Transaction Lookup (Robust & Efficient)
-        let existingTxn = null;
-
-        // A. Match by indexed provider_transaction_id (FASTEST)
-        if (lowProfileCode) {
-            console.log(`Matching by provider_transaction_id: ${lowProfileCode}`);
-            const { data } = await supabaseAdmin
-                .from('Transaction')
-                .select('*')
-                .eq('provider_transaction_id', lowProfileCode)
-                .maybeSingle();
-            existingTxn = data;
-        }
-
-        // B. Match by database ID (primary key)
-        if (!existingTxn && requestId) {
-            console.log(`Matching by database id: ${requestId}`);
-            const { data } = await supabaseAdmin
-                .from('Transaction')
-                .select('*')
-                .eq('id', requestId)
-                .maybeSingle();
-            existingTxn = data;
-        }
-
-        // C. Fallback to metadata requestId
-        if (!existingTxn && requestId) {
-            console.log(`Falling back to metadata requestId: ${requestId}`);
-            const { data } = await supabaseAdmin
-                .from('Transaction')
-                .select('*')
-                .eq('metadata->>requestId', requestId)
-                .maybeSingle();
-            existingTxn = data;
-        }
-
-        if (!existingTxn) {
-            console.error('Transaction record not found in system.');
-            throw new Error('Transaction record not found. Verification impossible.');
-        }
-
-        if (existingTxn.status === 'completed') {
-            console.log('Transaction already processed.');
-            return new Response(JSON.stringify({ success: true, message: 'Already completed' }), {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            });
-        }
-
-        const userId = existingTxn.user_id;
         const TERMINAL_NUMBER = Deno.env.get('CARDCOM_TERMINAL_NUMBER');
         const API_NAME = Deno.env.get('CARDCOM_API_NAME');
         const API_PASSWORD = Deno.env.get('CARDCOM_API_PASSWORD');
 
-        let invoiceNumber = null;
-        let invoiceUrl = null;
+        // 1. Find Transaction or Create from Cardcom Data
+        const activeLowProfileCode = lowProfileCode || params.lowprofilecode;
+        let { data: txn } = await supabaseAdmin.from('Transaction').select('*')
+            .or(`provider_transaction_id.eq."${activeLowProfileCode}",id.eq."${requestId}",metadata->>requestId.eq."${requestId}"`)
+            .maybeSingle();
 
-        const activeLowProfileCode = lowProfileCode || existingTxn?.provider_transaction_id;
+        // If not found in DB, it might be a new flow where we haven't created it yet
+        if (!txn && activeLowProfileCode) {
+            console.log(`Transaction not found in DB. Fetching from Cardcom using LowProfileCode: ${activeLowProfileCode}`);
+            try {
+                // Fetch LowProfile info to get Custom fields (User ID, Quantity, etc)
+                const lpResp = await fetch(`https://secure.cardcom.solutions/api/v11/LowProfile/GetLowProfileByKey`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        TerminalNumber: parseInt(TERMINAL_NUMBER!),
+                        ApiName: API_NAME,
+                        UserPassword: API_PASSWORD,
+                        LowProfileId: activeLowProfileCode
+                    })
+                });
 
-        if (activeLowProfileCode) {
-            console.log(`Syncing with Cardcom API using code: ${activeLowProfileCode}`);
+                if (lpResp.ok) {
+                    const lpData = await lpResp.json();
+                    if (lpData.ResponseCode === 0 && lpData.LowProfile) {
+                        const lp = lpData.LowProfile;
+                        const userId = lp.Custom1;
+                        const quantity = parseInt(lp.Custom2 || "1");
+                        const productName = lp.Custom3 || "Metch Product";
+                        const amount = lp.Amount;
 
-            // Wait function for retries
-            const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+                        console.log(`Creating new transaction record for User: ${userId}, Amount: ${amount}`);
 
-            for (let attempt = 1; attempt <= 3; attempt++) {
-                try {
-                    console.log(`Cardcom sync attempt ${attempt}...`);
-                    const response = await fetch(`https://secure.cardcom.solutions/api/v11/LowProfile/GetLpResult`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            TerminalNumber: parseInt(TERMINAL_NUMBER!),
-                            ApiName: API_NAME,
-                            Password: API_PASSWORD,
-                            LowProfileCode: activeLowProfileCode
-                        })
-                    });
-
-                    console.log(`Attempt ${attempt} HTTP Status: ${response.status} ${response.statusText}`);
-
-                    if (response.ok) {
-                        const cd = await response.json();
-                        console.log(`Attempt ${attempt} Data Keys:`, Object.keys(cd).join(', '));
-                        console.log(`Attempt ${attempt} ResponseCode:`, cd.ResponseCode, 'Description:', cd.Description);
-
-                        if (cd.ResponseCode === 0) {
-                            // Exhaustive field check for invoice data
-                            invoiceNumber = cd.InvoiceNumber || cd.DocNumber || cd.DocNumberToDisplay || cd.DocumentNumber || cd.docNumber;
-                            invoiceUrl = cd.DocumentURL || cd.DocUrl || cd.DocumentUrl || cd.DocURL || cd.docUrl;
-
-                            if (invoiceUrl) {
-                                console.log(`SUCCESS: Found Invoice URL on attempt ${attempt}: ${invoiceUrl}`);
-                                break;
-                            } else {
-                                console.log(`Attempt ${attempt}: ResponseCode 0 but NO DocumentURL. cd keys with 'url':`,
-                                    Object.keys(cd).filter(k => k.toLowerCase().includes('url')));
+                        const { data: newTxn, error: createError } = await supabaseAdmin.from('Transaction').insert({
+                            user_id: userId,
+                            amount: amount,
+                            currency: 'ILS',
+                            description: productName,
+                            product_name: productName,
+                            status: 'pending', // Will be completed below after verification
+                            provider_transaction_id: activeLowProfileCode,
+                            metadata: {
+                                quantity: quantity.toString(),
+                                requestId: requestId || lp.ReturnValue,
+                                created_on_verify: true
                             }
-                        }
-                    } else {
-                        const errText = await response.text();
-                        console.error(`Attempt ${attempt} Error Body:`, errText);
-                    }
-                } catch (indicatorErr) {
-                    console.error(`Indicator fetch attempt ${attempt} failed:`, indicatorErr.message);
-                }
+                        }).select().single();
 
-                if (attempt < 3) {
-                    console.log('Waiting 3 seconds for document generation...');
-                    await sleep(3000); // Wait 3 seconds between retries
+                        if (createError) throw new Error(`Failed to create transaction: ${createError.message}`);
+                        txn = newTxn;
+                    }
                 }
+            } catch (e) {
+                console.error('Failed to reconstruct transaction from Cardcom:', e.message);
             }
         }
 
-        // 3. Grant Purchased Credits
-        const quantity = parseInt(existingTxn.metadata?.quantity || "1");
-        console.log(`Granting ${quantity} credits to user ${userId}`);
+        if (!txn) throw new Error(`Transaction not found and could not be reconstructed (Ref: ${requestId || activeLowProfileCode})`);
 
-        const { data: profile, error: profileErr } = await supabaseAdmin
-            .from('UserProfile')
-            .select('job_credits')
-            .eq('id', userId)
-            .single();
-
-        if (profileErr) throw profileErr;
-
-        const newCredits = (profile.job_credits || 0) + quantity;
-
-        const { error: updateErr } = await supabaseAdmin
-            .from('UserProfile')
-            .update({ job_credits: newCredits })
-            .eq('id', userId);
-
-        if (updateErr) throw updateErr;
-
-        // 4. Finalize Transaction State
-        console.log(`FINALIZING: Updating transaction ${existingTxn.id} with status completed and invoice info...`);
-        const finalMetadata = {
-            ...(existingTxn.metadata || {}),
-            invoice_number: invoiceNumber,
-            invoice_url: invoiceUrl,
-            credits_added: quantity,
-            verified_at: new Date().toISOString(),
-            is_pending: false
-        };
-        console.log('FINAL METADATA TO SAVE:', JSON.stringify(finalMetadata, null, 2));
-
-        const { error: finalUpdateErr } = await supabaseAdmin
-            .from('Transaction')
-            .update({
-                status: 'completed',
-                provider_transaction_id: lowProfileCode || existingTxn.provider_transaction_id,
-                metadata: finalMetadata
-            })
-            .eq('id', existingTxn.id);
-
-        if (finalUpdateErr) {
-            console.error('FINAL UPDATE ERROR:', finalUpdateErr);
-            throw finalUpdateErr;
+        // 2. Grant Credits (Immediate Support)
+        if (txn.status !== 'completed') {
+            const quantity = parseInt(txn.metadata?.quantity || "1");
+            const { data: profile } = await supabaseAdmin.from('UserProfile').select('id, job_credits').eq('id', txn.user_id).single();
+            if (profile) {
+                await supabaseAdmin.from('UserProfile').update({ job_credits: (profile.job_credits || 0) + quantity }).eq('id', profile.id);
+            }
         }
 
-        console.log('--- VERIFY PAYMENT COMPLETED SUCCESSFULLY ---');
+        // 3. THE HUNTER (Strict Document Fields)
+        let invoiceUrl = null;
+        let invoiceNumber = null;
+        const dealId = params.internaldealnumber || params.transactionid || params.tranzactionid || params.dealid;
 
-        return new Response(JSON.stringify({
-            success: true,
-            added: quantity,
-            invoiceNumber,
-            invoiceUrl
-        }), {
+        // Path A: GetTransactionInfoById (DOCS: Image 4)
+        if (dealId) {
+            console.log(`Calling GetTransactionInfoById for ID: ${dealId}`);
+            try {
+                const getResp = await fetch(`https://secure.cardcom.solutions/api/v11/Transactions/GetTransactionInfoById`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        TerminalNumber: parseInt(TERMINAL_NUMBER!),
+                        UserName: API_NAME,          // AS PER SCREENSHOT 4
+                        UserPassword: API_PASSWORD,  // AS PER SCREENSHOT 4
+                        InternalDealNumber: parseInt(dealId) // AS PER SCREENSHOT 4
+                    })
+                });
+                if (getResp.ok) {
+                    const data = await getResp.json();
+                    if (data.ResponseCode === 0 && data.TranzactionInfo) {
+                        invoiceUrl = data.TranzactionInfo.DocumentUrl || data.TranzactionInfo.DocumentURL;
+                        invoiceNumber = data.TranzactionInfo.DocumentNumber;
+                        console.log('Success via GetTransactionInfoById');
+                    }
+                }
+            } catch (e) { console.error('GetInfo error:', e.message); }
+        }
+
+        // Path B: ListTransactions (DOCS: Image 3)
+        if (!invoiceUrl) {
+            console.log('Falling back to ListTransactions...');
+            try {
+                const date = new Date().toLocaleDateString('en-GB').split('/').join('');
+                const listReq = {
+                    ApiName: API_NAME,           // AS PER SCREENSHOT 3
+                    ApiPassword: API_PASSWORD,   // AS PER SCREENSHOT 3
+                    FromDate: date,
+                    ToDate: date,
+                    TranStatus: "Success",
+                    Page: 1,
+                    Page_size: 100,
+                    LimitForTerminal: parseInt(TERMINAL_NUMBER!)
+                };
+
+                const listResp = await fetch(`https://secure.cardcom.solutions/api/v11/Transactions/ListTransactions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(listReq)
+                });
+
+                if (listResp.ok) {
+                    const data = await listResp.json();
+                    const match = (data.Tranzactions || []).find((t: any) =>
+                        String(t.TranzactionId) === String(dealId) || (activeLowProfileCode && t.Token === activeLowProfileCode)
+                    );
+                    if (match) {
+                        invoiceUrl = match.DocumentUrl || match.DocumentURL;
+                        invoiceNumber = match.DocumentNumber;
+                    }
+                }
+            } catch (e) { console.error('List error:', e.message); }
+        }
+
+        // 4. Update Database
+        const finalMetadata = {
+            ...(txn.metadata || {}),
+            invoice_number: invoiceNumber || txn.metadata?.invoice_number,
+            invoice_url: invoiceUrl || txn.metadata?.invoice_url,
+            verified_at: new Date().toISOString(),
+            is_pending: false,
+            sync_source: invoiceUrl ? 'docs_match_sync' : 'credits_only'
+        };
+
+        await supabaseAdmin.from('Transaction').update({
+            status: 'completed',
+            provider_transaction_id: activeLowProfileCode || txn.provider_transaction_id,
+            metadata: finalMetadata
+        }).eq('id', txn.id);
+
+        return new Response(JSON.stringify({ success: true, invoiceUrl }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
+        });
 
     } catch (error) {
-        console.error('Verify Payment Fatal Error:', error.message);
-        return new Response(JSON.stringify({
-            success: false,
-            message: error.message,
-        }), {
+        console.error('Fatal:', error.message);
+        return new Response(JSON.stringify({ success: false, message: error.message }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400,
-        })
+        });
     }
-})
+});

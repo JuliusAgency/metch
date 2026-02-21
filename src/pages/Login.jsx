@@ -43,11 +43,18 @@ const Login = () => {
       if (!userProfile || !userProfile.user_type) {
         navigate('/EmailConfirmed');
       } else if (!userProfile.is_onboarding_completed) {
-        // Check user type for redirection
-        if (userProfile.user_type === 'job_seeker') {
+        // Enforce onboarding flow OR allow dashboard if they have basic info
+        if (userProfile.user_type === 'employer') {
+          // Only force onboarding if company name is missing
+          if (!userProfile.company_name || !userProfile.company_name.trim()) {
+            console.log("[Login Guard] Redirecting employer to onboarding - missing company info");
+            navigate('/CompanyProfileCompletion');
+          } else {
+            console.log("[Login Guard] Onboarding incomplete but company info exists, allowing Dashboard");
+            navigate('/Dashboard');
+          }
+        } else if (userProfile.user_type === 'job_seeker') {
           navigate('/UserTypeSelection');
-        } else if (userProfile.user_type === 'employer') {
-          navigate('/CompanyProfileCompletion');
         } else {
           navigate('/Dashboard');
         }
@@ -84,7 +91,12 @@ const Login = () => {
         if (userProfile.user_type === 'job_seeker') {
           navigate('/UserTypeSelection'); // Or CVGenerator logic if needed, but this is the entry point
         } else if (userProfile.user_type === 'employer') {
-          navigate('/CompanyProfileCompletion');
+          // Only force onboarding if company name is missing
+          if (!userProfile.company_name || !userProfile.company_name.trim()) {
+            navigate('/CompanyProfileCompletion');
+          } else {
+            navigate('/Dashboard');
+          }
         } else {
           navigate('/Dashboard');
         }

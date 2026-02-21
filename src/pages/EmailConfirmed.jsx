@@ -74,18 +74,24 @@ const EmailConfirmed = () => {
 
         const profile = await loadUserProfile(user.id);
 
-        // If profile exists and has a user_type, go to dashboard
+        // If profile exists and has a user_type, go to dashboard (or onboarding if missing critical info)
         if (profile && profile.user_type) {
-
           redirectInitiatedRef.current = true;
-          navigate('/Dashboard');
+
+          if (profile.user_type === 'employer' && !profile.is_onboarding_completed && (!profile.company_name || !profile.company_name.trim())) {
+            console.log("[EmailConfirmed Guard] Redirecting employer to onboarding - missing company info");
+            navigate('/CompanyProfileCompletion');
+          } else {
+            console.log("[EmailConfirmed Guard] Redirecting to Dashboard");
+            navigate('/Dashboard');
+          }
           return;
         }
 
         // If profile exists but no user_type, go to UserTypeSelection
         if (profile && !profile.user_type) {
-
           redirectInitiatedRef.current = true;
+          console.log("[EmailConfirmed Guard] Redirecting to UserTypeSelection");
           navigate('/UserTypeSelection');
           return;
         }

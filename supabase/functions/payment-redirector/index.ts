@@ -44,7 +44,13 @@ serve(async (req) => {
         }
     }
 
-    const targetUrl = `${targetHost}/payment-${status}?ref=${requestId || ''}`;
+    // 4. Pass through ALL incoming search params from Cardcom
+    const finalParams = new URLSearchParams(params);
+    if (requestId && !finalParams.has('ref')) {
+        finalParams.set('ref', requestId);
+    }
+
+    const targetUrl = `${targetHost}/payment-${status}?${finalParams.toString()}`;
     console.log(`REDIRECTOR: Final Redirect to ${targetUrl}`);
 
     return new Response(null, {

@@ -373,15 +373,17 @@ export default function Packages() {
                             <DialogTitle className="text-center text-xl font-bold text-[#1E3A8A]">עדכון אמצעי תשלום</DialogTitle>
                         </DialogHeader>
                         <div className="py-4">
-                            <PaymentStep
-                                paymentData={paymentData}
-                                setPaymentData={setPaymentData}
-                                errors={errors}
-                                setErrors={setErrors}
-                                amount={calculateTotal(quantity)}
-                                quantity={quantity}
-                                userProfile={user?.profile}
-                            />
+                            {showPaymentModal && (
+                                <PaymentStep
+                                    paymentData={paymentData}
+                                    setPaymentData={setPaymentData}
+                                    errors={errors}
+                                    setErrors={setErrors}
+                                    amount={calculateTotal(quantity)}
+                                    quantity={quantity}
+                                    userProfile={user?.profile}
+                                />
+                            )}
                             <div className="mt-8 flex justify-center">
                                 <Button
                                     onClick={handleSavePaymentMethod}

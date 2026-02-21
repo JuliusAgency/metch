@@ -54,41 +54,6 @@ serve(async (req) => {
 
         const CARDCOM_API_URL = `https://secure.cardcom.solutions/api/v11/LowProfile/Create`;
         const requestId = crypto.randomUUID();
-
-        const supabaseAdmin = createClient(
-            SUPABASE_URL,
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        )
-
-        // 1. Create Pending Transaction
-        const { data: txn, error: insertError } = await supabaseAdmin
-            .from('Transaction')
-            .insert({
-                user_id: activeUserId,
-                amount: totalAmount,
-                currency: 'ILS',
-                description: productName,
-                product_name: productName,
-                status: 'pending',
-                metadata: {
-                    requestId: requestId,
-                    productName: productName,
-                    quantity: quantity,
-                    is_pending: true,
-                    origin: passedOrigin,
-                    is_localhost: passedOrigin?.includes('localhost')
-                }
-            })
-            .select()
-            .single();
-
-        if (insertError) {
-            console.error('Insert Error:', insertError);
-            throw new Error(`Failed to create transaction record: ${insertError.message}`);
-        }
-
-        const transactionId = txn.id;
-
         const projectRef = SUPABASE_URL.split('.')[0].split('//')[1];
         const redirectorUrl = `https://${projectRef}.supabase.co/functions/v1/payment-redirector`;
 
@@ -98,7 +63,12 @@ serve(async (req) => {
         console.log(`Success URL: ${successUrl}`);
         console.log(`Error URL: ${errorUrl}`);
 
-        // 2. Fetch Invoice Details
+        const supabaseAdmin = createClient(
+            SUPABASE_URL,
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        )
+
+        // 1. Fetch Invoice Details
         let invoiceDetails = { company_name: customerName || 'Guest', vat_id: '', phone: '' };
         const { data: profile } = await supabaseAdmin.from('UserProfile').select('invoice_company_name, invoice_vat_id, invoice_phone').eq('id', activeUserId).single();
         if (profile) {
@@ -126,19 +96,24 @@ serve(async (req) => {
             }],
             SuccessRedirectUrl: successUrl,
             FailedRedirectUrl: errorUrl,
-            InvoiceHead: {
-                CustName: invoiceDetails.company_name,
-                CompId: invoiceDetails.vat_id,
+            Document: {
+                DocumentTypeToCreate: "TaxInvoiceAndReceipt", // חשבונית מס קבלה
+                Name: invoiceDetails.company_name,
                 Email: customerEmail,
                 Mobile: invoiceDetails.phone,
                 SendByEmail: true,
                 Language: 'he',
                 IsVatFree: false,
-                Operation: 3, // 3 = Invoice/Receipt (חשבונית מס קבלה)
                 ExtDocumentId: requestId,
-                ExtInvoiceId: requestId
+                Products: [{
+                    Description: productName,
+                    UnitCost: pricePerUnit,
+                    Quantity: quantity
+                }]
             },
-            Custom1: activeUserId
+            Custom1: activeUserId,
+            Custom2: quantity.toString(),
+            Custom3: productName
         };
 
         console.log('Sending Request to Cardcom:', JSON.stringify(requestBody, null, 2));
@@ -155,20 +130,6 @@ serve(async (req) => {
 
         const lowProfileCode = data.LowProfileCode || data.lowProfileCode || data.LowProfileId;
         console.log(`Extracted LowProfileCode: ${lowProfileCode}`);
-
-        // 3. Update Transaction with lowProfileCode in provider_transaction_id column
-        const { error: updateError } = await supabaseAdmin
-            .from('Transaction')
-            .update({
-                provider_transaction_id: lowProfileCode,
-                metadata: {
-                    ...txn.metadata,
-                    lowProfileCode
-                }
-            })
-            .eq('id', transactionId);
-
-        if (updateError) console.error('Provider ID Update Error:', updateError);
 
         const iframeUrl = `https://secure.cardcom.solutions/External/lowProfileClearing/${TERMINAL_NUMBER}.aspx?lowprofilecode=${lowProfileCode}&Lang=he`;
 

@@ -39,12 +39,18 @@ const PaymentSuccess = () => {
 
             if (requestId) {
                 try {
-                    console.log('Verifying payment for request:', requestId);
+                    console.log('--- VERIFICATION START ---');
+                    console.log('Sending params to server:', { requestId, lowProfileCode, cardcomParams: entries });
                     setMessage('מעדכן יתרת משרות...');
 
                     // Set a timeout for the verification
+                    console.log('Invoking verify-payment with full params:', entries);
                     const verifyPromise = supabase.functions.invoke('verify-payment', {
-                        body: { requestId, lowProfileCode }
+                        body: {
+                            requestId,
+                            lowProfileCode,
+                            cardcomParams: entries // Pass everything for deep verification
+                        }
                     });
 
                     const timeoutPromise = new Promise((_, reject) =>
