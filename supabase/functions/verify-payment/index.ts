@@ -92,7 +92,7 @@ serve(async (req) => {
             for (let attempt = 1; attempt <= 3; attempt++) {
                 try {
                     console.log(`Cardcom sync attempt ${attempt}...`);
-                    const response = await fetch(`https://secure.cardcom.solutions/api/v11/LowProfile/GetIndicator`, {
+                    const response = await fetch(`https://secure.cardcom.solutions/api/v11/LowProfile/GetLpResult`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
