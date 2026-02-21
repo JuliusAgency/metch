@@ -102,10 +102,11 @@ const PaymentSuccess = () => {
     }, [navigate, searchParams]);
 
     const handleManualRedirect = () => {
+        const target = createPageUrl("Payments");
         if (window.self !== window.top) {
-            window.top.location.href = window.location.origin + createPageUrl("JobManagement");
+            window.top.location.href = window.location.origin + target;
         } else {
-            navigate(createPageUrl("JobManagement"));
+            navigate(target);
         }
     };
 
@@ -128,7 +129,7 @@ const PaymentSuccess = () => {
                 <p className="text-gray-600">
                     {message}
                     <br />
-                    {!verifying && 'מיד תועבר לעמוד ניהול המשרות...'}
+                    {!verifying && 'מיד תועבר לעמוד התשלומים שלך...'}
                 </p>
 
                 <div className="pt-4">
@@ -137,7 +138,7 @@ const PaymentSuccess = () => {
                         disabled={verifying}
                         className="w-full bg-[#1E3A8A] hover:bg-[#152a65] text-white rounded-full py-6"
                     >
-                        מעבר למשרות שלי
+                        מעבר לתשלומים שלי
                     </Button>
                 </div>
             </div>

@@ -81,34 +81,60 @@ serve(async (req) => {
         let invoiceNumber = null;
         let invoiceUrl = null;
 
-        // 2. Fetch Detailed Invoice from Cardcom
         const activeLowProfileCode = lowProfileCode || existingTxn?.provider_transaction_id;
 
         if (activeLowProfileCode) {
-            try {
-                console.log(`Syncing with Cardcom API using code: ${activeLowProfileCode}`);
-                const response = await fetch(`https://secure.cardcom.solutions/api/v11/LowProfile/GetIndicator`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        TerminalNumber: parseInt(TERMINAL_NUMBER!),
-                        ApiName: API_NAME,
-                        Password: API_PASSWORD,
-                        LowProfileCode: activeLowProfileCode
-                    })
-                });
+            console.log(`Syncing with Cardcom API using code: ${activeLowProfileCode}`);
 
-                if (response.ok) {
-                    const cd = await response.json();
-                    console.log('Cardcom Indicator Full Data:', JSON.stringify(cd, null, 2));
-                    if (cd.ResponseCode === 0) {
-                        invoiceNumber = cd.InvoiceNumber || cd.DocNumber || cd.DocNumberToDisplay;
-                        invoiceUrl = cd.DocumentURL || cd.DocUrl || cd.DocumentUrl;
-                        console.log(`Cardcom Confirmation: Invoice #${invoiceNumber}`);
+            // Wait function for retries
+            const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                try {
+                    console.log(`Cardcom sync attempt ${attempt}...`);
+                    const response = await fetch(`https://secure.cardcom.solutions/api/v11/LowProfile/GetIndicator`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            TerminalNumber: parseInt(TERMINAL_NUMBER!),
+                            ApiName: API_NAME,
+                            Password: API_PASSWORD,
+                            LowProfileCode: activeLowProfileCode
+                        })
+                    });
+
+                    console.log(`Attempt ${attempt} HTTP Status: ${response.status} ${response.statusText}`);
+
+                    if (response.ok) {
+                        const cd = await response.json();
+                        console.log(`Attempt ${attempt} Data Keys:`, Object.keys(cd).join(', '));
+                        console.log(`Attempt ${attempt} ResponseCode:`, cd.ResponseCode, 'Description:', cd.Description);
+
+                        if (cd.ResponseCode === 0) {
+                            // Exhaustive field check for invoice data
+                            invoiceNumber = cd.InvoiceNumber || cd.DocNumber || cd.DocNumberToDisplay || cd.DocumentNumber || cd.docNumber;
+                            invoiceUrl = cd.DocumentURL || cd.DocUrl || cd.DocumentUrl || cd.DocURL || cd.docUrl;
+
+                            if (invoiceUrl) {
+                                console.log(`SUCCESS: Found Invoice URL on attempt ${attempt}: ${invoiceUrl}`);
+                                break;
+                            } else {
+                                console.log(`Attempt ${attempt}: ResponseCode 0 but NO DocumentURL. cd keys with 'url':`,
+                                    Object.keys(cd).filter(k => k.toLowerCase().includes('url')));
+                            }
+                        }
+                    } else {
+                        const errText = await response.text();
+                        console.error(`Attempt ${attempt} Error Body:`, errText);
                     }
+                } catch (indicatorErr) {
+                    console.error(`Indicator fetch attempt ${attempt} failed:`, indicatorErr.message);
                 }
-            } catch (indicatorErr) {
-                console.error('Indicator fetch warning:', indicatorErr.message);
+
+                if (attempt < 3) {
+                    console.log('Waiting 2 seconds for document generation...');
+                    await sleep(2000); // Wait 2 seconds between retries
+                }
             }
         }
 
@@ -134,21 +160,32 @@ serve(async (req) => {
         if (updateErr) throw updateErr;
 
         // 4. Finalize Transaction State
-        await supabaseAdmin
+        console.log(`FINALIZING: Updating transaction ${existingTxn.id} with status completed and invoice info...`);
+        const finalMetadata = {
+            ...(existingTxn.metadata || {}),
+            invoice_number: invoiceNumber,
+            invoice_url: invoiceUrl,
+            credits_added: quantity,
+            verified_at: new Date().toISOString(),
+            is_pending: false
+        };
+        console.log('FINAL METADATA TO SAVE:', JSON.stringify(finalMetadata, null, 2));
+
+        const { error: finalUpdateErr } = await supabaseAdmin
             .from('Transaction')
             .update({
                 status: 'completed',
                 provider_transaction_id: lowProfileCode || existingTxn.provider_transaction_id,
-                metadata: {
-                    ...(existingTxn.metadata || {}),
-                    invoice_number: invoiceNumber,
-                    invoice_url: invoiceUrl,
-                    credits_added: quantity,
-                    verified_at: new Date().toISOString(),
-                    is_pending: false
-                }
+                metadata: finalMetadata
             })
             .eq('id', existingTxn.id);
+
+        if (finalUpdateErr) {
+            console.error('FINAL UPDATE ERROR:', finalUpdateErr);
+            throw finalUpdateErr;
+        }
+
+        console.log('--- VERIFY PAYMENT COMPLETED SUCCESSFULLY ---');
 
         return new Response(JSON.stringify({
             success: true,
