@@ -89,10 +89,10 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
         );
         // Supports both object return (new) and string return (old/fallback)
         if (typeof result === 'object' && result.url) {
-          setIframeUrl(result.url);
-          setRequestId(result.requestId);
-        } else {
-          setIframeUrl(result);
+          console.log("Redirecting to full page payment:", result.url);
+          window.location.href = result.url;
+        } else if (typeof result === 'string') {
+          window.location.href = result;
         }
       } catch (error) {
         console.error("Failed to load payment page", error);
@@ -103,6 +103,29 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
 
     fetchUrl();
   }, [userProfile, amount]);
+
+  // Listen for postMessage from the iframe (PaymentSuccess page or Redirector)
+  React.useEffect(() => {
+    const handleMessage = (event) => {
+      // Check for our specific message types from Cardcom flow
+      if (event.data?.type === 'CARDCOM_PAYMENT_SUCCESS' || event.data?.type === 'CARDCOM_PAYMENT_REDIRECT') {
+        console.log('Received payment message from iframe:', event.data);
+        const targetUrl = event.data.url;
+
+        if (targetUrl) {
+          // Navigate the top-level window
+          if (targetUrl.startsWith('http')) {
+            window.top.location.href = targetUrl;
+          } else {
+            window.top.location.href = window.location.origin + (targetUrl.startsWith('/') ? '' : '/') + targetUrl;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   const handleManualVerification = async () => {
     if (!requestId) return;
@@ -154,10 +177,12 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
         ) : iframeUrl ? (
           <div className="w-full h-full flex-1 md:h-[600px] h-[500px] bg-white rounded-xl overflow-hidden border border-gray-200 shadow-inner">
             <iframe
+              key={iframeUrl}
               src={iframeUrl}
               title="Cardcom Payment"
               className="w-full h-full border-none"
-              allow="payment"
+              allow="payment; camera; clipboard-write; gpay; autoplay; fullscreen"
+              sandbox="allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-downloads allow-payment-request allow-top-navigation allow-top-navigation-by-user-activation allow-popups-to-escape-sandbox"
             />
           </div>
         ) : (

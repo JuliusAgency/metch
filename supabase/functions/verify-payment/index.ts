@@ -15,8 +15,10 @@ serve(async (req) => {
     console.log('--- VERIFY PAYMENT (O1 MATCHING) ---');
 
     try {
-        const { requestId, lowProfileCode } = await req.json()
-        console.log(`Input Received: requestId=${requestId}, lowProfileCode=${lowProfileCode}`);
+        const body = await req.json();
+        console.log('Verify Payment Raw Body:', JSON.stringify(body, null, 2));
+        const { requestId, lowProfileCode } = body;
+        console.log(`Input Parsed: requestId=${requestId}, lowProfileCode=${lowProfileCode}`);
 
         const supabaseAdmin = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
@@ -37,7 +39,18 @@ serve(async (req) => {
             existingTxn = data;
         }
 
-        // B. Fallback to metadata requestId
+        // B. Match by database ID (primary key)
+        if (!existingTxn && requestId) {
+            console.log(`Matching by database id: ${requestId}`);
+            const { data } = await supabaseAdmin
+                .from('Transaction')
+                .select('*')
+                .eq('id', requestId)
+                .maybeSingle();
+            existingTxn = data;
+        }
+
+        // C. Fallback to metadata requestId
         if (!existingTxn && requestId) {
             console.log(`Falling back to metadata requestId: ${requestId}`);
             const { data } = await supabaseAdmin
@@ -69,8 +82,11 @@ serve(async (req) => {
         let invoiceUrl = null;
 
         // 2. Fetch Detailed Invoice from Cardcom
-        if (lowProfileCode) {
+        const activeLowProfileCode = lowProfileCode || existingTxn?.provider_transaction_id;
+
+        if (activeLowProfileCode) {
             try {
+                console.log(`Syncing with Cardcom API using code: ${activeLowProfileCode}`);
                 const response = await fetch(`https://secure.cardcom.solutions/api/v11/LowProfile/GetIndicator`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -78,12 +94,13 @@ serve(async (req) => {
                         TerminalNumber: parseInt(TERMINAL_NUMBER!),
                         ApiName: API_NAME,
                         Password: API_PASSWORD,
-                        LowProfileCode: lowProfileCode
+                        LowProfileCode: activeLowProfileCode
                     })
                 });
 
                 if (response.ok) {
                     const cd = await response.json();
+                    console.log('Cardcom Indicator Full Data:', JSON.stringify(cd, null, 2));
                     if (cd.ResponseCode === 0) {
                         invoiceNumber = cd.InvoiceNumber || cd.DocNumber || cd.DocNumberToDisplay;
                         invoiceUrl = cd.DocumentURL || cd.DocUrl || cd.DocumentUrl;

@@ -8,6 +8,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+    console.log('--- CREATE PAYMENT START ---');
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }
@@ -34,6 +35,9 @@ serve(async (req) => {
 
         // Use passed userId as fallback (crucial for iframe safety)
         const activeUserId = authUser?.id || passedUserId;
+
+        console.log(`Active User: ${activeUserId}, Amount: ${amount}, ProductName: ${productName}`);
+        console.log('Passed Metadata:', JSON.stringify(passedMetadata));
 
         if (!activeUserId) {
             throw new Error('No user identified for this payment');
@@ -70,7 +74,9 @@ serve(async (req) => {
                     requestId: requestId,
                     productName: productName,
                     quantity: quantity,
-                    is_pending: true
+                    is_pending: true,
+                    origin: passedOrigin,
+                    is_localhost: passedOrigin?.includes('localhost')
                 }
             })
             .select()
@@ -83,12 +89,14 @@ serve(async (req) => {
 
         const transactionId = txn.id;
 
-        // Use separate redirector Edge Function to break out of Cardcom iframe
         const projectRef = SUPABASE_URL.split('.')[0].split('//')[1];
         const redirectorUrl = `https://${projectRef}.supabase.co/functions/v1/payment-redirector`;
 
-        const successUrl = `${redirectorUrl}?ref=${requestId}&status=success`;
-        const errorUrl = `${redirectorUrl}?ref=${requestId}&status=error`;
+        const successUrl = `${redirectorUrl}/success/${requestId}`;
+        const errorUrl = `${redirectorUrl}/error/${requestId}`;
+
+        console.log(`Success URL: ${successUrl}`);
+        console.log(`Error URL: ${errorUrl}`);
 
         // 2. Fetch Invoice Details
         let invoiceDetails = { company_name: customerName || 'Guest', vat_id: '', phone: '' };
@@ -133,6 +141,8 @@ serve(async (req) => {
             Custom1: activeUserId
         };
 
+        console.log('Sending Request to Cardcom:', JSON.stringify(requestBody, null, 2));
+
         const response = await fetch(CARDCOM_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -140,9 +150,11 @@ serve(async (req) => {
         });
 
         const data = await response.json();
+        console.log('Cardcom Response Data:', JSON.stringify(data, null, 2));
         if (data.ResponseCode !== 0) throw new Error(data.Description);
 
         const lowProfileCode = data.LowProfileCode || data.lowProfileCode || data.LowProfileId;
+        console.log(`Extracted LowProfileCode: ${lowProfileCode}`);
 
         // 3. Update Transaction with lowProfileCode in provider_transaction_id column
         const { error: updateError } = await supabaseAdmin
@@ -159,6 +171,8 @@ serve(async (req) => {
         if (updateError) console.error('Provider ID Update Error:', updateError);
 
         const iframeUrl = `https://secure.cardcom.solutions/External/lowProfileClearing/${TERMINAL_NUMBER}.aspx?lowprofilecode=${lowProfileCode}&Lang=he`;
+
+        console.log(`Final Iframe URL: ${iframeUrl}`);
 
         return new Response(JSON.stringify({ success: true, url: iframeUrl, lowProfileCode, requestId }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },

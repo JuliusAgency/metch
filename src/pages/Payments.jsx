@@ -105,7 +105,12 @@ export default function Payments() {
             }
         };
         fetchTransactions();
+
+        const handleRefresh = () => fetchTransactions();
+        window.addEventListener('refresh-payments', handleRefresh);
+        return () => window.removeEventListener('refresh-payments', handleRefresh);
     }, [user]);
+
 
     useEffect(() => {
         if (searchParams.get('success') === 'true') {
@@ -433,9 +438,11 @@ ET`;
                                                     <div className="flex justify-between items-center w-full">
                                                         <div className="flex flex-col items-start">
                                                             <span className="text-[18px] text-gray-900 font-bold">₪{tx.amount}</span>
-                                                            <span className={`text-[12px] font-medium ${tx.status === 'pending' ? 'text-amber-500' : 'text-green-600'}`}>
-                                                                {tx.status === 'pending' ? 'בטיפול' : 'שולם'}
-                                                            </span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`text-[12px] font-medium ${tx.status === 'pending' ? 'text-amber-500' : 'text-green-600'}`}>
+                                                                    {tx.status === 'pending' ? 'בטיפול' : 'שולם'}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                         <span className="text-[16px] text-gray-900 font-normal tracking-wide">{tx.date}</span>
                                                     </div>
@@ -539,9 +546,11 @@ ET`;
                                                     <div className="flex justify-between items-center w-full">
                                                         <div className="flex items-center gap-4">
                                                             <span className="font-normal text-gray-900">{tx.date}</span>
-                                                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${tx.status === 'pending' ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-green-600'}`}>
-                                                                {tx.status === 'pending' ? 'בטיפול' : 'שולם'}
-                                                            </span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${tx.status === 'pending' ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-green-600'}`}>
+                                                                    {tx.status === 'pending' ? 'בטיפול' : 'שולם'}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                         <span className="font-normal text-gray-900 text-lg">₪{tx.amount}</span>
                                                     </div>
@@ -567,105 +576,106 @@ ET`;
                             </div>
                         </div>
 
+
+                        {/* Change Payment Method Modal */}
+                        {/* Mobile Edit Payment Page Overlay */}
+                        {showPaymentModal && isMobile && (
+                            <div className="fixed inset-0 z-40 bg-[#eff6ff] overflow-y-auto pt-20 pb-10 px-4 animate-in fade-in slide-in-from-bottom-10 duration-300">
+                                <div className="max-w-lg mx-auto">
+                                    {/* Header Area */}
+                                    <div className="text-center mb-6 relative">
+                                        <h2 className="text-[24px] font-bold text-[#001a6e]">עדכון אמצעי תשלום</h2>
+                                        <button
+                                            onClick={() => setShowPaymentModal(false)}
+                                            className="absolute top-1 right-0 p-1.5 rounded-full bg-white/60 hover:bg-white text-gray-500 shadow-sm"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                                        </button>
+                                    </div>
+
+                                    {/* White Card Container */}
+                                    <div className="bg-white rounded-[24px] shadow-[0_4px_30px_rgba(0,0,0,0.06)] p-6 mb-8 relative border border-white">
+                                        <PaymentStep
+                                            setPaymentData={setPaymentData}
+                                            errors={errors}
+                                            setErrors={setErrors}
+                                            userProfile={userProfile}
+                                        />
+                                    </div>
+
+                                    {/* Action Button - Hidden for Iframe flow (iframe has its own button) */}
+                                    {/* <div className="mt-4 px-2">
+                             <Button onClick={handleSavePaymentMethod} ... >עדכון</Button>
+                        </div> */}
+                                </div>
+                            </div>
+                        )
+                        }
+
+                        {/* Desktop Modal */}
+                        {!isMobile && (
+                            <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+                                <DialogContent className="sm:max-w-[700px] h-[80vh] overflow-y-auto" dir="rtl">
+                                    <DialogHeader>
+                                        <DialogTitle className="text-center text-xl font-bold text-[#1E3A8A]">עדכון אמצעי תשלום</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="py-4 h-full">
+                                        <PaymentStep
+                                            paymentData={paymentData}
+                                            setPaymentData={setPaymentData}
+                                            errors={errors}
+                                            setErrors={setErrors}
+                                            userProfile={userProfile}
+                                        />
+                                        {/* Action Button - Hidden for Iframe flow */}
+                                        {/* <div className="mt-8 flex justify-center">
+                                <Button onClick={handleSavePaymentMethod} ... >שמירת אמצעי תשלום</Button>
+                            </div> */}
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                        )
+                        }
+
+                        {/* View Invoice Modal */}
+                        <Dialog open={!!selectedInvoice} onOpenChange={(open) => !open && setSelectedInvoice(null)}>
+                            <DialogContent className="sm:max-w-[425px]" dir="rtl">
+                                <DialogHeader>
+                                    <DialogTitle className="text-center text-xl font-bold text-[#1E3A8A]">פרטי חשבונית</DialogTitle>
+                                </DialogHeader>
+                                {selectedInvoice && (
+                                    <div className="space-y-6 py-4">
+                                        <div className="text-center space-y-2 border-b pb-4">
+                                            <h3 className="text-2xl font-bold text-gray-900">₪{selectedInvoice.amount}</h3>
+                                            <p className="text-gray-500">{selectedInvoice.date}</p>
+                                        </div>
+                                        <div className="space-y-4">
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="text-gray-500">מספר חשבונית:</span>
+                                                <span className="font-medium text-left" dir="ltr">{selectedInvoice.invoiceNumber || `INV-${selectedInvoice.displayId || selectedInvoice.id}`}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="text-gray-500">תיאור:</span>
+                                                <span className="font-medium">{selectedInvoice.details}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="text-gray-500">סטטוס:</span>
+                                                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium">שולם</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-3 pt-4">
+                                            <Button className="flex-1 bg-[#1E3A8A] rounded-full" onClick={() => handleDownload(selectedInvoice.id)}>
+                                                <Download className="w-4 h-4 ml-2" />
+                                                הורד PDF
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 </div>
             </div>
-
-
-            {/* Change Payment Method Modal */}
-            {/* Mobile Edit Payment Page Overlay */}
-            {showPaymentModal && isMobile && (
-                <div className="fixed inset-0 z-40 bg-[#eff6ff] overflow-y-auto pt-20 pb-10 px-4 animate-in fade-in slide-in-from-bottom-10 duration-300">
-                    <div className="max-w-lg mx-auto">
-                        {/* Header Area */}
-                        <div className="text-center mb-6 relative">
-                            <h2 className="text-[24px] font-bold text-[#001a6e]">עדכון אמצעי תשלום</h2>
-                            <button
-                                onClick={() => setShowPaymentModal(false)}
-                                className="absolute top-1 right-0 p-1.5 rounded-full bg-white/60 hover:bg-white text-gray-500 shadow-sm"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-                            </button>
-                        </div>
-
-                        {/* White Card Container */}
-                        <div className="bg-white rounded-[24px] shadow-[0_4px_30px_rgba(0,0,0,0.06)] p-6 mb-8 relative border border-white">
-                            <PaymentStep
-                                setPaymentData={setPaymentData}
-                                errors={errors}
-                                setErrors={setErrors}
-                                userProfile={userProfile}
-                            />
-                        </div>
-
-                        {/* Action Button - Hidden for Iframe flow (iframe has its own button) */}
-                        {/* <div className="mt-4 px-2">
-                             <Button onClick={handleSavePaymentMethod} ... >עדכון</Button>
-                        </div> */}
-                    </div>
-                </div>
-            )}
-
-            {/* Desktop Modal */}
-            {!isMobile && (
-                <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-                    <DialogContent className="sm:max-w-[700px] h-[80vh] overflow-y-auto" dir="rtl">
-                        <DialogHeader>
-                            <DialogTitle className="text-center text-xl font-bold text-[#1E3A8A]">עדכון אמצעי תשלום</DialogTitle>
-                        </DialogHeader>
-                        <div className="py-4 h-full">
-                            <PaymentStep
-                                paymentData={paymentData}
-                                setPaymentData={setPaymentData}
-                                errors={errors}
-                                setErrors={setErrors}
-                                userProfile={userProfile}
-                            />
-                            {/* Action Button - Hidden for Iframe flow */}
-                            {/* <div className="mt-8 flex justify-center">
-                                <Button onClick={handleSavePaymentMethod} ... >שמירת אמצעי תשלום</Button>
-                            </div> */}
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            )}
-
-            {/* View Invoice Modal */}
-            <Dialog open={!!selectedInvoice} onOpenChange={(open) => !open && setSelectedInvoice(null)}>
-                <DialogContent className="sm:max-w-[425px]" dir="rtl">
-                    <DialogHeader>
-                        <DialogTitle className="text-center text-xl font-bold text-[#1E3A8A]">פרטי חשבונית</DialogTitle>
-                    </DialogHeader>
-                    {selectedInvoice && (
-                        <div className="space-y-6 py-4">
-                            <div className="text-center space-y-2 border-b pb-4">
-                                <h3 className="text-2xl font-bold text-gray-900">₪{selectedInvoice.amount}</h3>
-                                <p className="text-gray-500">{selectedInvoice.date}</p>
-                            </div>
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-500">מספר חשבונית:</span>
-                                    <span className="font-medium text-left" dir="ltr">{selectedInvoice.invoiceNumber || `INV-${selectedInvoice.displayId || selectedInvoice.id}`}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-500">תיאור:</span>
-                                    <span className="font-medium">{selectedInvoice.details}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-500">סטטוס:</span>
-                                    <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium">שולם</span>
-                                </div>
-                            </div>
-                            <div className="flex gap-3 pt-4">
-                                <Button className="flex-1 bg-[#1E3A8A] rounded-full" onClick={() => handleDownload(selectedInvoice.id)}>
-                                    <Download className="w-4 h-4 ml-2" />
-                                    הורד PDF
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }

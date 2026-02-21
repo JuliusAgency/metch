@@ -26,7 +26,7 @@ export const generateLowProfileUrl = async (paymentDetails, customerDetails, met
       throw new Error(data?.message || 'Failed to create payment session');
     }
 
-    console.log('Received Payment URL from server:', data.url);
+    console.log('Full response from create-payment:', JSON.stringify(data, null, 2));
     console.log('Received Payment URL from server:', data.url);
     return { url: data.url, requestId: data.requestId };
 

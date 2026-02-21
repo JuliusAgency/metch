@@ -9,12 +9,14 @@ import { supabase } from '@/api/supabaseClient';
 const PaymentSuccess = () => {
     console.log('--- PaymentSuccess COMPONENT LOADING ---');
 
-    // Iframe Breakout: If we are inside an iframe (Cardcom), 
-    // force the parent window to this URL.
+    // Iframe Communication: Instead of direct breakout, we send a message to the parent
     useEffect(() => {
         if (window.top !== window.self) {
-            console.log('Detected iframe! Breaking out to top window...');
-            window.top.location.href = window.location.origin + window.location.pathname + window.location.search;
+            console.log('Sending success message to parent window...');
+            window.parent.postMessage({
+                type: 'CARDCOM_PAYMENT_SUCCESS',
+                url: window.location.pathname + window.location.search
+            }, window.location.origin);
         }
     }, []);
 
@@ -25,9 +27,14 @@ const PaymentSuccess = () => {
 
     useEffect(() => {
         const verifyAndRedirect = async () => {
+            const entries = Object.fromEntries(searchParams.entries());
             const requestId = searchParams.get('ref');
             const lowProfileCode = searchParams.get('lowprofilecode') || searchParams.get('LowProfileCode');
-            console.log('PaymentSuccess mounted. Search Params:', Object.fromEntries(searchParams.entries()));
+
+            console.log('--- PaymentSuccess MOUNTED ---');
+            console.log('Full Query Params:', JSON.stringify(entries, null, 2));
+            console.log('Detected requestId:', requestId);
+            console.log('Detected lowProfileCode:', lowProfileCode);
             console.log('Window top state:', window.self === window.top ? 'Main window' : 'Inside iframe');
 
             if (requestId) {
@@ -35,55 +42,60 @@ const PaymentSuccess = () => {
                     console.log('Verifying payment for request:', requestId);
                     setMessage('מעדכן יתרת משרות...');
 
-                    const { data, error } = await supabase.functions.invoke('verify-payment', {
+                    // Set a timeout for the verification
+                    const verifyPromise = supabase.functions.invoke('verify-payment', {
                         body: { requestId, lowProfileCode }
                     });
 
+                    const timeoutPromise = new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('timeout')), 15000)
+                    );
+
+                    const { data, error } = await Promise.race([verifyPromise, timeoutPromise]);
+
                     if (error) {
                         console.error('Verify payment error (invoke):', error);
-                        const errMsg = `שגיאת אימות: ${error.message || JSON.stringify(error)}`;
-                        setMessage(errMsg);
-                        window.alert(errMsg); // Debug alert
-                        setVerifying(false); // Stop loading
-                        return; // DON'T redirect on error
+                        setMessage(`שגיאת אימות: ${error.message || 'לא התקבלה תגובה מהשרת'}`);
+                        setVerifying(false);
+                        return;
                     } else {
                         console.log('Verification response data:', data);
                         if (data && data.success) {
                             setMessage('התשלום אומת והמשרות עודכנו!');
                         } else {
-                            console.warn('Verification returned success=false:', data?.message);
-                            const warnMsg = `התראה: ${data?.message || 'אימות חלקי'}`;
-                            setMessage(warnMsg);
-                            window.alert(warnMsg); // Debug alert
+                            setMessage(`התראה: ${data?.message || 'לא הצלחנו לאמת את העסקה'}`);
                             setVerifying(false);
-                            return; // DON'T redirect on warning
+                            return;
                         }
                     }
                 } catch (err) {
                     console.error('Verification failed:', err);
-                    window.alert(`שגיאת קוד: ${err.message}`);
+                    if (err.message === 'timeout') {
+                        setMessage('האימות לוקח זמן רב מהרגיל. אנא בדוק את יתרת המשרות שלך בעוד מספר רגעים.');
+                    } else {
+                        setMessage(`שגיאת מערכת: ${err.message}`);
+                    }
                     setVerifying(false);
                     return;
                 }
             } else {
-                setMessage('התשלום עבר בהצלחה!');
+                console.warn('PaymentSuccess: Missing requestId (ref)!');
+                setMessage('תודה על התשלום! (שים לב: חסר מזהה עסקה, ייתכן שהעדכון ייקח זמן)');
             }
 
             setVerifying(false);
 
             // Redirect after delay
             const targetUrl = createPageUrl("Payments?success=true");
-            console.log('Redirecting to:', targetUrl);
+            console.log('Final success navigation to:', window.location.origin + targetUrl);
 
             setTimeout(() => {
                 if (window.self !== window.top) {
-                    console.log('Executing top-level redirect...');
                     window.top.location.href = window.location.origin + targetUrl;
                 } else {
-                    console.log('Executing navigation...');
                     navigate(targetUrl);
                 }
-            }, 3000);
+            }, 5000);
         };
 
         verifyAndRedirect();
