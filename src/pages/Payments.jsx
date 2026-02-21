@@ -33,6 +33,15 @@ export default function Payments() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Clear payment return path flag if we successfully landed here after a payment attempt
+    useEffect(() => {
+        const returnPath = sessionStorage.getItem('payment_return_path');
+        if (returnPath) {
+            console.log("[Payments] Clearing payment_return_path flag");
+            sessionStorage.removeItem('payment_return_path');
+        }
+    }, []);
+
     // Fetch User Profile and Jobs for Statistics
     const { user } = useUser();
     const [userProfile, setUserProfile] = useState(null);

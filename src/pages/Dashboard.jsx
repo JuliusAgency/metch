@@ -838,6 +838,15 @@ const EmployerDashboard = ({ user }) => {
     // Only redirect if critically missing info (company name)
     // Avoid aggressive hijacking if we are just loading or returning from payment
     if (!loading && user && user.user_type === 'employer') {
+      // If returning from a payment attempt, redirect to Payments page
+      const returnPath = sessionStorage.getItem('payment_return_path');
+      if (returnPath) {
+        console.log("[Dashboard] Detected return from payment, redirecting to:", returnPath);
+        sessionStorage.removeItem('payment_return_path');
+        navigate(returnPath, { replace: true });
+        return;
+      }
+
       const needsOnboarding = !user.is_onboarding_completed && (!user.company_name || !user.company_name.trim());
 
       if (needsOnboarding) {

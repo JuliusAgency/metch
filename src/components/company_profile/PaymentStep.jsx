@@ -91,10 +91,11 @@ export default function PaymentStep({ paymentData, setPaymentData, errors: propE
         if (typeof result === 'object' && result.url) {
           console.log("Redirecting to full page payment:", result.url);
           // Save return path so we can redirect back after Cardcom navigation
-          sessionStorage.setItem('payment_return_path', window.location.pathname);
+          // Always redirect to /Payments (not back to onboarding) after payment attempt
+          sessionStorage.setItem('payment_return_path', '/Payments');
           window.location.href = result.url;
         } else if (typeof result === 'string') {
-          sessionStorage.setItem('payment_return_path', window.location.pathname);
+          sessionStorage.setItem('payment_return_path', '/Payments');
           window.location.href = result;
         }
       } catch (error) {
