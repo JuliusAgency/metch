@@ -132,8 +132,8 @@ serve(async (req) => {
                 }
 
                 if (attempt < 3) {
-                    console.log('Waiting 2 seconds for document generation...');
-                    await sleep(2000); // Wait 2 seconds between retries
+                    console.log('Waiting 3 seconds for document generation...');
+                    await sleep(3000); // Wait 3 seconds between retries
                 }
             }
         }
